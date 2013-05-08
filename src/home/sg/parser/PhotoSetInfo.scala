@@ -40,10 +40,49 @@ class PhotoSetInfo(val sgName: String, previewDiv: String, pngSpankDiv: String, 
   require(pngSpankDiv.contains("\"pngSpank\""))
   require(dateDiv.contains("\"date\""))
 
+  /**
+   * represented as a string:
+   *   yyyy.mm
+   */
   val date = parseDateDiv(dateDiv)
+
+  /**
+   * the humanly readable title of this set
+   */
   val setTitle = parsePreviewDiv(previewDiv)
+
+  /**
+   * the sets name used in the construction of the URI for each image:
+   *  suicidegirls.com && setTitleAsURIPath && imagenum.jpg
+   */
   val setTitleAsURIPath = parsePngSpankDiv(pngSpankDiv)._2
+
+  val uriPathWithoutImage = "http://img.suicidegirls.com/media%s".format(setTitleAsURIPath)
+
+  /**
+   * indicates if this album is still in member review, if it is then
+   * the image URI are formatted in a trickier manner.
+   */
   val isMR = parsePngSpankDiv(pngSpankDiv)._1
+
+  val albumSaveLocation = "%s/%s - %s".format(sgName, date, setTitle)
+
+  /**
+   * contains pairs of:
+   * (image download location, relative filename)
+   * e.g.:
+   * (http://img.suicidegirls.com/media/girls/Nahp/photos/%20%20Girl%20Next%20Door/01.jpg , 
+   *  Nahp/2013.01 - Girl Next Door/01.jpg)
+   * 
+   */
+  val imageDownloadAndSaveLocationPairs = {
+    val uriPattern = "%s%02d.jpg"
+    val fileNamePattern = "%s/%02d.jpg"
+    if (!isMR)
+      Some((for (i <- 1 to 90)
+        yield (uriPattern.format(uriPathWithoutImage, i), fileNamePattern.format(albumSaveLocation, i))).toList)
+    else None
+  }
 
   private def parsePreviewDiv(preview: String) = {
     val titleTag = "title="
