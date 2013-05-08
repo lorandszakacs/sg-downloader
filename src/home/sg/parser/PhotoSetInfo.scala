@@ -75,7 +75,7 @@ class PhotoSetInfo(val sgName: String, previewDiv: String, pngSpankDiv: String, 
    *  Nahp/2013.01 - Girl Next Door/01.jpg)
    * 
    */
-  val imageDownloadAndSaveLocationPairs = {
+  def imageDownloadAndSaveLocationPairs = {
     val uriPattern = "%s%02d.jpg"
     val fileNamePattern = "%s/%02d.jpg"
     if (!isMR)

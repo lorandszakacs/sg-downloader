@@ -1,7 +1,6 @@
 package home.sg.parser
 
 import org.scalatest.FunSuite
-
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
