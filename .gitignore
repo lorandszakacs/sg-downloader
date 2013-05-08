@@ -1,6 +1,12 @@
 *.class
 *.log
 
+#eclipse specific
+bin/
+.settings/
+.cache
+lib/
+
 # sbt specific
 dist/*
 target/
@@ -11,3 +17,6 @@ project/plugins/project/
 
 # Scala-IDE specific
 .scala_dependencies
+
+#mac specific
+.DS_Store
