@@ -7,7 +7,7 @@ import home.sg.util.TestDataResolver
 import java.io.File
 
 @RunWith(classOf[JUnitRunner])
-class SGSetAlbumTest extends FunSuite {
+class SetAlbumTest extends FunSuite {
 
   private val nahpSetNames = List(
     "Girl Next Door", "Omnibot", "Sabor a Mi", "Sunday Vouyeurist", "Wii", "Chiaroscuro",
@@ -21,13 +21,13 @@ class SGSetAlbumTest extends FunSuite {
     "Sugar Lips", "Sunkissed", "Nymph", "Dust Storm", "Slither", "Mattress", "Sushi", "Lovely Loser", "Trashy")
 
   private def getTestSourceFile(fileName: String) = {
-    val filePath = TestDataResolver.getTestDataFolderForClass(classOf[SGSetAlbumPageParserTest]) + fileName
+    val filePath = TestDataResolver.getTestDataFolderForClass(classOf[SetAlbumPageParserTest]) + fileName
     scala.io.Source.fromFile(new File(filePath))
   }
 
   test("Nahp Set-Album Page, 12 total sets") {
-    val nahpSource = getTestSourceFile(SGParserTestData.nahpSetAlbumPage)
-    val result = new SGSetAlbum("Nahp", nahpSource)
+    val nahpSource = getTestSourceFile(ParserTestData.nahpSetAlbumPage)
+    val result = new SetAlbum("Nahp", nahpSource)
     assert(result.sets.length === 12)
     assert(result.pinkSets.length === 12)
     assert(result.mrSets.length === 0)
@@ -35,8 +35,8 @@ class SGSetAlbumTest extends FunSuite {
   }
 
   test("Sash Set-Album Page, 30 total sets") {
-    val sashSource = getTestSourceFile(SGParserTestData.sashSetAlbumPage)
-    val result = new SGSetAlbum("Sash", sashSource)
+    val sashSource = getTestSourceFile(ParserTestData.sashSetAlbumPage)
+    val result = new SetAlbum("Sash", sashSource)
     assert(result.sets.length === 30)
     assert(result.pinkSets.length === 27)
     assert(result.mrSets.length === 3)

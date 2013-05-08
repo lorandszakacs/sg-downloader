@@ -1,6 +1,6 @@
 package home.sg.parser
 
-class SGSetAlbum(val sgName: String, source: scala.io.Source) {
+class SetAlbum(val sgName: String, source: scala.io.Source) {
 
   private val parserResults = SGSetAlbumPageParser.parseSetAlbumPage(source)
 

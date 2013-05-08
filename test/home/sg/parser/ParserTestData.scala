@@ -1,6 +1,6 @@
 package home.sg.parser
 
-object SGParserTestData {
+object ParserTestData {
 
   //contains only pink sets
   //12 total
