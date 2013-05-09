@@ -8,7 +8,7 @@ import org.scalatest.junit.JUnitRunner
 class AssumptionsTest extends FunSuite {
 
   test("verify invalid image size") {
-    val sgClient = new SGClient(false)
+    val sgClient = new SGClient(true)
 
     //trying to get an image without logging in:
     val validImage = "http://img.suicidegirls.com/media/girls/Nahp/photos/%20%20Girl%20Next%20Door/01.jpg"
