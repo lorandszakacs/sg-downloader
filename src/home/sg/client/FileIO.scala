@@ -9,8 +9,25 @@ import java.io.BufferedInputStream
 import java.io.FileOutputStream
 import org.apache.commons.codec.binary.Base64
 import org.apache.http.HttpEntity
+import java.io.BufferedWriter
+import java.io.FileWriter
+import java.io.File
 
 object FileIO {
+
+  def writeToFile(data: Array[Byte], fileName: String) {
+    val out = new FileOutputStream(fileName);
+    out.write(data);
+    out.flush();
+    out.close();
+  }
+
+  def writeToFile(data: Array[Char], fileName: String) {
+    val out = new BufferedWriter(new FileWriter(new File(fileName)));
+    out.write(data);
+    out.flush();
+    out.close();
+  }
 
   private def getByteArrayFromInputStream(raw: InputStream, contentLength: Int) = {
     val in = new BufferedInputStream(raw);
@@ -31,23 +48,14 @@ object FileIO {
     if (offset != contentLength) {
       throw new IOException("Only read " + offset + " bytes; Expected " + contentLength + " bytes");
     }
-
     data
   }
-
-  private def writeToFile(data: Array[Byte], fileName: String) {
-    val out = new FileOutputStream(fileName);
-    out.write(data);
-    out.flush();
-    out.close();
-  }
-
   private def writeInputStreamToFile(is: InputStream, length: Int, fileName: String) {
     val data = getByteArrayFromInputStream(is, length)
     writeToFile(data, fileName)
   }
 
-  def writeEntityToFile(entity: HttpEntity, fileName: String) {
+  private def writeEntityToFile(entity: HttpEntity, fileName: String) {
     writeInputStreamToFile(entity.getContent(), entity.getContentLength().toInt, fileName)
     entity.consumeContent();
   }

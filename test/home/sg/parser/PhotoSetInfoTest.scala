@@ -18,7 +18,7 @@ class PhotoSetInfoTest extends FunSuite {
     val expectedTitle = "The Grove"
     val expectedTitleForURI = "/media/albums/0/36/33360/"
     val expectedMRFlag = true
-    
+
     val expectedAlbumSaveLocation = "Sash/2013.04 - The Grove"
     val expectedURI01 = "http://img.suicidegirls.com/media/albums/0/36/33360/1505987.jpg"
     val expectedFile01 = "Sash/2013.03 - The Grove/01.jpg"
@@ -113,7 +113,7 @@ class PhotoSetInfoTest extends FunSuite {
   }
 
   test("MR set with spaces in title for path construction, Sash, The Grove") {
-   val e = sashMRSetExpectedValues
+    val e = sashMRSetExpectedValues
     val result = assertCorrectValues(sashMRSet, e.expectedDate, e.expectedTitle, e.expectedTitleForURI, e.expectedMRFlag)
     assert(result.relativeAlbumSaveLocation === e.expectedAlbumSaveLocation)
 
@@ -121,6 +121,13 @@ class PhotoSetInfoTest extends FunSuite {
       case Some(pairs) => fail("Should NOT have computed image URIs for member review set")
       case None => assert(true)
     }
+  }
+
+  test("print shit") {
+    val e = nahpPinkSetWithSpaces
+
+    val result = new PhotoSetInfo(e._1, e._2, e._3, e._4).imageDownloadAndSaveLocationPairs.get
+    result map { p => println("\"" + p._1 + "\"") }
   }
 
 }
