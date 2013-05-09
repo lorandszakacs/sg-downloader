@@ -12,7 +12,7 @@ class Downloader(
 
   def report = if (silent) { (x: Any) => Unit } else { (x: Any) => println(x) }
 
-  val sgClient = new SGClient(silent)
+  val sgClient = new SGClient(true)
 
   val setAlbum = new SetAlbum(sgName, sgClient.getSetAlbumPageSource(sgName));
 
@@ -36,10 +36,15 @@ class Downloader(
   private def downloadSet(root: File)(setInfo: PhotoSetInfo) {
     setInfo.imageDownloadAndSaveLocationPairs match {
       case Some(pairs) => {
-        new File(root.getAbsolutePath() + "/" + setInfo.relativeAlbumSaveLocation).mkdirs()
-        report("Downloading set: %s".format(setInfo.relativeAlbumSaveLocation))
-        pairs.foreach(downloadFile(root))
-        report("================")
+        val newFolder = new File(root.getAbsolutePath() + "/" + setInfo.relativeAlbumSaveLocation)
+        if (newFolder.exists() && newFolder.getTotalSpace() > 4000) {
+          report("skipping set: %s   ;already exists".format(setInfo.relativeAlbumSaveLocation))
+        } else {
+          newFolder.mkdir()
+          report("Downloading set: %s".format(setInfo.relativeAlbumSaveLocation))
+          pairs.foreach(downloadFile(root))
+        }
+        report("================");
       }
       case None => throw new RuntimeException("Trying to download MR set: %s".format(setInfo.relativeAlbumSaveLocation))
     }
