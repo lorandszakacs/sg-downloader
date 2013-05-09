@@ -49,7 +49,6 @@ class SGClient(silent: Boolean) {
       if (cookies.contains("Incorrect+username+or+password"))
         failedToLogOn(cookies)
     }
-
   }
 
   /**
