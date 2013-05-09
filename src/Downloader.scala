@@ -3,7 +3,6 @@
 import home.sg.parser.SetAlbum
 import java.io.File
 import home.sg.parser.PhotoSetInfo
-import home.sg.client.Client
 
 class Downloader(
   val sgName: String,
@@ -11,6 +10,7 @@ class Downloader(
   val password: String,
   silent: Boolean) {
 
+  /*
   def report = if (silent) { (x: Any) => Unit } else { (x: Any) => println(x) }
 
   //val sgClient = new Client(user, password)
@@ -72,5 +72,5 @@ class Downloader(
       throw new RuntimeException("Could not create path specified: %".format(rootFolder))
     } else folder
   }
-
+*/
 }

@@ -49,6 +49,7 @@ object FileIO {
 
   def writeEntityToFile(entity: HttpEntity, fileName: String) {
     writeInputStreamToFile(entity.getContent(), entity.getContentLength().toInt, fileName)
+    entity.consumeContent();
   }
 
 }
