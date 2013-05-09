@@ -65,7 +65,7 @@ class PhotoSetInfo(val sgName: String, previewDiv: String, pngSpankDiv: String, 
    */
   val isMR = parsePngSpankDiv(pngSpankDiv)._1
 
-  val albumSaveLocation = "%s/%s - %s".format(sgName, date, setTitle)
+  val relativeAlbumSaveLocation = "%s/%s - %s".format(sgName, date, setTitle)
 
   /**
    * contains pairs of:
@@ -80,7 +80,7 @@ class PhotoSetInfo(val sgName: String, previewDiv: String, pngSpankDiv: String, 
     val fileNamePattern = "%s/%02d.jpg"
     if (!isMR)
       Some((for (i <- 1 to 90)
-        yield (uriPattern.format(uriPathWithoutImage, i), fileNamePattern.format(albumSaveLocation, i))).toList)
+        yield (uriPattern.format(uriPathWithoutImage, i), fileNamePattern.format(relativeAlbumSaveLocation, i))).toList)
     else None
   }
 

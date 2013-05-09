@@ -101,7 +101,7 @@ class PhotoSetInfoTest extends FunSuite {
   test("pink set with spaces in title for path construction, Nahp, Girl Next Door") {
     val e = nahpPinkSetWithSpacesExpectedValues
     val result = assertCorrectValues(nahpPinkSetWithSpaces, e.expectedDate, e.expectedTitle, e.expectedTitleForURI, e.expectedMRFlag)
-    assert(result.albumSaveLocation === e.expectedAlbumSaveLocation)
+    assert(result.relativeAlbumSaveLocation === e.expectedAlbumSaveLocation)
 
     result.imageDownloadAndSaveLocationPairs match {
       case Some(pairs) => {
@@ -115,7 +115,7 @@ class PhotoSetInfoTest extends FunSuite {
   test("MR set with spaces in title for path construction, Sash, The Grove") {
    val e = sashMRSetExpectedValues
     val result = assertCorrectValues(sashMRSet, e.expectedDate, e.expectedTitle, e.expectedTitleForURI, e.expectedMRFlag)
-    assert(result.albumSaveLocation === e.expectedAlbumSaveLocation)
+    assert(result.relativeAlbumSaveLocation === e.expectedAlbumSaveLocation)
 
     result.imageDownloadAndSaveLocationPairs match {
       case Some(pairs) => fail("Should NOT have computed image URIs for member review set")
