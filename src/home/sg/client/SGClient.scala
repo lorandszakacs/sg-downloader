@@ -65,7 +65,7 @@ class SGClient(silent: Boolean) {
    * invalid i.e.
    * "http://img.suicidegirls.com/media/girls/Nahp/photos/%20%20Girl%20Next%20Door/90.jpg"
    */
-  def getSetImage(URL: String): Option[Array[Char]] = {
+  def getSetImage(URL: String): Option[Array[Byte]] = {
     val get = new HttpGet(URL)
     val response = httpclient.execute(get)
     val entity = response.getEntity()
@@ -94,10 +94,8 @@ class SGClient(silent: Boolean) {
       }
 
       case _ => {
-        val source = Source.fromInputStream(entity.getContent())
-        val buff = new Array[Char](inputSize)
-        source.copyToArray(buff, 0, inputSize)
-        source.close()
+        val inputStream = entity.getContent()
+        val buff = FileIO.getByteArrayFromInputStream(inputStream, inputSize)
         consume(entity)
         Some(buff)
       }

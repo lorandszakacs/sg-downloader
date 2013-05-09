@@ -1,4 +1,4 @@
-name := "SG-downloader"
+name := "sg-downloader"
 
 version := "0.1"
 
@@ -28,3 +28,12 @@ showSuccess := true
 // Execute tests in the current project serially
 // Tests from other projects may still run concurrently.
 parallelExecution in Test := false
+
+//memory
+javaOptions += "-Xmx1G"
+
+//scala compiler options
+scalacOptions += "-deprecation"
+
+// append several options to the list of options passed to the Java compiler
+javacOptions ++= Seq("-source", "1.6", "-target", "1.6")

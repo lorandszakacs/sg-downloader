@@ -15,6 +15,13 @@ import java.io.File
 
 object FileIO {
 
+  def deleteFolder(folder: String) {
+
+  }
+
+  def deleteFolder(folder: File) {
+  }
+
   def writeToFile(data: Array[Byte], fileName: String) {
     val out = new FileOutputStream(fileName);
     out.write(data);
@@ -29,7 +36,8 @@ object FileIO {
     out.close();
   }
 
-  private def getByteArrayFromInputStream(raw: InputStream, contentLength: Int) = {
+  @Deprecated
+  def getByteArrayFromInputStream(raw: InputStream, contentLength: Int) = {
     val in = new BufferedInputStream(raw);
     val data = new Array[Byte](contentLength)
 
@@ -49,15 +57,6 @@ object FileIO {
       throw new IOException("Only read " + offset + " bytes; Expected " + contentLength + " bytes");
     }
     data
-  }
-  private def writeInputStreamToFile(is: InputStream, length: Int, fileName: String) {
-    val data = getByteArrayFromInputStream(is, length)
-    writeToFile(data, fileName)
-  }
-
-  private def writeEntityToFile(entity: HttpEntity, fileName: String) {
-    writeInputStreamToFile(entity.getContent(), entity.getContentLength().toInt, fileName)
-    entity.consumeContent();
   }
 
 }
