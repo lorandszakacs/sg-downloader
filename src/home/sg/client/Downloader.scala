@@ -3,6 +3,7 @@ package home.sg.client
 import home.sg.parser.SetAlbum
 import java.io.File
 import home.sg.parser.PhotoSetInfo
+import home.sg.util.IO
 
 class LevelOfReporting(level: Int) {
   val silentDownloader = (level < 1)
@@ -26,12 +27,12 @@ class Downloader(
   }
 
   def download(rootFolder: String, filterSetsToDownload: (PhotoSetInfo) => Boolean) {
-    val root = createRootFolder(rootFolder)
+    val root = IO.createFolder(rootFolder)
 
     try {
       sgClient.login(user, password)
       val setsToDownload = setAlbum.pinkSets.filter(filterSetsToDownload)
-      
+
       report("Sets to Download: ")
       setsToDownload foreach (x => report(x.relativeAlbumSaveLocation))
 
@@ -44,25 +45,23 @@ class Downloader(
     }
   }
 
-  private def logMRSets(root: File) {
+  private def logMRSets(root: String) {
     if (setAlbum.mrSets.isEmpty)
       Unit
     else {
-      val mrLogFile = root.getAbsolutePath() + "/" + sgName + "/" + "mr-sets.txt"
-      FileIO.writeToFile(setAlbum.mrSets.map(x => x.relativeAlbumSaveLocation).mkString("\n").toCharArray(), mrLogFile)
+      val mrLogFile = IO.concatPath(root, sgName, "mr-sets.txt")
+      IO.writeToFile(setAlbum.mrSets.map(x => x.relativeAlbumSaveLocation).mkString("\n").getBytes(), mrLogFile)
     }
   }
 
-  private val magicNumberWeUseToSkipFolderSizes = 4000
-
-  private def downloadSet(root: File)(setInfo: PhotoSetInfo) {
+  private def downloadSet(root: String)(setInfo: PhotoSetInfo) {
     setInfo.imageDownloadAndSaveLocationPairs match {
       case Some(pairs) => {
-        val newFolder = new File(root.getAbsolutePath() + "/" + setInfo.relativeAlbumSaveLocation)
-        if (newFolder.exists() && newFolder.getTotalSpace() > magicNumberWeUseToSkipFolderSizes) {
+        val newFolder = IO.concatPath(root, setInfo.relativeAlbumSaveLocation)
+        if (IO.exists(newFolder) && !IO.isEmpty(newFolder)) {
           report("skipping set: %s   ;already exists".format(setInfo.relativeAlbumSaveLocation))
         } else {
-          newFolder.mkdirs()
+          IO.createFolder(newFolder)
           report("Downloading set: %s".format(setInfo.relativeAlbumSaveLocation))
           pairs foreach downloadFile(root)
         }
@@ -72,7 +71,11 @@ class Downloader(
     }
   }
 
-  private def downloadFile(root: File)(pair: (String, String)) {
+  private def downloadFile(root: String)(pair: (String, String)) {
+    def createImageFile(root: String, relativeImagePath: String) = {
+      val imageFile = IO.concatPath(root, relativeImagePath)
+      IO.createFile(imageFile)
+    }
     val URI = pair._1
     val fileSGSetPath = pair._2
 
@@ -80,29 +83,11 @@ class Downloader(
     optionSome match {
       case Some(buff) => {
         val file = createImageFile(root, fileSGSetPath)
-        FileIO.writeToFile(buff, file.getAbsolutePath())
+        IO.writeToFile(buff, file)
         report("   %s".format(fileSGSetPath))
       }
       case None => Unit //report("skipping: %s".format(fileSGSetPath))
     }
-  }
-
-  private def createImageFile(root: File, relativeImagePath: String) = {
-    val imageFile = new File(root.getCanonicalFile().getAbsolutePath() + "/" + relativeImagePath)
-    imageFile.createNewFile()
-    if (!imageFile.canWrite()) {
-      imageFile.delete();
-      throw new RuntimeException("Could not create specified file: %s".format(imageFile))
-    } else imageFile
-  }
-
-  private def createRootFolder(rootFolder: String) = {
-    val folder = new File(rootFolder)
-    folder.mkdirs();
-    if (!folder.canWrite()) {
-      folder.delete();
-      throw new RuntimeException("Could not create path specified: %".format(rootFolder))
-    } else folder
   }
 
 }

@@ -11,13 +11,21 @@ import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.message.BasicNameValuePair
 import org.apache.http.util.EntityUtils
 import scala.io.Source
+import home.sg.util.IO
+
+object SiteInfo {
+  val sgURL = "http://suicidegirls.com/"
+
+  def getAlbumsURL(sgName: String) = {
+    String.format("%s/girls/%s/albums/", sgURL, sgName)
+  }
+}
 
 class SGClient(silent: Boolean) {
   val httpclient = new DefaultHttpClient();
 
   def getSetAlbumPageSource(sgName: String) = {
-    val sgURL = "http://suicidegirls.com/"
-    val albumsURL = String.format("%s/girls/%s/albums/", sgURL, sgName)
+    val albumsURL = SiteInfo.getAlbumsURL(sgName)
     val u = new java.net.URL(albumsURL)
     val in = scala.io.Source.fromURL(u)
     in
@@ -95,7 +103,7 @@ class SGClient(silent: Boolean) {
 
       case _ => {
         val inputStream = entity.getContent()
-        val buff = FileIO.getByteArrayFromInputStream(inputStream, inputSize)
+        val buff = IO.getByteArrayFromInputStream(inputStream, inputSize)
         consume(entity)
         Some(buff)
       }
