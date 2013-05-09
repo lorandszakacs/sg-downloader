@@ -8,7 +8,7 @@ import org.scalatest.junit.JUnitRunner
 class FileIOTest extends FunSuite {
 
   test("a") {
-    val folder = "/Users/lorand/Downloads/temp/temp/subdir1" //temp/subdir1/ass.txt
+    val folder = "/Users/lorand/Downloads/temp/temp" //temp/subdir1/ass.txt
     FileIO.deleteFolder(folder);
   }
 

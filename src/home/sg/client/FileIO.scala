@@ -12,14 +12,16 @@ import org.apache.http.HttpEntity
 import java.io.BufferedWriter
 import java.io.FileWriter
 import java.io.File
+import org.apache.commons.io.FileUtils
 
 object FileIO {
 
   def deleteFolder(folder: String) {
-
+    FileUtils.deleteDirectory(new File(folder))
   }
 
   def deleteFolder(folder: File) {
+    FileUtils.deleteDirectory(folder)
   }
 
   def writeToFile(data: Array[Byte], fileName: String) {

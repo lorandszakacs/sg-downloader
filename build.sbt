@@ -4,7 +4,17 @@ version := "0.1"
 
 scalaVersion := "2.10.1"
 
-libraryDependencies +=  "org.apache.httpcomponents" % "httpclient" % "4.2.5"
+libraryDependencies ++= Seq( 
+	"org.apache.httpcomponents" % "httpclient" % "4.2.5",
+	"commons-lang" % "commons-lang" % "2.6",
+	"org.scalatest" % "scalatest_2.10" % "1.9.1" % "test",
+	"com.novocode" % "junit-interface" % "0.8" % "test->default"
+)
+
+//libraryDependencies += "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test"
+
+//libraryDependencies += "commons-lang" % "commons-lang" % "2.6"
+
 
 scalaSource in Compile <<= baseDirectory(_ / "src")
 
@@ -37,3 +47,6 @@ scalacOptions += "-deprecation"
 
 // append several options to the list of options passed to the Java compiler
 javacOptions ++= Seq("-source", "1.6", "-target", "1.6")
+
+// specifies that all tests will be executed in a single external JVM.
+fork in Test := true
