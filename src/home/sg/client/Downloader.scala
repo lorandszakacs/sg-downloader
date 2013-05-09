@@ -1,4 +1,4 @@
-
+package home.sg.client
 
 import home.sg.parser.SetAlbum
 import java.io.File
@@ -10,12 +10,11 @@ class Downloader(
   val password: String,
   silent: Boolean) {
 
-  /*
   def report = if (silent) { (x: Any) => Unit } else { (x: Any) => println(x) }
 
-  //val sgClient = new Client(user, password)
+  val sgClient = new SGClient(silent)
 
-  val setAlbum = new SetAlbum(sgName, Client.getSetAlbumPageSource(sgName));
+  val setAlbum = new SetAlbum(sgName, sgClient.getSetAlbumPageSource(sgName));
 
   def download(rootFolder: String) {
     download(rootFolder, (x => true))
@@ -23,10 +22,15 @@ class Downloader(
 
   def download(rootFolder: String, filterSetsToDownload: (PhotoSetInfo) => Boolean) {
     val root = createRootFolder(rootFolder)
-    report("STARTING DOWNLOAD: ")
-    setAlbum.pinkSets.filter(filterSetsToDownload).map(downloadSet(root))
-    report("Finished download")
-    Client.shutdown();
+
+    try {
+      sgClient.login(user, password)
+      report("Starting:")
+      setAlbum.pinkSets.filter(filterSetsToDownload).map(downloadSet(root))
+      report("Finished download")
+    } finally {
+      sgClient.shutdown
+    }
   }
 
   private def downloadSet(root: File)(setInfo: PhotoSetInfo) {
@@ -39,20 +43,21 @@ class Downloader(
       }
       case None => throw new RuntimeException("Trying to download MR set: %s".format(setInfo.relativeAlbumSaveLocation))
     }
-
   }
 
   private def downloadFile(root: File)(pair: (String, String)) {
     val URI = pair._1
     val fileSGSetPath = pair._2
 
-    val entity = Client.get(URI)
-    val file = createImageFile(root, fileSGSetPath)
-    report("   %s".format(URI))
-    //if (entity.getContentLength() == sgClient.invalidContentLength)
-    //throw new RuntimeException("LOGIN SESSION EXPIRED, ABORTING!")
-    //else
-    //FileIO.writeEntityToFile(entity, file.getAbsolutePath())
+    val optionSome = sgClient.get(URI)
+    optionSome match {
+      case Some(buff) => {
+        val file = createImageFile(root, fileSGSetPath)
+        FileIO.writeToFile(buff, file.getAbsolutePath())
+        report("   %s".format(fileSGSetPath))
+      }
+      case None => report("failed: %s".format(fileSGSetPath))
+    }
   }
 
   private def createImageFile(root: File, relativeImagePath: String) = {
@@ -72,5 +77,5 @@ class Downloader(
       throw new RuntimeException("Could not create path specified: %".format(rootFolder))
     } else folder
   }
-*/
+
 }

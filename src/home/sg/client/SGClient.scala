@@ -15,7 +15,19 @@ import scala.io.Source
 class SGClient(silent: Boolean) {
   val httpclient = new DefaultHttpClient();
 
-  def report = if (silent) ((x: Any) => Unit) else ((x: Any) => println(x))
+  def getSetAlbumPageSource(sgName: String) = {
+    //    val albumsURL = String.format("http://suicidegirls.com/girls/%s/albums/", sgName)
+    //    val u = get(albumsURL)
+    //    u match {
+    //      case Some(buff) => Source.fromChars(buff)
+    //      case None => throw new RuntimeException("unable to read the albums for: %".format(sgName))
+    //    }
+    val sgURL = "http://suicidegirls.com/"
+    val albumsURL = String.format("%s/girls/%s/albums/", sgURL, sgName)
+    val u = new java.net.URL(albumsURL)
+    val in = scala.io.Source.fromURL(u)
+    in
+  }
 
   def login(user: String, pwd: String) {
     def createPost() = {
@@ -72,9 +84,12 @@ class SGClient(silent: Boolean) {
       case e => {
         val inputSize = entity.getContentLength().toInt
         report("SGClient->get, just read input of size: " + inputSize)
-        if (entity.getContentLength() == invalidContentLength) {
+        if (inputSize > 0 && inputSize <= invalidContentLength) {
           consume(entity);
           None
+        } else if (inputSize < 0) {
+          consume(entity)
+          throw new RuntimeException("No content for: %s".format(URL))
         } else {
           val source = Source.fromInputStream(entity.getContent())
           val buff = new Array[Char](inputSize)
@@ -90,6 +105,8 @@ class SGClient(silent: Boolean) {
   def shutdown() {
     httpclient.getConnectionManager().shutdown();
   }
+
+  private def report = if (silent) ((x: Any) => Unit) else ((x: Any) => println(x))
 
   private def consume(ent: HttpEntity) = {
     EntityUtils.consume(ent);
