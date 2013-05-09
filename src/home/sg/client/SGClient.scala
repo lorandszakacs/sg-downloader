@@ -14,6 +14,8 @@ import scala.io.Source
 
 class SGClient(silent: Boolean) {
   val httpclient = new DefaultHttpClient();
+  
+  val fileSkipMessage = "skipping".toCharArray()
 
   def getSetAlbumPageSource(sgName: String) = {
     //    val albumsURL = String.format("http://suicidegirls.com/girls/%s/albums/", sgName)
@@ -86,7 +88,7 @@ class SGClient(silent: Boolean) {
         report("SGClient->get, just read input of size: " + inputSize)
         if (inputSize > 0 && inputSize <= invalidContentLength) {
           consume(entity);
-          None
+          Some(fileSkipMessage)
         } else if (inputSize < 0) {
           consume(entity)
           throw new RuntimeException("No content for: %s".format(URL))

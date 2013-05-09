@@ -25,10 +25,10 @@ class Downloader(
 
     try {
       sgClient.login(user, password)
-      report("Total number of albums: ")
-      setAlbum.pinkSets map report
+      report("AlbumsListing: ")
+      setAlbum.pinkSets foreach (x => report(x.relativeAlbumSaveLocation))
       report("-------Starting:")
-      setAlbum.pinkSets.filter(filterSetsToDownload).map(downloadSet(root))
+      setAlbum.pinkSets.filter(filterSetsToDownload) foreach (downloadSet(root))
       report("Finished download")
       logMRSets(root)
     } finally {
@@ -45,16 +45,18 @@ class Downloader(
     }
   }
 
+  private val magicNumberWeUseToSkipFolderSizes = 4000
+
   private def downloadSet(root: File)(setInfo: PhotoSetInfo) {
     setInfo.imageDownloadAndSaveLocationPairs match {
       case Some(pairs) => {
         val newFolder = new File(root.getAbsolutePath() + "/" + setInfo.relativeAlbumSaveLocation)
-        if (newFolder.exists() && newFolder.getTotalSpace() > 4000) {
+        if (newFolder.exists() && newFolder.getTotalSpace() > magicNumberWeUseToSkipFolderSizes) {
           report("skipping set: %s   ;already exists".format(setInfo.relativeAlbumSaveLocation))
         } else {
           newFolder.mkdirs()
           report("Downloading set: %s".format(setInfo.relativeAlbumSaveLocation))
-          pairs.foreach(downloadFile(root))
+          pairs foreach downloadFile(root)
         }
         report("================");
       }
@@ -69,8 +71,10 @@ class Downloader(
     val optionSome = sgClient.get(URI)
     optionSome match {
       case Some(buff) => {
-        val file = createImageFile(root, fileSGSetPath)
-        FileIO.writeToFile(buff, file.getAbsolutePath())
+        if (buff != sgClient.fileSkipMessage) {
+          val file = createImageFile(root, fileSGSetPath)
+          FileIO.writeToFile(buff, file.getAbsolutePath())
+        }
         report("   %s".format(fileSGSetPath))
       }
       case None => report("failed: %s".format(fileSGSetPath))
