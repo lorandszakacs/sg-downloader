@@ -40,7 +40,7 @@ class Downloader(
         if (newFolder.exists() && newFolder.getTotalSpace() > 4000) {
           report("skipping set: %s   ;already exists".format(setInfo.relativeAlbumSaveLocation))
         } else {
-          newFolder.mkdir()
+          newFolder.mkdirs()
           report("Downloading set: %s".format(setInfo.relativeAlbumSaveLocation))
           pairs.foreach(downloadFile(root))
         }

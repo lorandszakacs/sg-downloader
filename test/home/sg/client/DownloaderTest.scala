@@ -9,14 +9,10 @@ import home.sg.parser.PhotoSetInfo
 class DownloaderTest extends FunSuite {
 
   test("download Nahp") {
-    def onlyOneSet(set: PhotoSetInfo) =
-      set.setTitle.contains("Next")
-      
     val rootFolder = "/Users/lorand/Downloads/temp/"
-    val downloader = new Downloader("Nahp", LoginInfo.user, LoginInfo.pwd, false)
-    downloader.download(rootFolder, onlyOneSet)
-    //    val downloader = new Downloader("Aro", LoginInfo.user, LoginInfo.pwd, false)
-    //    downloader.download(rootFolder)
+    val downloader = new Downloader("Glitz", LoginInfo.user, LoginInfo.pwd, false)
+    downloader.download(rootFolder)
   }
+  
 
 }
