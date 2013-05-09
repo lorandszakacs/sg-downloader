@@ -8,14 +8,22 @@ import home.sg.parser.PhotoSetInfo
 @RunWith(classOf[JUnitRunner])
 class DownloaderTest extends FunSuite {
 
-  test("download Sash") {
-    downloadSG("Sash", new LevelOfReporting(1))
+  //  test("download Sash") {
+  //    downloadSG("Sash", new LevelOfReporting(1))
+  //  }
+
+  test("download Nahp") {
+    downloadSG("Nahp", new LevelOfReporting(1))
   }
 
-  //  test("download Nahp") {
-  //    downloadSG("Nahp")
-  //  }
-  //  
+//  test("download Radeo") {
+//    downloadSG("Radeo", new LevelOfReporting(1))
+//  }
+
+  //    test("download Rigel") {
+  //      downloadSG("Rigel",  new LevelOfReporting(1))
+  //    }
+
   //  test("download Nya") {
   //    downloadSG("Nya")
   //  }
@@ -26,7 +34,7 @@ class DownloaderTest extends FunSuite {
 
   private def downloadSG(sgName: String, lor: LevelOfReporting) {
     val rootFolder = "/Users/lorand/Downloads/temp/"
-    val downloader = new Downloader("Sash", LoginInfo.user, LoginInfo.pwd, lor)
+    val downloader = new Downloader(sgName, LoginInfo.user, LoginInfo.pwd, lor)
     downloader.download(rootFolder)
   }
 
