@@ -4,15 +4,20 @@ import home.sg.parser.SetAlbum
 import java.io.File
 import home.sg.parser.PhotoSetInfo
 
+class LevelOfReporting(level: Int) {
+  val silentDownloader = (level < 1)
+  val silentClient = (level < 2)
+}
+
 class Downloader(
   val sgName: String,
   val user: String,
   val password: String,
-  silent: Boolean) {
+  silent: LevelOfReporting) {
 
-  def report = if (silent) { (x: Any) => Unit } else { (x: Any) => println(x) }
+  def report = if (silent.silentDownloader) { (x: Any) => Unit } else { (x: Any) => println(x) }
 
-  val sgClient = new SGClient(false)
+  val sgClient = new SGClient(silent.silentClient)
 
   val setAlbum = new SetAlbum(sgName, sgClient.getSetAlbumPageSource(sgName));
 
@@ -68,16 +73,14 @@ class Downloader(
     val URI = pair._1
     val fileSGSetPath = pair._2
 
-    val optionSome = sgClient.get(URI)
+    val optionSome = sgClient.getSetImage(URI)
     optionSome match {
       case Some(buff) => {
-        if (buff != sgClient.fileSkipMessage) {
-          val file = createImageFile(root, fileSGSetPath)
-          FileIO.writeToFile(buff, file.getAbsolutePath())
-          report("   %s".format(fileSGSetPath))
-        }
+        val file = createImageFile(root, fileSGSetPath)
+        FileIO.writeToFile(buff, file.getAbsolutePath())
+        report("   %s".format(fileSGSetPath))
       }
-      case None => report("failed: %s".format(fileSGSetPath))
+      case None => Unit //report("skipping: %s".format(fileSGSetPath))
     }
   }
 

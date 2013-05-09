@@ -16,12 +16,6 @@ class SGClient(silent: Boolean) {
   val httpclient = new DefaultHttpClient();
 
   def getSetAlbumPageSource(sgName: String) = {
-    //    val albumsURL = String.format("http://suicidegirls.com/girls/%s/albums/", sgName)
-    //    val u = get(albumsURL)
-    //    u match {
-    //      case Some(buff) => Source.fromChars(buff)
-    //      case None => throw new RuntimeException("unable to read the albums for: %".format(sgName))
-    //    }
     val sgURL = "http://suicidegirls.com/"
     val albumsURL = String.format("%s/girls/%s/albums/", sgURL, sgName)
     val u = new java.net.URL(albumsURL)
@@ -34,10 +28,8 @@ class SGClient(silent: Boolean) {
       val httpost = new HttpPost("http://suicidegirls.com/login/");
       val nvps = new ArrayList[NameValuePair]();
       nvps.add(new BasicNameValuePair("action", "process_login"))
-      //nvps.add(new BasicNameValuePair("referer", "/"))
       nvps.add(new BasicNameValuePair("username", user))
       nvps.add(new BasicNameValuePair("password", pwd))
-      //nvps.add(new BasicNameValuePair("loginbutton", ""))
       httpost.setEntity(new UrlEncodedFormEntity(nvps));
       httpost
     }
@@ -62,72 +54,53 @@ class SGClient(silent: Boolean) {
 
   /**
    * magic number, it's the size of that image you receive
-   * when the server requests that you log in.
+   * whenever you access things for which you don't have
+   * authorization
    */
   private val invalidContentLength = 26365
 
-  val fileSkipMessage = "skipping".toCharArray()
   /**
-   * @param URL the URL of the resource you want to fetch
-   * @return Option[Array[Char]] containing the contents
-   * of the thing received
+   * @param URL the URL of the set Image we want to fetch
+   * @return Option[Array[Char]] containing the image
+   * or None if we provided an image link that was
+   * invalid i.e.
+   * "http://img.suicidegirls.com/media/girls/Nahp/photos/%20%20Girl%20Next%20Door/90.jpg"
    */
-  def get(URL: String): Option[Array[Char]] = {
+  def getSetImage(URL: String): Option[Array[Char]] = {
     val get = new HttpGet(URL)
     val response = httpclient.execute(get)
     val entity = response.getEntity()
 
-    entity match {
-      case null => {
+    assume(entity != null, "Entity should never be null")
+    val inputSize = entity.getContentLength().toInt
+    report("SGClient->get, just read input of size: " + inputSize)
+
+    inputSize match {
+      case x if x < 0 => {
+        consume(entity)
+        throw new RuntimeException("No content for: %s".format(URL))
+      }
+
+      case `invalidContentLength` => {
+        consume(entity)
+        throw new RuntimeException("Starting to receive invalid images, login info lost @: %s".format(URL))
+      }
+
+      case x if x < invalidContentLength => {
+        //this means that the link has not been found, so just ignore
+        //it is normal since we construct images ranging from 01 to 90
+        //because we cannot find out what the size of the set is.
         consume(entity)
         None
       }
+
       case _ => {
-        val inputSize = entity.getContentLength().toInt
-        report("SGClient->get, just read input of size: " + inputSize)
-
-        inputSize match {
-          case x if x < 0 => {
-            consume(entity)
-            throw new RuntimeException("No content for: %s".format(URL))
-          }
-
-          case `invalidContentLength` => {
-            consume(entity)
-            throw new RuntimeException("Lost login connection @: %s".format(URL))
-          }
-
-          case x if x < invalidContentLength => {
-            //this means that the link has not been found, so just ignore
-            //it is normal since we construct images ranging from 01 to 90
-            //because we cannot find out what the size of the set is.
-            consume(entity)
-            Some(fileSkipMessage)
-          }
-
-          case _ => {
-            val source = Source.fromInputStream(entity.getContent())
-            val buff = new Array[Char](inputSize)
-            source.copyToArray(buff, 0, inputSize)
-            source.close()
-            consume(entity)
-            Some(buff)
-          }
-        }
-        //        if (inputSize > 0 && inputSize <= invalidContentLength) {
-        //          consume(entity);
-        //          Some(fileSkipMessage)
-        //        } else if (inputSize < 0) {
-        //          consume(entity)
-        //          throw new RuntimeException("No content for: %s".format(URL))
-        //        } else {
-        //          val source = Source.fromInputStream(entity.getContent())
-        //          val buff = new Array[Char](inputSize)
-        //          source.copyToArray(buff, 0, inputSize)
-        //          source.close()
-        //          consume(entity)
-        //          Some(buff)
-        //        }
+        val source = Source.fromInputStream(entity.getContent())
+        val buff = new Array[Char](inputSize)
+        source.copyToArray(buff, 0, inputSize)
+        source.close()
+        consume(entity)
+        Some(buff)
       }
     }
   }
