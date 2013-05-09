@@ -14,8 +14,6 @@ import scala.io.Source
 
 class SGClient(silent: Boolean) {
   val httpclient = new DefaultHttpClient();
-  
-  val fileSkipMessage = "skipping".toCharArray()
 
   def getSetAlbumPageSource(sgName: String) = {
     //    val albumsURL = String.format("http://suicidegirls.com/girls/%s/albums/", sgName)
@@ -68,6 +66,7 @@ class SGClient(silent: Boolean) {
    */
   private val invalidContentLength = 26365
 
+  val fileSkipMessage = "skipping".toCharArray()
   /**
    * @param URL the URL of the resource you want to fetch
    * @return Option[Array[Char]] containing the contents
@@ -83,23 +82,52 @@ class SGClient(silent: Boolean) {
         consume(entity)
         None
       }
-      case e => {
+      case _ => {
         val inputSize = entity.getContentLength().toInt
         report("SGClient->get, just read input of size: " + inputSize)
-        if (inputSize > 0 && inputSize <= invalidContentLength) {
-          consume(entity);
-          Some(fileSkipMessage)
-        } else if (inputSize < 0) {
-          consume(entity)
-          throw new RuntimeException("No content for: %s".format(URL))
-        } else {
-          val source = Source.fromInputStream(entity.getContent())
-          val buff = new Array[Char](inputSize)
-          source.copyToArray(buff, 0, inputSize)
-          source.close()
-          consume(entity)
-          Some(buff)
+
+        inputSize match {
+          case x if x < 0 => {
+            consume(entity)
+            throw new RuntimeException("No content for: %s".format(URL))
+          }
+
+          case `invalidContentLength` => {
+            consume(entity)
+            throw new RuntimeException("Lost login connection @: %s".format(URL))
+          }
+
+          case x if x < invalidContentLength => {
+            //this means that the link has not been found, so just ignore
+            //it is normal since we construct images ranging from 01 to 90
+            //because we cannot find out what the size of the set is.
+            consume(entity)
+            Some(fileSkipMessage)
+          }
+
+          case _ => {
+            val source = Source.fromInputStream(entity.getContent())
+            val buff = new Array[Char](inputSize)
+            source.copyToArray(buff, 0, inputSize)
+            source.close()
+            consume(entity)
+            Some(buff)
+          }
         }
+        //        if (inputSize > 0 && inputSize <= invalidContentLength) {
+        //          consume(entity);
+        //          Some(fileSkipMessage)
+        //        } else if (inputSize < 0) {
+        //          consume(entity)
+        //          throw new RuntimeException("No content for: %s".format(URL))
+        //        } else {
+        //          val source = Source.fromInputStream(entity.getContent())
+        //          val buff = new Array[Char](inputSize)
+        //          source.copyToArray(buff, 0, inputSize)
+        //          source.close()
+        //          consume(entity)
+        //          Some(buff)
+        //        }
       }
     }
   }

@@ -12,7 +12,7 @@ class Downloader(
 
   def report = if (silent) { (x: Any) => Unit } else { (x: Any) => println(x) }
 
-  val sgClient = new SGClient(true)
+  val sgClient = new SGClient(false)
 
   val setAlbum = new SetAlbum(sgName, sgClient.getSetAlbumPageSource(sgName));
 
@@ -74,8 +74,8 @@ class Downloader(
         if (buff != sgClient.fileSkipMessage) {
           val file = createImageFile(root, fileSGSetPath)
           FileIO.writeToFile(buff, file.getAbsolutePath())
+          report("   %s".format(fileSGSetPath))
         }
-        report("   %s".format(fileSGSetPath))
       }
       case None => report("failed: %s".format(fileSGSetPath))
     }
