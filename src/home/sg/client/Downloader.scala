@@ -30,10 +30,13 @@ class Downloader(
 
     try {
       sgClient.login(user, password)
-      report("AlbumsListing: ")
-      setAlbum.pinkSets foreach (x => report(x.relativeAlbumSaveLocation))
+      val setsToDownload = setAlbum.pinkSets.filter(filterSetsToDownload)
+      
+      report("Sets to Download: ")
+      setsToDownload foreach (x => report(x.relativeAlbumSaveLocation))
+
       report("-------Starting:")
-      setAlbum.pinkSets.filter(filterSetsToDownload) foreach (downloadSet(root))
+      setsToDownload foreach (downloadSet(root))
       report("Finished download")
       logMRSets(root)
     } finally {

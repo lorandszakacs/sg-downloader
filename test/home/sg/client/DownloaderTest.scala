@@ -12,13 +12,13 @@ class DownloaderTest extends FunSuite {
   //    downloadSG("Sash", new LevelOfReporting(1))
   //  }
 
-  test("download Nahp") {
-    downloadSG("Nahp", new LevelOfReporting(1))
-  }
+  //  test("download Nahp") {
+  //    downloadSG("Nahp", new LevelOfReporting(1))
+  //  }
 
-//  test("download Radeo") {
-//    downloadSG("Radeo", new LevelOfReporting(1))
-//  }
+  test("download Radeo") {
+    downloadSG("Radeo", { x => x.setTitle.contains("Rusty") }, new LevelOfReporting(2))
+  }
 
   //    test("download Rigel") {
   //      downloadSG("Rigel",  new LevelOfReporting(1))
@@ -36,6 +36,12 @@ class DownloaderTest extends FunSuite {
     val rootFolder = "/Users/lorand/Downloads/temp/"
     val downloader = new Downloader(sgName, LoginInfo.user, LoginInfo.pwd, lor)
     downloader.download(rootFolder)
+  }
+
+  private def downloadSG(sgName: String, filter: (PhotoSetInfo) => Boolean, lor: LevelOfReporting) {
+    val rootFolder = "/Users/lorand/Downloads/temp/"
+    val downloader = new Downloader(sgName, LoginInfo.user, LoginInfo.pwd, lor)
+    downloader.download(rootFolder, filter)
   }
 
   private def downloadSG(sgName: String) {
