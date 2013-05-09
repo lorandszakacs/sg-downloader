@@ -8,5 +8,7 @@ class SetAlbum(val sgName: String, source: scala.io.Source) {
 
   lazy val pinkSets = sets.filterNot(_.isMR)
 
+  lazy val pinkSetNames = pinkSets.map(x => x.relativeAlbumSaveLocation);
+
   lazy val mrSets = sets.filter(_.isMR)
 }

@@ -25,11 +25,23 @@ class Downloader(
 
     try {
       sgClient.login(user, password)
-      report("Starting:")
+      report("Total number of albums: ")
+      setAlbum.pinkSets map report
+      report("-------Starting:")
       setAlbum.pinkSets.filter(filterSetsToDownload).map(downloadSet(root))
       report("Finished download")
+      logMRSets(root)
     } finally {
       sgClient.shutdown
+    }
+  }
+
+  private def logMRSets(root: File) {
+    if (setAlbum.mrSets.isEmpty)
+      Unit
+    else {
+      val mrLogFile = root.getAbsolutePath() + "/" + sgName + "/" + "mr-sets.txt"
+      FileIO.writeToFile(setAlbum.mrSets.map(x => x.relativeAlbumSaveLocation).mkString("\n").toCharArray(), mrLogFile)
     }
   }
 

@@ -8,9 +8,9 @@ import home.sg.parser.PhotoSetInfo
 @RunWith(classOf[JUnitRunner])
 class DownloaderTest extends FunSuite {
 
-  test("download Nahp") {
+  test("download Liu") {
     val rootFolder = "/Users/lorand/Downloads/temp/"
-    val downloader = new Downloader("Glitz", LoginInfo.user, LoginInfo.pwd, false)
+    val downloader = new Downloader("Liu", LoginInfo.user, LoginInfo.pwd, false)
     downloader.download(rootFolder)
   }
   
