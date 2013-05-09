@@ -123,11 +123,11 @@ class PhotoSetInfoTest extends FunSuite {
     }
   }
 
-  test("print shit") {
-    val e = nahpPinkSetWithSpaces
-
-    val result = new PhotoSetInfo(e._1, e._2, e._3, e._4).imageDownloadAndSaveLocationPairs.get
-    result map { p => println("\"" + p._1 + "\"") }
-  }
+// test("print shit") {
+//    val e = nahpPinkSetWithSpaces
+//
+//    val result = new PhotoSetInfo(e._1, e._2, e._3, e._4).imageDownloadAndSaveLocationPairs.get
+//    result map { p => println("\"" + "(" + p._1 + "\"" + "," + "\"" + p._2 + ")" + "\",") }
+//  }
 
 }
