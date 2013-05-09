@@ -40,7 +40,7 @@ class Client(val user: String, val password: String) {
       scala.io.Source.fromInputStream(response.getEntity().getContent())
   }
 
-  private def loginPostMethod: HttpPost = {
+  private lazy val loginPostMethod: HttpPost = {
     val loginURL = "http://suicidegirls.com/login/"
     val actionField = "action"
     val refererField = "referer"
@@ -51,8 +51,8 @@ class Client(val user: String, val password: String) {
       val info = new ArrayList[BasicNameValuePair]()
       info.add(new BasicNameValuePair(actionField, "process_login"))
       info.add(new BasicNameValuePair(refererField, "/"))
-      info.add(new BasicNameValuePair(userNameField, "Lorand"))
-      info.add(new BasicNameValuePair(pwdField, "Hs79J8ts"))
+      info.add(new BasicNameValuePair(userNameField, user))
+      info.add(new BasicNameValuePair(pwdField, password))
       info.add(new BasicNameValuePair(loginButtonField, ""))
       info
     }
@@ -61,7 +61,7 @@ class Client(val user: String, val password: String) {
     post
   }
 
-  private def requestHeaders = {
+  private lazy val requestHeaders = {
     def parseSGCookie(responses: List[(String, String)]) =
       responses.filter(p => p._2.contains("SGKEY")).head._2.split(";", 10).head.substring("SGKEY=".length)
 
@@ -112,7 +112,7 @@ class Client(val user: String, val password: String) {
     getRequestHeaders
   }
 
-  private def httpClient = {
+  private val httpClient = {
     val c = new DefaultHttpClient()
     c.setCookieStore(new BasicCookieStore())
     c.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);

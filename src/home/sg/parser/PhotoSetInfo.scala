@@ -75,7 +75,7 @@ class PhotoSetInfo(val sgName: String, previewDiv: String, pngSpankDiv: String, 
    *  Nahp/2013.01 - Girl Next Door/01.jpg)
    * 
    */
-  def imageDownloadAndSaveLocationPairs = {
+  lazy val imageDownloadAndSaveLocationPairs = {
     val uriPattern = "%s%02d.jpg"
     val fileNamePattern = "%s/%02d.jpg"
     if (!isMR)
@@ -91,7 +91,6 @@ class PhotoSetInfo(val sgName: String, previewDiv: String, pngSpankDiv: String, 
   }
 
   private def parsePngSpankDiv(pngSpank: String) = {
-
     //<a class="pngSpank" href="/girls/Sash/albums/site/33360/"><img src="/media/albums/0/36/33360/setpreview_medium.jpg" ....." /></a>
     def mrParsing() = {
       val srcTag = "img src=\""

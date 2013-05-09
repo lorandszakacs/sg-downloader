@@ -6,26 +6,33 @@ import home.sg.parser.PhotoSetInfo
 
 class Downloader(
   val sgName: String,
-  user: String,
-  password: String,
+  val user: String,
+  val password: String,
   silent: Boolean) {
 
   def report = if (silent) { (x: Any) => Unit } else { (x: Any) => println(x) }
 
-  def sgClient = new Client(user, password)
+  val sgClient = new Client(user, password)
 
   val setAlbum = new SetAlbum(sgName, sgClient.getSetAlbumPageSource(sgName));
 
-  def download(rootFolder: String) = {
-    val root = createRootFolder(rootFolder)
-
+  def download(rootFolder: String) {
+    download(rootFolder, (x => true))
   }
 
-  private def downloadSet(root: File)(setInfo: PhotoSetInfo) = {
+  def download(rootFolder: String, filterSetsToDownload: (PhotoSetInfo) => Boolean) {
+    val root = createRootFolder(rootFolder)
+    report("STARTING DOWNLOAD: ")
+    setAlbum.pinkSets.filter(filterSetsToDownload).map(downloadSet(root))
+    report("Finished download")
+  }
+
+  private def downloadSet(root: File)(setInfo: PhotoSetInfo) {
     setInfo.imageDownloadAndSaveLocationPairs match {
       case Some(pairs) => {
+        new File(root.getAbsolutePath() + "/" + setInfo.relativeAlbumSaveLocation).mkdirs()
         report("Downloading set: %s".format(setInfo.relativeAlbumSaveLocation))
-        pairs.map(downloadFile(root))
+        pairs.foreach(downloadFile(root))
         report("================")
       }
       case None => throw new RuntimeException("Trying to download MR set: %s".format(setInfo.relativeAlbumSaveLocation))
@@ -33,7 +40,7 @@ class Downloader(
 
   }
 
-  private def downloadFile(root: File)(pair: (String, String)): Int = {
+  private def downloadFile(root: File)(pair: (String, String)) {
     val URI = pair._1
     val fileSGSetPath = pair._2
 
@@ -41,19 +48,20 @@ class Downloader(
       case Some(entity) => {
         val file = createImageFile(root, fileSGSetPath)
         report("   %s".format(URI))
+        if (entity.getContentLength() == sgClient.invalidContentLength)
+          throw new RuntimeException("LOGIN SESSION EXPIRED, ABORTING!")
         FileIO.writeEntityToFile(entity, file.getAbsolutePath())
-        1
       }
-      case None => 0
+      case None => Unit
     }
   }
 
   private def createImageFile(root: File, relativeImagePath: String) = {
     val imageFile = new File(root.getCanonicalFile().getAbsolutePath() + "/" + relativeImagePath)
-    imageFile.mkdirs()
+    imageFile.createNewFile()
     if (!imageFile.canWrite()) {
       imageFile.delete();
-      throw new RuntimeException("Could not create specified file: %".format(imageFile))
+      throw new RuntimeException("Could not create specified file: %s".format(imageFile))
     } else imageFile
   }
 
