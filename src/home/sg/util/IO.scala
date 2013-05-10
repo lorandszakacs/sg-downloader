@@ -28,15 +28,19 @@ object IO {
     newFile.getCanonicalPath()
   }
 
-  def concatPath(basePath: String, toConcat: String*): String = {
+  def concatPath(basePath: String, onePath: String, toConcat: String*): String = {
+    val tempPath = FilenameUtils.concat(basePath, onePath)
     def recursivelyConcatenate(files: Seq[String]): String = {
       if (files.tail.isEmpty)
-        FilenameUtils.concat(basePath, files.head)
+        FilenameUtils.concat(tempPath, files.head)
       else
         FilenameUtils.concat(recursivelyConcatenate(files.tail), files.head)
     }
 
-    recursivelyConcatenate(toConcat.reverse)
+    if (toConcat.isEmpty)
+      tempPath
+    else
+      recursivelyConcatenate(toConcat.reverse)
   }
 
   def exists(folderPath: String): Boolean = {
