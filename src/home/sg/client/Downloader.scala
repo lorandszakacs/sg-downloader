@@ -51,6 +51,10 @@ class Downloader(
     else {
       val mrLogFile = IO.concatPath(root, sgName, "mr-sets.txt")
       IO.writeToFile(setAlbum.mrSets.map(x => x.relativeAlbumSaveLocation).mkString("\n").getBytes(), mrLogFile)
+      setAlbum.mrSets foreach { set =>
+        val setName = IO.concatPath(root, set.relativeAlbumSaveLocation + "_mr")
+        IO.createFolder(setName)
+      }
     }
   }
 
