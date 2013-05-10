@@ -18,7 +18,7 @@ class Downloader(
 
   def report = if (silent.silentDownloader) { (x: Any) => Unit } else { (x: Any) => println(x) }
 
-  val sgClient = new SGClient(silent.silentClient)
+  private var sgClient = new SGClient(silent.silentClient)
 
   val setAlbum = new SetAlbum(sgName, sgClient.getSetAlbumPageSource(sgName));
 
@@ -28,8 +28,7 @@ class Downloader(
 
   def download(rootFolder: String, filterSetsToDownload: (PhotoSetInfo) => Boolean) {
     val root = IO.createFolder(rootFolder)
-
-    try {
+    def handleDownload() {
       sgClient.login(user, password)
       val setsToDownload = setAlbum.pinkSets.filter(filterSetsToDownload)
 
@@ -37,20 +36,34 @@ class Downloader(
       setsToDownload foreach (x => report(x.relativeAlbumSaveLocation))
 
       report("-------Starting:")
-      try {
-
-        setsToDownload foreach (downloadSet(root))
-
-      } catch {
-        case sgExn: SGException => {
-
-        }
-        case ex: Exception => {
-
-        }
-      }
+      setsToDownload foreach (downloadSet(root))
       report("Finished download")
       logMRSets(root)
+    }
+    def cleanUpAndRestart(msg: String) {
+      System.err.println("Restarting server because:\n%s".format(msg))
+      sgClient.cleanUp()
+      sgClient = new SGClient(silent.silentClient)
+      Thread.sleep(1000)
+      handleDownload()
+    }
+
+    //here goes nothing
+    try {
+      handleDownload()
+    } catch {
+      case sgExn: SGException => {
+        sgExn match {
+          case LoginInvalidUserOrPasswordExn(msg) => System.err.println(msg)
+          case LoginConnectionLostException(msg) => cleanUpAndRestart(msg)
+          case LoginUnknownException(msg) => cleanUpAndRestart(msg)
+
+          case FileDownloadException(msg) => cleanUpAndRestart(msg)
+          case HttpClientException(msg) => cleanUpAndRestart(msg)
+          case UnknownSGException(msg) => cleanUpAndRestart(msg)
+        }
+      }
+      case ex: Exception => cleanUpAndRestart(ex.getMessage())
     } finally {
       sgClient.cleanUp()
     }
@@ -69,11 +82,21 @@ class Downloader(
     }
   }
 
+  /**
+   * Will download all the images contained in the SetInfo and save
+   * them at the location root + somePath from the setInfo.
+   *
+   * If an error occurs during download it deletes the folder
+   * and rethrows the exception
+   *
+   * @param root
+   * @param setInfo
+   */
   private def downloadSet(root: String)(setInfo: PhotoSetInfo) {
+    val newFolder = IO.concatPath(root, setInfo.relativeAlbumSaveLocation)
     def handleDownload() = {
       setInfo.imageDownloadAndSaveLocationPairs match {
         case Some(pairs) => {
-          val newFolder = IO.concatPath(root, setInfo.relativeAlbumSaveLocation)
           if (IO.exists(newFolder) && !IO.isEmpty(newFolder)) {
             report("skipping set: %s   ;already exists".format(setInfo.relativeAlbumSaveLocation))
           } else {
@@ -91,25 +114,44 @@ class Downloader(
     } catch {
       //all other exceptions are handled by the above context because they require
       //serious re-downloading
-      case exn: InexistentFileException => Unit
+      case noFileExn: InexistentFileException => Unit
 
       //maybe let this one propagate up and actually remove the set?
-      case exn: DownloadingMRSetException => Unit
+      case mrSetExn: DownloadingMRSetException => Unit
+
+      //if it is any other exception then we delete this set, so we can try again
+      case thw: Throwable => {
+        IO.deleteFolder(newFolder)
+        throw thw
+      }
     }
   }
 
   private def downloadFile(root: String)(pair: (String, String)) {
+    val URI = pair._1
+    val fileSGSetPath = pair._2
+
     def createImageFile(root: String, relativeImagePath: String) = {
       val imageFile = IO.concatPath(root, relativeImagePath)
       IO.createFile(imageFile)
     }
-    val URI = pair._1
-    val fileSGSetPath = pair._2
+
+    def handleWritting(buff: Array[Byte]) {
+      try {
+        val file = createImageFile(root, fileSGSetPath)
+        IO.writeToFile(buff, file)
+        report("   %s".format(fileSGSetPath))
+      } catch {
+        case thw: Throwable => throw new FileWrittingException("Unable to write file: " + URI + thw.getMessage())
+      }
+    }
 
     val imgBuffer = sgClient.getSetImage(URI)
-    val file = createImageFile(root, fileSGSetPath)
-    IO.writeToFile(imgBuffer, file)
-    report("   %s".format(fileSGSetPath))
+    try {
+      handleWritting(imgBuffer)
+    } catch {
+      case thw: Throwable => handleWritting(imgBuffer)
+    }
   }
 
 }

@@ -50,7 +50,7 @@ class SGClient(silent: Boolean) {
   }
 
   def login(user: String, pwd: String) {
-    def failedToLogOn(reason: String) = throw new RuntimeException("login failed: %s".format(reason))
+    def failedToLogOn(reason: String) = throw new HttpClientException("login failed: %s".format(reason))
 
     val loginPost = SiteInfo.createLoginPost(user, pwd)
     val postResponse = httpClient.execute(loginPost);
@@ -58,18 +58,24 @@ class SGClient(silent: Boolean) {
     consume(postEntity);
     val javaCookies = httpClient.getCookieStore().getCookies()
     if (javaCookies.isEmpty) {
-      failedToLogOn("did not receive any cookies from other end")
+      throw new LoginUnknownException("did not receive any cookies from server")
     } else {
       val cookies = javaCookies.toString()
       report("Cookies after log on: " + cookies)
       if (cookies.contains("Incorrect+username+or+password"))
-        failedToLogOn(cookies)
+        throw new LoginInvalidUserOrPasswordExn("Incorrect username or password")
     }
   }
 
   def logout() {
     val response = httpClient.execute(SiteInfo.createLogoutGet());
     consume(response.getEntity())
+    httpClient.getCookieStore().clear()
+  }
+
+  def cleanUp() {
+    logout()
+    shutdown()
   }
 
   /**
@@ -125,7 +131,7 @@ class SGClient(silent: Boolean) {
       }
       case `invalidContentLength` => {
         consume(entity)
-        throw new LoginLostException("Starting to receive invalid images, login info lost @: %s".format(URL))
+        throw new LoginConnectionLostException("Starting to receive invalid images, login info lost @: %s".format(URL))
       }
       case x if x < invalidContentLength => {
         //we're trying to get an inexistent image, so ignore
@@ -145,18 +151,8 @@ class SGClient(silent: Boolean) {
     }
   }
 
-  def shutdown() {
+  private def shutdown() {
     httpClient.getConnectionManager().shutdown();
-  }
-
-  def cleanUp() {
-    logout()
-    shutdown()
-  }
-
-  def reset() {
-    cleanUp()
-    httpClient.getCookieStore().clear()
   }
 
   private def report = if (silent) ((x: Any) => Unit) else ((x: Any) => println(x))
