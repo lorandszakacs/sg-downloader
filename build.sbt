@@ -6,7 +6,7 @@ scalaVersion := "2.10.1"
 
 libraryDependencies ++= Seq( 
 	"org.apache.httpcomponents" % "httpclient" % "4.2.5",
-	"commons-lang" % "commons-lang" % "2.6",
+	"commons-io" % "commons-io" % "2.4",
 	"org.scalatest" % "scalatest_2.10" % "1.9.1" % "test",
 	"com.novocode" % "junit-interface" % "0.8" % "test->default"
 )
