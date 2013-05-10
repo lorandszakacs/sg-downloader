@@ -37,7 +37,18 @@ class Downloader(
       setsToDownload foreach (x => report(x.relativeAlbumSaveLocation))
 
       report("-------Starting:")
-      setsToDownload foreach (downloadSet(root))
+      try {
+
+        setsToDownload foreach (downloadSet(root))
+
+      } catch {
+        case sgExn: SGException => {
+
+        }
+        case ex: Exception => {
+
+        }
+      }
       report("Finished download")
       logMRSets(root)
     } finally {
@@ -59,19 +70,31 @@ class Downloader(
   }
 
   private def downloadSet(root: String)(setInfo: PhotoSetInfo) {
-    setInfo.imageDownloadAndSaveLocationPairs match {
-      case Some(pairs) => {
-        val newFolder = IO.concatPath(root, setInfo.relativeAlbumSaveLocation)
-        if (IO.exists(newFolder) && !IO.isEmpty(newFolder)) {
-          report("skipping set: %s   ;already exists".format(setInfo.relativeAlbumSaveLocation))
-        } else {
-          IO.createFolder(newFolder)
-          report("Downloading set: %s".format(setInfo.relativeAlbumSaveLocation))
-          pairs foreach downloadFile(root)
+    def handleDownload() = {
+      setInfo.imageDownloadAndSaveLocationPairs match {
+        case Some(pairs) => {
+          val newFolder = IO.concatPath(root, setInfo.relativeAlbumSaveLocation)
+          if (IO.exists(newFolder) && !IO.isEmpty(newFolder)) {
+            report("skipping set: %s   ;already exists".format(setInfo.relativeAlbumSaveLocation))
+          } else {
+            IO.createFolder(newFolder)
+            report("Downloading set: %s".format(setInfo.relativeAlbumSaveLocation))
+            pairs foreach downloadFile(root)
+          }
+          report("================");
         }
-        report("================");
+        case None => throw new DownloadingMRSetException("Trying to download MR set: %s".format(setInfo.relativeAlbumSaveLocation))
       }
-      case None => throw new RuntimeException("Trying to download MR set: %s".format(setInfo.relativeAlbumSaveLocation))
+    }; /////
+    try {
+      handleDownload()
+    } catch {
+      //all other exceptions are handled by the above context because they require
+      //serious re-downloading
+      case exn: InexistentFileException => Unit
+
+      //maybe let this one propagate up and actually remove the set?
+      case exn: DownloadingMRSetException => Unit
     }
   }
 
@@ -83,15 +106,10 @@ class Downloader(
     val URI = pair._1
     val fileSGSetPath = pair._2
 
-    val optionSome = sgClient.getSetImage(URI)
-    optionSome match {
-      case Some(buff) => {
-        val file = createImageFile(root, fileSGSetPath)
-        IO.writeToFile(buff, file)
-        report("   %s".format(fileSGSetPath))
-      }
-      case None => Unit //report("skipping: %s".format(fileSGSetPath))
-    }
+    val imgBuffer = sgClient.getSetImage(URI)
+    val file = createImageFile(root, fileSGSetPath)
+    IO.writeToFile(imgBuffer, file)
+    report("   %s".format(fileSGSetPath))
   }
 
 }

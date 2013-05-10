@@ -85,37 +85,62 @@ class SGClient(silent: Boolean) {
    * or None if we provided an image link that was
    * invalid i.e.
    * "http://img.suicidegirls.com/media/girls/Nahp/photos/%20%20Girl%20Next%20Door/90.jpg"
+   *
+   * Exceptions:
+   *   HttpClientException - when the httpclient failed to create a proper GET request
+   *   FileDownloadException - when it failed to read and save the image file
+   *   LoginLostException - when we lost login privileges
+   *
+   *   InexistentFileException - we've reached the last valid file, it's safe to stop
+   *   trying the other ones out.
+   *
+   *   UnknownSGException - when somehow we've read an empty entity and when
+   *   some other miscellaneous httClient exception occurs.
+   *
    */
-  def getSetImage(URL: String): Option[Array[Byte]] = {
-    val get = new HttpGet(URL)
-    val response = httpClient.execute(get)
-    val entity = response.getEntity()
 
-    assume(entity != null, "Entity should never be null")
+  def getSetImage(URL: String): Array[Byte] = {
+
+    def getEntity() = {
+      try {
+        val get = new HttpGet(URL)
+        val response = httpClient.execute(get)
+        val entity = response.getEntity()
+        assume(entity != null, "Entity should never be null")
+        entity
+      } catch {
+        case exn: Exception => throw new HttpClientException("Cannot create http GET:: %s".format(exn.getMessage()))
+        case thw: Throwable => throw new UnknownSGException(thw.getMessage());
+      }
+    }
+
+    val entity = getEntity()
     val inputSize = entity.getContentLength().toInt
     report("SGClient->get, just read input of size: " + inputSize)
 
     inputSize match {
       case x if x < 0 => {
         consume(entity)
-        throw new RuntimeException("No content for: %s".format(URL))
+        throw new UnknownSGException("No content for: %s".format(URL))
       }
       case `invalidContentLength` => {
         consume(entity)
-        throw new RuntimeException("Starting to receive invalid images, login info lost @: %s".format(URL))
+        throw new LoginLostException("Starting to receive invalid images, login info lost @: %s".format(URL))
       }
       case x if x < invalidContentLength => {
-        //this means that the link has not been found, so just ignore
-        //it is normal since we construct images ranging from 01 to 90
-        //because we cannot find out what the size of the set is.
+        //we're trying to get an inexistent image, so ignore
         consume(entity)
-        None
+        throw new InexistentFileException("Trying to download an inexistent file", URL)
       }
       case _ => {
-        val inputStream = entity.getContent()
-        val buff = IO.getByteArrayFromInputStream(inputStream, inputSize)
-        consume(entity)
-        Some(buff)
+        try {
+          val inputStream = entity.getContent()
+          val buff = IO.getByteArrayFromInputStream(inputStream, inputSize)
+          consume(entity)
+          buff
+        } catch {
+          case twb: Throwable => throw new FileDownloadException(twb.getMessage())
+        }
       }
     }
   }
@@ -123,10 +148,15 @@ class SGClient(silent: Boolean) {
   def shutdown() {
     httpClient.getConnectionManager().shutdown();
   }
-  
+
   def cleanUp() {
     logout()
     shutdown()
+  }
+
+  def reset() {
+    cleanUp()
+    httpClient.getCookieStore().clear()
   }
 
   private def report = if (silent) ((x: Any) => Unit) else ((x: Any) => println(x))
