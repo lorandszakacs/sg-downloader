@@ -13,42 +13,50 @@ import org.apache.http.util.EntityUtils
 import scala.io.Source
 import home.sg.util.IO
 
-object SiteInfo {
-  val sgURL = "http://suicidegirls.com/"
+private object SiteInfo {
+  val homePageURL = "http://suicidegirls.com/"
+  val loginURL = "http://suicidegirls.com/login/"
+  val logoutURL = "http://suicidegirls.com/logout/"
 
-  def getAlbumsURL(sgName: String) = {
-    String.format("%s/girls/%s/albums/", sgURL, sgName)
+  def createAlbumsURL(sgName: String) = {
+    String.format("%s/girls/%s/albums/", homePageURL, sgName)
   }
+
+  def createLoginPost(user: String, pwd: String) = {
+    val loginPost = new HttpPost(SiteInfo.loginURL);
+    val entityBody = new ArrayList[NameValuePair]();
+    entityBody.add(new BasicNameValuePair("action", "process_login"))
+    entityBody.add(new BasicNameValuePair("username", user))
+    entityBody.add(new BasicNameValuePair("password", pwd))
+    loginPost.setEntity(new UrlEncodedFormEntity(entityBody));
+    loginPost
+  }
+
+  def createLogoutGet() = {
+    val get = new HttpGet(SiteInfo.logoutURL)
+    get
+  }
+
 }
 
 class SGClient(silent: Boolean) {
-  val httpclient = new DefaultHttpClient();
+  val httpClient = new DefaultHttpClient();
 
   def getSetAlbumPageSource(sgName: String) = {
-    val albumsURL = SiteInfo.getAlbumsURL(sgName)
+    val albumsURL = SiteInfo.createAlbumsURL(sgName)
     val u = new java.net.URL(albumsURL)
     val in = scala.io.Source.fromURL(u)
     in
   }
 
   def login(user: String, pwd: String) {
-    def createPost() = {
-      val httpost = new HttpPost("http://suicidegirls.com/login/");
-      val nvps = new ArrayList[NameValuePair]();
-      nvps.add(new BasicNameValuePair("action", "process_login"))
-      nvps.add(new BasicNameValuePair("username", user))
-      nvps.add(new BasicNameValuePair("password", pwd))
-      httpost.setEntity(new UrlEncodedFormEntity(nvps));
-      httpost
-    }
     def failedToLogOn(reason: String) = throw new RuntimeException("login failed: %s".format(reason))
 
-    val httpost = createPost()
-    val postResponse = httpclient.execute(httpost);
+    val loginPost = SiteInfo.createLoginPost(user, pwd)
+    val postResponse = httpClient.execute(loginPost);
     val postEntity = postResponse.getEntity();
     consume(postEntity);
-
-    val javaCookies = httpclient.getCookieStore().getCookies()
+    val javaCookies = httpClient.getCookieStore().getCookies()
     if (javaCookies.isEmpty) {
       failedToLogOn("did not receive any cookies from other end")
     } else {
@@ -57,6 +65,11 @@ class SGClient(silent: Boolean) {
       if (cookies.contains("Incorrect+username+or+password"))
         failedToLogOn(cookies)
     }
+  }
+
+  def logout() {
+    val response = httpClient.execute(SiteInfo.createLogoutGet());
+    consume(response.getEntity())
   }
 
   /**
@@ -75,7 +88,7 @@ class SGClient(silent: Boolean) {
    */
   def getSetImage(URL: String): Option[Array[Byte]] = {
     val get = new HttpGet(URL)
-    val response = httpclient.execute(get)
+    val response = httpClient.execute(get)
     val entity = response.getEntity()
 
     assume(entity != null, "Entity should never be null")
@@ -87,12 +100,10 @@ class SGClient(silent: Boolean) {
         consume(entity)
         throw new RuntimeException("No content for: %s".format(URL))
       }
-
       case `invalidContentLength` => {
         consume(entity)
         throw new RuntimeException("Starting to receive invalid images, login info lost @: %s".format(URL))
       }
-
       case x if x < invalidContentLength => {
         //this means that the link has not been found, so just ignore
         //it is normal since we construct images ranging from 01 to 90
@@ -100,7 +111,6 @@ class SGClient(silent: Boolean) {
         consume(entity)
         None
       }
-
       case _ => {
         val inputStream = entity.getContent()
         val buff = IO.getByteArrayFromInputStream(inputStream, inputSize)
@@ -111,7 +121,8 @@ class SGClient(silent: Boolean) {
   }
 
   def shutdown() {
-    httpclient.getConnectionManager().shutdown();
+    logout();
+    httpClient.getConnectionManager().shutdown();
   }
 
   private def report = if (silent) ((x: Any) => Unit) else ((x: Any) => println(x))
