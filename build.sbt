@@ -50,3 +50,10 @@ javacOptions ++= Seq("-source", "1.6", "-target", "1.6")
 
 // specifies that all tests will be executed in a single external JVM.
 fork in Test := true
+
+// define the statements initially evaluated when entering 'console', 'console-quick', or 'console-project'
+initialCommands := """
+  import home.sg.util._
+  import home.sg.parser._
+  import home.sg.client._
+"""

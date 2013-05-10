@@ -33,7 +33,7 @@ object IO {
       if (files.tail.isEmpty)
         FilenameUtils.concat(basePath, files.head)
       else
-        FilenameUtils.concat(basePath, recursivelyConcatenate(files.tail))
+        FilenameUtils.concat(recursivelyConcatenate(files.tail), files.head)
     }
 
     recursivelyConcatenate(toConcat.reverse)
