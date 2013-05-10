@@ -16,9 +16,9 @@ class DownloaderTest extends FunSuite {
   //    downloadSG("Nahp", new LevelOfReporting(1))
   //  }
 
-  test("download Radeo") {
-    downloadSG("Radeo", { x => x.setTitle.contains("Bettie") }, new LevelOfReporting(2))
-  }
+  //  test("download Radeo") {
+  //    downloadSG("Radeo", { x => x.setTitle.contains("Bettie") }, new LevelOfReporting(2))
+  //  }
 
   //    test("download Rigel") {
   //      downloadSG("Rigel",  new LevelOfReporting(1))

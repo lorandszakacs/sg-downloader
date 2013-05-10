@@ -55,9 +55,9 @@ class Downloader(
       case sgExn: SGException => {
         sgExn match {
           case LoginInvalidUserOrPasswordExn(msg) => System.err.println(msg)
+          
           case LoginConnectionLostException(msg) => cleanUpAndRestart(msg)
           case LoginUnknownException(msg) => cleanUpAndRestart(msg)
-
           case FileDownloadException(msg) => cleanUpAndRestart(msg)
           case HttpClientException(msg) => cleanUpAndRestart(msg)
           case UnknownSGException(msg) => cleanUpAndRestart(msg)
