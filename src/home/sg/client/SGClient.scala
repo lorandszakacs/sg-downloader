@@ -121,8 +121,12 @@ class SGClient(silent: Boolean) {
   }
 
   def shutdown() {
-    logout();
     httpClient.getConnectionManager().shutdown();
+  }
+  
+  def cleanUp() {
+    logout()
+    shutdown()
   }
 
   private def report = if (silent) ((x: Any) => Unit) else ((x: Any) => println(x))

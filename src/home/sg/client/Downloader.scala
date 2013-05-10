@@ -41,7 +41,7 @@ class Downloader(
       report("Finished download")
       logMRSets(root)
     } finally {
-      sgClient.shutdown
+      sgClient.cleanUp()
     }
   }
 
