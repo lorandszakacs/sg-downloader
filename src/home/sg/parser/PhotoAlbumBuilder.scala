@@ -25,7 +25,7 @@ object PhotoAlbumBuilder {
     new PhotoSet(header, computeImageURLs(client, report)(header))
 
   private def computeImageURLs(client: SGClient, report: (Any => Unit))(header: PhotoSetHeader) = {
-    report("fetching set page: %s".format(header.URL))
+    report("fetching page info: %s".format(header.URL))
     val setPage = client.get(header.URL)
     val imageURLs = SGPageParser.parseSetPageToImageURLs(setPage)
     imageURLs

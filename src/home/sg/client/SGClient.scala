@@ -149,11 +149,8 @@ class SGClient(silent: Boolean) {
       case _ => {
         try {
           val inputStream = entity.getContent()
-          report("trying to get byte array")
           val buff = IO.getByteArrayFromInputStream(inputStream, inputSize)
-          report("read byte array")
           consume(entity)
-          report("returning buff")
           buff
         } catch {
           case twb: IOException => {
@@ -163,7 +160,7 @@ class SGClient(silent: Boolean) {
         }
       }
     }
-    
+
   }
 
   private def shutdown() {

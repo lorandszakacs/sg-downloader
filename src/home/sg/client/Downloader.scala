@@ -59,9 +59,9 @@ class Downloader(
     } catch {
       case sgExn: SGException => {
         sgExn match {
-          case FileDownloadException(msg) => cleanUpAndRestart(msg)
+          case FileDownloadException(msg) => reportError("Trouble with file download: " + msg + "\nExiting.")
 
-          case LoginInvalidUserOrPasswordExn(msg) => reportError(msg)
+          case LoginInvalidUserOrPasswordExn(msg) => reportError(msg + "\nExiting")
           case LoginConnectionLostException(msg) => cleanUpAndRestart(msg)
           case LoginUnknownException(msg) => cleanUpAndRestart(msg)
 
@@ -69,7 +69,7 @@ class Downloader(
           case UnknownSGException(msg) => cleanUpAndRestart(msg)
         }
       }
-      case ex: Exception => cleanUpAndRestart(ex.getMessage())
+      case ex: Exception => reportError(ex.getMessage() + "\nExiting.")
     } finally {
       sgClient.cleanUp()
     }
