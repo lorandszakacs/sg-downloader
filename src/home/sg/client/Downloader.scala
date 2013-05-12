@@ -87,11 +87,12 @@ class Downloader(
     if (!relevantSetNames.isEmpty) {
       val logFile = IO.concatPath(root, sgName, "incomplete-sets.txt")
       IO.writeToFile(relevantSetNames.mkString("\n").getBytes(), logFile)
+      setAlbum.mrSets foreach { set =>
+        val setName = IO.concatPath(root, set.relativeAlbumSaveLocation)
+        IO.createFolder(setName)
+      }
     }
-    setAlbum.mrSets foreach { set =>
-      val setName = IO.concatPath(root, set.relativeAlbumSaveLocation + "_mr")
-      IO.createFolder(setName)
-    }
+
   }
 
   /**
@@ -135,9 +136,10 @@ class Downloader(
             report("  multi-set, skipping")
             MultiSet
           }
-          case x if x < 20 =>{
+          case x if x < 20 => {
             report("  set is most likely incomplete")
-            Incomplete}
+            Incomplete
+          }
           case _ => Finished
         }
       }
