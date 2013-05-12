@@ -34,7 +34,7 @@ package home.sg.parser
  * image url format:
  *   http://img.suicidegirls.com/media/girls/Nahp/photos/%20%20Girl%20Next%20Door/01.jpg
  */
-class PhotoSetInfo(val sgName: String, previewDiv: String, pngSpankDiv: String, dateDiv: String) {
+class PhotoSetHeader(val sgName: String, previewDiv: String, pngSpankDiv: String, dateDiv: String) {
 
   require(previewDiv.contains("\"preview\""))
   require(pngSpankDiv.contains("\"pngSpank\""))
@@ -49,40 +49,17 @@ class PhotoSetInfo(val sgName: String, previewDiv: String, pngSpankDiv: String, 
   /**
    * the humanly readable title of this set
    */
-  val setTitle = parsePreviewDiv(previewDiv)
+  val title = parsePreviewDiv(previewDiv)
 
   /**
-   * the sets name used in the construction of the URI for each image:
-   *  suicidegirls.com && setTitleAsURIPath && imagenum.jpg
+   * URL at which you can find this particular set
    */
-  val setTitleAsURIPath = parsePngSpankDiv(pngSpankDiv)._2
-
-  val uriPathWithoutImage = "http://img.suicidegirls.com/media%s".format(setTitleAsURIPath)
+  val URL = "http://suicidegirls.com%s".format(parsePngSpankDiv(pngSpankDiv))
 
   /**
-   * indicates if this album is still in member review, if it is then
-   * the image URI are formatted in a trickier manner.
+   * sgName/data - set title
    */
-  val isMR = parsePngSpankDiv(pngSpankDiv)._1
-
-  val relativeAlbumSaveLocation = "%s/%s - %s".format(sgName, date, setTitle)
-
-  /**
-   * contains pairs of:
-   * (image download location, relative filename)
-   * e.g.:
-   * (http://img.suicidegirls.com/media/girls/Nahp/photos/%20%20Girl%20Next%20Door/01.jpg , 
-   *  Nahp/2013.01 - Girl Next Door/01.jpg)
-   * 
-   */
-  lazy val imageDownloadAndSaveLocationPairs = {
-    val uriPattern = "%s%02d.jpg"
-    val fileNamePattern = "%s/%02d.jpg"
-    if (!isMR)
-      Some((for (i <- 1 to 90)
-        yield (uriPattern.format(uriPathWithoutImage, i), fileNamePattern.format(relativeAlbumSaveLocation, i))).toList)
-    else None
-  }
+  val relativeSaveLocation = "%s/%s - %s".format(sgName, date, title)
 
   private def parsePreviewDiv(preview: String) = {
     val titleTag = "title="
@@ -91,26 +68,15 @@ class PhotoSetInfo(val sgName: String, previewDiv: String, pngSpankDiv: String, 
   }
 
   private def parsePngSpankDiv(pngSpank: String) = {
-    //<a class="pngSpank" href="/girls/Sash/albums/site/33360/"><img src="/media/albums/0/36/33360/setpreview_medium.jpg" ....." /></a>
-    def mrParsing() = {
-      val srcTag = "img src=\""
-      val sufix = "setpreview_medium.jpg\""
-      val indexOfSrcTag = pngSpank.indexOf(srcTag)
-      val indexOfSecondQuote = pngSpank.indexOf("\"", indexOfSrcTag + srcTag.length)
-      val albumPathPlusSufix = pngSpank.substring(indexOfSrcTag + srcTag.length, indexOfSecondQuote)
-      replacePlus(albumPathPlusSufix.take(albumPathPlusSufix.length() - sufix.length() + 1))
-    }
+    //<a class="pngSpank" href="/members/Sash/albums/site/33360/"/><img src="/media/albums/0/36/33360/setpreview_medium.jpg" ....
+    //actual link: http://suicidegirls.com/members/Sash/albums/site/33360/
 
     //<a class="pngSpank" href="/girls/Sash/photos/Arboraceous/"><img src="/media/girls/Sash/photos/Arboraceous/setpreview_medium.jpg" ... /></a>
-    def nonMrParsing() = {
-      val hrefTag = "href=\""
-      val indexOfHrefTag = pngSpank.indexOf(hrefTag)
-      val indexOfSecondQuote = pngSpank.indexOf("\"", indexOfHrefTag + hrefTag.length)
-      replacePlus(pngSpank.substring(indexOfHrefTag + hrefTag.length, indexOfSecondQuote))
-    }
-
-    val isMR = pngSpank.contains("albums/site/");
-    (isMR, if (isMR) mrParsing() else nonMrParsing())
+    //actual link:
+    val hrefTag = "href=\""
+    val indexOfHrefTag = pngSpank.indexOf(hrefTag)
+    val indexOfSecondQuote = pngSpank.indexOf("\"", indexOfHrefTag + hrefTag.length)
+    pngSpank.substring(indexOfHrefTag + hrefTag.length, indexOfSecondQuote)
   }
 
   //<div class="date">Apr 10, 2013</div>
@@ -124,6 +90,7 @@ class PhotoSetInfo(val sgName: String, previewDiv: String, pngSpankDiv: String, 
     "%s.%s".format(year, stringToNum(monthStr))
   }
 
+  @deprecated("will be removed", "refactoring")
   private def replacePlus(s: String): String = {
     val sAsListOfStrings = s.toList.map(c => c.toString)
     sAsListOfStrings.map(s => if (s == "+") "%20" else s).mkString
@@ -131,8 +98,10 @@ class PhotoSetInfo(val sgName: String, previewDiv: String, pngSpankDiv: String, 
 
   override def equals(that: Any) = {
     that match {
-      case f: PhotoSetInfo => f.sgName.equals(sgName) && f.date.equals(date) && f.setTitle.equals(setTitle)
+      case f: PhotoSetHeader => f.sgName.equals(sgName) && f.date.equals(date) && f.title.equals(title)
       case _ => false
     }
   }
+
+  override def toString(): String = relativeSaveLocation
 }

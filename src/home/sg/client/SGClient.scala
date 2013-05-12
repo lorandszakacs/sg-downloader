@@ -12,6 +12,9 @@ import org.apache.http.message.BasicNameValuePair
 import org.apache.http.util.EntityUtils
 import scala.io.Source
 import home.sg.util.IO
+import scala.collection.mutable.Buffer
+import scala.collection.mutable.ListBuffer
+import java.io.IOException
 
 private object SiteInfo {
   val homePageURL = "http://suicidegirls.com/"
@@ -38,10 +41,26 @@ private object SiteInfo {
 class SGClient(silent: Boolean) {
   val httpClient = new DefaultHttpClient();
 
+  /**
+   * //TODO
+   * @param URL
+   * @return
+   */
+  def get(URL: String) = {
+    val get = new HttpGet(URL)
+    val response = httpClient.execute(get)
+    val entity = response.getEntity()
+    assume(entity != null, "Entity should never be null")
+    val content = Source.fromInputStream(entity.getContent())
+    val result = content.getLines.mkString("\n").getBytes().clone
+    consume(entity)
+    content.close
+    Source.fromBytes(result)
+  }
+
   def getSetAlbumPageSource(sgName: String) = {
     val albumsURL = SiteInfo.createAlbumsURL(sgName)
-    val u = new java.net.URL(albumsURL)
-    scala.io.Source.fromURL(u)
+    get(albumsURL)
   }
 
   def login(user: String, pwd: String) {
@@ -127,37 +146,32 @@ class SGClient(silent: Boolean) {
         consume(entity)
         throw new LoginConnectionLostException("Starting to receive invalid images, login info lost @: %s".format(URL))
       }
-      case x if (x < invalidContentLength) => {
-        //we're trying to get an inexistent image, so ignore
-        consume(entity)
-        throw new InexistentFileException("Trying to download an inexistent file", URL)
-      }
       case _ => {
         try {
           val inputStream = entity.getContent()
+          report("trying to get byte array")
           val buff = IO.getByteArrayFromInputStream(inputStream, inputSize)
+          report("read byte array")
           consume(entity)
+          report("returning buff")
           buff
         } catch {
-          case twb: Throwable => throw new FileDownloadException(twb.getMessage())
+          case twb: IOException => {
+            System.err.println(twb.getMessage())
+            throw new FileDownloadException(twb.getMessage())
+          }
         }
       }
     }
-  }
-
-  def get(URL: String) = {
-    val get = new HttpGet(URL)
-    val response = httpClient.execute(get)
-    val entity = response.getEntity()
-    assume(entity != null, "Entity should never be null")
-    response
+    
   }
 
   private def shutdown() {
     httpClient.getConnectionManager().shutdown();
   }
 
-  private def report = if (silent) ((x: Any) => Unit) else ((x: Any) => println(x))
+  private val report: (Any => Unit) = if (silent) ((x: Any) => Unit) else ((x: Any) => println(x))
+  private val reportError: (Any => Unit) = if (silent) { (x: Any) => Unit } else { (x: Any) => System.err.println(x) }
 
   private def consume(ent: HttpEntity) = {
     EntityUtils.consume(ent);

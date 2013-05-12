@@ -3,7 +3,7 @@ package home.sg.client
 import org.scalatest.FunSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import home.sg.parser.PhotoSetInfo
+import home.sg.parser.PhotoSet
 
 @RunWith(classOf[JUnitRunner])
 class DownloaderTest extends FunSuite {
@@ -12,9 +12,9 @@ class DownloaderTest extends FunSuite {
   //    downloadSG("Sash", new LevelOfReporting(1))
   //  }
 
-  //  test("download Nahp") {
-  //    downloadSG("Nahp", new LevelOfReporting(1))
-  //  }
+    test("download Epine") {
+      downloadSG("Epine", new LevelOfReporting(3))
+    }
 
   //  test("download Radeo") {
   //    downloadSG("Radeo", { x => x.setTitle.contains("Bettie") }, new LevelOfReporting(2))
@@ -38,7 +38,7 @@ class DownloaderTest extends FunSuite {
     downloader.download(rootFolder)
   }
 
-  private def downloadSG(sgName: String, filter: (PhotoSetInfo) => Boolean, lor: LevelOfReporting) {
+  private def downloadSG(sgName: String, filter: (PhotoSet) => Boolean, lor: LevelOfReporting) {
     val rootFolder = "/Users/lorand/Downloads/temp/"
     val downloader = new Downloader(sgName, LoginInfo.user, LoginInfo.pwd, lor)
     downloader.download(rootFolder, filter)
