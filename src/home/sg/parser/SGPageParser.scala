@@ -46,7 +46,7 @@ object SGPageParser {
     }
     pageStream.close
     val returnV = htmlThreeTuples map { threeTuple => new PhotoSetHeader(sgName, threeTuple._1, threeTuple._2, threeTuple._3) }
-    returnV.toList
+    returnV.toList.sortBy(_.relativeSaveLocation)
   }
 
   def parseSetPageToImageURLs(pageStream: Source): List[String] = {

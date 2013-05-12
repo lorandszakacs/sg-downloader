@@ -60,10 +60,11 @@ class Downloader(
       case sgExn: SGException => {
         sgExn match {
           case FileDownloadException(msg) => cleanUpAndRestart(msg)
-          case LoginInvalidUserOrPasswordExn(msg) => reportError(msg)
 
+          case LoginInvalidUserOrPasswordExn(msg) => reportError(msg)
           case LoginConnectionLostException(msg) => cleanUpAndRestart(msg)
           case LoginUnknownException(msg) => cleanUpAndRestart(msg)
+
           case HttpClientException(msg) => cleanUpAndRestart(msg)
           case UnknownSGException(msg) => cleanUpAndRestart(msg)
         }
