@@ -2,5 +2,5 @@ package home.sg.client
 
 object LoginInfo {
   val user = "Lorand"
-  val pwd = "Bs3cDJgT"
+  val pwd = "Dn33v4fE"
 }

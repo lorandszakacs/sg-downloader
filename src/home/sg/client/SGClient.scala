@@ -18,9 +18,8 @@ private object SiteInfo {
   val loginURL = "http://suicidegirls.com/login/"
   val logoutURL = "http://suicidegirls.com/logout/"
 
-  def createAlbumsURL(sgName: String) = {
+  def createAlbumsURL(sgName: String) =
     String.format("%s/girls/%s/albums/", homePageURL, sgName)
-  }
 
   def createLoginPost(user: String, pwd: String) = {
     val loginPost = new HttpPost(SiteInfo.loginURL);
@@ -32,10 +31,7 @@ private object SiteInfo {
     loginPost
   }
 
-  def createLogoutGet() = {
-    val get = new HttpGet(SiteInfo.logoutURL)
-    get
-  }
+  def createLogoutGet() = new HttpGet(SiteInfo.logoutURL)
 
 }
 
@@ -45,8 +41,7 @@ class SGClient(silent: Boolean) {
   def getSetAlbumPageSource(sgName: String) = {
     val albumsURL = SiteInfo.createAlbumsURL(sgName)
     val u = new java.net.URL(albumsURL)
-    val in = scala.io.Source.fromURL(u)
-    in
+    scala.io.Source.fromURL(u)
   }
 
   def login(user: String, pwd: String) {
@@ -104,7 +99,6 @@ class SGClient(silent: Boolean) {
    *   some other miscellaneous httClient exception occurs.
    *
    */
-
   def getSetImage(URL: String): Array[Byte] = {
 
     def getEntity() = {
@@ -149,6 +143,14 @@ class SGClient(silent: Boolean) {
         }
       }
     }
+  }
+
+  def get(URL: String) = {
+    val get = new HttpGet(URL)
+    val response = httpClient.execute(get)
+    val entity = response.getEntity()
+    assume(entity != null, "Entity should never be null")
+    response
   }
 
   private def shutdown() {
