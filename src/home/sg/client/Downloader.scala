@@ -5,20 +5,32 @@ import java.io.File
 import home.sg.parser.PhotoSetInfo
 import home.sg.util.IO
 
+/**
+ * 0 - no printing whatsoever
+ * 1 - only the downloader will print
+ * 2 - the http client will also print its status
+ */
 class LevelOfReporting(level: Int) {
   val silentDownloader = (level < 1)
   val silentClient = (level < 2)
 }
 
+private abstract class DownloadStatus(val statusMsg: String)
+private case object Incomplete extends DownloadStatus("incomplete: ")
+private case object MultiSet extends DownloadStatus("multi-set:  ")
+private case object MRSet extends DownloadStatus("mr-set:     ")
+private case object Finished extends DownloadStatus("finished")
+
 class Downloader(
   val sgName: String,
   val user: String,
   val password: String,
-  silent: LevelOfReporting) {
+  levelOfReporting: LevelOfReporting) {
 
-  def report = if (silent.silentDownloader) { (x: Any) => Unit } else { (x: Any) => println(x) }
+  private def report = if (levelOfReporting.silentDownloader) { (x: Any) => Unit } else { (x: Any) => println(x) }
+  private def reportError = if (levelOfReporting.silentDownloader) { (x: Any) => Unit } else { (x: Any) => System.err.println(x) }
 
-  private var sgClient = new SGClient(silent.silentClient)
+  private var sgClient = new SGClient(levelOfReporting.silentClient)
 
   val setAlbum = new SetAlbum(sgName, sgClient.getSetAlbumPageSource(sgName));
 
@@ -30,32 +42,30 @@ class Downloader(
     val root = IO.createFolder(rootFolder)
     def handleDownload() {
       sgClient.login(user, password)
-      val setsToDownload = setAlbum.pinkSets.filter(filterSetsToDownload)
+      val setsToDownload = setAlbum.pinkSets.filter(filterSetsToDownload).sortBy(_.relativeAlbumSaveLocation)
 
-      report("Sets to Download: ")
+      report("Sets to Download: %d".format(setsToDownload.length))
       setsToDownload foreach (x => report(x.relativeAlbumSaveLocation))
 
-      report("-------Starting:")
-      setsToDownload foreach (downloadSet(root))
+      val downloadStatus = setsToDownload map downloadSet(root)
       report("Finished download")
-      logMRSets(root)
+      logFailureSets(root, downloadStatus zip setsToDownload.map(_.relativeAlbumSaveLocation))
     }
     def cleanUpAndRestart(msg: String) {
-      System.err.println("Restarting server because:\n%s".format(msg))
+      reportError("Restarting server because:\n%s".format(msg))
       sgClient.cleanUp()
-      sgClient = new SGClient(silent.silentClient)
+      sgClient = new SGClient(levelOfReporting.silentClient)
       Thread.sleep(1000)
       handleDownload()
     }
 
-    //here goes nothing
     try {
       handleDownload()
     } catch {
       case sgExn: SGException => {
         sgExn match {
-          case LoginInvalidUserOrPasswordExn(msg) => System.err.println(msg)
-          
+          case LoginInvalidUserOrPasswordExn(msg) => reportError(msg)
+
           case LoginConnectionLostException(msg) => cleanUpAndRestart(msg)
           case LoginUnknownException(msg) => cleanUpAndRestart(msg)
           case FileDownloadException(msg) => cleanUpAndRestart(msg)
@@ -69,16 +79,18 @@ class Downloader(
     }
   }
 
-  private def logMRSets(root: String) {
-    if (setAlbum.mrSets.isEmpty)
-      Unit
-    else {
-      val mrLogFile = IO.concatPath(root, sgName, "mr-sets.txt")
-      IO.writeToFile(setAlbum.mrSets.map(x => x.relativeAlbumSaveLocation).mkString("\n").getBytes(), mrLogFile)
-      setAlbum.mrSets foreach { set =>
-        val setName = IO.concatPath(root, set.relativeAlbumSaveLocation + "_mr")
-        IO.createFolder(setName)
-      }
+  private def logFailureSets(root: String, setStatus: List[(DownloadStatus, String)]) {
+    def statusToString(status: (DownloadStatus, String)): String = status._1.statusMsg + status._2
+    val relevantIncomplete = setStatus.filterNot(set => set._1 == MRSet || set._1 == Finished)
+    val relevantSetNames = List.concat(relevantIncomplete, setAlbum.mrSets.map(set => (MRSet, set.relativeAlbumSaveLocation))).sortBy(p => p._2) map statusToString
+
+    if (!relevantSetNames.isEmpty) {
+      val logFile = IO.concatPath(root, sgName, "incomplete-sets.txt")
+      IO.writeToFile(relevantSetNames.mkString("\n").getBytes(), logFile)
+    }
+    setAlbum.mrSets foreach { set =>
+      val setName = IO.concatPath(root, set.relativeAlbumSaveLocation + "_mr")
+      IO.createFolder(setName)
     }
   }
 
@@ -92,32 +104,43 @@ class Downloader(
    * @param root
    * @param setInfo
    */
-  private def downloadSet(root: String)(setInfo: PhotoSetInfo) {
+  private def downloadSet(root: String)(setInfo: PhotoSetInfo): DownloadStatus = {
     val newFolder = IO.concatPath(root, setInfo.relativeAlbumSaveLocation)
-    def handleDownload() = {
+    def handleDownload(): DownloadStatus = {
       setInfo.imageDownloadAndSaveLocationPairs match {
         case Some(pairs) => {
           if (IO.exists(newFolder) && !IO.isEmpty(newFolder)) {
-            report("skipping set: %s   ;already exists".format(setInfo.relativeAlbumSaveLocation))
+            report("\nskipping set: %s   ;already exists".format(setInfo.relativeAlbumSaveLocation))
           } else {
             IO.createFolder(newFolder)
-            report("Downloading set: %s".format(setInfo.relativeAlbumSaveLocation))
+            report("\nDownloading set: %s".format(setInfo.relativeAlbumSaveLocation))
             pairs foreach downloadFile(root)
+            //downloadFile will always throw an InexistentFileException
           }
-          report("================");
+          Finished
         }
-        case None => throw new DownloadingMRSetException("Trying to download MR set: %s".format(setInfo.relativeAlbumSaveLocation))
+        case None => MRSet
       }
-    }; /////
+    } //end def
+
     try {
       handleDownload()
     } catch {
-      //all other exceptions are handled by the above context because they require
-      //serious re-downloading
-      case noFileExn: InexistentFileException => Unit
+      case noFileExn: InexistentFileException => {
+        def getImageNumber(fileURL: String) =
+          fileURL.takeRight(6).take(2).toInt
 
-      //maybe let this one propagate up and actually remove the set?
-      case mrSetExn: DownloadingMRSetException => Unit
+        getImageNumber(noFileExn.fileURL) match {
+          case 1 => {
+            report("  multi-set, skipping")
+            MultiSet
+          }
+          case x if x < 20 =>{
+            report("  set is most likely incomplete")
+            Incomplete}
+          case _ => Finished
+        }
+      }
 
       //if it is any other exception then we delete this set, so we can try again
       case thw: Throwable => {
@@ -140,7 +163,7 @@ class Downloader(
       try {
         val file = createImageFile(root, fileSGSetPath)
         IO.writeToFile(buff, file)
-        report("   %s".format(fileSGSetPath))
+        report("    %s".format(fileSGSetPath))
       } catch {
         case thw: Throwable => throw new FileWrittingException("Unable to write file: " + URI + thw.getMessage())
       }
@@ -150,7 +173,10 @@ class Downloader(
     try {
       handleWritting(imgBuffer)
     } catch {
-      case thw: Throwable => handleWritting(imgBuffer)
+      case thw: Throwable => {
+        reportError("    download failed, retrying")
+        handleWritting(imgBuffer)
+      }
     }
   }
 

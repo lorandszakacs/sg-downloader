@@ -133,7 +133,7 @@ class SGClient(silent: Boolean) {
         consume(entity)
         throw new LoginConnectionLostException("Starting to receive invalid images, login info lost @: %s".format(URL))
       }
-      case x if x < invalidContentLength => {
+      case x if (x < invalidContentLength) => {
         //we're trying to get an inexistent image, so ignore
         consume(entity)
         throw new InexistentFileException("Trying to download an inexistent file", URL)
