@@ -23,11 +23,11 @@ scalaSource in Test <<= baseDirectory(_ / "src/test/scala")
 // set the main class for packaging the main jar
 // 'run' will still auto-detect and prompt
 // change Compile to Test to set it for the test jar
-mainClass in (Compile, packageBin) := Some("home.sg.app.Main.scala")
+mainClass in (Compile, packageBin) := Some("home.sg.app.Main")
 
 // set the main class for the main 'run' task
 // change Compile to Test to set it for 'test:run'
-mainClass in (Compile, run) := Some("home.sg.app.Main.scala")
+mainClass in (Compile, run) := Some("home.sg.app.Main")
 
 // disable printing timing information, but still print [success]
 showTiming := true
