@@ -9,25 +9,32 @@ object PhotoAlbumBuilder {
    *
    * @return
    */
-  def buildSets(sgName: String, client: SGClient): List[PhotoSet] = {
-    buildSets(sgName, client, { (x: Any) => Unit })
+  def buildSets(sgName: String, client: SGClient, report: (Any => Unit)): List[PhotoSet] = {
+    val setHeaders = computeSetHeaders(sgName, client)
+
+    buildPhotoSets(sgName, setHeaders, client, report)
   }
 
-  def buildSets(sgName: String, client: SGClient, report: (Any => Unit)): List[PhotoSet] = {
+  def computeSetHeaders(sgName: String, client: SGClient): List[PhotoSetHeader] = {
     val albumPage = client.getSetAlbumPageSource(sgName)
     val setHeaders = SGPageParser.parseSetAlbumPageToSetHeaders(sgName, albumPage)
-    setHeaders foreach println
-    val photoSets = setHeaders map createPhotoSet(client, report)
+    setHeaders
+  }
+
+  def buildPhotoSets(sgName: String, headers: List[PhotoSetHeader], client: SGClient, report: (Any => Unit)): List[PhotoSet] = {
+    val photoSetPages = headers.map(h => {
+      report("fetching page info: %s".format(h.URL))
+      client.get(h.URL)
+    })
+
+    val photoSets = (headers zip photoSetPages) map { p =>
+      val header = p._1
+      val page = p._2
+      val imageURLs = SGPageParser.parseSetPageToImageURLs(page)
+      new PhotoSet(header, imageURLs)
+    }
+
     photoSets
   }
 
-  private def createPhotoSet(client: SGClient, report: (Any => Unit))(header: PhotoSetHeader) =
-    new PhotoSet(header, computeImageURLs(client, report)(header))
-
-  private def computeImageURLs(client: SGClient, report: (Any => Unit))(header: PhotoSetHeader) = {
-    report("fetching page info: %s".format(header.URL))
-    val setPage = client.get(header.URL)
-    val imageURLs = SGPageParser.parseSetPageToImageURLs(setPage)
-    imageURLs
-  }
 }

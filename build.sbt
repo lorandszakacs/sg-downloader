@@ -46,7 +46,7 @@ javaOptions += "-Xmx1G"
 scalacOptions += "-deprecation"
 
 // append several options to the list of options passed to the Java compiler
-javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
+javacOptions ++= Seq("-source", "1.6", "-target", "1.6")
 
 // specifies that all tests will be executed in a single external JVM.
 fork in Test := true

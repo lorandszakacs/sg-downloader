@@ -16,7 +16,7 @@ object SGPageParser {
    * @param pageStream the function will close the stream
    * @return
    */
-  def parseSetAlbumPageToSetHeaders(sgName: String, pageStream: Source): List[PhotoSetHeader] = {
+  def parseSetAlbumPageToSetHeaders(sgName: String, pageLines: List[String]): List[PhotoSetHeader] = {
     def isPreview(s: String) = s.contains("<div class=\"preview\"")
     def isPngSpank(s: String) = s.contains("<a class=\"pngSpank\"")
     def isDate(s: String) = s.contains("<div class=\"date\"")
@@ -25,14 +25,9 @@ object SGPageParser {
       isPreview(str) || isPngSpank(str) || isDate(str)
     }
 
-    val tempStrings = pageStream.getLines
-    //nasty hack to preserve the spaces in the 
-    val page = tempStrings.mkString("\n---")
-    val strings = page.split("\n---").toList
+    val remaining = pageLines.filter(isRelevant).toList
 
-    val remaining = strings.filter(isRelevant).toList
-
-    assume(remaining.length > 0)
+    assume(remaining.length > 2, "we got a wrong page, there don't seem to be any relevant headers to album construction")
     assume(remaining.length % 3 == 0, "the number of lines filtered from the set album page was not a multiple of 3")
     assume(isPreview(remaining(0).trim), "the first string in a 3 tuple is not the preview")
     assume(isPngSpank(remaining(1).trim), "the second string in a 3 tuple is not the pngSpank")
@@ -43,12 +38,17 @@ object SGPageParser {
       val threeTupleAsList = remaining.slice(n - 3, n)
       (threeTupleAsList(0), threeTupleAsList(1), threeTupleAsList(2))
     }
-    pageStream.close
-    val returnV = htmlThreeTuples map { threeTuple => new PhotoSetHeader(sgName, threeTuple._1, threeTuple._2, threeTuple._3) }
-    returnV.toList.sortBy(_.relativeSaveLocation)
+    val headers = htmlThreeTuples map { threeTuple => new PhotoSetHeader(sgName, threeTuple._1, threeTuple._2, threeTuple._3) }
+    assume(headers.length > 0, "An albums page must have at least one album")
+    headers.toList.sortBy(_.relativeSaveLocation)
   }
 
-  def parseSetPageToImageURLs(pageStream: Source): List[String] = {
+  /**
+   * @param pageLines it take a set page in list form as parameter and returns
+   * all the image URLs found on said page.
+   * @return
+   */
+  def parseSetPageToImageURLs(pageLines: List[String]): List[String] = {
     def computeStartIndex(s: String) = {
       val startString = "http://img.suicidegirls.com"
       s.indexOf(startString)
@@ -63,14 +63,10 @@ object SGPageParser {
       val sAsListOfStrings = s.toList.map(c => c.toString)
       sAsListOfStrings.map(s => if (s == " ") "%20" else s).mkString
     }
-
-    def pagesWithImageHolder() = {
-      val imageLines = pageStream.getLines.filter(_.contains("ImageHolder"))
-      val result = imageLines.toList map (s => replaceSpaces(s.substring(computeStartIndex(s), computeEndIndex(s))))
-      pageStream.close
-      result
-    }
-
-    pagesWithImageHolder()
+    val imageLines = pageLines.filter(_.contains("ImageHolder"))
+    assume(imageLines.length > 0, "page does not contain any ImageHolders, this usually happens when you fetch the page without being logged in")
+    val result = imageLines.toList map (s => replaceSpaces(s.substring(computeStartIndex(s), computeEndIndex(s))))
+    assume(result.length > 0, "Image urls for could not be computed, this usually happens when you fetch the page without being logged in")
+    result
   }
 }

@@ -46,20 +46,21 @@ class SGClient(silent: Boolean) {
    * @param URL
    * @return
    */
-  def get(URL: String) = {
+  def get(URL: String): List[String] = {
     val get = new HttpGet(URL)
     val response = httpClient.execute(get)
     val entity = response.getEntity()
     assume(entity != null, "Entity should never be null")
     val content = Source.fromInputStream(entity.getContent())
-    val result = content.getLines.mkString("\n").getBytes().clone
+    val separator = "12345678"
+    val result = content.getLines.toList.mkString(separator)
     consume(entity)
-    content.close
-    Source.fromBytes(result)
+    result.split(separator).toList
   }
 
-  def getSetAlbumPageSource(sgName: String) = {
+  def getSetAlbumPageSource(sgName: String): List[String] = {
     val albumsURL = SiteInfo.createAlbumsURL(sgName)
+    println(albumsURL)
     get(albumsURL)
   }
 

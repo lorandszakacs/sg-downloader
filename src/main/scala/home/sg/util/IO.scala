@@ -15,11 +15,17 @@ object IO {
 
   def createFolder(folderPath: String): String = {
     val folder = FileUtils.getFile(folderPath)
-    folder.mkdirs();
+    folder.mkdirs()
+
     if (!folder.canWrite()) {
       folder.delete();
       throw new RuntimeException("Could not create path specified: %".format(folder))
     } else folder.getAbsolutePath()
+  }
+
+  def listFiles(folderPath: String): List[String] = {
+    val folder = FileUtils.getFile(folderPath)
+    folder.list().toList
   }
 
   def createFile(filePath: String): String = {

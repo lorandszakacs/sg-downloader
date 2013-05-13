@@ -10,7 +10,7 @@ class SGPageParserTest extends FunSuite {
 
   private def getTestSourceFile(fileName: String) = {
     val filePath = TestDataResolver.getTestDataFolderForClass(classOf[SGPageParserTest]) + fileName
-    scala.io.Source.fromFile(new File(filePath))
+    scala.io.Source.fromFile(new File(filePath)).getLines.mkString("123456789").split("123456789").toList
   }
 
   test("Nahp Set-Album Page, 12 total sets") {

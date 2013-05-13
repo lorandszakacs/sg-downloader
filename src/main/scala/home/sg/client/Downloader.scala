@@ -17,60 +17,22 @@ class LevelOfReporting(level: Int) {
 
 class Downloader(
   val sgName: String,
-  val user: String,
-  val password: String,
+  val sgClient: SGClient,
   levelOfReporting: LevelOfReporting) {
 
   private val report: (Any => Unit) = if (levelOfReporting.silentDownloader) { (x: Any) => Unit } else { (x: Any) => println(x) }
   private val reportError: (Any => Unit) = if (levelOfReporting.silentDownloader) { (x: Any) => Unit } else { (x: Any) => System.err.println(x) }
 
-  private var sgClient = new SGClient(levelOfReporting.silentClient)
-
   def download(rootFolder: String) {
     download(rootFolder, (x => true))
   }
 
-  def download(rootFolder: String, filterSetsToDownload: (PhotoSet) => Boolean) {
+  def download(rootFolder: String, toDownload: (PhotoSet) => Boolean) {
     val root = IO.createFolder(rootFolder)
-    def handleDownload() {
-      sgClient.login(user, password)
-      report("Fetching: set pages")
-      val setsToDownload = PhotoAlbumBuilder.buildSets(sgName, sgClient, report)
-      report("Finished gathering all set information")
-
-      report("Sets to Download: %d".format(setsToDownload.length))
-      //setsToDownload foreach (s => report(s.relativeSaveLocation))
-
-      val downloadStatus = setsToDownload map downloadSet(root)
-      report("Finished download")
-    }
-    def cleanUpAndRestart(msg: String) {
-      reportError("Restarting server because:\n%s".format(msg))
-      sgClient.cleanUp()
-      sgClient = new SGClient(levelOfReporting.silentClient)
-      Thread.sleep(1000)
-      handleDownload()
-    }
-
-    try {
-      handleDownload()
-    } catch {
-      case sgExn: SGException => {
-        sgExn match {
-          case FileDownloadException(msg) => reportError("Trouble with file download: " + msg + "\nExiting.")
-
-          case LoginInvalidUserOrPasswordExn(msg) => reportError(msg + "\nExiting")
-          case LoginConnectionLostException(msg) => cleanUpAndRestart(msg)
-          case LoginUnknownException(msg) => cleanUpAndRestart(msg)
-
-          case HttpClientException(msg) => cleanUpAndRestart(msg)
-          case UnknownSGException(msg) => cleanUpAndRestart(msg)
-        }
-      }
-      case ex: Exception => reportError(ex.getMessage() + "\nExiting.")
-    } finally {
-      sgClient.cleanUp()
-    }
+    val allSets = PhotoAlbumBuilder.buildSets(sgName, sgClient, report)
+    val setsToDownload = allSets filter toDownload
+    report("Number of sets to download for %s: %d".format(sgName, setsToDownload.length))
+    setsToDownload foreach downloadSet(root, sgClient)
   }
 
   /**
@@ -83,7 +45,7 @@ class Downloader(
    * @param root
    * @param setInfo
    */
-  private def downloadSet(root: String)(setInfo: PhotoSet) {
+  private def downloadSet(root: String, a: SGClient)(setInfo: PhotoSet) {
     val newFolder = IO.concatPath(root, setInfo.relativeSaveLocation)
     def exists() = IO.exists(newFolder) && !IO.isEmpty(newFolder)
 
@@ -93,7 +55,7 @@ class Downloader(
       } else {
         IO.createFolder(newFolder)
         report("\nDownloading set: %s".format(newFolder))
-        setInfo.URLSaveLocationPairs foreach downloadFile(root)
+        setInfo.URLSaveLocationPairs foreach downloadFile(root, a)
       }
     }
 
@@ -108,7 +70,7 @@ class Downloader(
     }
   }
 
-  private def downloadFile(root: String)(pair: (String, String)) {
+  private def downloadFile(root: String, a: SGClient)(pair: (String, String)) {
     val URL = pair._1
     val relativeFilePath = pair._2
 
