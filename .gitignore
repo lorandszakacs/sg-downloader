@@ -20,3 +20,6 @@ project/plugins/project/
 
 #mac specific
 .DS_Store
+
+#project setup specific
+start

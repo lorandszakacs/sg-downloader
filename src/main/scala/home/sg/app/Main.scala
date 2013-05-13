@@ -19,6 +19,13 @@ private object Args {
   private val updateFlag = "--u"
   private val passwordFlag = "--p"
 
+  private object PropertyKeys {
+    val user = "sg-downloader.user"
+    val pwd = "sg-downloader.pwd"
+    val tempDownloadPath = "sg-downloader.temp-download-path"
+    val updatePath = "sg-downloader.update-path"
+  }
+  
   def parseArgs(args: Array[String]): Args = {
     val update = args.contains(updateFlag)
     val conf = ConfigFactory.load()
@@ -61,16 +68,16 @@ object Main {
             sgExn match {
               case FileDownloadException(msg) => reportError("Trouble with file download: " + msg + "\nExiting.")
 
-              case LoginInvalidUserOrPasswordExn(msg) => reportError(msg + "\nExiting")
-              case LoginConnectionLostException(msg) => reportError(msg + "\nExiting")
-              case LoginUnknownException(msg) => reportError(msg + "\nExiting")
+              case LoginInvalidUserOrPasswordExn(msg) => reportError("Login Invalid user name :" + msg + "\nExiting")
+              case LoginConnectionLostException(msg) => reportError("LoginConnectionLostException: " + msg + "\nExiting")
+              case LoginUnknownException(msg) => reportError("LoginConnectionLostException:  " + msg + "\nExiting")
 
-              case HttpClientException(msg) => reportError(msg + "\nExiting")
-              case UnknownSGException(msg) => reportError(msg + "\nExiting")
+              case HttpClientException(msg) => reportError("HttpClientException:  " + msg + "\nExiting")
+              case UnknownSGException(msg) => reportError("UnknownSGException:  " + msg + "\nExiting")
               case _ => reportError("some really unknown shit happened here")
             }
           }
-          case ex: Exception => reportError(ex.getMessage() + "\nExiting.")
+          case ex: Exception => reportError("What the fuck?: " + ex.getMessage() + "\nExiting.")
         } finally {
           sgClient.cleanUp()
         }
@@ -80,11 +87,4 @@ object Main {
 
   private def reportError(s: String) = System.err.println(s)
 
-}
-
-private object PropertyKeys {
-  val user = "sg-downloader.user"
-  val pwd = "sg-downloader.pwd"
-  val tempDownloadPath = "sg-downloader.temp-download-path"
-  val updatePath = "sg-downloader.update-path"
 }
