@@ -60,7 +60,6 @@ class SGClient(silent: Boolean) {
 
   def getSetAlbumPageSource(sgName: String): List[String] = {
     val albumsURL = SiteInfo.createAlbumsURL(sgName)
-    println(albumsURL)
     get(albumsURL)
   }
 

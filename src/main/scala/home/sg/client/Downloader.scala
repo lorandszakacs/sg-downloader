@@ -28,14 +28,14 @@ class Downloader(
     download(rootFolder, (x => true))
   }
 
-  def download(rootFolder: String, toDownload: (PhotoSet) => Boolean) {
+  def download(rootFolder: String, toDownload: (PhotoSetHeader) => Boolean) {
     val root = IO.createFolder(rootFolder)
-    val headers = PhotoAlbumBuilder.computeSetHeaders(sgName, sgClient) partition (h => IO.existsAndEmptyFolder(root, h.relativeSaveLocation))
+    val headers = PhotoAlbumBuilder.buildSetHeaders(sgName, sgClient) partition (h => IO.existsAndEmptyFolder(root, h.relativeSaveLocation))
     reportSkips(headers._1)
     val novelHeaders = headers._2
 
-    val allSets = PhotoAlbumBuilder.buildPhotoSets(sgName, novelHeaders, sgClient, report)
-    val setsToDownload = allSets filter toDownload
+    //    val allSets = PhotoAlbumBuilder.buildPhotoSets(sgName, novelHeaders, sgClient, report)
+    val setsToDownload = novelHeaders filter toDownload
 
     report("Number of sets to download for %s: %d".format(sgName, setsToDownload.length))
     setsToDownload foreach downloadSet(root, sgClient)
@@ -58,9 +58,10 @@ class Downloader(
    * @param root
    * @param setInfo
    */
-  private def downloadSet(root: String, a: SGClient)(photoSet: PhotoSet) {
-    val newFolder = IO.concatPath(root, photoSet.relativeSaveLocation)
+  private def downloadSet(root: String, a: SGClient)(photoSetHeader: PhotoSetHeader) {
+    val newFolder = IO.concatPath(root, photoSetHeader.relativeSaveLocation)
     def handleDownload() {
+      val photoSet = PhotoAlbumBuilder.buildPhotoSet(sgName, photoSetHeader, sgClient, report)
       IO.createFolder(newFolder)
       report("\nDownloading set: %s".format(newFolder))
       photoSet.URLSaveLocationPairs foreach downloadFile(root, a)
