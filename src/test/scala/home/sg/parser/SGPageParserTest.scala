@@ -1,9 +1,8 @@
 package home.sg.parser
 import org.scalatest.FunSuite
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import java.io.File
-import scala.io.Source
+import org.scalatest.junit.JUnitRunner
 import home.sg.util.TestDataResolver
 
 @RunWith(classOf[JUnitRunner])

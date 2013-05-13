@@ -2,6 +2,7 @@ package home.sg.parser
 
 import home.sg.util.IO
 
+
 class PhotoSet(header: PhotoSetHeader, val imageURLs: List[String]) {
 
   val sgName: String = header.sgName

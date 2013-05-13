@@ -1,6 +1,5 @@
 package home.sg.parser
 import scala.io.Source
-import home.sg.util.IO
 
 /**
  * @author lorand

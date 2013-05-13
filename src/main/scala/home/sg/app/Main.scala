@@ -1,7 +1,7 @@
-package home.sg.main
+package home.sg.app
 
-import home.sg.client.Downloader
 import home.sg.client.LevelOfReporting
+import home.sg.client.Downloader
 
 object Main {
   // --sg [Name*] [--filter Strings*] [--root-folder folder*]

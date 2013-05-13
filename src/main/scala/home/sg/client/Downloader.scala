@@ -1,11 +1,9 @@
 package home.sg.client
 
 import java.io.File
-import home.sg.parser.PhotoSetHeader
 import home.sg.util.IO
 import home.sg.parser.PhotoAlbumBuilder
 import home.sg.parser.PhotoSet
-import java.io.IOException
 
 /**
  * 0 - no printing whatsoever
