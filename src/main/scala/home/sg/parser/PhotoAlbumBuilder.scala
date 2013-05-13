@@ -11,7 +11,6 @@ object PhotoAlbumBuilder {
    */
   def buildSets(sgName: String, client: SGClient, report: (Any => Unit)): List[PhotoSet] = {
     val setHeaders = computeSetHeaders(sgName, client)
-
     buildPhotoSets(sgName, setHeaders, client, report)
   }
 

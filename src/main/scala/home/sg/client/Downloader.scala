@@ -4,6 +4,7 @@ import java.io.File
 import home.sg.util.IO
 import home.sg.parser.PhotoAlbumBuilder
 import home.sg.parser.PhotoSet
+import home.sg.parser.PhotoSetHeader
 
 /**
  * 0 - no printing whatsoever
@@ -29,12 +30,24 @@ class Downloader(
 
   def download(rootFolder: String, toDownload: (PhotoSet) => Boolean) {
     val root = IO.createFolder(rootFolder)
-    val allSets = PhotoAlbumBuilder.buildSets(sgName, sgClient, report)
+    val headers = PhotoAlbumBuilder.computeSetHeaders(sgName, sgClient) partition (h => IO.existsAndEmptyFolder(root, h.relativeSaveLocation))
+    reportSkips(headers._1)
+    val novelHeaders = headers._2
+
+    val allSets = PhotoAlbumBuilder.buildPhotoSets(sgName, novelHeaders, sgClient, report)
     val setsToDownload = allSets filter toDownload
+
     report("Number of sets to download for %s: %d".format(sgName, setsToDownload.length))
     setsToDownload foreach downloadSet(root, sgClient)
   }
 
+  private def reportSkips(existingSets: List[PhotoSetHeader]) {
+    if (existingSets.length > 0) {
+      report("=======\nskipping:")
+      existingSets foreach { h => report("  %s".format(h.relativeSaveLocation)) }
+      report("=======")
+    }
+  }
   /**
    * Will download all the images contained in the SetInfo and save
    * them at the location root + somePath from the setInfo.
@@ -45,18 +58,12 @@ class Downloader(
    * @param root
    * @param setInfo
    */
-  private def downloadSet(root: String, a: SGClient)(setInfo: PhotoSet) {
-    val newFolder = IO.concatPath(root, setInfo.relativeSaveLocation)
-    def exists() = IO.exists(newFolder) && !IO.isEmpty(newFolder)
-
+  private def downloadSet(root: String, a: SGClient)(photoSet: PhotoSet) {
+    val newFolder = IO.concatPath(root, photoSet.relativeSaveLocation)
     def handleDownload() {
-      if (exists) {
-        report("\nskipping set: %s   ;already exists".format(setInfo.relativeSaveLocation))
-      } else {
-        IO.createFolder(newFolder)
-        report("\nDownloading set: %s".format(newFolder))
-        setInfo.URLSaveLocationPairs foreach downloadFile(root, a)
-      }
+      IO.createFolder(newFolder)
+      report("\nDownloading set: %s".format(newFolder))
+      photoSet.URLSaveLocationPairs foreach downloadFile(root, a)
     }
 
     try {

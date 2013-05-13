@@ -53,6 +53,15 @@ object IO {
     FileUtils.getFile(folderPath).exists()
   }
 
+  def existsAndEmptyFolder(folderPath: String): Boolean = {
+    IO.exists(folderPath) && !IO.isEmpty(folderPath)
+  }
+
+  def existsAndEmptyFolder(root: String, path: String): Boolean = {
+    val newFolder = IO.concatPath(root, path)
+    IO.exists(newFolder) && !IO.isEmpty(newFolder)
+  }
+
   def isEmpty(folderPath: String): Boolean = {
     FileUtils.getFile(folderPath).list().isEmpty
   }
