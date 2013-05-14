@@ -61,8 +61,8 @@ class Downloader(
     val newFolder = IO.concatPath(root, photoSetHeader.relativeSaveLocation)
 
     def handleDownload() {
-      val photoSet = PhotoAlbumBuilder.buildPhotoSet(sgName, photoSetHeader, sgClient, report)
       IO.createFolder(newFolder)
+      val photoSet = PhotoAlbumBuilder.buildPhotoSet(sgName, photoSetHeader, sgClient, report)
       report("\nDownloading set: %s".format(newFolder))
       photoSet.URLSaveLocationPairs foreach downloadFile(root, a)
     }
@@ -77,9 +77,11 @@ class Downloader(
     }
 
     def requiresRename(): Boolean = {
-      val allFiles = IO.listFiles(IO.concatPath(root, photoSetHeader.sgName))
-      val wasMR = !(allFiles.filter(s => s.contains(photoSetHeader.title)).isEmpty)
-      wasMR
+      val sgFolder = IO.concatPath(root, photoSetHeader.sgName)
+      IO.exists(sgFolder) && {
+        val allFiles = IO.listFiles(IO.concatPath(root, photoSetHeader.sgName))
+        !(allFiles.filter(s => s.contains(photoSetHeader.title)).isEmpty)
+      }
     }
 
     try {
