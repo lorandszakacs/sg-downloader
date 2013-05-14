@@ -15,6 +15,7 @@ import home.sg.util.IO
 import scala.collection.mutable.Buffer
 import scala.collection.mutable.ListBuffer
 import java.io.IOException
+import org.apache.http.impl.client.AutoRetryHttpClient
 
 private object SiteInfo {
   val homePageURL = "http://suicidegirls.com/"
@@ -46,21 +47,20 @@ class SGClient(silent: Boolean) {
    * @param URL
    * @return
    */
-  def get(URL: String): List[String] = {
+  def getPage(URL: String): List[String] = {
     val get = new HttpGet(URL)
     val response = httpClient.execute(get)
     val entity = response.getEntity()
     assume(entity != null, "Entity should never be null")
-    val content = Source.fromInputStream(entity.getContent())
-    val separator = "12345678"
-    val result = content.getLines.toList.mkString(separator)
-    consume(entity)
-    result.split(separator).toList
+    val content: Array[Byte] = IO.getByteArrayFromInputStream(entity.getContent())
+    val charArray: Array[Char] = content.map(_.toChar)
+    val source = Source.fromChars(charArray)
+    source.getLines.toList
   }
 
   def getSetAlbumPageSource(sgName: String): List[String] = {
     val albumsURL = SiteInfo.createAlbumsURL(sgName)
-    get(albumsURL)
+    getPage(albumsURL)
   }
 
   def login(user: String, pwd: String) {

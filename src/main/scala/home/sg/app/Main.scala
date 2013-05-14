@@ -25,7 +25,7 @@ private object Args {
     val tempDownloadPath = "sg-downloader.temp-download-path"
     val updatePath = "sg-downloader.update-path"
   }
-  
+
   def parseArgs(args: Array[String]): Args = {
     val update = args.contains(updateFlag)
     val conf = ConfigFactory.load()
@@ -77,7 +77,7 @@ object Main {
               case _ => reportError("some really unknown shit happened here")
             }
           }
-          case ex: Exception => reportError("What the fuck?: " + ex.getMessage() + "\nExiting.")
+          case ex: Exception => reportError("What the fuck?: " + ex.getStackTraceString + "\nExiting.")
         } finally {
           sgClient.cleanUp()
         }

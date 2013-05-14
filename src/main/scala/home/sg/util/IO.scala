@@ -10,6 +10,7 @@ import java.io.FileWriter
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import java.io.File
+import java.io.ByteArrayOutputStream
 
 object IO {
 
@@ -106,26 +107,38 @@ object IO {
     out.close();
   }
 
-  def getByteArrayFromInputStream(raw: InputStream, contentLength: Int) = {
-    val in = new BufferedInputStream(raw);
+  def getByteArrayFromInputStream(input: InputStream, contentLength: Int): Array[Byte] = {
+    assume(contentLength > 0, "Trying to read from an input stream with unspecified content length, use the other method to do that")
     val data = new Array[Byte](contentLength)
 
     var bytesRead = 0;
     var offset = 0;
     breakable {
       while (offset < contentLength) {
-        bytesRead = in.read(data, offset, data.length - offset);
+        bytesRead = input.read(data, offset, data.length - offset);
         if (bytesRead == -1)
           break;
         offset += bytesRead;
       }
     }
-    in.close();
+    input.close();
 
     if (offset != contentLength) {
       throw new IOException("Only read " + offset + " bytes; Expected " + contentLength + " bytes");
     }
     data
+  }
+
+  def getByteArrayFromInputStream(input: InputStream): Array[Byte] = {
+    var read: Int = 0
+    var result = List[Byte]()
+    read = input.read()
+    while (-1 != read) {
+      result = read.toByte :: result
+      read = input.read()
+    }
+    input.close()
+    result.reverse.toArray
   }
 
 }

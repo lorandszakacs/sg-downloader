@@ -9,7 +9,7 @@ import org.scalatest.junit.JUnitRunner
 class DownloaderTest extends FunSuite {
 
   test("download Okami") {
-    val sgName = "Okami"
+    val sgName = "Opaque"
     val lor = new LevelOfReporting(4)
     val rootFolder = "/Users/lorand/Downloads/temp/"
     val sgClient = new SGClient(true)
