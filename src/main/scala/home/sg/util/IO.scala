@@ -14,6 +14,8 @@ import java.io.ByteArrayOutputStream
 
 object IO {
 
+  val separator: String = File.separator
+
   def createFolder(folderPath: String): String = {
     val folder = FileUtils.getFile(folderPath)
     folder.mkdirs()
@@ -36,10 +38,26 @@ object IO {
 
   }
 
-  def listFiles(folderPath: String): List[String] = {
-    val folder = FileUtils.getFile(folderPath)
-    assume(folder.exists(), "Trying to list the files from a folder that does not exists")
-    folder.list().toList
+  def listContent(rootPath: String): List[String] = {
+    val folder = FileUtils.getFile(rootPath)
+    assume(folder.exists(), "Trying to list the contents of a folder that does not exists")
+    folder.listFiles().toList.map(_.getAbsolutePath)
+  }
+
+  def listFolders(rootPath: String): List[String] = {
+    val root = FileUtils.getFile(rootPath)
+    assume(root.exists(), "Trying to list the folders from a folder that does not exists")
+    val allContent = root.listFiles()
+    val allFolders = allContent filter (f => f.isDirectory())
+    allFolders.toList.map(_.getAbsolutePath)
+  }
+
+  def listFiles(rootPath: String): List[String] = {
+    val root = FileUtils.getFile(rootPath)
+    assume(root.exists(), "Trying to list the folders from a folder that does not exists")
+    val allContent = root.listFiles()
+    val allFiles = allContent filterNot (f => f.isDirectory())
+    allFiles.toList.map(_.getAbsolutePath)
   }
 
   def createFile(filePath: String): String = {
@@ -64,6 +82,10 @@ object IO {
       tempPath
     else
       recursivelyConcatenate(toConcat.reverse)
+  }
+
+  def getFileName(path: String) = {
+    path.substring(path.lastIndexOf(separator) + 1)
   }
 
   def exists(folderPath: String): Boolean = {

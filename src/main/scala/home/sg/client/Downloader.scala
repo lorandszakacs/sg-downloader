@@ -75,10 +75,10 @@ class Downloader(
     }
 
     def handleRename() {
-      val allFiles = IO.listFiles(IO.concatPath(root, photoSetHeader.sgName))
+      val allFiles = IO.listFolders(IO.concatPath(root, photoSetHeader.sgName))
       val temp = allFiles.filter(s => s.contains(photoSetHeader.title))
       assume(temp.length == 1, "Trying to perform a rename where it is not necessary: %s".format(photoSetHeader.relativeSaveLocation))
-      val oldFolder = newFolder.replace(photoSetHeader.fileSystemSetTitle, temp.head)
+      val oldFolder = temp.head
       report("\nSet: %s; was previously in MR so the date differs, renaming it to: %s".format(oldFolder, newFolder))
       IO.rename(oldFolder, newFolder)
     }
@@ -86,7 +86,7 @@ class Downloader(
     def requiresRename(): Boolean = {
       val sgFolder = IO.concatPath(root, photoSetHeader.sgName)
       IO.exists(sgFolder) && {
-        val allFiles = IO.listFiles(IO.concatPath(root, photoSetHeader.sgName))
+        val allFiles = IO.listContent(IO.concatPath(root, photoSetHeader.sgName))
         !(allFiles.filter(s => s.contains(photoSetHeader.title)).isEmpty)
       }
     }

@@ -11,6 +11,7 @@ import home.sg.client.LoginUnknownException
 import home.sg.client.HttpClientException
 import home.sg.client.UnknownSGException
 import home.sg.client.SGClient
+import home.sg.util.IO
 
 private class Args(val update: Boolean, val user: String, val pwd: String, val downloadPath: String, val sgs: List[String]) {
 }
@@ -18,6 +19,7 @@ private class Args(val update: Boolean, val user: String, val pwd: String, val d
 private object Args {
   private val updateFlag = "--u"
   private val passwordFlag = "--p"
+  private val updateAllFlag = "--ua"
 
   private object PropertyKeys {
     val user = "sg-downloader.user"
@@ -28,6 +30,7 @@ private object Args {
 
   def parseArgs(args: Array[String]): Args = {
     val update = args.contains(updateFlag)
+    val updateAll = args.contains(updateAllFlag)
     val conf = ConfigFactory.load()
     val user = conf.getString(PropertyKeys.user)
 
@@ -36,9 +39,16 @@ private object Args {
     val password = pwd.head.takeRight(pwd.head.length - passwordFlag.length)
 
     val downloadPath = if (update) conf.getString(PropertyKeys.updatePath) else conf.getString(PropertyKeys.tempDownloadPath)
-    val sgs = args.filterNot(s => s.contains(updateFlag) || s.contains(passwordFlag)).toList
+    val sgs = {
+      if (updateAll) {
+        IO.listContent(downloadPath)
+        val allSGFolders = IO.listFolders(downloadPath)
+        allSGFolders map IO.getFileName
+      } else { args.filterNot(s => s.contains(updateFlag) || s.contains(passwordFlag) || s.contains(updateAllFlag)).toList }
+    }
     new Args(update, user, password, downloadPath, sgs)
   }
+
 }
 
 object Main {
