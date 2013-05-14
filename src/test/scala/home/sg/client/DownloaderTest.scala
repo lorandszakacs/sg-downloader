@@ -8,9 +8,9 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class DownloaderTest extends FunSuite {
 
-  test("download Paula") {
-    val sgName = "Paula"
-    val lor = new LevelOfReporting(1)
+  test("download Lumo") {
+    val sgName = "Lumo"
+    val lor = new LevelOfReporting(4)
     val rootFolder = "/Users/lorand/Downloads/temp/"
     val sgClient = new SGClient(true)
     sgClient.login(LoginInfo.user, LoginInfo.pwd)

@@ -16,21 +16,37 @@ object IO {
   def createFolder(folderPath: String): String = {
     val folder = FileUtils.getFile(folderPath)
     folder.mkdirs()
+    folder.setExecutable(true)
+    folder.setReadable(true)
+    folder.setWritable(true)
 
-    if (!folder.canWrite()) {
+    if (!folder.canWrite() || !folder.canExecute()) {
       folder.delete();
       throw new RuntimeException("Could not create path specified: %".format(folder))
     } else folder.getAbsolutePath()
   }
 
+  def rename(original: String, newName: String) {
+    val file = FileUtils.getFile(original)
+    val newFile = FileUtils.getFile(newName)
+    assume(file.exists(), "Trying to rename a file that does not exists %s: ".format(file.getAbsoluteFile()))
+    assume(!newFile.exists(), "Trying to rename to a file that exists %s:".format(newFile.getAbsoluteFile()))
+    file.renameTo(newFile)
+
+  }
+
   def listFiles(folderPath: String): List[String] = {
     val folder = FileUtils.getFile(folderPath)
+    assume(folder.exists(), "Trying to list the files from a folder that does not exists")
     folder.list().toList
   }
 
   def createFile(filePath: String): String = {
     val newFile = FileUtils.getFile(filePath)
     assume(newFile.createNewFile(), "could not create file: %".format(filePath))
+    newFile.setExecutable(true)
+    newFile.setReadable(true)
+    newFile.setWritable(true)
     newFile.getCanonicalPath()
   }
 
@@ -63,7 +79,9 @@ object IO {
   }
 
   def isEmpty(folderPath: String): Boolean = {
-    FileUtils.getFile(folderPath).list().isEmpty
+    val folder = FileUtils.getFile(folderPath)
+    assume(folder.exists(), "trying to see that a folder that does not exists is empty")
+    folder.list().isEmpty
   }
 
   def deleteFolder(folder: String) {

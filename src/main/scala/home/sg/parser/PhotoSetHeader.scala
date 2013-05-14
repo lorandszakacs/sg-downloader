@@ -56,10 +56,12 @@ class PhotoSetHeader(val sgName: String, previewDiv: String, pngSpankDiv: String
    */
   val URL = "http://suicidegirls.com%s".format(parsePngSpankDiv(pngSpankDiv))
 
+  val fileSystemSetTitle = "%s - %s".format(date, title)
+
   /**
    * sgName/data - set title
    */
-  val relativeSaveLocation = "%s/%s - %s".format(sgName, date, title)
+  val relativeSaveLocation = "%s/%s".format(sgName, fileSystemSetTitle)
 
   private def parsePreviewDiv(preview: String) = {
     val titleTag = "title="

@@ -1,10 +1,11 @@
 package home.sg.client
 
-import java.io.File
-import home.sg.util.IO
+import scala.annotation.elidable
+import scala.annotation.elidable.ASSERTION
+
 import home.sg.parser.PhotoAlbumBuilder
-import home.sg.parser.PhotoSet
 import home.sg.parser.PhotoSetHeader
+import home.sg.util.IO
 
 /**
  * 0 - no printing whatsoever
@@ -25,7 +26,7 @@ class Downloader(
   private val reportError: (Any => Unit) = if (levelOfReporting.silentDownloader) { (x: Any) => Unit } else { (x: Any) => System.err.println(x) }
 
   def download(rootFolder: String) {
-    download(rootFolder, (x => true))
+    download(rootFolder, (_ => true))
   }
 
   def download(rootFolder: String, toDownload: (PhotoSetHeader) => Boolean) {
@@ -33,8 +34,6 @@ class Downloader(
     val headers = PhotoAlbumBuilder.buildSetHeaders(sgName, sgClient) partition (h => IO.existsAndEmptyFolder(root, h.relativeSaveLocation))
     reportSkips(headers._1)
     val novelHeaders = headers._2
-
-    //    val allSets = PhotoAlbumBuilder.buildPhotoSets(sgName, novelHeaders, sgClient, report)
     val setsToDownload = novelHeaders filter toDownload
 
     report("Number of sets to download for %s: %d".format(sgName, setsToDownload.length))
@@ -60,6 +59,7 @@ class Downloader(
    */
   private def downloadSet(root: String, a: SGClient)(photoSetHeader: PhotoSetHeader) {
     val newFolder = IO.concatPath(root, photoSetHeader.relativeSaveLocation)
+
     def handleDownload() {
       val photoSet = PhotoAlbumBuilder.buildPhotoSet(sgName, photoSetHeader, sgClient, report)
       IO.createFolder(newFolder)
@@ -67,8 +67,26 @@ class Downloader(
       photoSet.URLSaveLocationPairs foreach downloadFile(root, a)
     }
 
+    def handleRename() {
+      val allFiles = IO.listFiles(IO.concatPath(root, photoSetHeader.sgName))
+      val temp = allFiles.filter(s => s.contains(photoSetHeader.title))
+      assume(temp.length == 1, "Trying to perform a rename where it is not necessary: %s".format(photoSetHeader.relativeSaveLocation))
+      val oldFolder = newFolder.replace(photoSetHeader.fileSystemSetTitle, temp.head)
+      report("\nSet: %s; was previously in MR so the date differs, renaming it to: %s".format(oldFolder, newFolder))
+      IO.rename(oldFolder, newFolder)
+    }
+
+    def requiresRename(): Boolean = {
+      val allFiles = IO.listFiles(IO.concatPath(root, photoSetHeader.sgName))
+      val wasMR = !(allFiles.filter(s => s.contains(photoSetHeader.title)).isEmpty)
+      wasMR
+    }
+
     try {
-      handleDownload()
+      if (requiresRename)
+        handleRename()
+      else
+        handleDownload()
     } catch {
       //if it is any other exception then we delete this set, so we can try again
       case thw: Throwable => {
