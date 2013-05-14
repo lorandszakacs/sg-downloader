@@ -31,13 +31,20 @@ class Downloader(
 
   def download(rootFolder: String, toDownload: (PhotoSetHeader) => Boolean) {
     val root = IO.createFolder(rootFolder)
-    val headers = PhotoAlbumBuilder.buildSetHeaders(sgName, sgClient) partition (h => IO.existsAndEmptyFolder(root, h.relativeSaveLocation))
-    reportSkips(headers._1)
-    val novelHeaders = headers._2
-    val setsToDownload = novelHeaders filter toDownload
+    val optionHeaders = PhotoAlbumBuilder.buildSetHeaders(sgName, sgClient);
 
-    report("Number of sets to download for %s: %d".format(sgName, setsToDownload.length))
-    setsToDownload foreach downloadSet(root, sgClient)
+    optionHeaders match {
+      case None => report("%s: is a hopeful, skipping".format(sgName))
+      case Some(possibleHeaders) => {
+        val headers = possibleHeaders partition (h => IO.existsAndEmptyFolder(root, h.relativeSaveLocation))
+        reportSkips(headers._1)
+        val novelHeaders = headers._2
+        val setsToDownload = novelHeaders filter toDownload
+
+        report("Number of sets to download for %s: %d".format(sgName, setsToDownload.length))
+        setsToDownload foreach downloadSet(root, sgClient)
+      }
+    }
   }
 
   private def reportSkips(existingSets: List[PhotoSetHeader]) {

@@ -17,14 +17,14 @@ class SGPageParserTest extends FunSuite {
     val sgName = "Nahp"
     val nahpSource = getTestSourceFile(TestData.nahpSetAlbumPage)
     val result = SGPageParser.parseSetAlbumPageToSetHeaders(sgName, nahpSource);
-    assert(result.length === 12)
+    assert(result.get.length === 12)
   }
 
   test("Sash Set-Album Page, 30 total sets") {
     val sgName = "Sash"
     val sashSource = getTestSourceFile(TestData.sashSetAlbumPage)
     val result = SGPageParser.parseSetAlbumPageToSetHeaders(sgName, sashSource)
-    assert(result.length == 30)
+    assert(result.get.length == 30)
   }
 
   test("Nahp set page - Girl Next door") {

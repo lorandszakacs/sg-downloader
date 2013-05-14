@@ -16,6 +16,7 @@ import scala.collection.mutable.Buffer
 import scala.collection.mutable.ListBuffer
 import java.io.IOException
 import org.apache.http.impl.client.AutoRetryHttpClient
+import org.apache.http.HttpStatus
 
 private object SiteInfo {
   val homePageURL = "http://suicidegirls.com/"
@@ -42,14 +43,12 @@ private object SiteInfo {
 class SGClient(silent: Boolean) {
   val httpClient = new DefaultHttpClient();
 
-  /**
-   * //TODO
-   * @param URL
-   * @return
-   */
   def getPage(URL: String): List[String] = {
     val get = new HttpGet(URL)
     val response = httpClient.execute(get)
+    if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK)
+      throw new RuntimeException("invalid page %s: ".format(URL))
+
     val entity = response.getEntity()
     assume(entity != null, "Entity should never be null")
     val content: Array[Byte] = IO.getByteArrayFromInputStream(entity.getContent())
@@ -88,7 +87,9 @@ class SGClient(silent: Boolean) {
   }
 
   def cleanUp() {
-    logout()
+    try {
+      logout()
+    } catch { case t: Throwable => reportError("Logout failed") }
     shutdown()
   }
 
@@ -168,7 +169,7 @@ class SGClient(silent: Boolean) {
   }
 
   private val report: (Any => Unit) = if (silent) ((x: Any) => Unit) else ((x: Any) => println(x))
-  private val reportError: (Any => Unit) = if (silent) { (x: Any) => Unit } else { (x: Any) => System.err.println(x) }
+  private val reportError: (Any => Unit) = { (x: Any) => System.err.println(x) }
 
   private def consume(ent: HttpEntity) = {
     EntityUtils.consume(ent);
