@@ -38,7 +38,7 @@ private object Args {
     assume(pwd.length == 1, "You specified too many, or no password flags")
     val password = pwd.head.takeRight(pwd.head.length - passwordFlag.length)
 
-    val downloadPath = if (update) conf.getString(PropertyKeys.updatePath) else conf.getString(PropertyKeys.tempDownloadPath)
+    val downloadPath = if (update || updateAll) conf.getString(PropertyKeys.updatePath) else conf.getString(PropertyKeys.tempDownloadPath)
     val sgs = {
       if (updateAll) {
         IO.listContent(downloadPath)

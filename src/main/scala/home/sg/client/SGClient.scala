@@ -52,8 +52,7 @@ class SGClient(silent: Boolean) {
     val entity = response.getEntity()
     assume(entity != null, "Entity should never be null")
     val content: Array[Byte] = IO.getByteArrayFromInputStream(entity.getContent())
-    val charArray: Array[Char] = content.map(_.toChar)
-    val source = Source.fromChars(charArray)
+    val source = Source.fromString(new String(content))
     source.getLines.toList
   }
 
