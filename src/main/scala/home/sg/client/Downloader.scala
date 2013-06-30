@@ -2,10 +2,9 @@ package home.sg.client
 
 import scala.annotation.elidable
 import scala.annotation.elidable.ASSERTION
-
-import home.sg.parser.PhotoAlbumBuilder
-import home.sg.parser.PhotoSetHeader
 import home.sg.util.IO
+import home.sg.parser.html.PhotoSetHeader
+import home.sg.parser.html.PhotoAlbumBuilder
 
 /**
  * 0 - no printing whatsoever

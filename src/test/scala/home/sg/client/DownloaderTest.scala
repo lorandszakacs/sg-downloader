@@ -2,7 +2,7 @@ package home.sg.client
 
 import org.scalatest.FunSuite
 import org.junit.runner.RunWith
-import home.sg.parser.PhotoSet
+import home.sg.parser.html.PhotoSet
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])

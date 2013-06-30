@@ -1,4 +1,4 @@
-package home.sg.parser
+package home.sg.parser.html
 
 import home.sg.client.SGClient
 

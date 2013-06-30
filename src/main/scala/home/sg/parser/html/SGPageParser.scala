@@ -1,5 +1,4 @@
-package home.sg.parser
-import scala.io.Source
+package home.sg.parser.html
 
 /**
  * @author lorand

@@ -4,6 +4,7 @@ import org.junit.runner.RunWith
 import java.io.File
 import org.scalatest.junit.JUnitRunner
 import home.sg.util.TestDataResolver
+import home.sg.parser.html.SGPageParser
 
 @RunWith(classOf[JUnitRunner])
 class SGPageParserTest extends FunSuite {
