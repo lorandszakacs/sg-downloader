@@ -1,9 +1,8 @@
 # these are our own config values defined by the app
 sg-downloader {
-    temp-download-path=tempPathToWhichdownloadinghappnes
     
+    download-path=tempPathToWhichdownloadinghappnes
     update-path=pathToSuicideGirlsFolder
     
     user=UserName
-    pwd=NotNecessary
 }

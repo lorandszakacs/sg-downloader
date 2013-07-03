@@ -23,8 +23,7 @@ private object Args {
 
   private object PropertyKeys {
     val user = "sg-downloader.user"
-    val pwd = "sg-downloader.pwd"
-    val tempDownloadPath = "sg-downloader.temp-download-path"
+    val tempDownloadPath = "sg-downloader.download-path"
     val updatePath = "sg-downloader.update-path"
   }
 
