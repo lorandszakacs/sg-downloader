@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import java.io.File
 import java.io.ByteArrayOutputStream
+import scala.collection.JavaConversions._
 
 object IO {
 
@@ -113,6 +114,11 @@ object IO {
 
   def deleteFolder(folder: File) {
     FileUtils.deleteDirectory(folder)
+  }
+
+  def readLines(filePath: String): List[String] = {
+    val result = FileUtils.readLines(FileUtils.getFile(filePath));
+    result.toList
   }
 
   def writeToFile(data: Array[Byte], fileName: String) {

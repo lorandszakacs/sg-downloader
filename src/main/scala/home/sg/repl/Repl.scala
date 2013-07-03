@@ -14,6 +14,7 @@ class Repl(client: SGClient) {
   def start(): Unit = {
     val interpreter = new CommandInterpreter(client);
     while (true) {
+      print("> ")
       val input = Console.readLine
       val command = SGCommandParser.apply(input);
       command match {

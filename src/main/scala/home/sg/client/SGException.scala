@@ -1,6 +1,6 @@
 package home.sg.client
 
-abstract class SGException(msg: String) extends Exception
+sealed abstract class SGException(msg: String) extends Exception
 
 case class LoginInvalidUserOrPasswordExn(val msg: String) extends SGException(msg)
 
