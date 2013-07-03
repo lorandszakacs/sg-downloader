@@ -16,6 +16,8 @@ import home.sg.constants.Constants
 
 class CommandInterpreter(client: SGClient) extends CommandVisitor {
   
+  
+  
   override def visit(fail: Fail): CommandVisitorResult = {
     println("error: %s".format(fail.msg));
     CommandVisitorSuccess()

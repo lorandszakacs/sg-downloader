@@ -4,19 +4,49 @@ import scala.util.parsing.combinator.RegexParsers
 import com.typesafe.config.impl.Parser
 import home.sg.constants.Constants
 
-sealed trait Command
+sealed trait Command {
+  def instructions(): String
+}
 
-case class Login(val user: String, val password: String) extends Command
+case class Login(val user: String, val password: String) extends Command {
+  override def instructions(): String = {
+    "-login password; username is extracted from the application.conf file"
+  }
+}
 
-case class Update(val sgs: List[String], val folderPath: String) extends Command
-case class UpdateAll(val folderPath: String) extends Command
+case class Update(val sgs: List[String], val folderPath: String) extends Command {
+  override def instructions(): String = {
+    "-u sg1 sg2 ...; the update path is extracted from application.conf"
+  }
+}
+case class UpdateAll(val folderPath: String) extends Command {
+  override def instructions(): String = {
+    "-ua ; the program will look at the default folder specified in the config file"
+  }
+}
 
-case class Download(val sgs: List[String], val folderPath: String) extends Command
-case class DownloadFromFile(val filePath: String, val folderPath: String) extends Command
+case class Download(val sgs: List[String], val folderPath: String) extends Command {
+  override def instructions(): String = {
+    "-d sg1 sg2 ...; the folder where to download is read from the config file"
+  }
+}
+case class DownloadFromFile(val filePath: String, val folderPath: String) extends Command {
+  override def instructions(): String = {
+    "-df ; the sg names are read from a file specified in the config file."
+  }
+}
 
-case class Exit() extends Command
+case class Exit() extends Command {
+  override def instructions(): String = {
+    ""
+  }
+}
 
-case class Fail(val msg: String) extends Command
+case class Fail(val msg: String) extends Command {
+  override def instructions(): String = {
+    ""
+  }
+}
 
 object SGCommandParser extends RegexParsers {
   override def skipWhitespace = true;
