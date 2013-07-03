@@ -18,12 +18,7 @@ class Repl(client: SGClient) {
       val command = SGCommandParser.apply(input);
       command match {
         case Exit() => return
-        case f: Fail => interpreter.visit(f)
-        case l: Login => interpreter.visit(l)
-        case u: Update => interpreter.visit(u)
-        case ua: UpdateAll => interpreter.visit(ua)
-        case d: Download => interpreter.visit(d)
-        case df: DownloadFromFile => interpreter.visit(df)
+        case _ => interpreter.visit(command)
       }
     }
   }

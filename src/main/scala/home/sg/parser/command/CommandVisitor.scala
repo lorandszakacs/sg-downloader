@@ -5,6 +5,18 @@ case class CommandVisitorFail(val msg: String) extends CommandVisitorResult
 case class CommandVisitorSuccess() extends CommandVisitorResult
 
 trait CommandVisitor {
+  def visit(comm: Command): CommandVisitorResult = {
+    comm match {
+      case e: Exit => this.visit(e)
+      case f: Fail => this.visit(f)
+      case l: Login => this.visit(l)
+      case u: Update => this.visit(u)
+      case ua: UpdateAll => this.visit(ua)
+      case d: Download => this.visit(d)
+      case df: DownloadFromFile => this.visit(df)
+    }
+  }
+
   def visit(fail: Fail): CommandVisitorResult
 
   def visit(login: Login): CommandVisitorResult
@@ -16,6 +28,6 @@ trait CommandVisitor {
   def visit(download: Download): CommandVisitorResult
 
   def visit(downloadFromFile: DownloadFromFile): CommandVisitorResult
-  
+
   def visit(exit: Exit): CommandVisitorResult
 }
