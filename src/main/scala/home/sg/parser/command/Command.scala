@@ -8,8 +8,13 @@ sealed trait Command
 
 case class Login(val user: String, val password: String) extends Command
 
-case class Download(val sgs: List[String]) extends Command
+
 case class Update(val sgs: List[String]) extends Command
+case class UpdateAll() extends Command
+
+case class Download(val sgs: List[String]) extends Command
+case class DownloadFromFile(val filePath: String) extends Command
+
 
 case class Fail(val msg: String) extends Command
 
