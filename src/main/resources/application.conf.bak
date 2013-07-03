@@ -3,6 +3,6 @@ sg-downloader {
     
     download-path=tempPathToWhichdownloadinghappnes
     update-path=pathToSuicideGirlsFolder
-    
     user=UserName
+    input-file=FileUsed for inputing SGs
 }
