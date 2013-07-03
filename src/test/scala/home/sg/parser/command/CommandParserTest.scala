@@ -40,9 +40,8 @@ class CommandParserTest extends FunSuite {
     val result = parser.apply("-u Nahp Sash")
     assert(result === Update(List("Nahp", "Sash"), defUpdate))
   }
-  
-  
-  test("UpdateAll command, default file path"){
+
+  test("UpdateAll command, default file path") {
     val result = parser.apply("-ua")
     assert(result === UpdateAll(defUpdate))
   }
@@ -54,18 +53,22 @@ class CommandParserTest extends FunSuite {
 
   test("Download command, single sg") {
     val result = parser.apply("-d Nahp")
-    assert(result === Download(List("Nahp"),defDownload))
+    assert(result === Download(List("Nahp"), defDownload))
   }
 
   test("Download command, multiple sg") {
     val result = parser.apply("-d Nahp Sash")
-    assert(result === Download(List("Nahp", "Sash"),defDownload))
+    assert(result === Download(List("Nahp", "Sash"), defDownload))
   }
 
   test("Download From file, default case") {
     val result = parser.apply("-df")
     assert(result === DownloadFromFile(defInputFile, defDownload))
   }
-  
+
+  test("Exit") {
+    val result = parser.apply("-exit")
+    assert(result === Exit())
+  }
 
 }

@@ -14,6 +14,8 @@ case class UpdateAll(val folderPath: String) extends Command
 case class Download(val sgs: List[String], val folderPath: String) extends Command
 case class DownloadFromFile(val filePath: String, val folderPath: String) extends Command
 
+case class Exit() extends Command
+
 case class Fail(val msg: String) extends Command
 
 object SGCommandParser extends RegexParsers {
@@ -40,7 +42,9 @@ object SGCommandParser extends RegexParsers {
 
   def updateAll: Parser[Command] = "-ua" ^^ { case _ => UpdateAll(Constants.defaultUpdatePath); }
 
-  def command = (login | downloadFromFile | download | updateAll | update)
+  def exit: Parser[Command] = "-exit" ^^ { case _ => Exit() }
+
+  def command = (login | downloadFromFile | download | updateAll | update | exit)
 
   def apply(input: String): Command = parseAll(command, input) match {
     case Success(result, _) => result
