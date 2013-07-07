@@ -25,13 +25,14 @@ import home.sg.client.UnknownSGException
 import home.sg.parser.command.CommandVisitorFail
 import home.sg.parser.command.CommandVisitorSuccess
 import home.sg.util.IO
+import home.sg.parser.command.Help
 
 class CommandInterpreter(client: SGClient) extends CommandVisitor {
 
-//  override def visit(comm: Command): CommandVisitorResult = {
-//    println(comm.instructions)
-//    super.visit(comm);
-//  }
+  //  override def visit(comm: Command): CommandVisitorResult = {
+  //    println(comm.instructions)
+  //    super.visit(comm);
+  //  }
 
   override def visit(fail: Fail): CommandVisitorResult = {
     //This one should not be called as the code is right now.
@@ -72,6 +73,14 @@ class CommandInterpreter(client: SGClient) extends CommandVisitor {
     val sgs = IO.readLines(downloadFromFile.filePath);
     val result = downloadAndReport(startMessageDownloadString, endMessageString, downloadFromFile.folderPath, sgs);
     result
+  }
+
+  override def visit(help: Help): CommandVisitorResult = {
+    //TODO: implement help
+    val commands = List(Login("", ""), Update(List(""), ""), UpdateAll(""),
+      Download(List(""), ""), DownloadFromFile("", ""), Exit())
+    commands foreach { c => println("    " + c.man) }
+    CommandVisitorSuccess()
   }
 
   override def visit(exit: Exit): CommandVisitorResult = { CommandVisitorFail(ErrorMessages.unimplemented) }

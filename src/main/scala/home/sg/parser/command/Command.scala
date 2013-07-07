@@ -6,46 +6,52 @@ import home.sg.constants.Constants
 
 sealed trait Command {
   def instructions(): String
+  def command(): String
+  def man(): String = this.command + " " + this.instructions
 }
 
 case class Login(val user: String, val password: String) extends Command {
-  override def instructions(): String = {
-    "-login password; username is extracted from the application.conf file"
-  }
+  override def command(): String = "-login"
+  override def instructions(): String =
+    "password; username is extracted from the application.conf file"
 }
 
 case class Update(val sgs: List[String], val folderPath: String) extends Command {
-  override def instructions(): String = {
-    "-u sg1 sg2 ...; the update path is extracted from application.conf"
-  }
+  override def instructions(): String =
+    "sg1 sg2 ...; the update path is extracted from application.conf"
+  override def command(): String = "-u"
 }
 case class UpdateAll(val folderPath: String) extends Command {
-  override def instructions(): String = {
-    "-ua ; the program will look at the default folder specified in the config file"
-  }
+  override def instructions(): String =
+    "; the program will look at the default folder specified in the config file"
+  override def command(): String = "-ua "
 }
 
 case class Download(val sgs: List[String], val folderPath: String) extends Command {
-  override def instructions(): String = {
-    "-d sg1 sg2 ...; the folder where to download is read from the config file"
-  }
+  override def instructions(): String =
+    "sg1 sg2 ...; the folder where to download is read from the config file"
+  override def command(): String = "-d"
 }
 case class DownloadFromFile(val filePath: String, val folderPath: String) extends Command {
-  override def instructions(): String = {
-    "-df ; the sg names are read from a file specified in the config file."
-  }
+  override def instructions(): String =
+    "; the sg names are read from a file specified in the config file."
+  override def command(): String = "-df"
+}
+
+case class Help() extends Command {
+  override def instructions(): String =
+    ""
+  override def command(): String = "-help"
 }
 
 case class Exit() extends Command {
-  override def instructions(): String = {
-    ""
-  }
+  override def instructions(): String = "exits the program. No login info is ever stored"
+  override def command(): String = "-exit"
 }
 
 case class Fail(val msg: String) extends Command {
-  override def instructions(): String = {
-    ""
-  }
+  override def instructions(): String = ""
+  override def command(): String = ""
 }
 
 object SGCommandParser extends RegexParsers {
@@ -63,18 +69,20 @@ object SGCommandParser extends RegexParsers {
     case _ ~ listOfSgs => Download(listOfSgs, Constants.defaultDownloadPath)
   }
 
-  def downloadFromFile: Parser[Command] = "-df" ^^ { case _ => DownloadFromFile(Constants.defaultInputPath, Constants.defaultDownloadPath) }
+  def downloadFromFile: Parser[Command] = "-df" ^^ { _ => DownloadFromFile(Constants.defaultInputPath, Constants.defaultDownloadPath) }
 
   def update: Parser[Command] = "-u" ~ rep(sgName) ^^ {
     case _ ~ List() => Fail(ParserErrorMessages.u_insufficientArguments)
     case _ ~ listOfSgs => Update(listOfSgs, Constants.defaultUpdatePath)
   }
 
-  def updateAll: Parser[Command] = "-ua" ^^ { case _ => UpdateAll(Constants.defaultUpdatePath); }
+  def help: Parser[Command] = "-help" ^^ { _ => Help() }
 
-  def exit: Parser[Command] = "-exit" ^^ { case _ => Exit() }
+  def updateAll: Parser[Command] = "-ua" ^^ { _ => UpdateAll(Constants.defaultUpdatePath); }
 
-  def command = (login | downloadFromFile | download | updateAll | update | exit)
+  def exit: Parser[Command] = "-exit" ^^ { _ => Exit() }
+
+  def command = (login | downloadFromFile | download | updateAll | update | exit | help)
 
   def apply(input: String): Command = parseAll(command, input) match {
     case Success(result, _) => result

@@ -15,5 +15,4 @@ object Constants {
   val defaultDownloadPath = conf.getString(PropertyKeys.defaultDownloadPath)
   val defaultUpdatePath = conf.getString(PropertyKeys.defaultUpdatePath)
   val defaultInputPath = conf.getString(PropertyKeys.defaultInputFile)
-
 }

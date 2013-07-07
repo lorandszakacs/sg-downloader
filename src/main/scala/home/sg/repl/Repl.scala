@@ -19,7 +19,7 @@ class Repl(client: SGClient) {
       val command = SGCommandParser.apply(input);
       command match {
         case Exit() => return
-        case _ => interpreter.visit(command)
+        case _ => { try { interpreter.visit(command) } catch { case t: Throwable => println(t.getMessage) } }
       }
     }
   }

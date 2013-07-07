@@ -14,6 +14,7 @@ trait CommandVisitor {
       case ua: UpdateAll => this.visit(ua)
       case d: Download => this.visit(d)
       case df: DownloadFromFile => this.visit(df)
+      case h: Help => this.visit(h)
     }
   }
 
@@ -29,5 +30,9 @@ trait CommandVisitor {
 
   def visit(downloadFromFile: DownloadFromFile): CommandVisitorResult
 
+  def visit (help: Help): CommandVisitorResult
+  
   def visit(exit: Exit): CommandVisitorResult
+  
+  
 }
