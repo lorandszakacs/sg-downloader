@@ -13,28 +13,28 @@ sealed trait Command {
 case class Login(val user: String, val password: String) extends Command {
   override def command(): String = "-login"
   override def instructions(): String =
-    "password; username is extracted from the application.conf file"
+    "password; username is extracted from the application.conf file. Current user = " + Constants.userName
 }
 
 case class Update(val sgs: List[String], val folderPath: String) extends Command {
   override def instructions(): String =
-    "sg1 sg2 ...; the update path is extracted from application.conf"
+    "sg1 sg2 ...; the update path is extracted from application.conf. Current default path is= " + Constants.defaultUpdatePath
   override def command(): String = "-u"
 }
 case class UpdateAll(val folderPath: String) extends Command {
   override def instructions(): String =
-    "; the program will look at the default folder specified in the config file"
+    "; the program will look at the default folder specified in the config file. Current default path is= " + Constants.defaultUpdatePath
   override def command(): String = "-ua "
 }
 
 case class Download(val sgs: List[String], val folderPath: String) extends Command {
   override def instructions(): String =
-    "sg1 sg2 ...; the folder where to download is read from the config file"
+    "sg1 sg2 ...; the folder where to download is read from the config file. Current default path is= " + Constants.defaultDownloadPath
   override def command(): String = "-d"
 }
 case class DownloadFromFile(val filePath: String, val folderPath: String) extends Command {
   override def instructions(): String =
-    "; the sg names are read from a file specified in the config file."
+    "; the sg names are read from a file specified in the config file. Current input file is= " + Constants.defaultInputPath + "\n default download folder path = " + Constants.defaultDownloadPath
   override def command(): String = "-df"
 }
 
