@@ -5,7 +5,7 @@ case class CommandVisitorFail(val msg: String) extends CommandVisitorResult
 case class CommandVisitorSuccess() extends CommandVisitorResult
 
 trait CommandVisitor {
-  def visit(comm: Command): CommandVisitorResult = {
+  final def visit(comm: Command): CommandVisitorResult = {
     comm match {
       case e: Exit => this.visit(e)
       case f: Fail => this.visit(f)

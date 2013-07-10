@@ -9,6 +9,7 @@ import home.sg.parser.command.UpdateAll
 import home.sg.parser.command.DownloadFromFile
 import home.sg.parser.command.Download
 import home.sg.parser.command.Login
+import home.sg.parser.command.CommandVisitorFail
 
 class Repl(client: SGClient) {
   def start(): Unit = {
@@ -19,7 +20,13 @@ class Repl(client: SGClient) {
       val command = SGCommandParser.apply(input);
       command match {
         case Exit() => return
-        case _ => { try { interpreter.visit(command) } catch { case t: Throwable => println(t.getMessage) } }
+        case _ => {
+          val result = interpreter.visit(command)
+          result match {
+            case CommandVisitorFail(msg) => println(msg)
+            case _ => Unit
+          }
+        }
       }
     }
   }

@@ -26,13 +26,9 @@ import home.sg.parser.command.CommandVisitorFail
 import home.sg.parser.command.CommandVisitorSuccess
 import home.sg.util.IO
 import home.sg.parser.command.Help
+import home.sg.parser.command.CommandVisitorFail
 
 class CommandInterpreter(client: SGClient) extends CommandVisitor {
-
-  //  override def visit(comm: Command): CommandVisitorResult = {
-  //    println(comm.instructions)
-  //    super.visit(comm);
-  //  }
 
   override def visit(fail: Fail): CommandVisitorResult = {
     //This one should not be called as the code is right now.

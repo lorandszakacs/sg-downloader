@@ -69,7 +69,7 @@ class PhotoSetHeader(val sgName: String, previewDiv: String, pngSpankDiv: String
     nameAndTrailingQuote.take(nameAndTrailingQuote.length - 2).trim()
   }
 
-  private def parsePngSpankDiv(pngSpank: String) = {
+  private def parsePngSpankDiv(pngSpank: String): String = {
     //<a class="pngSpank" href="/members/Sash/albums/site/33360/"/><img src="/media/albums/0/36/33360/setpreview_medium.jpg" ....
     //actual link: http://suicidegirls.com/members/Sash/albums/site/33360/
 
@@ -82,7 +82,7 @@ class PhotoSetHeader(val sgName: String, previewDiv: String, pngSpankDiv: String
   }
 
   //<div class="date">Apr 10, 2013</div>
-  private def parseDateDiv(date: String) = {
+  private def parseDateDiv(date: String): String = {
     val stringToNum = Map("Jan" -> "01", "Feb" -> "02", "Mar" -> "03", "Apr" -> "04", "May" -> "05", "Jun" -> "06",
       "Jul" -> "07", "Aug" -> "08", "Sep" -> "09", "Oct" -> "10", "Nov" -> "11", "Dec" -> "12")
     val onlyDivAtEnd = date.takeRight(date.length - date.indexOf(">") - 1);
@@ -90,12 +90,6 @@ class PhotoSetHeader(val sgName: String, previewDiv: String, pngSpankDiv: String
     val monthStr = onlyDate.substring(0, 3)
     val year = onlyDate.substring(onlyDate.indexOf(",") + 2)
     "%s.%s".format(year, stringToNum(monthStr))
-  }
-
-  @deprecated("will be removed", "refactoring")
-  private def replacePlus(s: String): String = {
-    val sAsListOfStrings = s.toList.map(c => c.toString)
-    sAsListOfStrings.map(s => if (s == "+") "%20" else s).mkString
   }
 
   override def equals(that: Any) = {
