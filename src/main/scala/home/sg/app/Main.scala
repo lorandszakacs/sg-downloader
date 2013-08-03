@@ -10,7 +10,7 @@ object Main {
     println("SG-downloader " + Version.version)
     println("type -help for instructions")
 
-    val client = new SGClient(true)
+    val client = new SGClient()
     val repl = new Repl(client)
     repl.start
     println("exiting SG-downloader.")

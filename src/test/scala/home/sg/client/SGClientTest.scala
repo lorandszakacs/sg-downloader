@@ -7,7 +7,7 @@ import org.scalatest.junit.JUnitRunner
 class SGClientTest extends FunSuite {
 
   test("login and fetch a few images") {
-    val sgClient = new SGClient(true)
+    val sgClient = new SGClient()
     try {
       sgClient.login(LoginInfo.user, LoginInfo.pwd)
 
@@ -27,7 +27,7 @@ class SGClientTest extends FunSuite {
   }
 
   test("logout") {
-    val sgClient = new SGClient(false)
+    val sgClient = new SGClient()
     try {
       sgClient.login(LoginInfo.user, LoginInfo.pwd)
 

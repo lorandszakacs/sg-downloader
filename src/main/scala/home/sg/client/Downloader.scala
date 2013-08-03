@@ -6,23 +6,12 @@ import home.sg.util.IO
 import home.sg.parser.html.PhotoSetHeader
 import home.sg.parser.html.PhotoAlbumBuilder
 
-/**
- * 0 - no printing whatsoever
- * 1 - only the downloader will print
- * 2 - the http client will print its status
- */
-class LevelOfReporting(level: Int) {
-  val silentDownloader = (level < 1)
-  val silentClient = (level < 2)
-}
-
 class Downloader(
   val sgName: String,
-  val sgClient: SGClient,
-  levelOfReporting: LevelOfReporting) {
+  val sgClient: SGClient) {
 
-  private val report: (Any => Unit) = if (levelOfReporting.silentDownloader) { (x: Any) => Unit } else { (x: Any) => println(x) }
-  private val reportError: (Any => Unit) = if (levelOfReporting.silentDownloader) { (x: Any) => Unit } else { (x: Any) => System.err.println(x) }
+  private val report: (Any => Unit) = (x: Any) => println(x)
+  private val reportError: (Any => Unit) = (x: Any) => System.err.println(x)
 
   def download(rootFolder: String) {
     download(rootFolder, (_ => true))

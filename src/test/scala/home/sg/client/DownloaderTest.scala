@@ -10,11 +10,10 @@ class DownloaderTest extends FunSuite {
 
   test("download Opaque") {
     val sgName = "Opaque"
-    val lor = new LevelOfReporting(4)
     val rootFolder = "/Users/lorand/Downloads/temp/"
-    val sgClient = new SGClient(true)
+    val sgClient = new SGClient()
     sgClient.login(LoginInfo.user, LoginInfo.pwd)
-    val downloader = new Downloader(sgName, sgClient, lor)
+    val downloader = new Downloader(sgName, sgClient)
     try { downloader.download(rootFolder) } finally { sgClient.cleanUp }
   }
 

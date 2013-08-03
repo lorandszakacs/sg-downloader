@@ -17,7 +17,6 @@ import home.sg.parser.command.Command
 import home.sg.client.LoginUnknownException
 import home.sg.client.LoginInvalidUserOrPasswordExn
 import home.sg.client.Downloader
-import home.sg.client.LevelOfReporting
 import home.sg.client.FileDownloadException
 import home.sg.client.LoginConnectionLostException
 import home.sg.client.HttpClientException
@@ -83,7 +82,7 @@ class CommandInterpreter(client: SGClient) extends CommandVisitor {
 
   private def downloadAndReport(startMsg: String, endMsg: String, folderPath: String, sgs: List[String]) = {
     try {
-      val downloaders = sgs map { sg => new Downloader(sg, client, new LevelOfReporting(2)) }
+      val downloaders = sgs map { sg => new Downloader(sg, client) }
       downloaders map { d =>
         println(startMsg.format(d.sgName))
         d.download(folderPath)

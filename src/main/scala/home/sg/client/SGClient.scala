@@ -40,7 +40,7 @@ private object SiteInfo {
 
 }
 
-class SGClient(silent: Boolean) {
+class SGClient() {
   val httpClient = new DefaultHttpClient();
 
   def getPage(URL: String): List[String] = {
@@ -73,7 +73,6 @@ class SGClient(silent: Boolean) {
       throw new LoginUnknownException("did not receive any cookies from server")
     } else {
       val cookies = javaCookies.toString()
-      report("Cookies after log on: " + cookies)
       if (cookies.contains("Incorrect+username+or+password"))
         throw new LoginInvalidUserOrPasswordExn("Incorrect username or password")
     }
@@ -135,7 +134,6 @@ class SGClient(silent: Boolean) {
 
     val entity = getEntity()
     val inputSize = entity.getContentLength().toInt
-    report("SGClient->get, just read input of size: " + inputSize)
 
     inputSize match {
       case x if x < 0 => {
@@ -167,7 +165,6 @@ class SGClient(silent: Boolean) {
     httpClient.getConnectionManager().shutdown();
   }
 
-  private val report: (Any => Unit) = if (silent) ((x: Any) => Unit) else ((x: Any) => println(x))
   private val reportError: (Any => Unit) = { (x: Any) => System.err.println(x) }
 
   private def consume(ent: HttpEntity) = {
