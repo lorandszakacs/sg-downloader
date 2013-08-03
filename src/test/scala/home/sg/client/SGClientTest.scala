@@ -38,13 +38,10 @@ class SGClientTest extends FunSuite {
 
       sgClient.logout()
 
-      try {
+      intercept[LoginConnectionLostException] {
         sgClient.getSetImage(validImage._1)
-        fail("should have thrown an exception")
-      } catch {
-        case rte: LoginConnectionLostException => assert(true)
-        case t: Throwable => fail("unexpected exception was thrown")
       }
+
     } finally {
       sgClient.cleanUp()
     }
