@@ -79,7 +79,7 @@ class CommandInterpreter(client: SGClient) extends CommandVisitor {
     CommandVisitorSuccess()
   }
 
-  override def visit(exit: Exit): CommandVisitorResult = { CommandVisitorFail(ErrorMessages.unimplemented) }
+  override def visit(exit: Exit): CommandVisitorResult = { CommandVisitorFail(ErrorMessages.Unimplemented) }
 
   private def downloadAndReport(startMsg: String, endMsg: String, folderPath: String, sgs: List[String]) = {
     try {

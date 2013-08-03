@@ -19,15 +19,15 @@ import org.apache.http.impl.client.AutoRetryHttpClient
 import org.apache.http.HttpStatus
 
 private object SiteInfo {
-  val homePageURL = "http://suicidegirls.com/"
-  val loginURL = "http://suicidegirls.com/login/"
-  val logoutURL = "http://suicidegirls.com/logout/"
+  val HomePageURL = "http://suicidegirls.com/"
+  val LoginURL = "http://suicidegirls.com/login/"
+  val LogoutURL = "http://suicidegirls.com/logout/"
 
   def createAlbumsURL(sgName: String) =
-    String.format("%s/girls/%s/albums/", homePageURL, sgName)
+    String.format("%s/girls/%s/albums/", HomePageURL, sgName)
 
   def createLoginPost(user: String, pwd: String) = {
-    val loginPost = new HttpPost(SiteInfo.loginURL);
+    val loginPost = new HttpPost(SiteInfo.LoginURL);
     val entityBody = new ArrayList[NameValuePair]();
     entityBody.add(new BasicNameValuePair("action", "process_login"))
     entityBody.add(new BasicNameValuePair("username", user))
@@ -36,7 +36,7 @@ private object SiteInfo {
     loginPost
   }
 
-  def createLogoutGet() = new HttpGet(SiteInfo.logoutURL)
+  def createLogoutGet() = new HttpGet(SiteInfo.LogoutURL)
 
 }
 

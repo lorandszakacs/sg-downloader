@@ -19,7 +19,7 @@ class Repl(client: SGClient) {
       val input = Console.readLine
       val command = SGCommandParser.apply(input);
       command match {
-        case Exit() => return
+        case Exit() => { client.cleanUp; return }
         case _ => {
           val result = interpreter.visit(command)
           result match {

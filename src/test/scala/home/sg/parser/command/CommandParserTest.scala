@@ -9,9 +9,9 @@ import home.sg.constants.Constants
 class CommandParserTest extends FunSuite {
 
   val parser = SGCommandParser
-  val defUpdate = Constants.defaultUpdatePath
-  val defDownload = Constants.defaultDownloadPath
-  val defInputFile = Constants.defaultInputPath
+  val defUpdate = Constants.DefaultUpdatePath
+  val defDownload = Constants.DefaultDownloadPath
+  val defInputFile = Constants.DefaultInputPath
 
   test("Login command") {
     val result = parser.apply("-login pass45")
@@ -20,7 +20,7 @@ class CommandParserTest extends FunSuite {
 
   test("Update command, no sg; should be error") {
     val result = parser.apply("-u")
-    assert(result === Fail(ParserErrorMessages.u_insufficientArguments))
+    assert(result === Fail(ParserErrorMessages.UpdateInsufficientArguments))
   }
 
   test("Update command, invalid sg; should be error") {
@@ -48,7 +48,7 @@ class CommandParserTest extends FunSuite {
 
   test("Download command, no sg; should be error") {
     val result = parser.apply("-d")
-    assert(result === Fail(ParserErrorMessages.d_insufficientArguments))
+    assert(result === Fail(ParserErrorMessages.DownloadInsufficientArguments))
   }
 
   test("Download command, single sg") {

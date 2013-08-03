@@ -16,8 +16,8 @@ class AssumptionsTest extends FunSuite {
       val result = sgClient.getSetImage(validImage)
       fail("should have thrown exception")
     } catch {
-      case rte: RuntimeException => assert(rte.getMessage().contains("invalid images"))
-      case th: Throwable => fail("expected different outcome")
+      case rte: LoginConnectionLostException => assert(true)
+      case th: Throwable =>{ fail("expected different outcome")}
     }
   }
 }

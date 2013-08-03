@@ -1,10 +1,10 @@
 package home.sg.constants
 
 object Version {
-  val majorVersion = 0
-  val minorVersion = 1
+  val MajorVersion = 0
+  val MinorVersion = 1
 
-  val postFix = "";
+  val PostFix = "";
 
-  def version(): String = "v " + majorVersion + "." + minorVersion + postFix
+  def version(): String = "v " + MajorVersion + "." + MinorVersion + PostFix
 }

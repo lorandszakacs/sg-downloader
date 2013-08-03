@@ -13,28 +13,28 @@ sealed trait Command {
 case class Login(val user: String, val password: String) extends Command {
   override def command(): String = "-login"
   override def instructions(): String =
-    "password; username is extracted from the application.conf file. Current user = " + Constants.userName
+    "password; username is extracted from the application.conf file. Current user = " + Constants.UserName
 }
 
 case class Update(val sgs: List[String], val folderPath: String) extends Command {
   override def instructions(): String =
-    "sg1 sg2 ...; the update path is extracted from application.conf. Current default path is= " + Constants.defaultUpdatePath
+    "sg1 sg2 ...; the update path is extracted from application.conf. Current default path is= " + Constants.DefaultUpdatePath
   override def command(): String = "-u"
 }
 case class UpdateAll(val folderPath: String) extends Command {
   override def instructions(): String =
-    "; the program will look at the default folder specified in the config file. Current default path is= " + Constants.defaultUpdatePath
+    "; the program will look at the default folder specified in the config file. Current default path is= " + Constants.DefaultUpdatePath
   override def command(): String = "-ua "
 }
 
 case class Download(val sgs: List[String], val folderPath: String) extends Command {
   override def instructions(): String =
-    "sg1 sg2 ...; the folder where to download is read from the config file. Current default path is= " + Constants.defaultDownloadPath
+    "sg1 sg2 ...; the folder where to download is read from the config file. Current default path is= " + Constants.DefaultDownloadPath
   override def command(): String = "-d"
 }
 case class DownloadFromFile(val filePath: String, val folderPath: String) extends Command {
   override def instructions(): String =
-    "; the sg names are read from a file specified in the config file. Current input file is= " + Constants.defaultInputPath + "\n default download folder path = " + Constants.defaultDownloadPath
+    "; the sg names are read from a file specified in the config file. Current input file is= " + Constants.DefaultInputPath + "\n default download folder path = " + Constants.DefaultDownloadPath
   override def command(): String = "-df"
 }
 
@@ -62,23 +62,23 @@ object SGCommandParser extends RegexParsers {
   //TODO: at some point make all commands take an optional command
   //  def path: Parser[String] = "([a-zA-Z]:)?(\\\\[a-zA-Z0-9_.-]+)+\\\\?".r
 
-  def login: Parser[Command] = "-login" ~ pwd ^^ { case _ ~ password => Login(Constants.userName, password) }
+  def login: Parser[Command] = "-login" ~ pwd ^^ { case _ ~ password => Login(Constants.UserName, password) }
 
   def download: Parser[Command] = "-d" ~ rep(sgName) ^^ {
-    case _ ~ List() => Fail(ParserErrorMessages.d_insufficientArguments)
-    case _ ~ listOfSgs => Download(listOfSgs, Constants.defaultDownloadPath)
+    case _ ~ List() => Fail(ParserErrorMessages.DownloadInsufficientArguments)
+    case _ ~ listOfSgs => Download(listOfSgs, Constants.DefaultDownloadPath)
   }
 
-  def downloadFromFile: Parser[Command] = "-df" ^^ { _ => DownloadFromFile(Constants.defaultInputPath, Constants.defaultDownloadPath) }
+  def downloadFromFile: Parser[Command] = "-df" ^^ { _ => DownloadFromFile(Constants.DefaultInputPath, Constants.DefaultDownloadPath) }
 
   def update: Parser[Command] = "-u" ~ rep(sgName) ^^ {
-    case _ ~ List() => Fail(ParserErrorMessages.u_insufficientArguments)
-    case _ ~ listOfSgs => Update(listOfSgs, Constants.defaultUpdatePath)
+    case _ ~ List() => Fail(ParserErrorMessages.UpdateInsufficientArguments)
+    case _ ~ listOfSgs => Update(listOfSgs, Constants.DefaultUpdatePath)
   }
 
   def help: Parser[Command] = "-help" ^^ { _ => Help() }
 
-  def updateAll: Parser[Command] = "-ua" ^^ { _ => UpdateAll(Constants.defaultUpdatePath); }
+  def updateAll: Parser[Command] = "-ua" ^^ { _ => UpdateAll(Constants.DefaultUpdatePath); }
 
   def exit: Parser[Command] = "-exit" ^^ { _ => Exit() }
 
