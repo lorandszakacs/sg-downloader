@@ -12,7 +12,7 @@ class PhotoSet(header: PhotoSetHeader, val imageURLs: List[String]) {
 
   val URLSaveLocationPairs: List[(String, String)] = imageURLs.zip((1 to imageURLs.length).map(imageSaveLocation))
 
-  override def toString(): String = {
+  override def toString: String = {
     val result = URLSaveLocationPairs.map(p => "  " + p._2 + "     =>     " + p._1)
     result.mkString("\n")
   }

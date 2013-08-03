@@ -71,7 +71,7 @@ class Downloader(
       IO.rename(oldFolder, newFolder)
     }
 
-    def requiresRename(): Boolean = {
+    def requiresRename: Boolean = {
       val sgFolder = IO.concatPath(root, photoSetHeader.sgName)
       IO.exists(sgFolder) && {
         val allFiles = IO.listContent(IO.concatPath(root, photoSetHeader.sgName))

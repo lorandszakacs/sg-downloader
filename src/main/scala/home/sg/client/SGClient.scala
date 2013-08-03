@@ -36,7 +36,7 @@ private object SiteInfo {
     loginPost
   }
 
-  def createLogoutGet() = new HttpGet(SiteInfo.LogoutURL)
+  def logoutGetRequest = new HttpGet(SiteInfo.LogoutURL)
 
 }
 
@@ -79,7 +79,7 @@ class SGClient() {
   }
 
   def logout() {
-    val response = httpClient.execute(SiteInfo.createLogoutGet());
+    val response = httpClient.execute(SiteInfo.logoutGetRequest);
     consume(response.getEntity())
     httpClient.getCookieStore().clear()
   }
@@ -96,7 +96,7 @@ class SGClient() {
    * whenever you access things for which you don't have
    * authorization
    */
-  private val invalidContentLength = 26365
+  private val InvalidContentLength = 26365
 
   /**
    * @param URL the URL of the set Image we want to fetch
@@ -119,7 +119,7 @@ class SGClient() {
    */
   def getSetImage(URL: String): Array[Byte] = {
 
-    def getEntity() = {
+    def getRequestEntity() = {
       try {
         val get = new HttpGet(URL)
         val response = httpClient.execute(get)
@@ -132,7 +132,7 @@ class SGClient() {
       }
     }
 
-    val entity = getEntity()
+    val entity = getRequestEntity()
     val inputSize = entity.getContentLength().toInt
 
     inputSize match {
@@ -140,7 +140,7 @@ class SGClient() {
         consume(entity)
         throw new UnknownSGException("No content for: %s".format(URL))
       }
-      case `invalidContentLength` => {
+      case `InvalidContentLength` => {
         consume(entity)
         throw new LoginConnectionLostException("Starting to receive invalid images, login info lost @: %s".format(URL))
       }

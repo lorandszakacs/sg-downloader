@@ -99,5 +99,5 @@ class PhotoSetHeader(val sgName: String, previewDiv: String, pngSpankDiv: String
     }
   }
 
-  override def toString(): String = relativeSaveLocation
+  override def toString: String = relativeSaveLocation
 }

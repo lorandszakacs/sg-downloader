@@ -5,53 +5,53 @@ import com.typesafe.config.impl.Parser
 import home.sg.constants.Constants
 
 sealed trait Command {
-  def instructions(): String
-  def command(): String
-  def man(): String = this.command + " " + this.instructions
+  def instructions: String
+  def command: String
+  def man: String = this.command + " " + this.instructions
 }
 
 case class Login(val user: String, val password: String) extends Command {
-  override def command(): String = "-login"
-  override def instructions(): String =
+  override def command: String = "-login"
+  override def instructions: String =
     "password; username is extracted from the application.conf file. Current user = " + Constants.UserName
 }
 
 case class Update(val sgs: List[String], val folderPath: String) extends Command {
-  override def instructions(): String =
+  override def instructions: String =
     "sg1 sg2 ...; the update path is extracted from application.conf. Current default path is= " + Constants.DefaultUpdatePath
-  override def command(): String = "-u"
+  override def command: String = "-u"
 }
 case class UpdateAll(val folderPath: String) extends Command {
-  override def instructions(): String =
+  override def instructions: String =
     "; the program will look at the default folder specified in the config file. Current default path is= " + Constants.DefaultUpdatePath
-  override def command(): String = "-ua "
+  override def command: String = "-ua "
 }
 
 case class Download(val sgs: List[String], val folderPath: String) extends Command {
-  override def instructions(): String =
+  override def instructions: String =
     "sg1 sg2 ...; the folder where to download is read from the config file. Current default path is= " + Constants.DefaultDownloadPath
-  override def command(): String = "-d"
+  override def command: String = "-d"
 }
 case class DownloadFromFile(val filePath: String, val folderPath: String) extends Command {
-  override def instructions(): String =
+  override def instructions: String =
     "; the sg names are read from a file specified in the config file. Current input file is= " + Constants.DefaultInputPath + "\n default download folder path = " + Constants.DefaultDownloadPath
-  override def command(): String = "-df"
+  override def command: String = "-df"
 }
 
 case class Help() extends Command {
-  override def instructions(): String =
+  override def instructions: String =
     ""
-  override def command(): String = "-help"
+  override def command: String = "-help"
 }
 
 case class Exit() extends Command {
-  override def instructions(): String = "exits the program. No login info is ever stored"
-  override def command(): String = "-exit"
+  override def instructions: String = "exits the program. No login info is ever stored"
+  override def command: String = "-exit"
 }
 
 case class Fail(val msg: String) extends Command {
-  override def instructions(): String = ""
-  override def command(): String = ""
+  override def instructions: String = ""
+  override def command: String = ""
 }
 
 object SGCommandParser extends RegexParsers {
