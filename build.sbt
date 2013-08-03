@@ -13,11 +13,12 @@ scalaVersion := "2.10.2"
 //groupID % artifactID % revision
 
 libraryDependencies ++= Seq( 
-	"org.apache.httpcomponents" % "httpclient" % "4.2.5",
-	"commons-io" % "commons-io" % "2.4",
-	"org.scalatest" % "scalatest_2.10" % "1.9.1" % "test",
-	"com.novocode" % "junit-interface" % "0.8" % "test->default",
-	"com.typesafe" % "config" % "1.0.0"
+    "org.apache.httpcomponents" % "httpclient" % "4.2.5",
+    "commons-io" % "commons-io" % "2.4",
+    "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test",
+    "com.novocode" % "junit-interface" % "0.8" % "test->default",
+    "com.typesafe" % "config" % "1.0.0",
+    "com.typesafe" %% "scalalogging-slf4j" % "1.0.1"
 )
 
 scalaSource in Compile <<= baseDirectory(_ / "src/main/scala")
