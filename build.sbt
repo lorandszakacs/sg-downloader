@@ -18,6 +18,7 @@ libraryDependencies ++= Seq(
 	"org.scalatest" % "scalatest_2.10" % "1.9.1" % "test",
 	"com.novocode" % "junit-interface" % "0.8" % "test->default",
 	"com.typesafe" % "config" % "1.0.0"
+    "com.typesafe" %% "scalalogging-slf4j" % "1.0.1"
 )
 
 scalaSource in Compile <<= baseDirectory(_ / "src/main/scala")
