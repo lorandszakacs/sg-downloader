@@ -12,9 +12,11 @@
   <classpathentry path="/Users/lorand/.ivy2/cache/commons-codec/commons-codec/jars/commons-codec-1.6.jar" kind="lib"></classpathentry>
   <classpathentry path="/Users/lorand/.ivy2/cache/commons-io/commons-io/jars/commons-io-2.4.jar" kind="lib"></classpathentry>
   <classpathentry path="/Users/lorand/.ivy2/cache/com.typesafe/config/bundles/config-1.0.0.jar" kind="lib"></classpathentry>
+  <classpathentry path="/Users/lorand/.ivy2/cache/com.typesafe/scalalogging-slf4j_2.10/jars/scalalogging-slf4j_2.10-1.0.1.jar" kind="lib"></classpathentry>
+  <classpathentry path="/Users/lorand/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.10.0.jar" kind="lib"></classpathentry>
+  <classpathentry path="/Users/lorand/.ivy2/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.7.2.jar" kind="lib"></classpathentry>
   <classpathentry path="/Users/lorand/.ivy2/cache/org.scalatest/scalatest_2.10/jars/scalatest_2.10-1.9.1.jar" kind="lib"></classpathentry>
   <classpathentry path="/Users/lorand/.ivy2/cache/org.scala-lang/scala-actors/jars/scala-actors-2.10.0.jar" kind="lib"></classpathentry>
-  <classpathentry path="/Users/lorand/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.10.0.jar" kind="lib"></classpathentry>
   <classpathentry path="/Users/lorand/.ivy2/cache/com.novocode/junit-interface/jars/junit-interface-0.8.jar" kind="lib"></classpathentry>
   <classpathentry path="/Users/lorand/.ivy2/cache/junit/junit/jars/junit-4.8.2.jar" kind="lib"></classpathentry>
   <classpathentry path="/Users/lorand/.ivy2/cache/org.scala-tools.testing/test-interface/jars/test-interface-0.5.jar" kind="lib"></classpathentry>
