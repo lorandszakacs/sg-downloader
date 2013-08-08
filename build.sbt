@@ -65,7 +65,7 @@ initialCommands := """
 
 // set the location of the JDK to use for compiling Java code.
 // if 'fork' is true, this is used for 'run' as well
-javaHome := Some(file("/Library/Java/JavaVirtualMachines/jdk1.7.0_21.jdk/Contents/Home/"))
+javaHome := Some(file("/Library/Java/JavaVirtualMachines/jdk1.7.0_25.jdk/Contents/Home/"))
 
 // Use Scala from a directory on the filesystem instead of retrieving from a repository
 //scalaHome := Some(file("/home/user/scala/trunk/"))
