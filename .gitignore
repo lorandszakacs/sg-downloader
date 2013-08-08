@@ -6,6 +6,8 @@ bin/
 .settings/
 .cache
 lib/
+.classpath
+.project
 
 # sbt specific
 dist/*
