@@ -6,7 +6,7 @@ name := "sg-downloader"
 
 version := "0.1"
 
-scalaVersion := "2.10.2"
+scalaVersion := "2.10.0"
 
 
 //you can get these from maven by creating a string:
