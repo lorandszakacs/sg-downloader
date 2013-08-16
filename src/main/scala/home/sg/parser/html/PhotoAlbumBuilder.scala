@@ -10,7 +10,7 @@ object PhotoAlbumBuilder {
    * @return
    */
   def buildSetHeaders(sgName: String, client: SGClient): Option[List[PhotoSetHeader]] = {
-    val albumPage = client.getSetAlbumPageSource(sgName)
+    val albumPage = client.getAlbumPage(sgName)
     val setHeaders = SGPageParser.parseSetAlbumPageToSetHeaders(sgName, albumPage)
     setHeaders
   }

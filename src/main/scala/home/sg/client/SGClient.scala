@@ -23,8 +23,8 @@ private object SiteInfo {
   val LoginURL = "http://suicidegirls.com/login/"
   val LogoutURL = "http://suicidegirls.com/logout/"
 
-  def createAlbumsURL(sgName: String) =
-    String.format("%s/girls/%s/albums/", HomePageURL, sgName)
+  def sgAlbumPageURL(sgName: String) =
+    String.format("%s/members/%s/albums/", HomePageURL, sgName)
 
   def createLoginPost(user: String, pwd: String) = {
     val loginPost = new HttpPost(SiteInfo.LoginURL);
@@ -56,8 +56,8 @@ class SGClient() {
     source.getLines.toList
   }
 
-  def getSetAlbumPageSource(sgName: String): List[String] = {
-    val albumsURL = SiteInfo.createAlbumsURL(sgName)
+  def getAlbumPage(sgName: String): List[String] = {
+    val albumsURL = SiteInfo.sgAlbumPageURL(sgName)
     getPage(albumsURL)
   }
 
