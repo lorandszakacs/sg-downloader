@@ -62,8 +62,6 @@ class SGClient() {
   }
 
   def login(user: String, pwd: String) {
-    def failedToLogOn(reason: String) = throw new HttpClientException("login failed: %s".format(reason))
-
     val loginPost = SiteInfo.createLoginPost(user, pwd)
     val postResponse = httpClient.execute(loginPost);
     val postEntity = postResponse.getEntity();
