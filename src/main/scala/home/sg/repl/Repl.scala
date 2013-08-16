@@ -14,6 +14,7 @@ import home.sg.parser.command.CommandVisitorFail
 class Repl(client: SGClient) {
   def start(): Unit = {
     val interpreter = new CommandInterpreter(client);
+    println("type -help for instructions")
     while (true) {
       print("> ")
       val input = Console.readLine

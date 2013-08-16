@@ -8,11 +8,9 @@ object Main {
 
   def main(args: Array[String]): Unit = {
     println("SG-downloader " + Version.version)
-    println("type -help for instructions")
-
     val client = new SGClient()
     val repl = new Repl(client)
-    repl.start
+    repl.start()
     println("exiting SG-downloader.")
   }
 
