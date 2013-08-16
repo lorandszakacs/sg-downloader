@@ -11,8 +11,8 @@ class AssumptionsTest extends FunSuite {
     val sgClient = new SGClient()
     //trying to get an image without logging in:
     val validImage = "http://img.suicidegirls.com/media/girls/Nahp/photos/%20%20Girl%20Next%20Door/01.jpg"
-      intercept[LoginConnectionLostException] {
-        val result = sgClient.getSetImage(validImage)
-      }
+    intercept[LoginConnectionLostException] {
+      val result = sgClient.getSetImage(validImage)
+    }
   }
 }

@@ -1,11 +1,10 @@
-package home.sg.parser
-import org.scalatest.FunSuite
-import org.junit.runner.RunWith
+package home.sg.parser.html
+
 import java.io.File
-import org.scalatest.junit.JUnitRunner
+import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import home.sg.util.TestDataResolver
-import home.sg.parser.html.SGPageParser
-import home.sg.parser.html.PhotoSetHeader
+import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class SGPageParserTest extends FunSuite {
@@ -18,7 +17,7 @@ class SGPageParserTest extends FunSuite {
   private def testSetHeaderParsing(sg: SG) = {
     val setAlbumPage = getTestSourceFile(sg.testSetAlbumPageName)
     val result = SGPageParser.parseSetAlbumPageToSetHeaders(sg.name, setAlbumPage)
-    assert(result.get.length === sg.numberOfExpectedSets,
+    assert(result.length === sg.numberOfExpectedSets,
       "Number of sets expected did not equal number of sets parsed. Expected: %s".format(sg.numberOfExpectedSets))
     result
   }
@@ -32,7 +31,7 @@ class SGPageParserTest extends FunSuite {
     val nahp = TestData.Nahp
     val result = testSetHeaderParsing(nahp)
 
-    val resultGirlNextDoor = result.get.head
+    val resultGirlNextDoor = result.head
     testSetHeader(nahp.GirlNextDoor, resultGirlNextDoor)
   }
 
@@ -40,9 +39,9 @@ class SGPageParserTest extends FunSuite {
     val sash = TestData.Sash
     val result = testSetHeaderParsing(sash)
 
-    val resultTheGrove = result.get.head
+    val resultTheGrove = result.head
     testSetHeader(sash.TheGrove, resultTheGrove)
-    val resultArboraceous = result.get.tail.head
+    val resultArboraceous = result.tail.head
     testSetHeader(sash.Arboraceaous, resultArboraceous)
   }
 
@@ -57,7 +56,7 @@ class SGPageParserTest extends FunSuite {
     val dalmasca = TestData.Dalmasca
     val result = testSetHeaderParsing(dalmasca)
 
-    val resultPickerUppers = result.get.head
+    val resultPickerUppers = result.head
     testSetHeader(dalmasca.PickerUppers, resultPickerUppers)
   }
 }

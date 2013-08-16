@@ -30,9 +30,8 @@ trait CommandVisitor {
 
   def visit(downloadFromFile: DownloadFromFile): CommandVisitorResult
 
-  def visit (help: Help): CommandVisitorResult
-  
+  def visit(help: Help): CommandVisitorResult
+
   def visit(exit: Exit): CommandVisitorResult
-  
-  
+
 }

@@ -1,5 +1,5 @@
 package home.sg.repl
 
 object ErrorMessages {
-	val Unimplemented = "Unimplemented"
+  val Unimplemented = "Unimplemented"
 }

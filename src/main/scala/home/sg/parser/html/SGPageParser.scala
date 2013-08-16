@@ -7,7 +7,7 @@ object SGPageParser {
    * @return a list of photo headers corresponding to the SG
    *  None, if the SG is a hopeful
    */
-  def parseSetAlbumPageToSetHeaders(name: String, pageLines: List[String]): Option[List[PhotoSetHeader]] = {
+  def parseSetAlbumPageToSetHeaders(name: String, pageLines: List[String]): List[PhotoSetHeader] = {
     def isHopeful(pageLines: List[String]) = pageLines.exists(_.contains("alt=\"Hopeful Pics\""))
 
     if (isHopeful(pageLines))
@@ -21,7 +21,7 @@ object SGPageParser {
    * "<a class=\"pngSpank\" href=\"/girls/Sash/albums/site/33360/\"><img src=\"/media/albums/0/36/33360/setpreview_medium.jpg\" width=\"169\" height=\"104\" alt=\"SuicideGirls: The Grove\" /></a>",
    * "<div class=\"date\">Apr 10, 2013</div>"
    */
-  private def parseSGAlbumPage(sgName: String, pageLines: List[String]): Option[List[PhotoSetHeader]] = {
+  private def parseSGAlbumPage(sgName: String, pageLines: List[String]): List[PhotoSetHeader] = {
     def isPreview(s: String) = s.contains("<div class=\"preview\"")
     def isPngSpank(s: String) = s.contains("<a class=\"pngSpank\"")
     def isDate(s: String) = s.contains("<div class=\"date\"")
@@ -44,7 +44,7 @@ object SGPageParser {
     }
     val headers = htmlThreeTuples map { threeTuple => PhotoSetHeader.build(sgName, threeTuple._1, threeTuple._2, threeTuple._3) }
     assume(headers.length > 0, "SGAlbumPageParsing: An albums page must have at least one album")
-    Some(headers.toList.sortBy(_.relativeSaveLocation).reverse)
+    headers.toList.sortBy(_.relativeSaveLocation).reverse
   }
 
   /**
@@ -112,7 +112,7 @@ object SGPageParser {
    * <div class="header hd1">
    * <img src="http://img.suicidegirls.com/img/member/heading_albums.gif" width="81" height="28" alt="ALBUMS" />
    */
-  private def parseHopefulAlbumPage(hopefulName: String, pageLines: List[String]): Option[List[PhotoSetHeader]] = {
+  private def parseHopefulAlbumPage(hopefulName: String, pageLines: List[String]): List[PhotoSetHeader] = {
     def extractMiddleOfList[T](list: List[T], startPredicate: (T => Boolean), endPredicate: (T => Boolean)) =
       list.dropWhile(startPredicate).tail.takeWhile(endPredicate)
 
@@ -144,7 +144,7 @@ object SGPageParser {
     }
     val headers = htmlTwoTuples map { twoTuple => PhotoSetHeader.build(hopefulName, twoTuple._1, twoTuple._2) }
     assume(headers.length > 0, "HopefulAlbumPageParsing: An albums page must have at least one album")
-    Some(headers.toList.sortBy(_.relativeSaveLocation).reverse)
+    headers.toList.sortBy(_.relativeSaveLocation).reverse
   }
 
   /**
