@@ -42,7 +42,7 @@ object SGPageParser {
         val threeTupleAsList = remaining.slice(n - 3, n)
         (threeTupleAsList(0), threeTupleAsList(1), threeTupleAsList(2))
       }
-      val headers = htmlThreeTuples map { threeTuple => new PhotoSetHeader(sgName, threeTuple._1, threeTuple._2, threeTuple._3) }
+      val headers = htmlThreeTuples map { threeTuple => PhotoSetHeader.build(sgName, threeTuple._1, threeTuple._2, threeTuple._3) }
       assume(headers.length > 0, "An albums page must have at least one album")
       Some(headers.toList.sortBy(_.relativeSaveLocation))
     }

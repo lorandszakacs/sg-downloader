@@ -1,5 +1,29 @@
 package home.sg.parser.html
 
+sealed trait PhotoSetHeader {
+  protected val stringToNum = Map("Jan" -> "01", "Feb" -> "02", "Mar" -> "03", "Apr" -> "04", "May" -> "05", "Jun" -> "06",
+    "Jul" -> "07", "Aug" -> "08", "Sep" -> "09", "Oct" -> "10", "Nov" -> "11", "Dec" -> "12")
+
+  val sgName: String;
+  val date: String;
+  val title: String;
+  val URL: String;
+  val relativeSaveLocation: String;
+
+  override def equals(that: Any) = {
+    that match {
+      case f: PhotoSetHeader => f.sgName.equals(sgName) && f.date.equals(date) && f.title.equals(title)
+      case _ => false
+    }
+  }
+
+}
+
+object PhotoSetHeader {
+  def build(sgName: String, previewDiv: String, pngSpankDiv: String, dateDiv: String): PhotoSetHeader =
+    new SGPhotoSetHeader(sgName, previewDiv, pngSpankDiv, dateDiv);
+}
+
 /**
  * @author lorand
  * this class will take the name of the suicide girl and a string corresponding to each of the bellow html tags
@@ -34,7 +58,7 @@ package home.sg.parser.html
  * image url format:
  *   http://img.suicidegirls.com/media/girls/Nahp/photos/%20%20Girl%20Next%20Door/01.jpg
  */
-class PhotoSetHeader(val sgName: String, previewDiv: String, pngSpankDiv: String, dateDiv: String) {
+private class SGPhotoSetHeader(val sgName: String, previewDiv: String, pngSpankDiv: String, dateDiv: String) extends PhotoSetHeader {
 
   require(previewDiv.contains("\"preview\""))
   require(pngSpankDiv.contains("\"pngSpank\""))
@@ -44,24 +68,24 @@ class PhotoSetHeader(val sgName: String, previewDiv: String, pngSpankDiv: String
    * represented as a string:
    *   yyyy.mm
    */
-  val date = parseDateDiv(dateDiv)
+  override val date = parseDateDiv(dateDiv)
 
   /**
    * the humanly readable title of this set
    */
-  val title = parsePreviewDiv(previewDiv)
+  override val title = parsePreviewDiv(previewDiv)
 
   /**
    * URL at which you can find this particular set
    */
-  val URL = "http://suicidegirls.com%s".format(parsePngSpankDiv(pngSpankDiv))
+  override val URL = "http://suicidegirls.com%s".format(parsePngSpankDiv(pngSpankDiv))
 
-  val fileSystemSetTitle = "%s - %s".format(date, title)
+  private val fileSystemSetTitle = "%s - %s".format(date, title)
 
   /**
-   * sgName/data - set title
+   * sgName/date - set title
    */
-  val relativeSaveLocation = "%s/%s".format(sgName, fileSystemSetTitle)
+  override val relativeSaveLocation = "%s/%s".format(sgName, fileSystemSetTitle)
 
   private def parsePreviewDiv(preview: String) = {
     val titleTag = "title="
@@ -83,20 +107,11 @@ class PhotoSetHeader(val sgName: String, previewDiv: String, pngSpankDiv: String
 
   //<div class="date">Apr 10, 2013</div>
   private def parseDateDiv(date: String): String = {
-    val stringToNum = Map("Jan" -> "01", "Feb" -> "02", "Mar" -> "03", "Apr" -> "04", "May" -> "05", "Jun" -> "06",
-      "Jul" -> "07", "Aug" -> "08", "Sep" -> "09", "Oct" -> "10", "Nov" -> "11", "Dec" -> "12")
     val onlyDivAtEnd = date.takeRight(date.length - date.indexOf(">") - 1);
     val onlyDate = onlyDivAtEnd.substring(0, onlyDivAtEnd.indexOf("</div>"))
     val monthStr = onlyDate.substring(0, 3)
     val year = onlyDate.substring(onlyDate.indexOf(",") + 2)
     "%s.%s".format(year, stringToNum(monthStr))
-  }
-
-  override def equals(that: Any) = {
-    that match {
-      case f: PhotoSetHeader => f.sgName.equals(sgName) && f.date.equals(date) && f.title.equals(title)
-      case _ => false
-    }
   }
 
   override def toString: String = relativeSaveLocation

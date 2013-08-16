@@ -55,7 +55,7 @@ class PhotoSetHeaderTest extends FunSuite {
     val pngSpank = expected.initialData._3
     val date = expected.initialData._4
 
-    val result = new PhotoSetHeader(sgName, preview, pngSpank, date);
+    val result = PhotoSetHeader.build(sgName, preview, pngSpank, date);
     assert(result.sgName === sgName, "SG name mismatch")
     assert(result.date === expected.date, "date mismatch")
     assert(result.title === expected.title, "title mismatch")
