@@ -12,6 +12,7 @@ import org.apache.commons.io.FilenameUtils
 import java.io.File
 import java.io.ByteArrayOutputStream
 import scala.collection.JavaConversions._
+import scala.collection.mutable.ListBuffer
 
 object IO {
 
@@ -159,14 +160,14 @@ object IO {
 
   def getByteArrayFromInputStream(input: InputStream): Array[Byte] = {
     var read: Int = 0
-    var result = List[Byte]()
+    var result = ListBuffer[Byte]()
     read = input.read()
     while (-1 != read) {
-      result = read.toByte :: result
+      result.append(read.toByte)
       read = input.read()
     }
     input.close()
-    result.reverse.toArray
+    result.toArray
   }
 
 }
