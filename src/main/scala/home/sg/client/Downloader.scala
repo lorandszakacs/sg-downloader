@@ -14,10 +14,6 @@ class Downloader(
   private val reportError: (Any => Unit) = (x: Any) => System.err.println(x)
 
   def download(rootFolder: String) {
-    download(rootFolder, (_ => true))
-  }
-
-  def download(rootFolder: String, toDownload: (PhotoSetHeader) => Boolean) {
     val root = IO.createFolder(rootFolder)
     val optionHeaders = PhotoAlbumBuilder.buildSetHeaders(sgName, sgClient);
 
@@ -27,7 +23,7 @@ class Downloader(
         val headers = possibleHeaders partition (h => IO.existsAndEmptyFolder(root, h.relativeSaveLocation))
         reportSkips(headers._1)
         val novelHeaders = headers._2
-        val setsToDownload = novelHeaders filter toDownload
+        val setsToDownload = novelHeaders
 
         report("Number of sets to download for %s: %d".format(sgName, setsToDownload.length))
         setsToDownload foreach downloadSet(root, sgClient)

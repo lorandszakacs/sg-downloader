@@ -108,9 +108,6 @@ class SGClient() {
    *   FileDownloadException - when it failed to read and save the image file
    *   LoginLostException - when we lost login privileges
    *
-   *   InexistentFileException - we've reached the last valid file, it's safe to stop
-   *   trying the other ones out.
-   *
    *   UnknownSGException - when somehow we've read an empty entity and when
    *   some other miscellaneous httClient exception occurs.
    *
