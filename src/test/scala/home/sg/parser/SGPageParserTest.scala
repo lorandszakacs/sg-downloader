@@ -22,27 +22,38 @@ class SGPageParserTest extends FunSuite {
       "Number of sets expected did not equal number of sets parsed. Expected: %s".format(sg.numberOfExpectedSets))
     result
   }
-  
+
   private def testSetHeader(expected: Set, actual: PhotoSetHeader) = {
     assert(actual.date === expected.date)
     assert(actual.title === expected.title)
   }
 
   test("Nahp Set-Album Page, 12 total sets") {
-    testSetHeaderParsing(TestData.Nahp)
+    val nahp = TestData.Nahp
+    val result = testSetHeaderParsing(nahp)
+
+    val resultGirlNextDoor = result.get.head
+    testSetHeader(nahp.GirlNextDoor, resultGirlNextDoor)
   }
 
   test("Sash Set-Album Page, 30 total sets") {
-    testSetHeaderParsing(TestData.Sash)
+    val sash = TestData.Sash
+    val result = testSetHeaderParsing(sash)
+
+    val resultTheGrove = result.get.head
+    testSetHeader(sash.TheGrove, resultTheGrove)
+    val resultArboraceous = result.get.tail.head
+    testSetHeader(sash.Arboraceaous, resultArboraceous)
   }
 
   test("Nahp set page - Girl Next door") {
     val nahp = TestData.Nahp
     val nahpSource = getTestSourceFile(nahp.GirlNextDoor.testSetPageName)
     assert(nahp.GirlNextDoor.expectedImageURLs === SGPageParser.parseSetPageToImageURLs(nahpSource))
+
   }
 
-  test("Dalmasca, - hopeful - 3 albums") {
+  test("Dalmasca set page, - hopeful - 3 albums") {
     val dalmasca = TestData.Dalmasca
     val result = testSetHeaderParsing(dalmasca)
 
@@ -92,6 +103,24 @@ private object TestData {
     override val name = "Sash"
     override val testSetAlbumPageName = "set-album-page-sash.html"
     override val numberOfExpectedSets = 30
+
+    //in the version of the site saved on the hard drive, this is a
+    //set in MR
+    object TheGrove extends Set {
+      override val testSetPageName = ""
+
+      override val date = "2013.04"
+      override val title = "The Grove"
+      override val expectedImageURLs = List()
+    }
+
+    //this is a pink Set
+    object Arboraceaous extends Set {
+      override val testSetPageName = ""
+      override val date = "2013.03"
+      override val title = "Arboraceous"
+      override val expectedImageURLs = List()
+    }
   }
 
   //Nahp has only pink sets

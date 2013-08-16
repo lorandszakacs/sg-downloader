@@ -49,6 +49,22 @@ class PhotoSetHeaderTest extends FunSuite {
     "http://suicidegirls.com/girls/Nahp/photos/++Girl+Next+Door/",
     "Nahp/2013.01 - Girl Next Door")
 
+  //TODO: refactor this to support Hopeful sets naturally
+  private val dalmascaHopefulSetRaw = (
+      "Dalmasca",
+      "<h1><a href=\"/members/Dalmasca/albums/site/33209/\">Picker-Uppers</a></h1>",
+      "<span class=\"prefix\" title=\"This set is in the Member Review section. Members can see and comment on it.\">UP SINCE:</span> Mar 23 2013				</p>",
+      ""
+  )
+  
+  private object dalmascaHopefulSet extends ExpectedValues(
+      dalmascaHopefulSetRaw,
+      "2013.03",
+      "Picker-Uppers",
+      "http://suicidegirls.com/members/Dalmasca/albums/site/33209/",
+      "Dalmasca/2013.03 - Picker-Uppers"
+  )
+
   private def assertCorrectValues(expected: ExpectedValues) = {
     val sgName = expected.initialData._1
     val preview = expected.initialData._2
@@ -62,20 +78,35 @@ class PhotoSetHeaderTest extends FunSuite {
     assert(result.URL === expected.URL, "URL mismatch")
     result
   }
+  
+    private def assertCorrectValuesHopeful(expected: ExpectedValues) = {
+    val sgName = expected.initialData._1
+    val header = expected.initialData._2
+    val date = expected.initialData._3
+
+    val result = PhotoSetHeader.build(sgName, header, date);
+    println(result.URL)
+    assert(result.sgName === sgName, "SG name mismatch")
+    assert(result.title === expected.title, "title mismatch")
+    assert(result.URL === expected.URL, "URL mismatch")
+    assert(result.date === expected.date, "date mismatch")
+    result
+  }
 
   test("MR set, Sash, The Grove") {
-    val e = sashMRSet
     assertCorrectValues(sashMRSet)
   }
 
   test("pink set, Sash, Arboraceous") {
-    val e = sashPinkSet
     assertCorrectValues(sashPinkSet)
   }
 
   test("pink set with spaces in title, Nahp, Girl Next Door") {
-    val e = nahpPinkSetWithSpaces
     assertCorrectValues(nahpPinkSetWithSpaces)
+  }
+
+  test("hopeful set, Dalmasca - Picker-Uppers") {
+	  assertCorrectValuesHopeful(dalmascaHopefulSet)
   }
 
 }
