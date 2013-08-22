@@ -7,16 +7,29 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class PhotoSetHeaderTest extends FunSuite {
 
+  private abstract class ExpectedValues(val initialData: (String, String, String, String), val date: String, val title: String, val URL: String, val saveLocation: String)
+
   private val sashMRSetRaw = (
     "Sash",
     "<div class=\"preview\" id=\"album_277610\" title=\"Sash: The Grove\">",
     "<a class=\"pngSpank\" href=\"/members/Sash/albums/site/33360/\"/><img src=\"/media/albums/0/36/33360/setpreview_medium.jpg\" width=\"169\" height=\"104\" alt=\"SuicideGirls: The Grove\" title=\"Sash: The Grove\" /></a>",
     "<div class=\"date\">Apr 10, 2013</div>")
 
-  private abstract class ExpectedValues(val initialData: (String, String, String, String), val date: String, val title: String, val URL: String, val saveLocation: String)
-
   private object sashMRSet extends ExpectedValues(
     sashMRSetRaw,
+    "2013.04",
+    "The Grove",
+    "http://suicidegirls.com/members/Sash/albums/site/33360/",
+    "Sash/2013.04 - The Grove")
+
+  private val sashMRSetWithDuplicateSpacesInNameRaw = (
+    "Sash",
+    "<div class=\"preview\" id=\"album_277610\" title=\"Sash: The  Grove\">",
+    "<a class=\"pngSpank\" href=\"/members/Sash/albums/site/33360/\"/><img src=\"/media/albums/0/36/33360/setpreview_medium.jpg\" width=\"169\" height=\"104\" alt=\"SuicideGirls: The Grove\" title=\"Sash: The Grove\" /></a>",
+    "<div class=\"date\">Apr 10, 2013</div>")
+
+  private object sashMRSetWithDuplicateSpacesInName extends ExpectedValues(
+    sashMRSetWithDuplicateSpacesInNameRaw,
     "2013.04",
     "The Grove",
     "http://suicidegirls.com/members/Sash/albums/site/33360/",
@@ -69,10 +82,10 @@ class PhotoSetHeaderTest extends FunSuite {
     val date = expected.initialData._4
 
     val result = PhotoSetHeader.build(sgName, preview, pngSpank, date);
-    assert(result.sgName === sgName, "SG name mismatch")
-    assert(result.date === expected.date, "date mismatch")
-    assert(result.title === expected.title, "title mismatch")
-    assert(result.URL === expected.URL, "URL mismatch")
+    assert(result.sgName === sgName, "SG name mismatch: expected \"%s\"".format(sgName))
+    assert(result.title === expected.title, "title mismatch: expected %s".format(expected.title))
+    assert(result.URL === expected.URL, "URL mismatch: expected %s".format(expected.URL))
+    assert(result.date === expected.date, "date mismatch: expected %s".format(expected.date))
     result
   }
 
@@ -82,16 +95,21 @@ class PhotoSetHeaderTest extends FunSuite {
     val date = expected.initialData._3
 
     val result = PhotoSetHeader.build(sgName, header, date);
-    assert(result.sgName === sgName, "SG name mismatch")
-    assert(result.title === expected.title, "title mismatch")
-    assert(result.URL === expected.URL, "URL mismatch")
-    assert(result.date === expected.date, "date mismatch")
+    assert(result.sgName === sgName, "SG name mismatch: expected %s".format(sgName))
+    assert(result.title === expected.title, "title mismatch: expected \"%s\"".format(expected.title))
+    assert(result.URL === expected.URL, "URL mismatch: expected %s".format(expected.URL))
+    assert(result.date === expected.date, "date mismatch: expected %s".format(expected.date))
     result
   }
 
   test("MR set, Sash, The Grove") {
     assertCorrectValues(sashMRSet)
   }
+  
+  test("MR set, Sash, The Grove with duplicate spaces") {
+    assertCorrectValues(sashMRSetWithDuplicateSpacesInName)
+  }
+  
 
   test("pink set, Sash, Arboraceous") {
     assertCorrectValues(sashPinkSet)

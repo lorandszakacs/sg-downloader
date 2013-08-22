@@ -53,21 +53,24 @@ class Downloader(
       photoSet.URLSaveLocationPairs foreach downloadFile(root, a)
     }
 
-    def handleRename() {
-      val allFiles = IO.listFolders(IO.concatPath(root, photoSetHeader.sgName))
-      val temp = allFiles.filter(s => s.contains(photoSetHeader.title))
-      assume(temp.length == 1, "Trying to perform a rename where it is not necessary: %s".format(photoSetHeader.relativeSaveLocation))
-      val oldFolder = temp.head
-      report("\nSet: %s; was previously in MR so the date differs, renaming it to: %s".format(oldFolder, newFolder))
-      IO.rename(oldFolder, newFolder)
+    lazy val foldersForCurrentSet = {
+      val allSets = IO.listFolders(IO.concatPath(root, photoSetHeader.sgName))
+      allSets.filter(_.contains(photoSetHeader.title))
     }
 
+    /**
+     * If the paths were identical then we never would have gotten here.
+     */
     def requiresRename: Boolean = {
       val sgFolder = IO.concatPath(root, photoSetHeader.sgName)
-      IO.exists(sgFolder) && {
-        val allFiles = IO.listContent(IO.concatPath(root, photoSetHeader.sgName))
-        !(allFiles.filter(s => s.contains(photoSetHeader.title)).isEmpty)
-      }
+      IO.exists(sgFolder) && !foldersForCurrentSet.isEmpty
+    }
+
+    def handleRename() {
+      assume(foldersForCurrentSet.length == 1, "Trying to perform a rename where it is not necessary: %s".format(photoSetHeader.relativeSaveLocation))
+      val oldFolder = foldersForCurrentSet.head
+      report("\nSet: %s; was previously in MR so the date differs, renaming it to: %s".format(oldFolder, newFolder))
+      IO.rename(oldFolder, newFolder)
     }
 
     try {

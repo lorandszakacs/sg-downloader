@@ -1,6 +1,7 @@
 package home.sg.parser.html
 
 import home.sg.util.IO
+import scala.collection.immutable.StringOps
 
 /**
  * @author lorand
@@ -77,6 +78,15 @@ sealed trait PhotoSetHeader {
     string.substring(startIndex, endIndex)
   }
 
+  /**
+   * @return "The  Grove" -> "The Grove"
+   */
+  protected final def trimSeparatorSequencesOfSpaces(s: String): String = {
+    val words = s.split(" ")
+    val trimmedWords = words.map(_.trim()).filterNot(_ == "")
+    trimmedWords.mkString(" ");
+  }
+
   override def toString: String = "%s  @  %s".format(relativeSaveLocation, URL)
 }
 
@@ -86,6 +96,7 @@ object PhotoSetHeader {
 
   def build(sgName: String, headerWithNameAndURL: String, lineWithDate: String): PhotoSetHeader =
     new HopefulPhotoSetHeader(sgName, headerWithNameAndURL, lineWithDate)
+
 }
 
 /**
@@ -129,7 +140,7 @@ private class SGPhotoSetHeader(override val sgName: String, previewDiv: String, 
   require(dateDiv.contains("\"date\""))
 
   override val date = parseDateDiv(dateDiv)
-  override val title = parsePreviewDiv(previewDiv)
+  override val title = trimSeparatorSequencesOfSpaces(parsePreviewDiv(previewDiv))
 
   protected override val partialURL = parsePngSpankDiv(pngSpankDiv)
 
@@ -166,7 +177,7 @@ private class HopefulPhotoSetHeader(override val sgName: String, headerWithNameA
   require(lineWithDate.contains("UP SINCE:"))
 
   override val date = parseDate(lineWithDate)
-  override val title = parseHeaderWithNameAndURL(headerWithNameAndURL)._1
+  override val title = trimSeparatorSequencesOfSpaces(parseHeaderWithNameAndURL(headerWithNameAndURL)._1)
   protected override val partialURL = parseHeaderWithNameAndURL(headerWithNameAndURL)._2
 
   //<span class="prefix" title="This set is in the Member Review section. Members can see and comment on it.">UP SINCE:</span> Mar 23 2013				</p>)
