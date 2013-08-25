@@ -91,10 +91,10 @@ sealed trait PhotoSetHeader {
 }
 
 object PhotoSetHeader {
-  def build(sgName: String, previewDiv: String, pngSpankDiv: String, dateDiv: String): PhotoSetHeader =
+  def apply(sgName: String, previewDiv: String, pngSpankDiv: String, dateDiv: String): PhotoSetHeader =
     new SGPhotoSetHeader(sgName, previewDiv, pngSpankDiv, dateDiv);
 
-  def build(sgName: String, headerWithNameAndURL: String, lineWithDate: String): PhotoSetHeader =
+  def apply(sgName: String, headerWithNameAndURL: String, lineWithDate: String): PhotoSetHeader =
     new HopefulPhotoSetHeader(sgName, headerWithNameAndURL, lineWithDate)
 
 }

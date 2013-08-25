@@ -81,7 +81,7 @@ class PhotoSetHeaderTest extends FunSuite {
     val pngSpank = expected.initialData._3
     val date = expected.initialData._4
 
-    val result = PhotoSetHeader.build(sgName, preview, pngSpank, date);
+    val result = PhotoSetHeader(sgName, preview, pngSpank, date);
     assert(result.sgName === sgName, "SG name mismatch: expected \"%s\"".format(sgName))
     assert(result.title === expected.title, "title mismatch: expected %s".format(expected.title))
     assert(result.URL === expected.URL, "URL mismatch: expected %s".format(expected.URL))
@@ -94,7 +94,7 @@ class PhotoSetHeaderTest extends FunSuite {
     val header = expected.initialData._2
     val date = expected.initialData._3
 
-    val result = PhotoSetHeader.build(sgName, header, date);
+    val result = PhotoSetHeader(sgName, header, date);
     assert(result.sgName === sgName, "SG name mismatch: expected %s".format(sgName))
     assert(result.title === expected.title, "title mismatch: expected \"%s\"".format(expected.title))
     assert(result.URL === expected.URL, "URL mismatch: expected %s".format(expected.URL))

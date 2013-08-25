@@ -42,7 +42,7 @@ object SGPageParser {
       val threeTupleAsList = remaining.slice(n - 3, n)
       (threeTupleAsList(0), threeTupleAsList(1), threeTupleAsList(2))
     }
-    val headers = htmlThreeTuples map { threeTuple => PhotoSetHeader.build(sgName, threeTuple._1, threeTuple._2, threeTuple._3) }
+    val headers = htmlThreeTuples map { threeTuple => PhotoSetHeader(sgName, threeTuple._1, threeTuple._2, threeTuple._3) }
     assume(headers.length > 0, "SGAlbumPageParsing: An albums page must have at least one album")
     headers.toList.sortBy(_.relativeSaveLocation).reverse
   }
@@ -142,7 +142,7 @@ object SGPageParser {
       val twoTupleAsList = remaining.slice(n - 2, n)
       (twoTupleAsList(0).trim, twoTupleAsList(1).trim)
     }
-    val headers = htmlTwoTuples map { twoTuple => PhotoSetHeader.build(hopefulName, twoTuple._1, twoTuple._2) }
+    val headers = htmlTwoTuples map { twoTuple => PhotoSetHeader(hopefulName, twoTuple._1, twoTuple._2) }
     assume(headers.length > 0, "HopefulAlbumPageParsing: An albums page must have at least one album")
     headers.toList.sortBy(_.relativeSaveLocation).reverse
   }

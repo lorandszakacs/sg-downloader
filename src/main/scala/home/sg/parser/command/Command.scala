@@ -58,7 +58,7 @@ object SGCommandParser extends RegexParsers {
   override def skipWhitespace = true;
 
   def pwd: Parser[String] = "[a-zA-Z][a-zA-Z0-9]*".r
-  def sgName: Parser[String] = "[a-zA-Z][a-zA-Z]*".r
+  def sgName: Parser[String] = "[a-zA-Z][a-zA-Z0-9_]*".r
   //TODO: at some point make all commands take an optional command
   //  def path: Parser[String] = "([a-zA-Z]:)?(\\\\[a-zA-Z0-9_.-]+)+\\\\?".r
 
