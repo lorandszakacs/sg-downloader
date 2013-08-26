@@ -25,7 +25,7 @@ package home.sg.constants
 
 import com.typesafe.config.ConfigFactory
 
-object Constants {
+object ConfigValues {
   private object PropertyKeys {
     val User = "sg-downloader.user"
     val DefaultDownloadPath = "sg-downloader.download-path"

@@ -35,7 +35,7 @@ import home.sg.parser.command.CommandVisitorResult
 import home.sg.parser.command.CommandVisitorFail
 import home.sg.parser.command.CommandVisitorSuccess
 import home.sg.client.SGClient
-import home.sg.constants.Constants
+import home.sg.constants.ConfigValues
 import home.sg.parser.command.Command
 import home.sg.client.LoginUnknownException
 import home.sg.client.LoginInvalidUserOrPasswordExn
