@@ -39,7 +39,7 @@ libraryDependencies ++= Seq(
     "commons-io" % "commons-io" % "2.4",
     "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test",
     "com.novocode" % "junit-interface" % "0.8" % "test->default",
-    "com.typesafe" % "config" % "1.0.0",
+    "com.typesafe" % "config" % "1.0.2",
     "com.typesafe" %% "scalalogging-slf4j" % "1.0.1"
 )
 
