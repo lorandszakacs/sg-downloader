@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package me.lorandszakacs.sgd.client
+package me.lorandszakacs.util.http
 
 sealed abstract class SGException(msg: String) extends Exception
 
@@ -35,6 +35,7 @@ case class HttpClientException(val msg: String) extends SGException(msg)
 
 case class FileDownloadException(val msg: String) extends SGException(msg)
 
+//FIXME: move out of here.
 case class FileWrittingException(val msg: String) extends SGException(msg)
 
 case class UnknownSGException(val msg: String) extends SGException(msg)

@@ -56,6 +56,5 @@ scalacOptions in Test ++= Testing.scalacOptions
 //===================================================
 libraryDependencies ++= Seq( 
     "org.apache.httpcomponents" % "httpclient" % "4.2.5",
-    "commons-io" % "commons-io" % "2.4",
     "com.typesafe" % "config" % "1.0.2"
 )

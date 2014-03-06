@@ -24,7 +24,7 @@
 package me.lorandszakacs.sgd.app
 
 import me.lorandszakacs.sgd.constants.Version
-import me.lorandszakacs.sgd.client.SGClient
+import me.lorandszakacs.util.http.SGClient
 import me.lorandszakacs.sgd.repl.Repl
 
 object Main {

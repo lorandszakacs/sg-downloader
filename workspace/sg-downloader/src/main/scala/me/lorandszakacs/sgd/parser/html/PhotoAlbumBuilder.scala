@@ -23,7 +23,7 @@
  */
 package me.lorandszakacs.sgd.parser.html
 
-import me.lorandszakacs.sgd.client.SGClient
+import me.lorandszakacs.util.http.SGClient
 
 object PhotoAlbumBuilder {
 

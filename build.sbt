@@ -31,7 +31,7 @@ lazy val aggregatingProject = project.in(file(".")).aggregate(utilIO, utilHttp, 
 
 lazy val utilIO = project.in(subProject(SubProjects.Names.UtilIO))
 
-lazy val utilHttp = project.in(subProject(SubProjects.Names.UtilHttp))
+lazy val utilHttp = project.in(subProject(SubProjects.Names.UtilHttp)).dependsOn(utilIO)
 
 lazy val utilHtml = project.in(subProject(SubProjects.Names.UtilHtml)).dependsOn(utilIO)
 

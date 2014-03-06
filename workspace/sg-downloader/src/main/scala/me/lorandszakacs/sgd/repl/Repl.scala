@@ -25,7 +25,7 @@ package me.lorandszakacs.sgd.repl
 
 import me.lorandszakacs.sgd.parser.command.SGCommandParser
 import me.lorandszakacs.sgd.parser.command.Exit
-import me.lorandszakacs.sgd.client.SGClient
+import me.lorandszakacs.util.http.SGClient
 import me.lorandszakacs.sgd.parser.command.Fail
 import me.lorandszakacs.sgd.parser.command.Update
 import me.lorandszakacs.sgd.parser.command.UpdateAll

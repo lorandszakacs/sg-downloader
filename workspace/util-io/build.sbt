@@ -54,3 +54,6 @@ scalacOptions in Test ++= Testing.scalacOptions
 //===================================================
 //         dependencies for dev libraries
 //===================================================
+libraryDependencies ++= Seq(
+    "commons-io" % "commons-io" % "2.4"
+)

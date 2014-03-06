@@ -23,8 +23,8 @@
  */
 package me.lorandszakacs.sgd.parser.html
 
-import me.lorandszakacs.sgd.util.IO
 import scala.collection.immutable.StringOps
+import me.lorandszakacs.util.io.IO
 
 /**
  * @author lorand

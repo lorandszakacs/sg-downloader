@@ -21,21 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package me.lorandszakacs.sgd.util
+package me.lorandszakacs.util.io
 
 import scala.util.control.Breaks._
 import java.io.IOException
 import java.io.InputStream
-import java.io.BufferedInputStream
 import java.io.FileOutputStream
 import java.io.BufferedWriter
-import java.io.FileWriter
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.FilenameUtils
 import java.io.File
-import java.io.ByteArrayOutputStream
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FilenameUtils
+import java.io.FileWriter
 
 object IO {
 

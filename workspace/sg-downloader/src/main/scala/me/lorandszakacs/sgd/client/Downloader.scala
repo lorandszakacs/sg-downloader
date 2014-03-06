@@ -25,9 +25,11 @@ package me.lorandszakacs.sgd.client
 
 import scala.annotation.elidable
 import scala.annotation.elidable.ASSERTION
-import me.lorandszakacs.sgd.util.IO
 import me.lorandszakacs.sgd.parser.html.PhotoSetHeader
 import me.lorandszakacs.sgd.parser.html.PhotoAlbumBuilder
+import me.lorandszakacs.util.io.IO
+import me.lorandszakacs.util.http.SGClient
+import me.lorandszakacs.util.http.FileWrittingException
 
 class Downloader(
   val sgName: String,

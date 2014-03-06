@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package me.lorandszakacs.sgd.client
+package me.lorandszakacs.util.http
 
 import org.apache.http.impl.client.DefaultHttpClient
 import java.util.ArrayList
@@ -34,12 +34,9 @@ import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.message.BasicNameValuePair
 import org.apache.http.util.EntityUtils
 import scala.io.Source
-import me.lorandszakacs.sgd.util.IO
-import scala.collection.mutable.Buffer
-import scala.collection.mutable.ListBuffer
 import java.io.IOException
-import org.apache.http.impl.client.AutoRetryHttpClient
 import org.apache.http.HttpStatus
+import me.lorandszakacs.util.io.IO
 
 private object SiteInfo {
   val HomePageURL = "http://suicidegirls.com/"
