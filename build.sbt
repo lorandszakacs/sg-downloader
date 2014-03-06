@@ -37,7 +37,7 @@ javaOptions ++= Common.javaOptions
 
 javaOptions in Test ++= Testing.javaOptions
 
-mainClass := Some("Main")
+mainClass := None
 
 //required to create the default `sbt` folder structure
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
