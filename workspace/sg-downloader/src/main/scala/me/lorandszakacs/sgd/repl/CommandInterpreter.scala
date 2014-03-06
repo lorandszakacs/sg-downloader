@@ -21,34 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package home.sg.repl
+package me.lorandszakacs.sgd.repl
 
-import home.sg.parser.command.CommandVisitor
-import home.sg.parser.command.Fail
-import home.sg.parser.command.Login
-import home.sg.parser.command.Update
-import home.sg.parser.command.UpdateAll
-import home.sg.parser.command.Download
-import home.sg.parser.command.DownloadFromFile
-import home.sg.parser.command.Exit
-import home.sg.parser.command.CommandVisitorResult
-import home.sg.parser.command.CommandVisitorFail
-import home.sg.parser.command.CommandVisitorSuccess
-import home.sg.client.SGClient
-import home.sg.constants.ConfigValues
-import home.sg.parser.command.Command
-import home.sg.client.LoginUnknownException
-import home.sg.client.LoginInvalidUserOrPasswordExn
-import home.sg.client.Downloader
-import home.sg.client.FileDownloadException
-import home.sg.client.LoginConnectionLostException
-import home.sg.client.HttpClientException
-import home.sg.client.UnknownSGException
-import home.sg.parser.command.CommandVisitorFail
-import home.sg.parser.command.CommandVisitorSuccess
-import home.sg.util.IO
-import home.sg.parser.command.Help
-import home.sg.parser.command.CommandVisitorFail
+import me.lorandszakacs.sgd.parser.command.CommandVisitor
+import me.lorandszakacs.sgd.parser.command.Fail
+import me.lorandszakacs.sgd.parser.command.Login
+import me.lorandszakacs.sgd.parser.command.Update
+import me.lorandszakacs.sgd.parser.command.UpdateAll
+import me.lorandszakacs.sgd.parser.command.Download
+import me.lorandszakacs.sgd.parser.command.DownloadFromFile
+import me.lorandszakacs.sgd.parser.command.Exit
+import me.lorandszakacs.sgd.parser.command.CommandVisitorResult
+import me.lorandszakacs.sgd.parser.command.CommandVisitorFail
+import me.lorandszakacs.sgd.parser.command.CommandVisitorSuccess
+import me.lorandszakacs.sgd.client.SGClient
+import me.lorandszakacs.sgd.constants.ConfigValues
+import me.lorandszakacs.sgd.parser.command.Command
+import me.lorandszakacs.sgd.client.LoginUnknownException
+import me.lorandszakacs.sgd.client.LoginInvalidUserOrPasswordExn
+import me.lorandszakacs.sgd.client.Downloader
+import me.lorandszakacs.sgd.client.FileDownloadException
+import me.lorandszakacs.sgd.client.LoginConnectionLostException
+import me.lorandszakacs.sgd.client.HttpClientException
+import me.lorandszakacs.sgd.client.UnknownSGException
+import me.lorandszakacs.sgd.parser.command.CommandVisitorFail
+import me.lorandszakacs.sgd.parser.command.CommandVisitorSuccess
+import me.lorandszakacs.sgd.util.IO
+import me.lorandszakacs.sgd.parser.command.Help
+import me.lorandszakacs.sgd.parser.command.CommandVisitorFail
 
 class CommandInterpreter(client: SGClient) extends CommandVisitor {
 

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package home.sg.util
+package me.lorandszakacs.sgd.util
 
 import scala.util.control.Breaks._
 import java.io.IOException

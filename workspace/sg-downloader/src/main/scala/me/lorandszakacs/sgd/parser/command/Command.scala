@@ -21,11 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package home.sg.parser.command
+package me.lorandszakacs.sgd.parser.command
 
 import scala.util.parsing.combinator.RegexParsers
 import com.typesafe.config.impl.Parser
-import home.sg.constants.ConfigValues
+import me.lorandszakacs.sgd.constants.ConfigValues
 
 sealed trait Command {
   def instructions: String

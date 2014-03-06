@@ -21,12 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package home.sg.parser.command
+package me.lorandszakacs.sgd.parser.command
 
 import org.scalatest.FunSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import home.sg.constants.ConfigValues
+
+import me.lorandszakacs.sgd.constants.ConfigValues
 
 class CommandParserTest extends FunSuite {
 

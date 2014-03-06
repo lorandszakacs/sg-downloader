@@ -21,9 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package home.sg.parser.command
+package me.lorandszakacs.sgd.repl
 
-object ParserErrorMessages {
-  val UpdateInsufficientArguments = "Insuficient arguments for the 'update' command"
-  val DownloadInsufficientArguments = "Insuficient arguments for the 'download' command"
+import me.lorandszakacs.sgd.parser.command.SGCommandParser
+import me.lorandszakacs.sgd.parser.command.Exit
+import me.lorandszakacs.sgd.client.SGClient
+import me.lorandszakacs.sgd.parser.command.Fail
+import me.lorandszakacs.sgd.parser.command.Update
+import me.lorandszakacs.sgd.parser.command.UpdateAll
+import me.lorandszakacs.sgd.parser.command.DownloadFromFile
+import me.lorandszakacs.sgd.parser.command.Download
+import me.lorandszakacs.sgd.parser.command.Login
+import me.lorandszakacs.sgd.parser.command.CommandVisitorFail
+
+class Repl(client: SGClient) {
+  def start(): Unit = {
+    val interpreter = new CommandInterpreter(client);
+    println("type -help for instructions")
+    while (true) {
+      print("> ")
+      val input = Console.readLine
+      val command = SGCommandParser.apply(input);
+      command match {
+        case Exit() => { client.cleanUp; return }
+        case _ => {
+          val result = interpreter.visit(command)
+          result match {
+            case CommandVisitorFail(msg) => println(msg)
+            case _ => Unit
+          }
+        }
+      }
+    }
+  }
 }

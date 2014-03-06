@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package home.sg.parser.html
+package me.lorandszakacs.sgd.parser.html
 
-import home.sg.util.IO
+import me.lorandszakacs.sgd.util.IO
 import scala.collection.immutable.StringOps
 
 /**

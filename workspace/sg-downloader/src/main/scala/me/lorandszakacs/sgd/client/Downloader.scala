@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package home.sg.client
+package me.lorandszakacs.sgd.client
 
 import scala.annotation.elidable
 import scala.annotation.elidable.ASSERTION
-import home.sg.util.IO
-import home.sg.parser.html.PhotoSetHeader
-import home.sg.parser.html.PhotoAlbumBuilder
+import me.lorandszakacs.sgd.util.IO
+import me.lorandszakacs.sgd.parser.html.PhotoSetHeader
+import me.lorandszakacs.sgd.parser.html.PhotoAlbumBuilder
 
 class Downloader(
   val sgName: String,

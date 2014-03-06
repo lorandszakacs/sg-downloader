@@ -21,13 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package home.sg.constants
+package me.lorandszakacs.sgd.repl
 
-object Version {
-  val MajorVersion = 0
-  val MinorVersion = 1
-
-  val PostFix = "";
-
-  def version(): String = "v " + MajorVersion + "." + MinorVersion + PostFix
+object ErrorMessages {
+  val Unimplemented = "Unimplemented"
 }

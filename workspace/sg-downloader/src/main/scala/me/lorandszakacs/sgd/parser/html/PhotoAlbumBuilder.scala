@@ -21,20 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package home.sg.client
+package me.lorandszakacs.sgd.parser.html
 
-sealed abstract class SGException(msg: String) extends Exception
+import me.lorandszakacs.sgd.client.SGClient
 
-case class LoginInvalidUserOrPasswordExn(val msg: String) extends SGException(msg)
+object PhotoAlbumBuilder {
 
-case class LoginConnectionLostException(val msg: String) extends SGException(msg)
+  /**
+   * @param client; an already logged in client
+   *
+   * @return
+   */
+  def buildSetHeaders(sgName: String, client: SGClient): List[PhotoSetHeader] = {
+    val albumPage = client.getAlbumPage(sgName)
+    val setHeaders = SGPageParser.parseSetAlbumPageToSetHeaders(sgName, albumPage)
+    setHeaders
+  }
 
-case class LoginUnknownException(val msg: String) extends SGException(msg)
+  def buildPhotoSet(header: PhotoSetHeader, client: SGClient, report: (Any => Unit)): PhotoSet = {
+    report("fetching page info: %s".format(header.toString))
+    val setPage = client.getPage(header.URL)
+    val imageURLs = SGPageParser.parseSetPageToImageURLs(setPage)
+    new PhotoSet(header, imageURLs)
+  }
 
-case class HttpClientException(val msg: String) extends SGException(msg)
-
-case class FileDownloadException(val msg: String) extends SGException(msg)
-
-case class FileWrittingException(val msg: String) extends SGException(msg)
-
-case class UnknownSGException(val msg: String) extends SGException(msg)
+}

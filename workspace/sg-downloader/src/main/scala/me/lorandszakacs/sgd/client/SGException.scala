@@ -21,20 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package home.sg.app
+package me.lorandszakacs.sgd.client
 
-import home.sg.constants.Version
-import home.sg.client.SGClient
-import home.sg.repl.Repl
+sealed abstract class SGException(msg: String) extends Exception
 
-object Main {
+case class LoginInvalidUserOrPasswordExn(val msg: String) extends SGException(msg)
 
-  def main(args: Array[String]): Unit = {
-    println("SG-downloader " + Version.version)
-    val client = new SGClient()
-    val repl = new Repl(client)
-    repl.start()
-    println("exiting SG-downloader.")
-  }
+case class LoginConnectionLostException(val msg: String) extends SGException(msg)
 
-}
+case class LoginUnknownException(val msg: String) extends SGException(msg)
+
+case class HttpClientException(val msg: String) extends SGException(msg)
+
+case class FileDownloadException(val msg: String) extends SGException(msg)
+
+case class FileWrittingException(val msg: String) extends SGException(msg)
+
+case class UnknownSGException(val msg: String) extends SGException(msg)

@@ -21,28 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package home.sg.parser.html
+package me.lorandszakacs.sgd.app
 
-import home.sg.client.SGClient
+import me.lorandszakacs.sgd.constants.Version
+import me.lorandszakacs.sgd.client.SGClient
+import me.lorandszakacs.sgd.repl.Repl
 
-object PhotoAlbumBuilder {
+object Main {
 
-  /**
-   * @param client; an already logged in client
-   *
-   * @return
-   */
-  def buildSetHeaders(sgName: String, client: SGClient): List[PhotoSetHeader] = {
-    val albumPage = client.getAlbumPage(sgName)
-    val setHeaders = SGPageParser.parseSetAlbumPageToSetHeaders(sgName, albumPage)
-    setHeaders
-  }
-
-  def buildPhotoSet(header: PhotoSetHeader, client: SGClient, report: (Any => Unit)): PhotoSet = {
-    report("fetching page info: %s".format(header.toString))
-    val setPage = client.getPage(header.URL)
-    val imageURLs = SGPageParser.parseSetPageToImageURLs(setPage)
-    new PhotoSet(header, imageURLs)
+  def main(args: Array[String]): Unit = {
+    println("SG-downloader " + Version.version)
+    val client = new SGClient()
+    val repl = new Repl(client)
+    repl.start()
+    println("exiting SG-downloader.")
   }
 
 }

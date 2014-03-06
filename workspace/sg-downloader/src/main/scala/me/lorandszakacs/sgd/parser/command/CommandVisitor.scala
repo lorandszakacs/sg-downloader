@@ -21,21 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package home.sg.constants
+package me.lorandszakacs.sgd.parser.command
 
-import com.typesafe.config.ConfigFactory
+sealed trait CommandVisitorResult
+case class CommandVisitorFail(val msg: String) extends CommandVisitorResult
+case class CommandVisitorSuccess() extends CommandVisitorResult
 
-object ConfigValues {
-  private object PropertyKeys {
-    val User = "sg-downloader.user"
-    val DefaultDownloadPath = "sg-downloader.download-path"
-    val DefaultUpdatePath = "sg-downloader.update-path"
-    val DefaultInputFile = "sg-downloader.input-file"
+trait CommandVisitor {
+  final def visit(comm: Command): CommandVisitorResult = {
+    comm match {
+      case e: Exit => this.visit(e)
+      case f: Fail => this.visit(f)
+      case l: Login => this.visit(l)
+      case u: Update => this.visit(u)
+      case ua: UpdateAll => this.visit(ua)
+      case d: Download => this.visit(d)
+      case df: DownloadFromFile => this.visit(df)
+      case h: Help => this.visit(h)
+    }
   }
 
-  private val conf = ConfigFactory.load()
-  val UserName = conf.getString(PropertyKeys.User)
-  val DefaultDownloadPath = conf.getString(PropertyKeys.DefaultDownloadPath)
-  val DefaultUpdatePath = conf.getString(PropertyKeys.DefaultUpdatePath)
-  val DefaultInputPath = conf.getString(PropertyKeys.DefaultInputFile)
+  def visit(fail: Fail): CommandVisitorResult
+
+  def visit(login: Login): CommandVisitorResult
+
+  def visit(update: Update): CommandVisitorResult
+
+  def visit(updateAll: UpdateAll): CommandVisitorResult
+
+  def visit(download: Download): CommandVisitorResult
+
+  def visit(downloadFromFile: DownloadFromFile): CommandVisitorResult
+
+  def visit(help: Help): CommandVisitorResult
+
+  def visit(exit: Exit): CommandVisitorResult
+
 }

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package home.sg.client
+package me.lorandszakacs.sgd.client
 
 import org.apache.http.impl.client.DefaultHttpClient
 import java.util.ArrayList
@@ -34,7 +34,7 @@ import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.message.BasicNameValuePair
 import org.apache.http.util.EntityUtils
 import scala.io.Source
-import home.sg.util.IO
+import me.lorandszakacs.sgd.util.IO
 import scala.collection.mutable.Buffer
 import scala.collection.mutable.ListBuffer
 import java.io.IOException

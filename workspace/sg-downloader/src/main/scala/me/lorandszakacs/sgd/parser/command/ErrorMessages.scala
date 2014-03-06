@@ -21,8 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package home.sg.repl
+package me.lorandszakacs.sgd.parser.command
 
-object ErrorMessages {
-  val Unimplemented = "Unimplemented"
+object ParserErrorMessages {
+  val UpdateInsufficientArguments = "Insuficient arguments for the 'update' command"
+  val DownloadInsufficientArguments = "Insuficient arguments for the 'download' command"
 }
