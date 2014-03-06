@@ -28,7 +28,6 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import home.sg.constants.ConfigValues
 
-@RunWith(classOf[JUnitRunner])
 class CommandParserTest extends FunSuite {
 
   val parser = SGCommandParser
@@ -36,6 +35,7 @@ class CommandParserTest extends FunSuite {
   val defDownload = ConfigValues.DefaultDownloadPath
   val defInputFile = ConfigValues.DefaultInputPath
 
+  //FIXME: fix this crappy test.
   test("Login command") {
     val result = parser.apply("-login pass45")
     assert(result === Login("Lorand", "pass45"))
