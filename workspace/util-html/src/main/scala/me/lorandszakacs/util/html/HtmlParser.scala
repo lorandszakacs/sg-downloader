@@ -1,10 +1,11 @@
 package me.lorandszakacs.util.html
 
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import scala.collection.mutable.ListBuffer
-import org.jsoup.nodes.Element
 import java.io.File
+
+import scala.collection.mutable.ListBuffer
+
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 
 object HtmlParser {
   def apply(contents: String) = {
@@ -19,7 +20,7 @@ object HtmlParser {
 }
 
 class HtmlParser private (val contents: String) {
-  private lazy val document: Document = Jsoup.parse(contents)
+  private lazy val document = Jsoup.parse(contents)
 
   def filterByClass(cls: String): List[String] = {
     val elements = document.getElementsByClass(cls)

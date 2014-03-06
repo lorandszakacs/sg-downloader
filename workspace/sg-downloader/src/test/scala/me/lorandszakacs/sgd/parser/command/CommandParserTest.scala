@@ -24,8 +24,6 @@
 package me.lorandszakacs.sgd.parser.command
 
 import org.scalatest.FunSuite
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 
 import me.lorandszakacs.sgd.constants.ConfigValues
 

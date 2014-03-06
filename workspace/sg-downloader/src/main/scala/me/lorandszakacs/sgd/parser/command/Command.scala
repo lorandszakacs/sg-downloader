@@ -1,6 +1,6 @@
 /**
  * The MIT License (MIT)
- * 
+ *
  * Copyright (c) 2013 Lorand Szakacs
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,7 +24,7 @@
 package me.lorandszakacs.sgd.parser.command
 
 import scala.util.parsing.combinator.RegexParsers
-import com.typesafe.config.impl.Parser
+
 import me.lorandszakacs.sgd.constants.ConfigValues
 
 sealed trait Command {

@@ -23,9 +23,13 @@
  */
 package me.lorandszakacs.util.http
 
-import org.apache.http.impl.client.DefaultHttpClient
+import java.io.IOException
 import java.util.ArrayList
+
+import scala.io.Source
+
 import org.apache.http.HttpEntity
+import org.apache.http.HttpStatus
 import org.apache.http.NameValuePair
 import org.apache.http.client.entity.UrlEncodedFormEntity
 import org.apache.http.client.methods.HttpGet
@@ -33,9 +37,7 @@ import org.apache.http.client.methods.HttpPost
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.message.BasicNameValuePair
 import org.apache.http.util.EntityUtils
-import scala.io.Source
-import java.io.IOException
-import org.apache.http.HttpStatus
+
 import me.lorandszakacs.util.io.IO
 
 private object SiteInfo {

@@ -23,31 +23,26 @@
  */
 package me.lorandszakacs.sgd.repl
 
+import me.lorandszakacs.sgd.client.Downloader
 import me.lorandszakacs.sgd.parser.command.CommandVisitor
-import me.lorandszakacs.sgd.parser.command.Fail
-import me.lorandszakacs.sgd.parser.command.Login
-import me.lorandszakacs.sgd.parser.command.Update
-import me.lorandszakacs.sgd.parser.command.UpdateAll
+import me.lorandszakacs.sgd.parser.command.CommandVisitorFail
+import me.lorandszakacs.sgd.parser.command.CommandVisitorResult
+import me.lorandszakacs.sgd.parser.command.CommandVisitorSuccess
 import me.lorandszakacs.sgd.parser.command.Download
 import me.lorandszakacs.sgd.parser.command.DownloadFromFile
 import me.lorandszakacs.sgd.parser.command.Exit
-import me.lorandszakacs.sgd.parser.command.CommandVisitorResult
-import me.lorandszakacs.sgd.parser.command.CommandVisitorFail
-import me.lorandszakacs.sgd.parser.command.CommandVisitorSuccess
-import me.lorandszakacs.sgd.constants.ConfigValues
-import me.lorandszakacs.sgd.parser.command.Command
-import me.lorandszakacs.sgd.client.Downloader
-import me.lorandszakacs.sgd.parser.command.CommandVisitorFail
-import me.lorandszakacs.sgd.parser.command.CommandVisitorSuccess
+import me.lorandszakacs.sgd.parser.command.Fail
 import me.lorandszakacs.sgd.parser.command.Help
-import me.lorandszakacs.sgd.parser.command.CommandVisitorFail
-import me.lorandszakacs.util.http.SGClient
+import me.lorandszakacs.sgd.parser.command.Login
+import me.lorandszakacs.sgd.parser.command.Update
+import me.lorandszakacs.sgd.parser.command.UpdateAll
 import me.lorandszakacs.util.http.FileDownloadException
-import me.lorandszakacs.util.http.LoginConnectionLostException
 import me.lorandszakacs.util.http.HttpClientException
-import me.lorandszakacs.util.http.UnknownSGException
-import me.lorandszakacs.util.http.LoginUnknownException
+import me.lorandszakacs.util.http.LoginConnectionLostException
 import me.lorandszakacs.util.http.LoginInvalidUserOrPasswordExn
+import me.lorandszakacs.util.http.LoginUnknownException
+import me.lorandszakacs.util.http.SGClient
+import me.lorandszakacs.util.http.UnknownSGException
 import me.lorandszakacs.util.io.IO
 
 class CommandInterpreter(client: SGClient) extends CommandVisitor {

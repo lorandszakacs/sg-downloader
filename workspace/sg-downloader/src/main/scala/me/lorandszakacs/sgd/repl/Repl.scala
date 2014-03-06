@@ -23,16 +23,10 @@
  */
 package me.lorandszakacs.sgd.repl
 
-import me.lorandszakacs.sgd.parser.command.SGCommandParser
-import me.lorandszakacs.sgd.parser.command.Exit
-import me.lorandszakacs.util.http.SGClient
-import me.lorandszakacs.sgd.parser.command.Fail
-import me.lorandszakacs.sgd.parser.command.Update
-import me.lorandszakacs.sgd.parser.command.UpdateAll
-import me.lorandszakacs.sgd.parser.command.DownloadFromFile
-import me.lorandszakacs.sgd.parser.command.Download
-import me.lorandszakacs.sgd.parser.command.Login
 import me.lorandszakacs.sgd.parser.command.CommandVisitorFail
+import me.lorandszakacs.sgd.parser.command.Exit
+import me.lorandszakacs.sgd.parser.command.SGCommandParser
+import me.lorandszakacs.util.http.SGClient
 
 class Repl(client: SGClient) {
   def start(): Unit = {

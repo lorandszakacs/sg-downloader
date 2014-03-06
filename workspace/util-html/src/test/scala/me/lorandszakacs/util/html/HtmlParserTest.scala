@@ -1,11 +1,10 @@
 package me.lorandszakacs.util.html
 
-import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
-import me.lorandszakacs.util.test.TestDataResolver
-import me.lorandszakacs.util.io.IO
 import org.scalatest.FunSpec
-import org.jsoup.Jsoup
+
+import me.lorandszakacs.util.io.IO
+import me.lorandszakacs.util.test.TestDataResolver
 
 class HtmlParserTest extends FunSpec with BeforeAndAfter {
 

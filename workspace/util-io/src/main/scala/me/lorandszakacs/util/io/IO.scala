@@ -23,17 +23,20 @@
  */
 package me.lorandszakacs.util.io
 
-import scala.util.control.Breaks._
-import java.io.IOException
-import java.io.InputStream
-import java.io.FileOutputStream
 import java.io.BufferedWriter
 import java.io.File
-import scala.collection.JavaConversions._
+import java.io.FileOutputStream
+import java.io.FileWriter
+import java.io.IOException
+import java.io.InputStream
+
+import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.mutable.ListBuffer
+import scala.util.control.Breaks.break
+import scala.util.control.Breaks.breakable
+
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
-import java.io.FileWriter
 
 object IO {
 
