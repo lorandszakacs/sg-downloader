@@ -54,3 +54,6 @@ scalacOptions in Test ++= Testing.scalacOptions
 //===================================================
 //         dependencies for dev libraries
 //===================================================
+libraryDependencies ++= Seq(
+  "org.jsoup" % "jsoup" % "1.7.3"
+)
