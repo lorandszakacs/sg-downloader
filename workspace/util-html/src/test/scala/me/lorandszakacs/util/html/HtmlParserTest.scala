@@ -5,8 +5,52 @@ import org.scalatest.BeforeAndAfter
 import me.lorandszakacs.util.test.TestDataResolver
 import me.lorandszakacs.util.io.IO
 import org.scalatest.FunSpec
+import org.jsoup.Jsoup
 
 class HtmlParserTest extends FunSpec with BeforeAndAfter {
+
+  describe("And HtmlParser grabbing the first link") {
+
+    val expected = "/girls/dwam/album/1239337/adieu-tristesse/"
+    def testLinkGrabbingSuccess(input: String) {
+      val result = HtmlParser(input).grabFirstLink()
+      result match {
+        case None => fail("Should have found a link")
+        case Some(result) => assert(expected === result)
+      }
+    }
+
+    it("should match a standalone link with no spaces") {
+      val toMatch = "<a href=\"%s\">".format(expected)
+      testLinkGrabbingSuccess(toMatch)
+    }
+
+    it("should match a standalone link with spaces after equals") {
+      val toMatch = "<a href=  \"%s\">".format(expected)
+      testLinkGrabbingSuccess(toMatch)
+    }
+
+    it("should match a standalone link with spaces before equals") {
+      val toMatch = "<a href  =\"%s\">".format(expected)
+      testLinkGrabbingSuccess(toMatch)
+    }
+
+    it("should match a standalone link with non-matched junk at the start") {
+      val toMatch = "this is just random html junk <a></a>  <a href=\"%s\">".format(expected)
+      testLinkGrabbingSuccess(toMatch)
+    }
+
+    it("should match only the first link when trailed by another link") {
+      val toMatch = "<a href=\"%s\"> <a>html junk</a> <a href=\"not/a/proper/link.jpg\">".format(expected)
+      testLinkGrabbingSuccess(toMatch)
+    }
+    
+    it("should match a link on a multi line string") {
+      val toMatch = "<a junk> </a>\n<a href=\"%s\"> <a>html junk</a> <a href=\"not/a/proper/link.jpg\">".format(expected)
+      testLinkGrabbingSuccess(toMatch)
+    }
+
+  }
 
   private def readTestData(name: String) = {
     val testDataFolder = TestDataResolver.getTestDataFolderForClass(this.getClass())
@@ -37,7 +81,6 @@ class HtmlParserTest extends FunSpec with BeforeAndAfter {
       val parser = HtmlParser(testFileContents)
       val classes = parser.filterByClass(classForAlbum)
       assert(45 === classes.length)
-      println(classes.mkString("\n\n\n"))
     }
   }
 
