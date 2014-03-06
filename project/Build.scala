@@ -21,38 +21,42 @@
 // THE SOFTWARE.
 
 import sbt._
-import Process._
 import Keys._
 
-def subProject(sbpr: String) = file("workspace/" + sbpr)
+object SubProjects{
+  object Names{
+    val UtilIO = "util-io"
+    val UtilHtml = "util-html"
+    val UtilHttp = "util-http"
+    val SgDownloader = "sg-downloader"
+  }
+  
+}
 
-//order of aggregation doesn't matter
-lazy val aggregatingProject = project.in(file(".")).aggregate(utilIO, utilHttp, utilHtml, sgDownloader)
+object Common {
+  lazy val organization = "lorandszakacs.me"
 
-lazy val utilIO = project.in(subProject(SubProjects.Names.UtilIO))
+  lazy val scalaVersion = "2.10.3"
 
-lazy val utilHttp = project.in(subProject(SubProjects.Names.UtilHttp))
+  lazy val scalacOptions = Seq("-deprecation")
 
-lazy val utilHtml = project.in(subProject(SubProjects.Names.UtilHtml)).dependsOn(utilIO)
+  lazy val javaOptions = Seq("-Xmx1G")
+}
 
-lazy val sgDownloader = project.in(subProject(SubProjects.Names.SgDownloader)).dependsOn(utilHttp, utilHtml, utilIO)
+object Testing { 
 
-name := "SG Downloader and Manager"
+  def libraryDependencies = Seq(
+    "org.scalatest" % "scalatest_2.10" % "2.1.0" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.11.3" % "test",
+    "org.specs2" %% "specs2" % "2.3.8" % "test"
+  )
 
-organization := Common.organization
+  //required for use with the specs2 library
+  def resolvers =
+      Seq("snapshots", "releases").map(Resolver.sonatypeRepo)
 
-version := "0.2"
+  //required for use with the specs2 library.
+  def scalacOptions = Seq("-Yrangepos")
 
-scalaVersion := Common.scalaVersion
-
-scalacOptions ++= Common.scalacOptions
-
-javaOptions ++= Common.javaOptions
-
-javaOptions in Test ++= Testing.javaOptions
-
-mainClass in Compile := (mainClass in sgDownloader in Compile).value
-
-fullClasspath in Runtime := (fullClasspath in sgDownloader in Runtime).value
-
-sourceDirectories := Seq()
+  def javaOptions = Seq("-Xmx2G")
+}

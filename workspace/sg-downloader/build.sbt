@@ -21,23 +21,9 @@
 // THE SOFTWARE.
 
 import sbt._
-import Process._
 import Keys._
 
-def subProject(sbpr: String) = file("workspace/" + sbpr)
-
-//order of aggregation doesn't matter
-lazy val aggregatingProject = project.in(file(".")).aggregate(utilIO, utilHttp, utilHtml, sgDownloader)
-
-lazy val utilIO = project.in(subProject(SubProjects.Names.UtilIO))
-
-lazy val utilHttp = project.in(subProject(SubProjects.Names.UtilHttp))
-
-lazy val utilHtml = project.in(subProject(SubProjects.Names.UtilHtml)).dependsOn(utilIO)
-
-lazy val sgDownloader = project.in(subProject(SubProjects.Names.SgDownloader)).dependsOn(utilHttp, utilHtml, utilIO)
-
-name := "SG Downloader and Manager"
+name := SubProjects.Names.SgDownloader
 
 organization := Common.organization
 
@@ -51,8 +37,25 @@ javaOptions ++= Common.javaOptions
 
 javaOptions in Test ++= Testing.javaOptions
 
-mainClass in Compile := (mainClass in sgDownloader in Compile).value
+mainClass in (Compile, run) := Some("home.sg.app.Main")
 
-fullClasspath in Runtime := (fullClasspath in sgDownloader in Runtime).value
+//required to create the default `sbt` folder structure
+EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
 
-sourceDirectories := Seq()
+//===================================================
+//         dependencies for testing libraries
+//===================================================
+resolvers ++= Testing.resolvers
+
+libraryDependencies ++= Testing.libraryDependencies
+
+scalacOptions in Test ++= Testing.scalacOptions
+
+//===================================================
+//         dependencies for dev libraries
+//===================================================
+libraryDependencies ++= Seq( 
+    "org.apache.httpcomponents" % "httpclient" % "4.2.5",
+    "commons-io" % "commons-io" % "2.4",
+    "com.typesafe" % "config" % "1.0.2"
+)

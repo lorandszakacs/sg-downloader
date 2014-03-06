@@ -20,9 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-#sbt specific.
-target/
-dist/
+#eclipse specific:
+.metadata
+.settings/
+.project
+.classpath
+.cache
 
-#mac specific
-.DS_Store
+# Scala-IDE specific
+.scala_dependencies
+
+#eclipse building specific
+bin/

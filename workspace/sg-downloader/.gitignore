@@ -20,9 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-#sbt specific.
-target/
-dist/
 
-#mac specific
-.DS_Store
+# we want to ignore the machine specific config file
+/src/main/resources/application.conf
