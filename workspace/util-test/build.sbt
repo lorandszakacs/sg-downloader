@@ -21,29 +21,13 @@
 // THE SOFTWARE.
 
 import sbt._
-import Process._
 import Keys._
 
-def subProject(sbpr: String) = file("workspace/" + sbpr)
-
-//order of aggregation doesn't matter
-lazy val aggregatingProject = project.in(file(".")).aggregate(utilTest, utilIO, utilHttp, utilHtml, sgDownloader)
-
-lazy val utilTest = project.in(subProject(SubProjects.Names.UtilTest))
-
-lazy val utilIO = project.in(subProject(SubProjects.Names.UtilIO)).dependsOn(utilTest % "test->test")
-
-lazy val utilHttp = project.in(subProject(SubProjects.Names.UtilHttp)).dependsOn(utilTest % "test->test", utilIO)
-
-lazy val utilHtml = project.in(subProject(SubProjects.Names.UtilHtml)).dependsOn(utilTest % "test->test", utilIO)
-
-lazy val sgDownloader = project.in(subProject(SubProjects.Names.SgDownloader)).dependsOn(utilTest % "test->test", utilHttp, utilHtml, utilIO)
-
-name := "SG Downloader and Manager"
+name := SubProjects.Names.UtilTest
 
 organization := Common.organization
 
-version := "0.2"
+version := "0.1"
 
 scalaVersion := Common.scalaVersion
 
@@ -53,8 +37,20 @@ javaOptions ++= Common.javaOptions
 
 javaOptions in Test ++= Testing.javaOptions
 
-mainClass in Compile := (mainClass in sgDownloader in Compile).value
+mainClass := None
 
-fullClasspath in Runtime := (fullClasspath in sgDownloader in Runtime).value
+//required to create the default `sbt` folder structure
+EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
 
-sourceDirectories := Seq()
+//===================================================
+//         dependencies for testing libraries
+//===================================================
+resolvers ++= Testing.resolvers
+
+libraryDependencies ++= Testing.libraryDependencies
+
+scalacOptions in Test ++= Testing.scalacOptions
+
+//===================================================
+//         dependencies for dev libraries
+//===================================================

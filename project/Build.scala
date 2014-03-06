@@ -28,7 +28,9 @@ object SubProjects{
     val UtilIO = "util-io"
     val UtilHtml = "util-html"
     val UtilHttp = "util-http"
+    val UtilTest = "util-test"
     val SgDownloader = "sg-downloader"
+
   }
   
 }

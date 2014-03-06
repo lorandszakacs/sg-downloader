@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package me.lorandszakacs.sgd.util
+package me.lorandszakacs.util.test
 
 import java.io.File
 
 object TestDataResolver {
 
-  val TestDataFolder = "src/test/resources/scala/"
+  val TestDataFolder = "src/test/resources/"
   def getTestDataFolderForClass(c: Class[_]): String = {
 
     val path = new File(new File(".").getAbsolutePath() + "/" + TestDataFolder +
