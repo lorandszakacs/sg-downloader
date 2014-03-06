@@ -8,28 +8,36 @@ import org.scalatest.FunSpec
 
 class HtmlParserTest extends FunSpec with BeforeAndAfter {
 
-  private var _testFileContents: String = ""
+  private def readTestData(name: String) = {
+    val testDataFolder = TestDataResolver.getTestDataFolderForClass(this.getClass())
+    val lines = IO.readLines(TestDataResolver.getTestDataFolderForClass(this.getClass()) + "/" + name)
+    lines.mkString("\n")
+  }
 
-  val testAlbumPage = "album-page-member-review-sets-dwam.html"
-  val classForAlbum = "image-section"
+  describe("An HtmlParser filtering with `member-review-sets-page` data") {
 
-  describe("An HtmlParser") {
-    before {
+    val testAlbumPage = "album-page-member-review-sets-dwam.html"
+    val classForAlbum = "image-section"
 
-      val testDataFolder = TestDataResolver.getTestDataFolderForClass(this.getClass())
-      val lines = IO.readLines(TestDataResolver.getTestDataFolderForClass(this.getClass()) + "/" + testAlbumPage)
-      val linesInString = lines.mkString("\n")
-      _testFileContents = linesInString
-    }
-
-    after {
-      _testFileContents = ""
-    }
-
-    it("should return 4 elements after filtering by class") {
-      val parser = HtmlParser(_testFileContents)
+    it("should return 4 elements after filtering by class=image-section") {
+      val testFileContents = readTestData(testAlbumPage)
+      val parser = HtmlParser(testFileContents)
       val classes = parser.filterByClass(classForAlbum)
       assert(4 === classes.length)
+    }
+  }
+
+  describe("An HtmlParser filtering with `set-of-the-day-page` data") {
+
+    val testAlbumPage = "photo-set-page-dwam-limportance-setre-ernest.html"
+    val classForAlbum = "photo-container"
+
+    it("should return 45 elements after filtering by class=photo-container") {
+      val testFileContents = readTestData(testAlbumPage)
+      val parser = HtmlParser(testFileContents)
+      val classes = parser.filterByClass(classForAlbum)
+      assert(45 === classes.length)
+      println(classes.mkString("\n\n\n"))
     }
   }
 
