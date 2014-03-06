@@ -1,7 +1,6 @@
 package me.lorandszakacs.util.html
 
 import org.jsoup.Jsoup
-import org.jsoup.safety.Whitelist
 import org.jsoup.nodes.Document
 import scala.collection.mutable.ListBuffer
 import org.jsoup.nodes.Element
@@ -15,6 +14,8 @@ object HtmlParser {
   def apply(file: File) = {
 
   }
+
+  private final val BetweenQuotesRegex = ".*\"(.*)\".*".r
 }
 
 class HtmlParser private (val contents: String) {
@@ -22,8 +23,8 @@ class HtmlParser private (val contents: String) {
 
   def filterByClass(cls: String): List[String] = {
     val elements = document.getElementsByClass(cls)
-    val iterator = elements.iterator()
     val buff = ListBuffer[Element]();
+    val iterator = elements.iterator()
     while (iterator.hasNext()) {
       buff.append(iterator.next())
     }
@@ -31,4 +32,23 @@ class HtmlParser private (val contents: String) {
     result
   }
 
+  def grabFirstLink(): Option[String] = {
+    val links = document.getElementsByAttribute("href")
+    val buff = ListBuffer[Element]();
+    val iterator = links.iterator()
+    while (iterator.hasNext()) {
+      buff.append(iterator.next())
+    }
+    if (buff.length == 0)
+      None
+    else {
+      val firstLink: String = buff(0).toString()
+      try {
+        val HtmlParser.BetweenQuotesRegex(result) = firstLink
+        Some(result)
+      } catch {
+        case e: MatchError => None
+      }
+    }
+  }
 }
