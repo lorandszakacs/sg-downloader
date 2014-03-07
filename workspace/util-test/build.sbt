@@ -49,6 +49,10 @@ resolvers ++= Testing.resolvers
 
 libraryDependencies ++= Testing.libraryDependencies
 
+libraryDependencies ++= Seq(
+  "com.typesafe" % "config" % "1.0.2"
+)
+
 scalacOptions in Test ++= Testing.scalacOptions
 
 //===================================================

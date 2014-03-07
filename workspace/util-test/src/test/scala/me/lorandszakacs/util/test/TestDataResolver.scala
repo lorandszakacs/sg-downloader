@@ -1,6 +1,6 @@
 /**
  * The MIT License (MIT)
- * 
+ *
  * Copyright (c) 2013 Lorand Szakacs
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,13 +25,18 @@ package me.lorandszakacs.util.test
 
 import java.io.File
 
+import com.typesafe.config.ConfigFactory
+
 object TestDataResolver {
 
-  val TestDataFolder = "src/test/resources/"
-  def getTestDataFolderForClass(c: Class[_]): String = {
+  val RootFolder = {
+    val conf = ConfigFactory.load()
+    conf.getString("util-test.root-workspace-folder")
+  }
 
-    val path = new File(new File(".").getAbsolutePath() + "/" + TestDataFolder +
-      c.getPackage().getName().replace(".", "/")).getCanonicalFile().getAbsolutePath() + "/"
-    path
+  val TestDataFolder = "src/test/resources/"
+  def getTestDataFolderForClass(c: Class[_], projectName: String): String = {
+    val path = RootFolder + "/" + projectName + "/" + TestDataFolder + c.getPackage().getName().replace(".", "/")
+    new File(path).getCanonicalFile().getAbsolutePath()
   }
 }
