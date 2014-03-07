@@ -26,3 +26,6 @@ dist/
 
 #mac specific
 .DS_Store
+
+#application specific
+*.conf
