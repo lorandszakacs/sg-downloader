@@ -33,23 +33,39 @@ class HtmlParser private (val contents: String) {
     result
   }
 
-  def grabFirstLink(): Option[String] = {
+  def grabAllLinks(): Option[List[String]] = {
     val links = document.getElementsByAttribute("href")
     val buff = ListBuffer[Element]();
     val iterator = links.iterator()
     while (iterator.hasNext()) {
       buff.append(iterator.next())
     }
+
     if (buff.length == 0)
       None
     else {
-      val firstLink: String = buff(0).toString()
-      try {
-        val HtmlParser.BetweenQuotesRegex(result) = firstLink
-        Some(result)
-      } catch {
-        case e: MatchError => None
-      }
+      val result = ListBuffer[String]()
+      buff.foreach(htmlLink => {
+        try {
+          val HtmlParser.BetweenQuotesRegex(link) = htmlLink.toString
+          result.append(link)
+        } catch {
+          case e: MatchError => Unit
+        }
+      })
+
+      if (result.length == 0)
+        None
+      else
+        Some(result.toList)
+    }
+  }
+
+  def grabFirstLink(): Option[String] = {
+    val links = grabAllLinks
+    links match {
+      case None => None
+      case Some(res) => Some(res.head)
     }
   }
 }
