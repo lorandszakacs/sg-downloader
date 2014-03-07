@@ -19,6 +19,14 @@ class HtmlParserTest extends FunSpec with BeforeAndAfter {
       }
     }
 
+    def testLinkGrabbingFailure(input: String) {
+      val result = HtmlParser(input).grabFirstLink()
+      result match {
+        case None => assert(true)
+        case Some(_) => fail("should not have found any links")
+      }
+    }
+
     it("should match a standalone link with no spaces") {
       val toMatch = "<a href=\"%s\">".format(expected)
       testLinkGrabbingSuccess(toMatch)
@@ -49,12 +57,32 @@ class HtmlParserTest extends FunSpec with BeforeAndAfter {
       testLinkGrabbingSuccess(toMatch)
     }
 
+    it("should not match any link in simple example") {
+      val toMatch = "<a >"
+      testLinkGrabbingFailure(toMatch)
+    }
+
+    it("should not match any link in example with a link, but no tags to identify it") {
+      val toMatch = "<a \"%s\">".format(expected)
+      testLinkGrabbingFailure(toMatch)
+    }
+
   }
 
   private def readTestData(name: String) = {
     val testDataFolder = TestDataResolver.getTestDataFolderForClass(this.getClass(), TestConstants.ProjectName)
     val lines = IO.readLines(testDataFolder + "/" + name)
     lines.mkString("\n")
+  }
+
+  describe("An HtmlParser grabing the contents of a class") {
+    val testAlbumPage = "photo-set-page-dwam-limportance-setre-ernest.html"
+    val classForTitle = "title"
+    val classForDate = "icon-photography"
+
+    it("should return the contents of the title class") {
+
+    }
   }
 
   describe("An HtmlParser filtering with `member-review-sets-page` data") {
