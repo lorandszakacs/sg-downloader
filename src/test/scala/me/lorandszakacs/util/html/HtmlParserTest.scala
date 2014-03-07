@@ -43,7 +43,7 @@ class HtmlParserTest extends FunSpec with BeforeAndAfter {
       val toMatch = "<a href=\"%s\"> <a>html junk</a> <a href=\"not/a/proper/link.jpg\">".format(expected)
       testLinkGrabbingSuccess(toMatch)
     }
-    
+
     it("should match a link on a multi line string") {
       val toMatch = "<a junk> </a>\n<a href=\"%s\"> <a>html junk</a> <a href=\"not/a/proper/link.jpg\">".format(expected)
       testLinkGrabbingSuccess(toMatch)
@@ -52,13 +52,12 @@ class HtmlParserTest extends FunSpec with BeforeAndAfter {
   }
 
   private def readTestData(name: String) = {
-    val testDataFolder = TestDataResolver.getTestDataFolderForClass(this.getClass())
-    val lines = IO.readLines(TestDataResolver.getTestDataFolderForClass(this.getClass()) + "/" + name)
+    val testDataFolder = TestDataResolver.getTestDataFolderForClass(this.getClass(), TestConstants.ProjectName)
+    val lines = IO.readLines(testDataFolder + "/" + name)
     lines.mkString("\n")
   }
 
   describe("An HtmlParser filtering with `member-review-sets-page` data") {
-
     val testAlbumPage = "album-page-member-review-sets-dwam.html"
     val classForAlbum = "image-section"
 
