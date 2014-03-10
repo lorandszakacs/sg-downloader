@@ -22,6 +22,14 @@ object HtmlParser {
 class HtmlParser private (val contents: String) {
   private lazy val document = Jsoup.parse(contents)
 
+  def filter(filter: HtmlFilter) = {
+
+  }
+
+  def filter(filters: Seq[HtmlFilter]) = {
+
+  }
+
   def filterByClass(cls: String): List[String] = {
     val elements = document.getElementsByClass(cls)
     val buff = ListBuffer[Element]();
