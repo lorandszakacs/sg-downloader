@@ -2,9 +2,9 @@ package me.lorandszakacs.util.html
 
 import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSpec
-
 import me.lorandszakacs.util.io.IO
 import me.lorandszakacs.util.test.TestDataResolver
+import org.jsoup.Jsoup
 
 class HtmlParserTest extends FunSpec with BeforeAndAfter {
 
@@ -78,10 +78,16 @@ class HtmlParserTest extends FunSpec with BeforeAndAfter {
   describe("An HtmlParser grabing the contents of a class") {
     val testAlbumPage = "photo-set-page-dwam-limportance-setre-ernest.html"
     val classForTitle = "title"
+    val contentForTitle = "Limportance d etre Ernest"
+
     val classForDate = "icon-photography"
+    val contentForDate = "Jan 24, 2013"
 
     it("should return the contents of the title class") {
-
+      val doc = Jsoup.parse(readTestData(testAlbumPage))
+      val res = doc.getElementsByTag("time")
+      println("aa")
+      
     }
   }
 
