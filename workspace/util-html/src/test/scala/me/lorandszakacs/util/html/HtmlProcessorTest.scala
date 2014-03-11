@@ -23,11 +23,10 @@
  */
 package me.lorandszakacs.util.html
 
-import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSpec
+
 import me.lorandszakacs.util.io.IO
 import me.lorandszakacs.util.test.TestDataResolver
-import org.jsoup.Jsoup
 
 object HtmlProcessorTest {
   private def readTestData(name: String) = {
@@ -86,9 +85,15 @@ object HtmlProcessorTest {
         final val Single = Folder + "single-class.html"
       }
 
+      object Content {
+        private final val Folder = Simple.TopLeveLFolder + "filter-content/"
+        final val FromClass = Folder + "content-from-class.html"
+        final val FromTag = Folder + "content-from-tag.html"
+        final val FromAttribute = Folder + "content-from-attribute.html"
+        final val FromComposite = Folder + "content-from-composite.html"
+      }
     }
   }
-
 }
 
 class HtmlProcessorTest extends FunSpec {
@@ -327,6 +332,56 @@ class HtmlProcessorTest extends FunSpec {
         case Some(links) => {
           assert(1 === links.length)
           assert(links(0) === "first-link/foo")
+        }
+      }
+    }
+  }
+
+  describe("Content filter") {
+    it("should return only the date from the `icon-photography` class") {
+      val html = getProcessor(Data.Simple.Content.FromClass)
+      val content = html filter Content(Class("icon-photography"))
+      content match {
+        case None => fail("should have found something")
+        case Some(date) => {
+          assert(1 === date.length)
+          assert("Nov 09, 2013" === date(0).trim)
+        }
+      }
+    }
+
+    it("should return only the contents of the `div` tag") {
+      val html = getProcessor(Data.Simple.Content.FromTag)
+      val content = html filter Content(Tag("div"))
+      content match {
+        case None => fail("should have found something")
+        case Some(div) => {
+          assert(1 === div.length)
+          assert("<a>whatever</a>" === div(0).trim)
+        }
+      }
+    }
+
+    it("should return only the contents of the `id` attribute") {
+      val html = getProcessor(Data.Simple.Content.FromAttribute)
+      val content = html filter Content(Attribute("id"))
+      content match {
+        case None => fail("should have found something")
+        case Some(loadMore) => {
+          assert(1 === loadMore.length)
+          assert("Load more" === loadMore(0).trim)
+        }
+      }
+    }
+
+    it("should return the contents of a Composite Filter") {
+      val html = getProcessor(Data.Simple.Content.FromComposite)
+      val content = html filter Content(Class("meta-data") && Class("photographer"))
+      content match {
+        case None => fail("should have found something")
+        case Some(by) => {
+          assert(1 === by.length)
+          assert(by(0).trim.startsWith("by"))
         }
       }
     }
