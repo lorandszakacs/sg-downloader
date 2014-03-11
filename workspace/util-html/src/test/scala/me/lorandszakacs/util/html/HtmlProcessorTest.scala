@@ -44,7 +44,7 @@ object HtmlProcessorTest {
   object ComplexData {
     final val AlbumPageSetOfTheDay = "album-page-sets-of-the-day.html"
     final val AlbumPageMemberReview = "album-page-member-review-sets.html"
-    final val PhotoSetOfTheDay = "photo-set-page.html"
+    final val PhotoSetOfTheDay = "photo-set-of-the-day-page.html"
     final val PhotoSetMemberReview = "photo-set-member-review-page.html"
   }
 
@@ -102,7 +102,13 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
   }
 
   describe("Attribute filter") {
-
+    it("should filter out the 4 existing elements with a `href` attribute") {
+      val html = getProcessor(ComplexData.AlbumPageMemberReview)
+      val hrefs = html filter Attribute("href")
+      //FIXME: make more thourough checks
+      println(hrefs.mkString("\n"))
+      assert(4 === hrefs.length)
+    }
   }
 
   describe("RetainAll combined with HrefLink filter") {
@@ -119,6 +125,18 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
       assert(1 === links.length)
       assert(links(0) === "first-link/foo")
     }
+  }
+
+  describe("grabbing content of elements filtered by Attributes") {
+
+    it("should return `data-index`attribute contents") {
+      val html = getProcessor(ComplexData.PhotoSetOfTheDay)
+      val dataIndex = html filter Content(Attribute("data-index"))
+      assert(dataIndex.length === 45)
+      assert(dataIndex(0) === "0")
+      assert(dataIndex(44) === "44")
+    }
+
   }
 
   //  describe("Generic filtering of the HTML content") {
