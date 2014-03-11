@@ -34,7 +34,7 @@ import org.jsoup.select.Elements
  * @author lorand
  *
  */
-sealed trait HtmlFilter {
+protected sealed trait HtmlFilter {
   def &&(that: HtmlFilter): HtmlFilter = CompositeFilter(this, that)
 
   def apply(doc: Document): List[String] = {
@@ -65,9 +65,22 @@ sealed trait HtmlFilter {
  */
 private case class CompositeFilter(val first: HtmlFilter, val second: HtmlFilter) extends HtmlFilter {
   override def apply(doc: Document): List[String] = {
-    val resultsFirst = first(doc)
-    val resultsSecond = resultsFirst.map(el => second(el))
-    resultsSecond.flatten
+    (first, second) match {
+      case (retainFirst: RetainFirst, normalFilter: HtmlFilter) => {
+        val result = normalFilter(doc)
+        List(result(0))
+      }
+      case (normalFilter: HtmlFilter, retainFirst: RetainFirst) => {
+        val result = normalFilter(doc)
+        List(result(0))
+      }
+      case (_, _) => {
+        val resultsFirst = first(doc)
+        val resultsSecond = resultsFirst.map(el => second(el))
+        resultsSecond.flatten
+      }
+    }
+
   }
 
   override def apply(htmlChunk: String): List[String] = {
@@ -83,7 +96,18 @@ private case class CompositeFilter(val first: HtmlFilter, val second: HtmlFilter
  * @author lorand
  *
  */
-case class AttributeFilter(private val attribute: String) extends HtmlFilter {
+case class RetainFirst() extends HtmlFilter {
+  override def filter(doc: Document): Elements = null
+}
+/**
+ * @author lorand
+ *
+ */
+case class Attribute(private val attribute: String) extends HtmlFilter {
+  override def filter(doc: Document): Elements = doc.getElementsByAttribute(attribute)
+}
+
+case class AttributeContent(private val attribute: String) extends HtmlFilter {
   override def filter(doc: Document): Elements = doc.getElementsByAttribute(attribute)
 }
 
@@ -91,7 +115,7 @@ case class AttributeFilter(private val attribute: String) extends HtmlFilter {
  * @author lorand
  *
  */
-case class ClassFilter(private val className: String) extends HtmlFilter {
+case class Class(private val className: String) extends HtmlFilter {
   override def filter(doc: Document): Elements = doc.getElementsByClass(className)
 }
 
@@ -99,11 +123,11 @@ case class ClassFilter(private val className: String) extends HtmlFilter {
  * @author lorand
  *
  */
-case class TagFilter(private val tagName: String) extends HtmlFilter {
+case class Tag(private val tagName: String) extends HtmlFilter {
   override def filter(doc: Document): Elements = doc.getElementsByTag(tagName)
 }
 
-case class LinkFilter() extends HtmlFilter {
+case class HrefLink() extends HtmlFilter {
   private final val BetweenQuotesRegex = "\"(.*?)\"".r
 
   override def apply(doc: Document): List[String] = {
