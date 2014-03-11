@@ -103,11 +103,7 @@ case class RetainFirst() extends HtmlFilter {
  * @author lorand
  *
  */
-case class Attribute(private val attribute: String) extends HtmlFilter {
-  override def filter(doc: Document): Elements = doc.getElementsByAttribute(attribute)
-}
-
-case class AttributeContent(private val attribute: String) extends HtmlFilter {
+case class Attribute(val attribute: String) extends HtmlFilter {
   override def filter(doc: Document): Elements = doc.getElementsByAttribute(attribute)
 }
 
@@ -115,7 +111,22 @@ case class AttributeContent(private val attribute: String) extends HtmlFilter {
  * @author lorand
  *
  */
-case class Class(private val className: String) extends HtmlFilter {
+case class Content(val attribute: Attribute) extends HtmlFilter {
+
+  override def apply(doc: Document): List[String] = {
+    val elementsWithAttribute = elementsToList(filter(doc))
+    val attributeContent = elementsWithAttribute map (e => e.attr(attribute.attribute).toString)
+    attributeContent.toList
+  }
+
+  override def filter(doc: Document): Elements = doc.getElementsByAttribute(attribute.attribute)
+}
+
+/**
+ * @author lorand
+ *
+ */
+case class Class(val className: String) extends HtmlFilter {
   override def filter(doc: Document): Elements = doc.getElementsByClass(className)
 }
 
@@ -123,16 +134,14 @@ case class Class(private val className: String) extends HtmlFilter {
  * @author lorand
  *
  */
-case class Tag(private val tagName: String) extends HtmlFilter {
+case class Tag(val tagName: String) extends HtmlFilter {
   override def filter(doc: Document): Elements = doc.getElementsByTag(tagName)
 }
 
 case class HrefLink() extends HtmlFilter {
   override def apply(doc: Document): List[String] = {
-    val hrefAttributes = filter(doc)
-    val elementsWithHref = elementsToList(hrefAttributes)
-    val links = elementsWithHref map (e => e.attr("href").toString)
-    links.toList
+    val hrefAttributes = Content(Attribute("href"))
+    hrefAttributes.apply(doc)
   }
 
   override def filter(doc: Document): Elements = doc.getElementsByAttribute("href")
