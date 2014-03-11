@@ -1,3 +1,26 @@
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013 Lorand Szakacs
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package me.lorandszakacs.util.html
 
 import org.scalatest.BeforeAndAfter
@@ -6,7 +29,71 @@ import me.lorandszakacs.util.io.IO
 import me.lorandszakacs.util.test.TestDataResolver
 import org.jsoup.Jsoup
 
+object HtmlParserTest {
+  def readTestData(name: String) = {
+    val testDataFolder = TestDataResolver.getTestDataFolderForClass(this.getClass(), TestConstants.ProjectName)
+    val lines = IO.readLines(testDataFolder + "/" + name)
+    lines.mkString("\n")
+  }
+
+  final val AlbumPageSetOfTheDay = "album-page-sets-of-the-day-dwam.html"
+  final val AlbumPageMemberReview = "album-page-member-review-sets-dwam.html"
+  final val PhotoSetOfTheDay = "photo-set-page-dwam-limportance-setre-ernest.html"
+  final val PhotoSetMemberReview = "photo-set-page-member-review-dwam-adieu-tristesse.html"
+}
+
 class HtmlParserTest extends FunSpec with BeforeAndAfter {
+  import HtmlParserTest._
+
+  describe("filtering out links with the HTML parser") {
+    def getParser(data: String) = {
+      val toParse = readTestData(data)
+      HtmlParser(toParse)
+    }
+
+    it("should filter out the one link in the html") {
+      val parser = getParser("simplified-filter-test-data/nested-links.html")
+      val links = parser filter LinkFilter()
+      assert(1 === links.length)
+      assert(links(0) === "first-link/foo")
+    }
+
+    it("should filter out the two nested links in the html") {
+      val parser = getParser("simplified-filter-test-data/nested-links.html")
+      val links = parser filter LinkFilter()
+      assert(2 === links.length)
+      assert(links(0) === "first-link/foo")
+      assert(links(1) === "second-link/foo")
+
+    }
+
+  }
+
+  describe("Generic filtering of the HTML content") {
+    it("should filter by class") {
+      val html = readTestData(AlbumPageMemberReview)
+      val parser = HtmlParser(html)
+      val classes = parser filter ClassFilter("image-section")
+      //FIXME: make more thourough checks
+      assert(4 === classes.length)
+    }
+
+    it("should filter by class and content") {
+      val html = readTestData(AlbumPageMemberReview)
+      val parser = HtmlParser(html)
+      val classes = parser filter (ClassFilter("image-section") && AttributeFilter("href"))
+      //FIXME: make more thourough checks
+      assert(4 === classes.length)
+    }
+
+    it("should filter out all the links within all 'image-section' classes") {
+      val html = readTestData(AlbumPageMemberReview)
+      val parser = HtmlParser(html)
+      val classes = parser filter ClassFilter("image-section") && LinkFilter()
+      println(classes mkString "\n\n")
+      assert(4 === classes.length)
+    }
+  }
 
   describe("And HtmlParser grabbing the first link") {
 
@@ -57,6 +144,11 @@ class HtmlParserTest extends FunSpec with BeforeAndAfter {
       testLinkGrabbingSuccess(toMatch)
     }
 
+    it("should match a real life example") {
+      val toMatch = readTestData("simplified-filter-test-data/should-match-complex-thing.html")
+      testLinkGrabbingSuccess(toMatch)
+    }
+
     it("should not match any link in simple example") {
       val toMatch = "<a >"
       testLinkGrabbingFailure(toMatch)
@@ -69,14 +161,8 @@ class HtmlParserTest extends FunSpec with BeforeAndAfter {
 
   }
 
-  private def readTestData(name: String) = {
-    val testDataFolder = TestDataResolver.getTestDataFolderForClass(this.getClass(), TestConstants.ProjectName)
-    val lines = IO.readLines(testDataFolder + "/" + name)
-    lines.mkString("\n")
-  }
-
   describe("An HtmlParser grabing the contents of a class") {
-    val testAlbumPage = "photo-set-page-dwam-limportance-setre-ernest.html"
+    val testAlbumPage = PhotoSetOfTheDay
     val classForTitle = "title"
     val contentForTitle = "Limportance d etre Ernest"
 
@@ -86,13 +172,14 @@ class HtmlParserTest extends FunSpec with BeforeAndAfter {
     it("should return the contents of the title class") {
       val doc = Jsoup.parse(readTestData(testAlbumPage))
       val res = doc.getElementsByTag("time")
-      println("aa")
-      
+      println(res)
+      //FIXME
+
     }
   }
 
   describe("An HtmlParser filtering with `member-review-sets-page` data") {
-    val testAlbumPage = "album-page-member-review-sets-dwam.html"
+    val testAlbumPage = AlbumPageMemberReview
     val classForAlbum = "image-section"
 
     it("should return 4 elements after filtering by class=image-section") {
@@ -105,7 +192,7 @@ class HtmlParserTest extends FunSpec with BeforeAndAfter {
 
   describe("An HtmlParser filtering with `set-of-the-day-page` data") {
 
-    val testAlbumPage = "photo-set-page-dwam-limportance-setre-ernest.html"
+    val testAlbumPage = PhotoSetOfTheDay
     val classForAlbum = "photo-container"
 
     it("should return 45 elements after filtering by class=photo-container") {
