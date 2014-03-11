@@ -65,22 +65,9 @@ protected sealed trait HtmlFilter {
  */
 private case class CompositeFilter(val first: HtmlFilter, val second: HtmlFilter) extends HtmlFilter {
   override def apply(doc: Document): List[String] = {
-    (first, second) match {
-      case (retainFirst: RetainFirst, normalFilter: HtmlFilter) => {
-        val result = normalFilter(doc)
-        List(result(0))
-      }
-      case (normalFilter: HtmlFilter, retainFirst: RetainFirst) => {
-        val result = normalFilter(doc)
-        List(result(0))
-      }
-      case (_, _) => {
-        val resultsFirst = first(doc)
-        val resultsSecond = resultsFirst.map(el => second(el))
-        resultsSecond.flatten
-      }
-    }
-
+    val resultsFirst = first(doc)
+    val resultsSecond = resultsFirst.map(el => second(el))
+    resultsSecond.flatten
   }
 
   override def apply(htmlChunk: String): List[String] = {
@@ -96,7 +83,11 @@ private case class CompositeFilter(val first: HtmlFilter, val second: HtmlFilter
  * @author lorand
  *
  */
-case class RetainFirst() extends HtmlFilter {
+case class RetainFirst(filter: HtmlFilter) extends HtmlFilter {
+  override def apply(doc: Document): List[String] = {
+    val allItems = filter.apply(doc)
+    List(allItems(0))
+  }
   override def filter(doc: Document): Elements = null
 }
 /**
