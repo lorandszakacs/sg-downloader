@@ -102,6 +102,49 @@ private case class CompositeFilter(val first: HtmlFilter, val second: HtmlFilter
  * @author lorand
  *
  */
+case class Attribute(val attribute: String) extends HtmlFilter {
+  override def filter(doc: Document): Elements = doc.getElementsByAttribute(attribute)
+}
+
+/**
+ * @author lorand
+ *
+ */
+case class Class(val className: String) extends HtmlFilter {
+  override def filter(doc: Document): Elements = doc.getElementsByClass(className)
+}
+
+/**
+ * @author lorand
+ *
+ */
+case class Tag(val tagName: String) extends HtmlFilter {
+  override def filter(doc: Document): Elements = doc.getElementsByTag(tagName)
+}
+
+/**
+ * @author lorand
+ *
+ */
+case class HrefLink() extends HtmlFilter {
+  override def apply(doc: Document): Option[List[String]] = {
+    val hrefAttributes = Value(Attribute("href"))
+    hrefAttributes.apply(doc)
+  }
+
+  override def filter(doc: Document): Elements = null
+}
+
+/*
+ * =================================================
+ *       Modifiers you apply to other filters
+ * =================================================
+ */
+
+/**
+ * @author lorand
+ *
+ */
 case class RetainFirst(filter: HtmlFilter) extends HtmlFilter {
   override def apply(doc: Document): Option[List[String]] = {
     val allItems = filter.apply(doc)
@@ -111,13 +154,6 @@ case class RetainFirst(filter: HtmlFilter) extends HtmlFilter {
     }
   }
   override def filter(doc: Document): Elements = null
-}
-/**
- * @author lorand
- *
- */
-case class Attribute(val attribute: String) extends HtmlFilter {
-  override def filter(doc: Document): Elements = doc.getElementsByAttribute(attribute)
 }
 
 /**
@@ -143,23 +179,21 @@ case class Value(val attribute: Attribute) extends HtmlFilter {
  * @author lorand
  *
  */
-case class Class(val className: String) extends HtmlFilter {
-  override def filter(doc: Document): Elements = doc.getElementsByClass(className)
-}
-
-/**
- * @author lorand
- *
- */
-case class Tag(val tagName: String) extends HtmlFilter {
-  override def filter(doc: Document): Elements = doc.getElementsByTag(tagName)
-}
-
-case class HrefLink() extends HtmlFilter {
+case class Content(val filter: HtmlFilter) extends HtmlFilter {
   override def apply(doc: Document): Option[List[String]] = {
-    val hrefAttributes = Value(Attribute("href"))
-    hrefAttributes.apply(doc)
+    val filtered = filter.apply(doc)
+    filtered match {
+      case None => None
+      case Some(items) => {
+        val docs = items map (e => Jsoup.parse(e))
+        //because we reparse whatever the result was is being put in a new body
+        //e.body().children().first() will always return non-null.
+        val result = docs map (e => e.body().children().first().html())
+        Some(result)
+      }
+    }
   }
 
   override def filter(doc: Document): Elements = null
 }
+
