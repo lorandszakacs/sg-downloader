@@ -82,11 +82,7 @@ private case class CompositeFilter(val first: HtmlFilter, val second: HtmlFilter
     resultsFirst match {
       case None => None
       case Some(result) => {
-        //this new List might contain List(None, None, None,... Some, ...)
-        val resultsSecond: List[Option[List[String]]] = result.map(r => second(r))
-        val onlySomeResults = resultsSecond filter (option => option.isDefined)
-        val results = onlySomeResults map (some => some.get)
-        val finalResult = results.flatten
+        val finalResult = result.flatMap(r => second(r)).flatten
         if (finalResult.isEmpty)
           None
         else
