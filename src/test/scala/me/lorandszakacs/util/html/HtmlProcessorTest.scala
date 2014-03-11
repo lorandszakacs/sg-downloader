@@ -76,6 +76,7 @@ object HtmlProcessorTest {
         final val Flat = Folder + "flat-tags.html"
         final val Nested = Folder + "nested-tags.html"
         final val Single = Folder + "single-tag.html"
+        final val NestedWithinFlat = Folder + "nested-tags-within-flat-tags.html"
       }
 
       object Class {
@@ -118,6 +119,19 @@ class HtmlProcessorTest extends FunSpec {
       tag match {
         case None => fail("should have found some tag")
         case Some(tag) => assert(3 === tag.length)
+      }
+    }
+
+    it("should return the elements with the specified tag from within all the top level elements") {
+      val html = getProcessor(Data.Simple.Tag.NestedWithinFlat)
+      val tag = html filter Tag("a")
+      tag match {
+        case None => fail("should have found some tag")
+        case Some(tag) => {
+          assert(6 === tag.length)
+          assert(tag(0).startsWith("<a href=\"first-link"))
+          assert(tag(5).trim.startsWith("<a href=\"second/third-link"))
+        }
       }
     }
 
