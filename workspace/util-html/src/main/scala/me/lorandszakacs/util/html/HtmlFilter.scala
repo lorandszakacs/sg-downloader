@@ -102,7 +102,7 @@ case class Attribute(val attribute: String) extends HtmlFilter {
  * @author lorand
  *
  */
-case class Content(val attribute: Attribute) extends HtmlFilter {
+case class Value(val attribute: Attribute) extends HtmlFilter {
 
   override def apply(doc: Document): List[String] = {
     val elementsWithAttribute = elementsToList(filter(doc))
@@ -131,7 +131,7 @@ case class Tag(val tagName: String) extends HtmlFilter {
 
 case class HrefLink() extends HtmlFilter {
   override def apply(doc: Document): List[String] = {
-    val hrefAttributes = Content(Attribute("href"))
+    val hrefAttributes = Value(Attribute("href"))
     hrefAttributes.apply(doc)
   }
 
