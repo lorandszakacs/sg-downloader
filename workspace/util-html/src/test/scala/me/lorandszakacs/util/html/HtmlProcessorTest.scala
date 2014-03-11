@@ -41,18 +41,51 @@ object HtmlProcessorTest {
     HtmlProcessor(toParse)
   }
 
-  object ComplexData {
-    final val AlbumPageSetOfTheDay = "album-page-sets-of-the-day.html"
-    final val AlbumPageMemberReview = "album-page-member-review-sets.html"
-    final val PhotoSetOfTheDay = "photo-set-of-the-day-page.html"
-    final val PhotoSetMemberReview = "photo-set-member-review-page.html"
-  }
+  object Data {
 
-  object SimpleData {
-    final val Folder = "simplified-filter-test-data/"
-    final val FlatLinks = Folder + "flat-links.html"
-    final val NestedLinks = Folder + "nested-links.html"
-    final val SingleLink = Folder + "single-link.html"
+    object Complex {
+      private final val TopLevelFolder = "complex-data/"
+
+      object Combination {
+        private final val Folder = Complex.TopLevelFolder + "combination/"
+        final val TwoTopLevelImageSections = Folder + "two-top-level-image-sections.html"
+      }
+
+      object Unsorted {
+
+      }
+
+      final val AlbumPageSetOfTheDay = "album-page-sets-of-the-day.html"
+      final val AlbumPageMemberReview = "album-page-member-review-sets.html"
+      final val PhotoSetOfTheDay = "photo-set-of-the-day-page.html"
+      final val PhotoSetMemberReview = "photo-set-member-review-page.html"
+    }
+
+    object Simple {
+      private final val TopLeveLFolder = "simplified-data/"
+
+      object Link {
+        private final val Folder = Simple.TopLeveLFolder + "filter-link/"
+        final val Flat = Folder + "flat-links.html"
+        final val Nested = Folder + "nested-links.html"
+        final val Single = Folder + "single-link.html"
+      }
+
+      object Tag {
+        private final val Folder = Simple.TopLeveLFolder + "filter-tag/"
+        final val Flat = Folder + "flat-tags.html"
+        final val Nested = Folder + "nested-tags.html"
+        final val Single = Folder + "single-tag.html"
+      }
+
+      object Class {
+        private final val Folder = Simple.TopLeveLFolder + "filter-class/"
+        final val Flat = Folder + "flat-classes.html"
+        final val Nested = Folder + "nested-classes.html"
+        final val Single = Folder + "single-class.html"
+      }
+
+    }
   }
 
 }
@@ -60,16 +93,105 @@ object HtmlProcessorTest {
 class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
   import HtmlProcessorTest._
 
+  describe("Tag filter") {
+    it("should return the only tag") {
+      val html = getProcessor(Data.Simple.Tag.Single)
+      val tag = html filter Tag("a")
+      assert(1 === tag.length)
+    }
+
+    it("should return both flat tags") {
+      val html = getProcessor(Data.Simple.Tag.Flat)
+      val tag = html filter Tag("a")
+      assert(2 === tag.length)
+    }
+
+    it("should return all three nested tags") {
+      val html = getProcessor(Data.Simple.Tag.Nested)
+      val tag = html filter Tag("a")
+      assert(3 === tag.length)
+    }
+
+    it("should return all 45 elements with tag `li`") {
+      val html = getProcessor(Data.Complex.PhotoSetOfTheDay)
+      val tags = html filter Tag("li")
+      //FIXME: make more thorough checks
+      assert(45 === tags.length)
+    }
+
+    //FIXME: add tests for behavior of two top level tags, each with more nested tags
+  }
+
+  describe("Class filter") {
+    it("should return the only class") {
+      val html = getProcessor(Data.Simple.Class.Single)
+      val clazz = html filter Class("meta-data")
+      assert(1 === clazz.length)
+    }
+
+    it("should return both flat classes") {
+      val html = getProcessor(Data.Simple.Class.Flat)
+      val clazz = html filter Class("meta-data")
+      assert(2 === clazz.length)
+    }
+
+    it("should return both nested tags") {
+      val html = getProcessor(Data.Simple.Class.Nested)
+      val clazz = html filter Class("meta-data")
+      assert(2 === clazz.length)
+    }
+
+    it("should filter out the 4 existing `image-section` classes") {
+      val html = getProcessor(Data.Complex.AlbumPageMemberReview)
+      val classes = html filter Class("image-section")
+      //FIXME: make more thorough checks
+      assert(4 === classes.length)
+    }
+
+    it("should filter out the 9 existing `image-section` classes") {
+      val html = getProcessor(Data.Complex.AlbumPageSetOfTheDay)
+      val classes = html filter Class("image-section")
+      //FIXME: make more thorough checks
+      assert(9 === classes.length)
+    }
+
+    it("should filter out the 45 existing `photo-container` classes") {
+      val html = getProcessor(Data.Complex.PhotoSetOfTheDay)
+      val classes = html filter Class("photo-container")
+      //FIXME: make more thorough checks
+      assert(45 === classes.length)
+    }
+  }
+
+  describe("Attribute filter") {
+    it("should filter out the 4 existing elements with a `href` attribute") {
+      val html = getProcessor(Data.Complex.AlbumPageMemberReview)
+      val hrefs = html filter Attribute("href")
+      //FIXME: make more thorough checks
+      assert(4 === hrefs.length)
+    }
+  }
+
+  describe("grabbing Content of elements filtered by Attributes") {
+    it("should return `data-index`attribute contents") {
+      val html = getProcessor(Data.Complex.PhotoSetOfTheDay)
+      val dataIndex = html filter Content(Attribute("data-index"))
+      assert(dataIndex.length === 45)
+      assert(dataIndex(0) === "0")
+      assert(dataIndex(44) === "44")
+    }
+  }
+
   describe("HrefLink filter") {
     it("should filter out the one link in the html") {
-      val html = getProcessor(SimpleData.SingleLink)
+      val html = getProcessor(Data.Simple.Link.Single)
       val links = html filter HrefLink()
       assert(1 === links.length)
       assert(links(0) === "first-link/foo")
     }
 
     it("should filter out the two nested links in the html") {
-      val html = getProcessor(SimpleData.NestedLinks)
+      val html = getProcessor(Data.Simple.Link.Nested)
       val links = html filter HrefLink()
       assert(2 === links.length)
       assert(links(0) === "first-link/foo")
@@ -77,7 +199,7 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
     }
 
     it("should filter out two flat links") {
-      val html = getProcessor(SimpleData.FlatLinks)
+      val html = getProcessor(Data.Simple.Link.Flat)
       val links = html filter HrefLink()
       assert(2 === links.length)
       assert(links(0) === "first-link/foo")
@@ -85,58 +207,40 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
     }
   }
 
-  describe("Class filter") {
-    it("should filter out the 4 existing `image-section` classes") {
-      val html = getProcessor(ComplexData.AlbumPageMemberReview)
-      val classes = html filter Class("image-section")
-      //FIXME: make more thourough checks
-      assert(4 === classes.length)
-    }
-
-    it("should filter out the 9 existing `image-section` classes") {
-      val html = getProcessor(ComplexData.AlbumPageSetOfTheDay)
-      val classes = html filter Class("image-section")
-      //FIXME: make more thourough checks
-      assert(9 === classes.length)
-    }
-  }
-
-  describe("Attribute filter") {
-    it("should filter out the 4 existing elements with a `href` attribute") {
-      val html = getProcessor(ComplexData.AlbumPageMemberReview)
-      val hrefs = html filter Attribute("href")
-      //FIXME: make more thourough checks
-      println(hrefs.mkString("\n"))
-      assert(4 === hrefs.length)
-    }
-  }
-
-  describe("RetainAll combined with HrefLink filter") {
+  describe("RetainFirst of HrefLink filter") {
     it("should retain only the first link when composed with a RetainFirst filter, on rhs") {
-      val html = getProcessor(SimpleData.NestedLinks)
+      val html = getProcessor(Data.Simple.Link.Nested)
       val links = html filter HrefLink() && RetainFirst()
       assert(1 === links.length)
       assert(links(0) === "first-link/foo")
     }
 
     it("should retain only the first link when composed with a RetainFirst filter, on lhs") {
-      val html = getProcessor(SimpleData.NestedLinks)
+      val html = getProcessor(Data.Simple.Link.Nested)
       val links = html filter RetainFirst() && HrefLink()
       assert(1 === links.length)
       assert(links(0) === "first-link/foo")
     }
   }
 
-  describe("grabbing content of elements filtered by Attributes") {
-
-    it("should return `data-index`attribute contents") {
-      val html = getProcessor(ComplexData.PhotoSetOfTheDay)
-      val dataIndex = html filter Content(Attribute("data-index"))
-      assert(dataIndex.length === 45)
-      assert(dataIndex(0) === "0")
-      assert(dataIndex(44) === "44")
+  describe("Combining filters") {
+    it("should return all the links contained within the `photo-container` classes contained within the first `image-section` class") {
+      val html = getProcessor(Data.Complex.Combination.TwoTopLevelImageSections)
+      val links = html filter (RetainFirst() && Class("image-section")) && Class("photo-container") && HrefLink()
+      assert(45 === links.length)
+      assert("link0" === links(0))
+      assert("link44" === links(44))
     }
-
+    
+    it("should return all the links contained within the `photo-container` classes contained within both `image-section` class") {
+      val html = getProcessor(Data.Complex.Combination.TwoTopLevelImageSections)
+      val links = html filter Class("image-section") && Class("photo-container") && HrefLink()
+      assert(46 === links.length)
+      assert("link0" === links(0))
+      assert("link44" === links(44))
+      assert("BOGUS LINK!!" === links(45))
+    }
+    
   }
 
   //  describe("Generic filtering of the HTML content") {
