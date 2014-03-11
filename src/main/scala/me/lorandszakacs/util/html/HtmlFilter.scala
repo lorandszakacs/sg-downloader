@@ -128,8 +128,6 @@ case class Tag(private val tagName: String) extends HtmlFilter {
 }
 
 case class HrefLink() extends HtmlFilter {
-  private final val BetweenQuotesRegex = "\"(.*?)\"".r
-
   override def apply(doc: Document): List[String] = {
     val hrefAttributes = filter(doc)
     val elementsWithHref = elementsToList(hrefAttributes)
