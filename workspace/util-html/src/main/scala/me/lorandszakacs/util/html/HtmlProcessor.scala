@@ -39,8 +39,8 @@ object HtmlProcessor {
 
 class HtmlProcessor private (val contents: String) {
   private lazy val document = Jsoup.parse(contents)
-  def filter(f: HtmlFilter): List[String] = {
-    //FIXME: remove redundant tostring
-    f.apply(document) map (_.toString)
+
+  def filter(f: HtmlFilter): Option[List[String]] = {
+    f.apply(document)
   }
 }

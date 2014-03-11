@@ -90,35 +90,57 @@ object HtmlProcessorTest {
 
 }
 
-class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
+class HtmlProcessorTest extends FunSpec {
   import HtmlProcessorTest._
 
   describe("Tag filter") {
     it("should return the only tag") {
       val html = getProcessor(Data.Simple.Tag.Single)
       val tag = html filter Tag("a")
-      assert(1 === tag.length)
+      tag match {
+        case None => fail("should have found some tag")
+        case Some(tag) => assert(1 === tag.length)
+      }
     }
 
     it("should return both flat tags") {
       val html = getProcessor(Data.Simple.Tag.Flat)
       val tag = html filter Tag("a")
-      assert(2 === tag.length)
+      tag match {
+        case None => fail("should have found some tag")
+        case Some(tag) => assert(2 === tag.length)
+      }
     }
 
     it("should return all three nested tags") {
       val html = getProcessor(Data.Simple.Tag.Nested)
       val tag = html filter Tag("a")
-      assert(3 === tag.length)
+      tag match {
+        case None => fail("should have found some tag")
+        case Some(tag) => assert(3 === tag.length)
+      }
+    }
+
+    it("should return `None` when looking for a tag that doesn't exists") {
+      val html = getProcessor(Data.Simple.Tag.Nested)
+      val tag = html filter Tag("no-such-tag")
+      tag match {
+        case None => info("properly returned `None`")
+        case Some(_) => fail("should not have found anything")
+      }
     }
 
     it("should return all 45 elements with tag `li`") {
       val html = getProcessor(Data.Complex.PhotoSetOfTheDay)
       val tags = html filter Tag("li")
-      //FIXME: make more thorough checks
-      assert(45 === tags.length)
+      tags match {
+        case None => fail("should have found some tag")
+        case Some(tags) => {
+          assert(45 === tags.length)
+          assert(tags.forall(tag => tag.startsWith("<li class=\"photo-container\"")))
+        }
+      }
     }
-
     //FIXME: add tests for behavior of two top level tags, each with more nested tags
   }
 
@@ -126,40 +148,68 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
     it("should return the only class") {
       val html = getProcessor(Data.Simple.Class.Single)
       val clazz = html filter Class("meta-data")
-      assert(1 === clazz.length)
+      clazz match {
+        case None => fail("should have found some class")
+        case Some(clazz) => assert(1 === clazz.length)
+      }
     }
 
     it("should return both flat classes") {
       val html = getProcessor(Data.Simple.Class.Flat)
       val clazz = html filter Class("meta-data")
-      assert(2 === clazz.length)
+      clazz match {
+        case None => fail("should have found some class")
+        case Some(clazz) => assert(2 === clazz.length)
+      }
+
     }
 
     it("should return both nested tags") {
       val html = getProcessor(Data.Simple.Class.Nested)
       val clazz = html filter Class("meta-data")
-      assert(2 === clazz.length)
+      clazz match {
+        case None => fail("should have found some class")
+        case Some(clazz) => assert(2 === clazz.length)
+      }
+    }
+
+    it("should return `None` when looking for a class that doesn't exists") {
+      val html = getProcessor(Data.Simple.Class.Nested)
+      val clazz = html filter Class("no-such-class")
+      clazz match {
+        case None => info("properly returned `None`")
+        case Some(_) => fail("should not have found anything")
+      }
     }
 
     it("should filter out the 4 existing `image-section` classes") {
       val html = getProcessor(Data.Complex.AlbumPageMemberReview)
       val classes = html filter Class("image-section")
-      //FIXME: make more thorough checks
-      assert(4 === classes.length)
+      classes match {
+        case None => fail("should have found some class")
+        case Some(classes) => assert(4 === classes.length)
+      }
     }
 
     it("should filter out the 9 existing `image-section` classes") {
       val html = getProcessor(Data.Complex.AlbumPageSetOfTheDay)
       val classes = html filter Class("image-section")
-      //FIXME: make more thorough checks
-      assert(9 === classes.length)
+      classes match {
+        case None => fail("should have found some class")
+        case Some(classes) => assert(9 === classes.length)
+      }
     }
 
     it("should filter out the 45 existing `photo-container` classes") {
       val html = getProcessor(Data.Complex.PhotoSetOfTheDay)
       val classes = html filter Class("photo-container")
-      //FIXME: make more thorough checks
-      assert(45 === classes.length)
+      classes match {
+        case None => fail("should have found some class")
+        case Some(classes) => {
+          assert(45 === classes.length)
+          assert(classes.forall(clazz => clazz.startsWith("<li class=\"photo-container\"")))
+        }
+      }
     }
   }
 
@@ -167,8 +217,23 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
     it("should filter out the 4 existing elements with a `href` attribute") {
       val html = getProcessor(Data.Complex.AlbumPageMemberReview)
       val hrefs = html filter Attribute("href")
-      //FIXME: make more thorough checks
-      assert(4 === hrefs.length)
+      hrefs match {
+        case None => fail("should have found some attribute")
+        case Some(hrefs) => {
+          assert(4 === hrefs.length)
+          assert(hrefs(0).startsWith("<a href=\"href1"))
+          assert(hrefs(3).startsWith("<a href=\"href4"))
+        }
+      }
+    }
+
+    it("should return `None` when looking for an attribute that doesn't exists") {
+      val html = getProcessor(Data.Simple.Tag.Nested)
+      val attribute = html filter Attribute("no-such-attr")
+      attribute match {
+        case None => info("properly returned `None`")
+        case Some(_) => fail("should not have found anything")
+      }
     }
   }
 
@@ -176,9 +241,14 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
     it("should return `data-index`attribute contents") {
       val html = getProcessor(Data.Complex.PhotoSetOfTheDay)
       val dataIndex = html filter Value(Attribute("data-index"))
-      assert(dataIndex.length === 45)
-      assert(dataIndex(0) === "0")
-      assert(dataIndex(44) === "44")
+      dataIndex match {
+        case None => fail("should have found some dataIndex")
+        case Some(dataIndex) => {
+          assert(dataIndex.length === 45)
+          assert(dataIndex(0) === "0")
+          assert(dataIndex(44) === "44")
+        }
+      }
     }
   }
 
@@ -186,24 +256,39 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
     it("should filter out the one link in the html") {
       val html = getProcessor(Data.Simple.Link.Single)
       val links = html filter HrefLink()
-      assert(1 === links.length)
-      assert(links(0) === "first-link/foo")
+      links match {
+        case None => fail("should have found some hrefs")
+        case Some(links) => {
+          assert(1 === links.length)
+          assert(links(0) === "first-link/foo")
+        }
+      }
     }
 
     it("should filter out the two nested links in the html") {
       val html = getProcessor(Data.Simple.Link.Nested)
       val links = html filter HrefLink()
-      assert(2 === links.length)
-      assert(links(0) === "first-link/foo")
-      assert(links(1) === "second-link/foo")
+      links match {
+        case None => fail("should have found some hrefs")
+        case Some(links) => {
+          assert(2 === links.length)
+          assert(links(0) === "first-link/foo")
+          assert(links(1) === "second-link/foo")
+        }
+      }
     }
 
     it("should filter out two flat links") {
       val html = getProcessor(Data.Simple.Link.Flat)
       val links = html filter HrefLink()
-      assert(2 === links.length)
-      assert(links(0) === "first-link/foo")
-      assert(links(1) === "second-link/foo")
+      links match {
+        case None => fail("should have found some hrefs")
+        case Some(links) => {
+          assert(2 === links.length)
+          assert(links(0) === "first-link/foo")
+          assert(links(1) === "second-link/foo")
+        }
+      }
     }
   }
 
@@ -211,15 +296,25 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
     it("should retain only the first link when composed with a RetainFirst filter, on rhs") {
       val html = getProcessor(Data.Simple.Link.Nested)
       val links = html filter RetainFirst(HrefLink())
-      assert(1 === links.length)
-      assert(links(0) === "first-link/foo")
+      links match {
+        case None => fail("should have found some hrefs")
+        case Some(links) => {
+          assert(1 === links.length)
+          assert(links(0) === "first-link/foo")
+        }
+      }
     }
 
     it("should retain only the first link when composed with a RetainFirst filter, on lhs") {
       val html = getProcessor(Data.Simple.Link.Nested)
       val links = html filter RetainFirst(HrefLink())
-      assert(1 === links.length)
-      assert(links(0) === "first-link/foo")
+      links match {
+        case None => fail("should have found some hrefs")
+        case Some(links) => {
+          assert(1 === links.length)
+          assert(links(0) === "first-link/foo")
+        }
+      }
     }
   }
 
@@ -227,18 +322,55 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
     it("should return all the links contained within the `photo-container` classes contained within the first `image-section` class") {
       val html = getProcessor(Data.Complex.Combination.TwoTopLevelImageSections)
       val links = html filter RetainFirst(Class("image-section")) && Class("photo-container") && HrefLink()
-      assert(45 === links.length)
-      assert("link0" === links(0))
-      assert("link44" === links(44))
+      links match {
+        case None => fail("should have found some hrefs")
+        case Some(links) => {
+          assert(45 === links.length)
+          assert("link0" === links(0))
+          assert("link44" === links(44))
+        }
+      }
     }
 
     it("should return all the links contained within the `photo-container` classes contained within both `image-section` class") {
       val html = getProcessor(Data.Complex.Combination.TwoTopLevelImageSections)
       val links = html filter Class("image-section") && Class("photo-container") && HrefLink()
-      assert(46 === links.length)
-      assert("link0" === links(0))
-      assert("link44" === links(44))
-      assert("BOGUS LINK!!" === links(45))
+      links match {
+        case None => fail("should have found some hrefs")
+        case Some(links) => {
+          assert(46 === links.length)
+          assert("link0" === links(0))
+          assert("link44" === links(44))
+          assert("BOGUS LINK!!" === links(45))
+        }
+      }
+    }
+
+    it("should return `None` if the first filter in the combination returns `None`") {
+      val html = getProcessor(Data.Complex.Combination.TwoTopLevelImageSections)
+      val links = html filter Class("non-existent-class") && Class("photo-container") && HrefLink()
+      links match {
+        case None => info("returned `None`, as expected")
+        case Some(_) => fail("should not have found any links")
+      }
+    }
+
+    it("should return `None` if the filter in middle the combination returns `None`") {
+      val html = getProcessor(Data.Complex.Combination.TwoTopLevelImageSections)
+      val links = html filter Class("image-section") && Class("non-existent-class") && HrefLink()
+      links match {
+        case None => info("returned `None`, as expected")
+        case Some(_) => fail("should not have found anything")
+      }
+    }
+
+    it("should return `None` if the last filter in the combination returns `None`") {
+      val html = getProcessor(Data.Complex.Combination.TwoTopLevelImageSections)
+      val links = html filter Class("image-section") && Class("photo-container") && Attribute("non-existent-attribute")
+      links match {
+        case None => info("returned `None`, as expected")
+        case Some(_) => fail("should not have found anything")
+      }
     }
 
   }
