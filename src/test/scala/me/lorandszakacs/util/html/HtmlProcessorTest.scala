@@ -210,14 +210,14 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
   describe("RetainFirst of HrefLink filter") {
     it("should retain only the first link when composed with a RetainFirst filter, on rhs") {
       val html = getProcessor(Data.Simple.Link.Nested)
-      val links = html filter HrefLink() && RetainFirst()
+      val links = html filter RetainFirst(HrefLink())
       assert(1 === links.length)
       assert(links(0) === "first-link/foo")
     }
 
     it("should retain only the first link when composed with a RetainFirst filter, on lhs") {
       val html = getProcessor(Data.Simple.Link.Nested)
-      val links = html filter RetainFirst() && HrefLink()
+      val links = html filter RetainFirst(HrefLink())
       assert(1 === links.length)
       assert(links(0) === "first-link/foo")
     }
@@ -226,12 +226,12 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
   describe("Combining filters") {
     it("should return all the links contained within the `photo-container` classes contained within the first `image-section` class") {
       val html = getProcessor(Data.Complex.Combination.TwoTopLevelImageSections)
-      val links = html filter (RetainFirst() && Class("image-section")) && Class("photo-container") && HrefLink()
+      val links = html filter RetainFirst(Class("image-section")) && Class("photo-container") && HrefLink()
       assert(45 === links.length)
       assert("link0" === links(0))
       assert("link44" === links(44))
     }
-    
+
     it("should return all the links contained within the `photo-container` classes contained within both `image-section` class") {
       val html = getProcessor(Data.Complex.Combination.TwoTopLevelImageSections)
       val links = html filter Class("image-section") && Class("photo-container") && HrefLink()
@@ -240,7 +240,7 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
       assert("link44" === links(44))
       assert("BOGUS LINK!!" === links(45))
     }
-    
+
   }
 
   //  describe("Generic filtering of the HTML content") {
