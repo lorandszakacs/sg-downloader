@@ -175,7 +175,7 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
   describe("grabbing Content of elements filtered by Attributes") {
     it("should return `data-index`attribute contents") {
       val html = getProcessor(Data.Complex.PhotoSetOfTheDay)
-      val dataIndex = html filter Content(Attribute("data-index"))
+      val dataIndex = html filter Value(Attribute("data-index"))
       assert(dataIndex.length === 45)
       assert(dataIndex(0) === "0")
       assert(dataIndex(44) === "44")
@@ -242,76 +242,4 @@ class HtmlProcessorTest extends FunSpec with BeforeAndAfter {
     }
 
   }
-
-  //  describe("Generic filtering of the HTML content") {
-  //    it("should filter by class") {
-  //      val html = readTestData(AlbumPageMemberReview)
-  //      val parser = HtmlParser(html)
-  //      val classes = parser filter ClassFilter("image-section")
-  //      //FIXME: make more thourough checks
-  //      assert(4 === classes.length)
-  //    }
-  //
-  //    it("should filter by class and content") {
-  //      val html = readTestData(AlbumPageMemberReview)
-  //      val parser = HtmlParser(html)
-  //      val classes = parser filter (ClassFilter("image-section") && AttributeFilter("href"))
-  //      //FIXME: make more thourough checks
-  //      assert(4 === classes.length)
-  //    }
-  //
-  //    it("should filter out all the links within all 'image-section' classes") {
-  //      val html = readTestData(AlbumPageMemberReview)
-  //      val parser = HtmlParser(html)
-  //      val classes = parser filter ClassFilter("image-section") && HrefLinkFilter()
-  //      println(classes mkString "\n\n")
-  //      assert(4 === classes.length)
-  //    }
-  //  }
-  //
-  //
-  //  }
-  //
-  //  describe("An HtmlParser grabing the contents of a class") {
-  //    val testAlbumPage = PhotoSetOfTheDay
-  //    val classForTitle = "title"
-  //    val contentForTitle = "Limportance d etre Ernest"
-  //
-  //    val classForDate = "icon-photography"
-  //    val contentForDate = "Jan 24, 2013"
-  //
-  //    it("should return the contents of the title class") {
-  //      val doc = Jsoup.parse(readTestData(testAlbumPage))
-  //      val res = doc.getElementsByTag("time")
-  //      println(res)
-  //      //FIXME
-  //
-  //    }
-  //  }
-  //
-  //  describe("An HtmlParser filtering with `member-review-sets-page` data") {
-  //    val testAlbumPage = AlbumPageMemberReview
-  //    val classForAlbum = "image-section"
-  //
-  //    it("should return 4 elements after filtering by class=image-section") {
-  //      val testFileContents = readTestData(testAlbumPage)
-  //      val parser = HtmlParser(testFileContents)
-  //      val classes = parser.filterByClass(classForAlbum)
-  //      assert(4 === classes.length)
-  //    }
-  //  }
-  //
-  //  describe("An HtmlParser filtering with `set-of-the-day-page` data") {
-  //
-  //    val testAlbumPage = PhotoSetOfTheDay
-  //    val classForAlbum = "photo-container"
-  //
-  //    it("should return 45 elements after filtering by class=photo-container") {
-  //      val testFileContents = readTestData(testAlbumPage)
-  //      val parser = HtmlParser(testFileContents)
-  //      val classes = parser.filterByClass(classForAlbum)
-  //      assert(45 === classes.length)
-  //    }
-  //  }
-
 }
