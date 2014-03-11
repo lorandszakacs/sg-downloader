@@ -48,6 +48,7 @@ object HtmlProcessorTest {
       object Combination {
         private final val Folder = Complex.TopLevelFolder + "combination/"
         final val TwoTopLevelImageSections = Folder + "two-top-level-image-sections.html"
+        final val ThreeTopLevelImageSectionMiddleOneEmpty = Folder + "three-top-level-image-sections-middle-one-empty.html/"
       }
 
       object Unsorted {
@@ -160,7 +161,6 @@ class HtmlProcessorTest extends FunSpec {
         }
       }
     }
-    //FIXME: add tests for behavior of two top level tags, each with more nested tags
   }
 
   describe("Class filter") {
@@ -256,7 +256,7 @@ class HtmlProcessorTest extends FunSpec {
     }
   }
 
-  describe("grabbing Content of elements filtered by Attributes") {
+  describe("grabbing the Values of elements filtered by Attributes") {
     it("should return `data-index`attribute contents") {
       val html = getProcessor(Data.Complex.PhotoSetOfTheDay)
       val dataIndex = html filter Value(Attribute("data-index"))
@@ -411,6 +411,21 @@ class HtmlProcessorTest extends FunSpec {
           assert("link0" === links(0))
           assert("link44" === links(44))
           assert("BOGUS LINK!!" === links(45))
+        }
+      }
+    }
+
+    it("should return all the links contained within the `photo-container` classes contained within both `image-section` class" +
+      "even though the middle `image-section` class contains no photocontainers") {
+      val html = getProcessor(Data.Complex.Combination.ThreeTopLevelImageSectionMiddleOneEmpty)
+      val links = html filter Class("image-section") && Class("photo-container") && HrefLink()
+      links match {
+        case None => fail("should have found some hrefs")
+        case Some(links) => {
+          assert(3 === links.length)
+          assert("link0" === links(0))
+          assert("link44" === links(1))
+          assert("BOGUS LINK!!" === links(2))
         }
       }
     }
