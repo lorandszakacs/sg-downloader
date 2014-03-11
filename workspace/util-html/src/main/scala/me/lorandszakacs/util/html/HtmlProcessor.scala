@@ -24,21 +24,29 @@
 package me.lorandszakacs.util.html
 
 import java.io.File
+import java.security.InvalidParameterException
 
 import org.jsoup.Jsoup
 
 object HtmlProcessor {
   def apply(contents: String) = {
-    new HtmlProcessor(contents)
+    new HtmlProcessor(Some(contents), None)
   }
 
   def apply(file: File) = {
-
+    new HtmlProcessor(None, Some(file))
   }
 }
 
-class HtmlProcessor private (val contents: String) {
-  private lazy val document = Jsoup.parse(contents)
+class HtmlProcessor private (content: Option[String], file: Option[File]) {
+  private lazy val document = {
+    (content, file) match {
+      case (None, Some(f)) => Jsoup.parse(f, "UTF-8")
+      case (Some(c), None) => Jsoup.parse(c)
+      case (Some(_), Some(_)) => throw new InvalidParameterException("Cannot instantiate an HtmlProcessor with both string content and a file")
+      case (None, None) => throw new InvalidParameterException("Cannot instantiate an HtmlProcessor with nothing")
+    }
+  }
 
   def filter(f: HtmlFilter): Option[List[String]] = {
     f.apply(document)

@@ -23,22 +23,16 @@
  */
 package me.lorandszakacs.util.html
 
+import java.io.File
+
 import org.scalatest.FunSpec
 
-import me.lorandszakacs.util.io.IO
 import me.lorandszakacs.util.test.TestDataResolver
 
 object HtmlProcessorTest {
-  private def readTestData(name: String) = {
-    val testDataFolder = TestDataResolver.getTestDataFolderForClass(HtmlProcessorTest.this.getClass(), TestConstants.ProjectName)
-    val lines = IO.readLines(testDataFolder + "/" + name)
-    lines.mkString("\n")
-  }
+  def testDataFolder = TestDataResolver.getTestDataFolderForClass(HtmlProcessorTest.this.getClass(), TestConstants.ProjectName)
 
-  def getProcessor(data: String) = {
-    val toParse = readTestData(data)
-    HtmlProcessor(toParse)
-  }
+  def getProcessor(data: String) = HtmlProcessor(new File(testDataFolder + "/" + data))
 
   object Data {
 

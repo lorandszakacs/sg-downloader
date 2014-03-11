@@ -35,7 +35,7 @@ lazy val utilIO = project.in(subProject(SubProjects.Names.UtilIO)).dependsOn(uti
 
 lazy val utilHttp = project.in(subProject(SubProjects.Names.UtilHttp)).dependsOn(utilTest % "test->test", utilIO)
 
-lazy val utilHtml = project.in(subProject(SubProjects.Names.UtilHtml)).dependsOn(utilTest % "test->test", utilIO)
+lazy val utilHtml = project.in(subProject(SubProjects.Names.UtilHtml)).dependsOn(utilTest % "test->test")
 
 lazy val sgDownloader = project.in(subProject(SubProjects.Names.SgDownloader)).dependsOn(utilTest % "test->test", utilHttp, utilHtml, utilIO)
 

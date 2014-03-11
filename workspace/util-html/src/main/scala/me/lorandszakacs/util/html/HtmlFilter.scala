@@ -23,6 +23,7 @@
  */
 package me.lorandszakacs.util.html
 
+import scala.Option.option2Iterable
 import scala.collection.mutable.ListBuffer
 
 import org.jsoup.Jsoup

@@ -48,9 +48,9 @@ object Common {
 object Testing { 
 
   def libraryDependencies = Seq(
-    "org.scalatest" % "scalatest_2.10" % "2.1.0" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.11.3" % "test",
-    "org.specs2" %% "specs2" % "2.3.8" % "test"
+    "org.scalatest" % "scalatest_2.10" % "2.1.0" % "test"
+    //"org.scalacheck" %% "scalacheck" % "1.11.3" % "test",
+    //"org.specs2" %% "specs2" % "2.3.8" % "test"
   )
 
   //required for use with the specs2 library
@@ -58,7 +58,8 @@ object Testing {
       Seq("snapshots", "releases").map(Resolver.sonatypeRepo)
 
   //required for use with the specs2 library.
-  def scalacOptions = Seq("-Yrangepos")
+  //def scalacOptions = Seq("-Yrangepos")
+  def scalacOptions = Seq()
 
   def javaOptions = Seq("-Xmx2G")
 }
