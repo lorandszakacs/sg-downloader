@@ -45,6 +45,11 @@ object HtmlProcessorTest {
         final val ThreeTopLevelImageSectionMiddleOneEmpty = Folder + "three-top-level-image-sections-middle-one-empty.html/"
       }
 
+      object Filter {
+        private final val Folder = Complex.TopLevelFolder + "filter/"
+        final val FilterByClass = Folder + "filter-by-button-login-class.html"
+      }
+
       object Unsorted {
 
       }
@@ -78,6 +83,7 @@ object HtmlProcessorTest {
         final val Flat = Folder + "flat-classes.html"
         final val Nested = Folder + "nested-classes.html"
         final val Single = Folder + "single-class.html"
+        final val Space = Folder + "class-with-space-in-name.html"
       }
 
       object Content {
@@ -177,13 +183,24 @@ class HtmlProcessorTest extends FunSpec {
 
     }
 
-    it("should return both nested tags") {
+    it("should return both nested classes") {
       val html = getProcessor(Data.Simple.Class.Nested)
       val clazz = html filter Class("meta-data")
       clazz match {
         case None => fail("should have found some class")
         case Some(clazz) => assert(2 === clazz.length)
       }
+    }
+
+    //FIXME: this fails because of a bug in Jsoup where classes with spaces are parsed as two seperate classes.
+    ignore("should return elements with classes containing spaces") {
+      val html = getProcessor(Data.Simple.Class.Space)
+      val clazz = html filter Class("button login")
+      clazz match {
+        case None => fail("should have found some class")
+        case Some(clazz) => assert(1 === clazz.length)
+      }
+
     }
 
     it("should return `None` when looking for a class that doesn't exists") {
