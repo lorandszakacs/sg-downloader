@@ -55,5 +55,5 @@ scalacOptions in Test ++= Testing.scalacOptions
 //         dependencies for dev libraries
 //===================================================
 libraryDependencies ++= Seq( 
-    "org.apache.httpcomponents" % "httpclient" % "4.2.5"
+    "org.apache.httpcomponents" % "httpclient" % "4.3.3"
 )

@@ -33,7 +33,7 @@ lazy val utilTest = project.in(subProject(SubProjects.Names.UtilTest))
 
 lazy val utilIO = project.in(subProject(SubProjects.Names.UtilIO)).dependsOn(utilTest % "test->test")
 
-lazy val utilHttp = project.in(subProject(SubProjects.Names.UtilHttp)).dependsOn(utilTest % "test->test", utilIO)
+lazy val utilHttp = project.in(subProject(SubProjects.Names.UtilHttp)).dependsOn(utilTest % "test->test", utilIO, utilHtml)
 
 lazy val utilHtml = project.in(subProject(SubProjects.Names.UtilHtml)).dependsOn(utilTest % "test->test")
 
