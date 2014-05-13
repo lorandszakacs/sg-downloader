@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package me.lorandszakacs.util.html
+package com.lorandszakacs.util.html
 
 import java.io.File
 
 import org.scalatest.FunSpec
 
-import me.lorandszakacs.util.test.TestDataResolver
+import com.lorandszakacs.util.test.TestDataResolver
 
 object HtmlProcessorTest {
   def testDataFolder = TestDataResolver.getTestDataFolderForClass(HtmlProcessorTest.this.getClass(), TestConstants.ProjectName)

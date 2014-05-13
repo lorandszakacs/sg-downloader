@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package me.lorandszakacs.util.html
+package com.lorandszakacs.util.html
 
 import scala.Option.option2Iterable
 import scala.collection.mutable.ListBuffer
