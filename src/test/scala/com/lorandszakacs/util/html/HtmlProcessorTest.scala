@@ -27,8 +27,6 @@ import java.io.File
 
 import org.scalatest.FunSpec
 
-import com.lorandszakacs.util.test.TestDataResolver
-
 object HtmlProcessorTest {
   def testDataFolder = TestDataResolver.getTestDataFolderForClass(HtmlProcessorTest.this.getClass(), TestConstants.ProjectName)
 

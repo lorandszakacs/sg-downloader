@@ -23,8 +23,15 @@
  */
 package com.lorandszakacs.util.html
 
-object TestConstants {
-	val ProjectName = "util-html-filter"
-	  val test = {
-	}
-}	
+import java.io.File
+
+object TestDataResolver {
+
+  val WorkspaceFolder = "../"
+
+  val TestDataFolder = "src/test/resources/"
+  def getTestDataFolderForClass(c: java.lang.Class[_], projectName: String): String = {
+    val path = WorkspaceFolder + "/" + projectName + "/" + TestDataFolder + c.getPackage().getName().replace(".", "/")
+    new File(path).getCanonicalFile().getAbsolutePath()
+  }
+}
