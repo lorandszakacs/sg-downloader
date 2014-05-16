@@ -54,17 +54,23 @@ It gives us the two html elements that have the class "importantInfo".
 Want to get hold only of the links within these two divs? Here's how:
 ```scala
 html filter Class("importantInfo") && HrefLink()
-```
-```
+
+//result:
 Some(List(http://www.metallica.com/, http://www.blueoystercult.com/))
 ```
 
 What about if we want to grab only the content from `<a>` tags within the two divs?
 ```scala
 html filter Content(Class("importantInfo") && Tag("a"))
+
+//result:
+Some(List(Metallica \m/, BoC \m/))
 ```
 
 You can also grab the values of attributes, actually the `HrefLink` filter is nothing but a special case of this:
 ```scala
 html filter Class("importantInfo") && Tag("a") && Value(Attribute("href"))
+
+//result:
+Some(List(http://www.metallica.com/, http://www.blueoystercult.com/))
 ```
