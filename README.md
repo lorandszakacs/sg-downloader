@@ -12,5 +12,5 @@ This is a very simple, easy to use library that can be used to extract informati
 
 ## Using it
 
-First, check out the [tests](blob/master/src/test/scala/com/lorandszakacs/util/html/HtmlProcessorTest.scala) for usage examples.  
+First, check out the [tests](src/test/scala/com/lorandszakacs/util/html/HtmlProcessorTest.scala) for usage examples.  
 
