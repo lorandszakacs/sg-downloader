@@ -23,19 +23,19 @@
 import sbt._
 import Keys._
 
-name := SubProjects.Names.UtilHtml
+name := "util-html-filter"
 
-organization := Common.organization
+organization := "lorandszakacs.com"
 
 version := "0.1"
 
-scalaVersion := Common.scalaVersion
+scalaVersion := "2.10.3"
 
-scalacOptions ++= Common.scalacOptions
+scalacOptions ++= Seq("-deprecation")
 
-javaOptions ++= Common.javaOptions
+javaOptions ++= Seq("-Xmx1G")
 
-javaOptions in Test ++= Testing.javaOptions
+javaOptions in Test ++= Seq("-Xmx1G")
 
 mainClass := None
 
@@ -45,11 +45,9 @@ EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
 //===================================================
 //         dependencies for testing libraries
 //===================================================
-resolvers ++= Testing.resolvers
+libraryDependencies ++= Seq("org.scalatest" % "scalatest_2.10" % "2.1.0" % "test")
 
-libraryDependencies ++= Testing.libraryDependencies
-
-scalacOptions in Test ++= Testing.scalacOptions
+scalacOptions in Test ++= Seq()
 
 //===================================================
 //         dependencies for dev libraries
