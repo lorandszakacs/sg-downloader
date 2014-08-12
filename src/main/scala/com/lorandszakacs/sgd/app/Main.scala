@@ -26,14 +26,10 @@ package com.lorandszakacs.sgd.app
 import com.lorandszakacs.sgd.repl.Repl
 import com.lorandszakacs.util.http.SGClient
 
-object Main {
-
-  def main(args: Array[String]): Unit = {
-    println("sg-downloader")
-    val client = new SGClient()
-    val repl = new Repl(client)
-    repl.start()
-    println("exiting sg-downloader.")
-  }
-
+object Main extends App {
+  println("sg-downloader")
+  val client = new SGClient()
+  val repl = new Repl(client)
+  repl.start()
+  println("exiting sg-downloader.")
 }

@@ -40,7 +40,7 @@ javaOptions ++= Seq("-Xmx1G")
 
 javaOptions in Test ++= Seq("-Xmx1G")
 
-mainClass := None
+mainClass := "com.lorandszakacs.sgd.app.Main"
 
 //required to create the default `sbt` folder structure
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + EclipseCreateSrc.Managed
