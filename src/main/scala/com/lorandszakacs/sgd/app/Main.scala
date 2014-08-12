@@ -1,6 +1,6 @@
 /**
  * The MIT License (MIT)
- * 
+ *
  * Copyright (c) 2014 Lorand Szakacs
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,18 +23,17 @@
  */
 package com.lorandszakacs.sgd.app
 
-import com.lorandszakacs.sgd.constants.Version
 import com.lorandszakacs.sgd.repl.Repl
 import com.lorandszakacs.util.http.SGClient
 
 object Main {
 
   def main(args: Array[String]): Unit = {
-    println("SG-downloader " + Version.version)
+    println("sg-downloader")
     val client = new SGClient()
     val repl = new Repl(client)
     repl.start()
-    println("exiting SG-downloader.")
+    println("exiting sg-downloader.")
   }
 
 }

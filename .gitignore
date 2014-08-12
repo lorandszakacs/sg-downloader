@@ -29,3 +29,9 @@ dist/
 
 #application specific
 *.conf
+
+#eclipse specific
+.cache
+.classpath
+.project
+.settings/
