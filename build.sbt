@@ -23,15 +23,17 @@
 import sbt._
 import Keys._
 
-name := "util-html-filter"
+name := "lorandszakacs-commons"
 
 organization := "lorandszakacs.com"
 
-version := "0.1"
+version := "0.1-SNAPSHOT"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.11.2"
 
-scalacOptions ++= Seq("-deprecation")
+scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8")
+
+javacOptions ++= Seq("-encoding", "utf8", "-g")
 
 javaOptions ++= Seq("-Xmx1G")
 
@@ -40,14 +42,14 @@ javaOptions in Test ++= Seq("-Xmx1G")
 mainClass := None
 
 //required to create the default `sbt` folder structure
-EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
+EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + EclipseCreateSrc.Managed
 
 //===================================================
 //         dependencies for testing libraries
 //===================================================
-libraryDependencies ++= Seq("org.scalatest" % "scalatest_2.10" % "2.1.0" % "test")
-
-scalacOptions in Test ++= Seq()
+libraryDependencies ++= Seq(
+  "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test"
+)
 
 //===================================================
 //         dependencies for dev libraries
