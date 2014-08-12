@@ -56,12 +56,12 @@ object HtmlProcessorTest {
     object Simple {
       private final val TopLeveLFolder = "simplified-data/"
 
-      object Link {
-        private final val Folder = Simple.TopLeveLFolder + "filter-link/"
-        final val Flat = Folder + "flat-links.html"
-        final val Nested = Folder + "nested-links.html"
-        final val Single = Folder + "single-link.html"
-      }
+//      object Link {
+//        private final val Folder = Simple.TopLeveLFolder + "filter-link/"
+//        final val Flat = Folder + "flat-links.html"
+//        final val Nested = Folder + "nested-links.html"
+//        final val Single = Folder + "single-link.html"
+//      }
 
       object Tag {
         private final val Folder = Simple.TopLeveLFolder + "filter-tag/"
@@ -277,7 +277,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("HrefLink filter") {
     it("should filter out the one link in the html") {
-      val html = getProcessor(Data.Simple.Link.Single)
+      val html = HtmlProcessor(SimplifiedData.FilterLink.SingleLink)
       val links = html filter HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -289,7 +289,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should filter out the two nested links in the html") {
-      val html = getProcessor(Data.Simple.Link.Nested)
+      val html = HtmlProcessor(SimplifiedData.FilterLink.NestedLinks)
       val links = html filter HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -302,7 +302,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should filter out two flat links") {
-      val html = getProcessor(Data.Simple.Link.Flat)
+      val html = HtmlProcessor(SimplifiedData.FilterLink.FlatLinks)
       val links = html filter HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -317,7 +317,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("RetainFirst of HrefLink filter") {
     it("should retain only the first link when composed with a RetainFirst filter, on rhs") {
-      val html = getProcessor(Data.Simple.Link.Nested)
+      val html = HtmlProcessor(SimplifiedData.FilterLink.NestedLinks)
       val links = html filter RetainFirst(HrefLink())
       links match {
         case None => fail("should have found some hrefs")
@@ -329,7 +329,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should retain only the first link when composed with a RetainFirst filter, on lhs") {
-      val html = getProcessor(Data.Simple.Link.Nested)
+      val html = HtmlProcessor(SimplifiedData.FilterLink.NestedLinks)
       val links = html filter RetainFirst(HrefLink())
       links match {
         case None => fail("should have found some hrefs")

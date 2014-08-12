@@ -82,9 +82,43 @@ object SimplifiedData {
   }
 
   object FilterLink {
-    val FlatLinks = """"""
-    val NestedLinks = """"""
-    val SingleLink = """"""
+    val FlatLinks =
+      """
+<a href="first-link/foo">
+	<figure data-width="" data-height="" data-ratio=""
+		class="ratio-16-9 res-image">
+		<noscript data-tablet="" data-mobile="" data-retina="junk.jpg"
+			data-src="junk2.jpg">
+			<img src="junk3.jpg" class="ratio-16-9" alt="" />
+		</noscript>
+	</figure>
+</a>
+<a href="second-link/foo"> </a>
+"""
+    val NestedLinks =
+      """
+<a href="first-link/foo">
+	<figure data-width="" data-height="" data-ratio=""
+		class="ratio-16-9 res-image">
+		<noscript data-tablet="" data-mobile="" data-retina="junk.jpg"
+			data-src="junk2.jpg">
+			<img src="junk3.jpg" class="ratio-16-9" alt="" />
+		</noscript>
+	</figure> <a href="second-link/foo"> </a>
+</a>
+"""
+    val SingleLink =
+      """
+<a href="first-link/foo">
+	<figure data-width="" data-height="" data-ratio=""
+		class="ratio-16-9 res-image">
+		<noscript data-tablet="" data-mobile="" data-retina="junk.jpg"
+			data-src="junk2.jpg">
+			<img src="junk3.jpg" class="ratio-16-9" alt="" />
+		</noscript>
+	</figure>
+</a>
+"""
   }
 
   object FilterTag {
