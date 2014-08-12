@@ -26,6 +26,7 @@ package com.lorandszakacs.util.html
 import java.io.File
 import org.scalatest.FunSpec
 import com.lorandszakacs.util.html.data.ComplexData
+import com.lorandszakacs.util.html.data.SimplifiedData
 
 object HtmlProcessorTest {
   def testDataFolder = TestDataResolver.getTestDataFolderForClass(HtmlProcessorTest.this.getClass(), TestConstants.ProjectName)
@@ -70,13 +71,13 @@ object HtmlProcessorTest {
         final val NestedWithinFlat = Folder + "nested-tags-within-flat-tags.html"
       }
 
-      object Class {
-        private final val Folder = Simple.TopLeveLFolder + "filter-class/"
-        final val Flat = Folder + "flat-classes.html"
-        final val Nested = Folder + "nested-classes.html"
-        final val Single = Folder + "single-class.html"
-        final val Space = Folder + "class-with-space-in-name.html"
-      }
+      //      object Class {
+      //        private final val Folder = Simple.TopLeveLFolder + "filter-class/"
+      //        final val Flat = Folder + "flat-classes.html"
+      //        final val Nested = Folder + "nested-classes.html"
+      //        final val Single = Folder + "single-class.html"
+      //        final val Space = Folder + "class-with-space-in-name.html"
+      //      }
 
       object Content {
         private final val Folder = Simple.TopLeveLFolder + "filter-content/"
@@ -157,7 +158,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("Class filter") {
     it("should return the only class") {
-      val html = getProcessor(Data.Simple.Class.Single)
+      val html = HtmlProcessor(SimplifiedData.FilterClass.SingleClass)
       val clazz = html filter Class("meta-data")
       clazz match {
         case None => fail("should have found some class")
@@ -166,7 +167,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return both flat classes") {
-      val html = getProcessor(Data.Simple.Class.Flat)
+      val html = HtmlProcessor(SimplifiedData.FilterClass.FlatClasses)
       val clazz = html filter Class("meta-data")
       clazz match {
         case None => fail("should have found some class")
@@ -176,7 +177,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return both nested classes") {
-      val html = getProcessor(Data.Simple.Class.Nested)
+      val html = HtmlProcessor(SimplifiedData.FilterClass.NestedClasses)
       val clazz = html filter Class("meta-data")
       clazz match {
         case None => fail("should have found some class")
@@ -186,7 +187,7 @@ class HtmlProcessorTest extends FunSpec {
 
     //FIXME: this fails because of a bug in Jsoup where classes with spaces are parsed as two seperate classes.
     ignore("should return elements with classes containing spaces") {
-      val html = getProcessor(Data.Simple.Class.Space)
+      val html = HtmlProcessor(SimplifiedData.FilterClass.ClassWithSpaceInTheName)
       val clazz = html filter Class("button login")
       clazz match {
         case None => fail("should have found some class")
@@ -196,7 +197,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` when looking for a class that doesn't exists") {
-      val html = getProcessor(Data.Simple.Class.Nested)
+      val html = HtmlProcessor(SimplifiedData.FilterClass.NestedClasses)
       val clazz = html filter Class("no-such-class")
       clazz match {
         case None => info("properly returned `None`")
