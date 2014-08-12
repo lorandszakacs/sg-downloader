@@ -1,8 +1,8 @@
 package com.lorandszakacs.util.html.data
-
-object Combination {
-  val ThreeTopLevelImageSectionsMiddleOneEmpty =
-    """
+object ComplexData {
+  object Combination {
+    val ThreeTopLevelImageSectionsMiddleOneEmpty =
+      """
 <!DOCTYPE html>
 <html>
 <body class="no-isotope">
@@ -83,8 +83,8 @@ object Combination {
 </html>
 """
 
-  val TwoTopLevelImageSections =
-    """
+    val TwoTopLevelImageSections =
+      """
 <!DOCTYPE html>
 <html>
 <body class="no-isotope">
@@ -1064,5 +1064,5 @@ object Combination {
 
 </html>
 """
-
+  }
 }

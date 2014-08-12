@@ -25,7 +25,7 @@ package com.lorandszakacs.util.html
 
 import java.io.File
 import org.scalatest.FunSpec
-import com.lorandszakacs.util.html.data.Combination
+import com.lorandszakacs.util.html.data.ComplexData
 
 object HtmlProcessorTest {
   def testDataFolder = TestDataResolver.getTestDataFolderForClass(HtmlProcessorTest.this.getClass(), TestConstants.ProjectName)
@@ -392,7 +392,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("Combining filters") {
     it("should return all the links contained within the `photo-container` classes contained within the first `image-section` class") {
-      val html = HtmlProcessor(Combination.TwoTopLevelImageSections)
+      val html = HtmlProcessor(ComplexData.Combination.TwoTopLevelImageSections)
       val links = html filter RetainFirst(Class("image-section")) && Class("photo-container") && HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -405,7 +405,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return all the links contained within the `photo-container` classes contained within both `image-section` class") {
-      val html = HtmlProcessor(Combination.TwoTopLevelImageSections)
+      val html = HtmlProcessor(ComplexData.Combination.TwoTopLevelImageSections)
       val links = html filter Class("image-section") && Class("photo-container") && HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -420,7 +420,7 @@ class HtmlProcessorTest extends FunSpec {
 
     it("should return all the links contained within the `photo-container` classes contained within both `image-section` class" +
       "even though the middle `image-section` class contains no photocontainers") {
-      val html = HtmlProcessor(Combination.ThreeTopLevelImageSectionsMiddleOneEmpty)
+      val html = HtmlProcessor(ComplexData.Combination.ThreeTopLevelImageSectionsMiddleOneEmpty)
       val links = html filter Class("image-section") && Class("photo-container") && HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -434,7 +434,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` if the first filter in the combination returns `None`") {
-      val html = HtmlProcessor(Combination.TwoTopLevelImageSections)
+      val html = HtmlProcessor(ComplexData.Combination.TwoTopLevelImageSections)
       val links = html filter Class("non-existent-class") && Class("photo-container") && HrefLink()
       links match {
         case None => info("returned `None`, as expected")
@@ -443,7 +443,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` if the filter in middle the combination returns `None`") {
-      val html = HtmlProcessor(Combination.TwoTopLevelImageSections)
+      val html = HtmlProcessor(ComplexData.Combination.TwoTopLevelImageSections)
       val links = html filter Class("image-section") && Class("non-existent-class") && HrefLink()
       links match {
         case None => info("returned `None`, as expected")
@@ -452,7 +452,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` if the last filter in the combination returns `None`") {
-      val html = HtmlProcessor(Combination.TwoTopLevelImageSections)
+      val html = HtmlProcessor(ComplexData.Combination.TwoTopLevelImageSections)
       val links = html filter Class("image-section") && Class("photo-container") && Attribute("non-existent-attribute")
       links match {
         case None => info("returned `None`, as expected")
