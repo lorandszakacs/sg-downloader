@@ -24,8 +24,8 @@
 package com.lorandszakacs.util.html
 
 import java.io.File
-
 import org.scalatest.FunSpec
+import com.lorandszakacs.util.html.data.Combination
 
 object HtmlProcessorTest {
   def testDataFolder = TestDataResolver.getTestDataFolderForClass(HtmlProcessorTest.this.getClass(), TestConstants.ProjectName)
@@ -36,12 +36,6 @@ object HtmlProcessorTest {
 
     object Complex {
       private final val TopLevelFolder = "complex-data/"
-
-      object Combination {
-        private final val Folder = Complex.TopLevelFolder + "combination/"
-        final val TwoTopLevelImageSections = Folder + "two-top-level-image-sections.html"
-        final val ThreeTopLevelImageSectionMiddleOneEmpty = Folder + "three-top-level-image-sections-middle-one-empty.html/"
-      }
 
       object Filter {
         private final val Folder = Complex.TopLevelFolder + "filter/"
@@ -398,7 +392,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("Combining filters") {
     it("should return all the links contained within the `photo-container` classes contained within the first `image-section` class") {
-      val html = getProcessor(Data.Complex.Combination.TwoTopLevelImageSections)
+      val html = HtmlProcessor(Combination.TwoTopLevelImageSections)
       val links = html filter RetainFirst(Class("image-section")) && Class("photo-container") && HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -411,7 +405,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return all the links contained within the `photo-container` classes contained within both `image-section` class") {
-      val html = getProcessor(Data.Complex.Combination.TwoTopLevelImageSections)
+      val html = HtmlProcessor(Combination.TwoTopLevelImageSections)
       val links = html filter Class("image-section") && Class("photo-container") && HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -426,7 +420,7 @@ class HtmlProcessorTest extends FunSpec {
 
     it("should return all the links contained within the `photo-container` classes contained within both `image-section` class" +
       "even though the middle `image-section` class contains no photocontainers") {
-      val html = getProcessor(Data.Complex.Combination.ThreeTopLevelImageSectionMiddleOneEmpty)
+      val html = HtmlProcessor(Combination.ThreeTopLevelImageSectionsMiddleOneEmpty)
       val links = html filter Class("image-section") && Class("photo-container") && HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -440,7 +434,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` if the first filter in the combination returns `None`") {
-      val html = getProcessor(Data.Complex.Combination.TwoTopLevelImageSections)
+      val html = HtmlProcessor(Combination.TwoTopLevelImageSections)
       val links = html filter Class("non-existent-class") && Class("photo-container") && HrefLink()
       links match {
         case None => info("returned `None`, as expected")
@@ -449,7 +443,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` if the filter in middle the combination returns `None`") {
-      val html = getProcessor(Data.Complex.Combination.TwoTopLevelImageSections)
+      val html = HtmlProcessor(Combination.TwoTopLevelImageSections)
       val links = html filter Class("image-section") && Class("non-existent-class") && HrefLink()
       links match {
         case None => info("returned `None`, as expected")
@@ -458,7 +452,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` if the last filter in the combination returns `None`") {
-      val html = getProcessor(Data.Complex.Combination.TwoTopLevelImageSections)
+      val html = HtmlProcessor(Combination.TwoTopLevelImageSections)
       val links = html filter Class("image-section") && Class("photo-container") && Attribute("non-existent-attribute")
       links match {
         case None => info("returned `None`, as expected")
