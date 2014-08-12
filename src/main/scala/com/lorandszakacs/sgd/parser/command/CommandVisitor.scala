@@ -1,6 +1,6 @@
 /**
  * The MIT License (MIT)
- * 
+ *
  * Copyright (c) 2014 Lorand Szakacs
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -56,5 +56,23 @@ trait CommandVisitor {
   def visit(help: Help): CommandVisitorResult
 
   def visit(exit: Exit): CommandVisitorResult
+}
 
+object DefaultCommandInterpreter extends CommandVisitor {
+
+  override def visit(fail: Fail): CommandVisitorResult = ???
+
+  override def visit(login: Login): CommandVisitorResult = ???
+
+  override def visit(update: Update): CommandVisitorResult = ???
+
+  override def visit(updateAll: UpdateAll): CommandVisitorResult = ???
+
+  override def visit(download: Download): CommandVisitorResult = ???
+
+  override def visit(downloadFromFile: DownloadFromFile): CommandVisitorResult = ???
+
+  override def visit(help: Help): CommandVisitorResult = ???
+
+  override def visit(exit: Exit): CommandVisitorResult = ???
 }

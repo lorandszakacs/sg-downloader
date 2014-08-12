@@ -24,22 +24,21 @@
 package com.lorandszakacs.sgd.repl
 
 import scala.io.StdIn
-
 import com.lorandszakacs.sgd.parser.command.CommandVisitorFail
 import com.lorandszakacs.sgd.parser.command.Exit
 import com.lorandszakacs.sgd.parser.command.SGCommandParser
-import com.lorandszakacs.util.http.SGClient
+import com.lorandszakacs.sgd.parser.command.DefaultCommandInterpreter
 
-class Repl(client: SGClient) {
+class Repl() {
   def start(): Unit = {
-    val interpreter = new CommandInterpreter(client);
+    val interpreter = DefaultCommandInterpreter
     println("type -help for instructions")
     while (true) {
       print("> ")
       val input = StdIn.readLine
       val command = SGCommandParser.apply(input);
       command match {
-        case Exit() => { client.cleanUp; return }
+        case Exit() => { return }
         case _ => {
           val result = interpreter.visit(command)
           result match {
