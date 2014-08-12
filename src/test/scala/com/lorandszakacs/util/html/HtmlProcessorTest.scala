@@ -56,20 +56,20 @@ object HtmlProcessorTest {
     object Simple {
       private final val TopLeveLFolder = "simplified-data/"
 
-//      object Link {
-//        private final val Folder = Simple.TopLeveLFolder + "filter-link/"
-//        final val Flat = Folder + "flat-links.html"
-//        final val Nested = Folder + "nested-links.html"
-//        final val Single = Folder + "single-link.html"
-//      }
+      //      object Link {
+      //        private final val Folder = Simple.TopLeveLFolder + "filter-link/"
+      //        final val Flat = Folder + "flat-links.html"
+      //        final val Nested = Folder + "nested-links.html"
+      //        final val Single = Folder + "single-link.html"
+      //      }
 
-      object Tag {
-        private final val Folder = Simple.TopLeveLFolder + "filter-tag/"
-        final val Flat = Folder + "flat-tags.html"
-        final val Nested = Folder + "nested-tags.html"
-        final val Single = Folder + "single-tag.html"
-        final val NestedWithinFlat = Folder + "nested-tags-within-flat-tags.html"
-      }
+      //      object Tag {
+      //        private final val Folder = Simple.TopLeveLFolder + "filter-tag/"
+      //        final val Flat = Folder + "flat-tags.html"
+      //        final val Nested = Folder + "nested-tags.html"
+      //        final val Single = Folder + "single-tag.html"
+      //        final val NestedWithinFlat = Folder + "nested-tags-within-flat-tags.html"
+      //      }
 
       //      object Class {
       //        private final val Folder = Simple.TopLeveLFolder + "filter-class/"
@@ -79,13 +79,13 @@ object HtmlProcessorTest {
       //        final val Space = Folder + "class-with-space-in-name.html"
       //      }
 
-//      object Content {
-//        private final val Folder = Simple.TopLeveLFolder + "filter-content/"
-//        final val FromClass = Folder + "content-from-class.html"
-//        final val FromTag = Folder + "content-from-tag.html"
-//        final val FromAttribute = Folder + "content-from-attribute.html"
-//        final val FromComposite = Folder + "content-from-composite.html"
-//      }
+      //      object Content {
+      //        private final val Folder = Simple.TopLeveLFolder + "filter-content/"
+      //        final val FromClass = Folder + "content-from-class.html"
+      //        final val FromTag = Folder + "content-from-tag.html"
+      //        final val FromAttribute = Folder + "content-from-attribute.html"
+      //        final val FromComposite = Folder + "content-from-composite.html"
+      //      }
     }
   }
 }
@@ -95,7 +95,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("Tag filter") {
     it("should return the only tag") {
-      val html = getProcessor(Data.Simple.Tag.Single)
+      val html = HtmlProcessor(SimplifiedData.FilterTag.SingleTag)
       val tag = html filter Tag("a")
       tag match {
         case None => fail("should have found some tag")
@@ -104,7 +104,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return both flat tags") {
-      val html = getProcessor(Data.Simple.Tag.Flat)
+      val html = HtmlProcessor(SimplifiedData.FilterTag.FlatTags)
       val tag = html filter Tag("a")
       tag match {
         case None => fail("should have found some tag")
@@ -113,7 +113,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return all three nested tags") {
-      val html = getProcessor(Data.Simple.Tag.Nested)
+      val html = HtmlProcessor(SimplifiedData.FilterTag.NestedTags)
       val tag = html filter Tag("a")
       tag match {
         case None => fail("should have found some tag")
@@ -122,7 +122,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return the elements with the specified tag from within all the top level elements") {
-      val html = getProcessor(Data.Simple.Tag.NestedWithinFlat)
+      val html = HtmlProcessor(SimplifiedData.FilterTag.NestedTagsWithinFlatTags)
       val tag = html filter Tag("a")
       tag match {
         case None => fail("should have found some tag")
@@ -135,7 +135,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` when looking for a tag that doesn't exists") {
-      val html = getProcessor(Data.Simple.Tag.Nested)
+      val html = HtmlProcessor(SimplifiedData.FilterTag.NestedTags)
       val tag = html filter Tag("no-such-tag")
       tag match {
         case None => info("properly returned `None`")
@@ -251,7 +251,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` when looking for an attribute that doesn't exists") {
-      val html = getProcessor(Data.Simple.Tag.Nested)
+      val html = HtmlProcessor(SimplifiedData.FilterTag.NestedTags)
       val attribute = html filter Attribute("no-such-attr")
       attribute match {
         case None => info("properly returned `None`")

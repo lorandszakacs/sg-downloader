@@ -122,8 +122,46 @@ object SimplifiedData {
   }
 
   object FilterTag {
-    val FlatTags = """"""
-    val NestedTagsWithinFlatTags = """"""
-    val NestedTafs = """"""
+    val FlatTags =
+      """
+<a href="first-link/foo">
+	<figure data-width="" data-height="" data-ratio=""
+		class="ratio-16-9 res-image">
+		<noscript data-tablet="" data-mobile="" data-retina="junk.jpg"
+			data-src="junk2.jpg">
+			<img src="junk3.jpg" class="ratio-16-9" alt="" />
+		</noscript>
+	</figure>
+</a>
+<a href="second-link/foo"> </a>
+"""
+    val NestedTagsWithinFlatTags =
+      """
+<a href="first-link/foo">
+	 <a href="second-link/foo"> 
+	 	<a href="third-link/foo">
+	 	 </a>
+	 </a>
+</a>
+<a href="second/first-link/foo">
+	 <a href="second/second-link/foo"> 
+	 	<a href="second/third-link/foo">
+	 	 </a>
+	 </a>
+</a>
+"""
+    val NestedTags =
+      """
+<a href="first-link/foo">
+	 <a href="second-link/foo"> 
+	 	<a href="third-link/foo">
+	 	 </a>
+	 </a>
+</a>
+"""
+    val SingleTag = 
+      """
+<a href="first-link/foo"></a>
+"""
   }
 }
