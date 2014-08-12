@@ -26,7 +26,7 @@ import Keys._
 
 name := "sg-downloader"
 
-organization := lorandszakacs.com
+organization := "com.lorandszakacs"
 
 version := "0.1"
 
@@ -49,12 +49,14 @@ EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + 
 //         dependencies for testing libraries
 //===================================================
 libraryDependencies ++= Seq(
-  "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test"
+  "org.scalatest" %% "scalatest_2.11" % "2.2.1" % "test" withSources()
 )
 
 //===================================================
 //         dependencies for dev libraries
 //===================================================
 libraryDependencies ++= Seq(
-  "com.lorandszakacs" % "lorandszakacs-commons" % "0.1-SNAPSHOT" withSources
+  "com.lorandszakacs" %% "lorandszakacs-commons" % "0.1-SNAPSHOT" changing(),
+  "org.apache.httpcomponents" % "httpclient" % "4.3.3" withSources(),
+  "com.typesafe" % "config" % "1.2.1" withSources()
 )
