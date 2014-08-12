@@ -27,6 +27,7 @@ import java.io.File
 import org.scalatest.FunSpec
 import com.lorandszakacs.util.html.data.ComplexData
 import com.lorandszakacs.util.html.data.SimplifiedData
+import com.lorandszakacs.util.html.data.RealLifeData
 
 object HtmlProcessorTest {
   def testDataFolder = TestDataResolver.getTestDataFolderForClass(HtmlProcessorTest.this.getClass(), TestConstants.ProjectName)
@@ -38,19 +39,19 @@ object HtmlProcessorTest {
     object Complex {
       private final val TopLevelFolder = "complex-data/"
 
-      object Filter {
-        private final val Folder = Complex.TopLevelFolder + "filter/"
-        final val FilterByClass = Folder + "filter-by-button-login-class.html"
-      }
+      //      object Filter {
+      //        private final val Folder = Complex.TopLevelFolder + "filter/"
+      //        final val FilterByClass = Folder + "filter-by-button-login-class.html"
+      //      }
 
-      object Unsorted {
+      //      object Unsorted {
+      //
+      //      }
 
-      }
-
-      final val AlbumPageSetOfTheDay = "album-page-sets-of-the-day.html"
-      final val AlbumPageMemberReview = "album-page-member-review-sets.html"
-      final val PhotoSetOfTheDay = "photo-set-of-the-day-page.html"
-      final val PhotoSetMemberReview = "photo-set-member-review-page.html"
+      //      final val AlbumPageSetOfTheDay = "album-page-sets-of-the-day.html"
+      //      final val AlbumPageMemberReview = "album-page-member-review-sets.html"
+      //      final val PhotoSetOfTheDay = "photo-set-of-the-day-page.html"
+      //      final val PhotoSetMemberReview = "photo-set-member-review-page.html"
     }
 
     object Simple {
@@ -144,7 +145,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return all 45 elements with tag `li`") {
-      val html = getProcessor(Data.Complex.PhotoSetOfTheDay)
+      val html = HtmlProcessor(RealLifeData.PhotoSetOfTheDay)
       val tags = html filter Tag("li")
       tags match {
         case None => fail("should have found some tag")
@@ -206,7 +207,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should filter out the 4 existing `image-section` classes") {
-      val html = getProcessor(Data.Complex.AlbumPageMemberReview)
+      val html = HtmlProcessor(RealLifeData.AlbumPageMemberReview)
       val classes = html filter Class("image-section")
       classes match {
         case None => fail("should have found some class")
@@ -215,7 +216,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should filter out the 9 existing `image-section` classes") {
-      val html = getProcessor(Data.Complex.AlbumPageSetOfTheDay)
+      val html = HtmlProcessor(RealLifeData.AlbumPageSetOfTheDay)
       val classes = html filter Class("image-section")
       classes match {
         case None => fail("should have found some class")
@@ -224,7 +225,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should filter out the 45 existing `photo-container` classes") {
-      val html = getProcessor(Data.Complex.PhotoSetOfTheDay)
+      val html = HtmlProcessor(RealLifeData.PhotoSetOfTheDay)
       val classes = html filter Class("photo-container")
       classes match {
         case None => fail("should have found some class")
@@ -238,7 +239,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("Attribute filter") {
     it("should filter out the 4 existing elements with a `href` attribute") {
-      val html = getProcessor(Data.Complex.AlbumPageMemberReview)
+      val html = HtmlProcessor(RealLifeData.AlbumPageMemberReview)
       val hrefs = html filter Attribute("href")
       hrefs match {
         case None => fail("should have found some attribute")
@@ -262,7 +263,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("grabbing the Values of elements filtered by Attributes") {
     it("should return `data-index`attribute contents") {
-      val html = getProcessor(Data.Complex.PhotoSetOfTheDay)
+      val html = HtmlProcessor(RealLifeData.PhotoSetOfTheDay)
       val dataIndex = html filter Value(Attribute("data-index"))
       dataIndex match {
         case None => fail("should have found some dataIndex")
