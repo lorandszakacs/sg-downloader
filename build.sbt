@@ -58,6 +58,5 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
   "com.lorandszakacs" %% "lorandszakacs-commons" % "0.1-SNAPSHOT" changing(),
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2",
-  "org.apache.httpcomponents" % "httpclient" % "4.3.3" withSources(),
-  "com.typesafe" % "config" % "1.2.1" withSources()
+  "org.apache.httpcomponents" % "httpclient" % "4.3.3" withSources()
 )
