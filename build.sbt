@@ -56,6 +56,5 @@ libraryDependencies ++= Seq(
 //===================================================
 libraryDependencies ++= Seq(
   "org.jsoup" % "jsoup" % "1.7.3",
-  "commons-io" % "commons-io" % "2.4",
-  "com.typesafe" % "config" % "1.2.1" withSources()
+  "commons-io" % "commons-io" % "2.4"
 )
