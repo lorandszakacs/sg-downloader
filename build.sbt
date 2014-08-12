@@ -24,37 +24,37 @@ import sbt._
 import Process._
 import Keys._
 
-def subProject(sbpr: String) = file("workspace/" + sbpr)
+name := "sg-downloader"
 
-//order of aggregation doesn't matter
-lazy val aggregatingProject = project.in(file(".")).aggregate(utilTest, utilIO, utilHttp, utilHtml, sgDownloader)
+organization := lorandszakacs.com
 
-lazy val utilTest = project.in(subProject(SubProjects.Names.UtilTest))
+version := "0.1"
 
-lazy val utilIO = project.in(subProject(SubProjects.Names.UtilIO)).dependsOn(utilTest % "test->test")
+scalaVersion := "2.11.2"
 
-lazy val utilHttp = project.in(subProject(SubProjects.Names.UtilHttp)).dependsOn(utilTest % "test->test", utilIO, utilHtml)
+scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8")
 
-lazy val utilHtml = project.in(subProject(SubProjects.Names.UtilHtml)).dependsOn(utilTest % "test->test")
+javacOptions ++= Seq("-encoding", "utf8", "-g")
 
-lazy val sgDownloader = project.in(subProject(SubProjects.Names.SgDownloader)).dependsOn(utilTest % "test->test", utilHttp, utilHtml, utilIO)
+javaOptions ++= Seq("-Xmx1G")
 
-name := "SG Downloader and Manager"
+javaOptions in Test ++= Seq("-Xmx1G")
 
-organization := Common.organization
+mainClass := None
 
-version := "0.2"
+//required to create the default `sbt` folder structure
+EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + EclipseCreateSrc.Managed
 
-scalaVersion := Common.scalaVersion
+//===================================================
+//         dependencies for testing libraries
+//===================================================
+libraryDependencies ++= Seq(
+  "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test"
+)
 
-scalacOptions ++= Common.scalacOptions
-
-javaOptions ++= Common.javaOptions
-
-javaOptions in Test ++= Testing.javaOptions
-
-mainClass in Compile := (mainClass in sgDownloader in Compile).value
-
-fullClasspath in Runtime := (fullClasspath in sgDownloader in Runtime).value
-
-sourceDirectories := Seq()
+//===================================================
+//         dependencies for dev libraries
+//===================================================
+libraryDependencies ++= Seq(
+  "com.lorandszakacs" % "lorandszakacs-commons" % "0.1-SNAPSHOT" withSources
+)
