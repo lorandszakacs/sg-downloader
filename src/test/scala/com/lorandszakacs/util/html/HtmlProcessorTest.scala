@@ -23,76 +23,13 @@
  */
 package com.lorandszakacs.util.html
 
-import java.io.File
 import org.scalatest.FunSpec
+
 import com.lorandszakacs.util.html.data.ComplexData
-import com.lorandszakacs.util.html.data.SimplifiedData
 import com.lorandszakacs.util.html.data.RealLifeData
-
-object HtmlProcessorTest {
-  def testDataFolder = TestDataResolver.getTestDataFolderForClass(HtmlProcessorTest.this.getClass(), TestConstants.ProjectName)
-
-  def getProcessor(data: String) = HtmlProcessor(new File(testDataFolder + "/" + data))
-
-  object Data {
-
-    object Complex {
-      private final val TopLevelFolder = "complex-data/"
-
-      //      object Filter {
-      //        private final val Folder = Complex.TopLevelFolder + "filter/"
-      //        final val FilterByClass = Folder + "filter-by-button-login-class.html"
-      //      }
-
-      //      object Unsorted {
-      //
-      //      }
-
-      //      final val AlbumPageSetOfTheDay = "album-page-sets-of-the-day.html"
-      //      final val AlbumPageMemberReview = "album-page-member-review-sets.html"
-      //      final val PhotoSetOfTheDay = "photo-set-of-the-day-page.html"
-      //      final val PhotoSetMemberReview = "photo-set-member-review-page.html"
-    }
-
-    object Simple {
-      private final val TopLeveLFolder = "simplified-data/"
-
-      //      object Link {
-      //        private final val Folder = Simple.TopLeveLFolder + "filter-link/"
-      //        final val Flat = Folder + "flat-links.html"
-      //        final val Nested = Folder + "nested-links.html"
-      //        final val Single = Folder + "single-link.html"
-      //      }
-
-      //      object Tag {
-      //        private final val Folder = Simple.TopLeveLFolder + "filter-tag/"
-      //        final val Flat = Folder + "flat-tags.html"
-      //        final val Nested = Folder + "nested-tags.html"
-      //        final val Single = Folder + "single-tag.html"
-      //        final val NestedWithinFlat = Folder + "nested-tags-within-flat-tags.html"
-      //      }
-
-      //      object Class {
-      //        private final val Folder = Simple.TopLeveLFolder + "filter-class/"
-      //        final val Flat = Folder + "flat-classes.html"
-      //        final val Nested = Folder + "nested-classes.html"
-      //        final val Single = Folder + "single-class.html"
-      //        final val Space = Folder + "class-with-space-in-name.html"
-      //      }
-
-      //      object Content {
-      //        private final val Folder = Simple.TopLeveLFolder + "filter-content/"
-      //        final val FromClass = Folder + "content-from-class.html"
-      //        final val FromTag = Folder + "content-from-tag.html"
-      //        final val FromAttribute = Folder + "content-from-attribute.html"
-      //        final val FromComposite = Folder + "content-from-composite.html"
-      //      }
-    }
-  }
-}
+import com.lorandszakacs.util.html.data.SimplifiedData
 
 class HtmlProcessorTest extends FunSpec {
-  import HtmlProcessorTest._
 
   describe("Tag filter") {
     it("should return the only tag") {
