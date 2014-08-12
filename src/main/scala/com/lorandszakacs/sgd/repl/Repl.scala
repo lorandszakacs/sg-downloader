@@ -23,6 +23,8 @@
  */
 package com.lorandszakacs.sgd.repl
 
+import scala.io.StdIn
+
 import com.lorandszakacs.sgd.parser.command.CommandVisitorFail
 import com.lorandszakacs.sgd.parser.command.Exit
 import com.lorandszakacs.sgd.parser.command.SGCommandParser
@@ -34,7 +36,7 @@ class Repl(client: SGClient) {
     println("type -help for instructions")
     while (true) {
       print("> ")
-      val input = Console.readLine
+      val input = StdIn.readLine
       val command = SGCommandParser.apply(input);
       command match {
         case Exit() => { client.cleanUp; return }
