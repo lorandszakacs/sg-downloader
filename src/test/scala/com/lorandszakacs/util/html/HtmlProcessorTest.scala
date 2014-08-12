@@ -79,13 +79,13 @@ object HtmlProcessorTest {
       //        final val Space = Folder + "class-with-space-in-name.html"
       //      }
 
-      object Content {
-        private final val Folder = Simple.TopLeveLFolder + "filter-content/"
-        final val FromClass = Folder + "content-from-class.html"
-        final val FromTag = Folder + "content-from-tag.html"
-        final val FromAttribute = Folder + "content-from-attribute.html"
-        final val FromComposite = Folder + "content-from-composite.html"
-      }
+//      object Content {
+//        private final val Folder = Simple.TopLeveLFolder + "filter-content/"
+//        final val FromClass = Folder + "content-from-class.html"
+//        final val FromTag = Folder + "content-from-tag.html"
+//        final val FromAttribute = Folder + "content-from-attribute.html"
+//        final val FromComposite = Folder + "content-from-composite.html"
+//      }
     }
   }
 }
@@ -343,7 +343,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("Content filter") {
     it("should return only the date from the `icon-photography` class") {
-      val html = getProcessor(Data.Simple.Content.FromClass)
+      val html = HtmlProcessor(SimplifiedData.FilterContent.ContentFromClass)
       val content = html filter Content(Class("icon-photography"))
       content match {
         case None => fail("should have found something")
@@ -355,7 +355,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return only the contents of the `div` tag") {
-      val html = getProcessor(Data.Simple.Content.FromTag)
+      val html = HtmlProcessor(SimplifiedData.FilterContent.ContentFromTag)
       val content = html filter Content(Tag("div"))
       content match {
         case None => fail("should have found something")
@@ -367,7 +367,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return only the contents of the `id` attribute") {
-      val html = getProcessor(Data.Simple.Content.FromAttribute)
+      val html = HtmlProcessor(SimplifiedData.FilterContent.ContentFromAttribute)
       val content = html filter Content(Attribute("id"))
       content match {
         case None => fail("should have found something")
@@ -379,7 +379,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return the contents of a Composite Filter") {
-      val html = getProcessor(Data.Simple.Content.FromComposite)
+      val html = HtmlProcessor(SimplifiedData.FilterContent.ContentFromComposite)
       val content = html filter Content(Class("meta-data") && Class("photographer"))
       content match {
         case None => fail("should have found something")

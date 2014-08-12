@@ -49,10 +49,36 @@ object SimplifiedData {
   }
 
   object FilterContent {
-    val ContentFromAttribute = """"""
-    val ContentFromClass = """"""
-    val ContentFromComposite = """"""
-    val ContentFromTag = """"""
+    val ContentFromAttribute =
+      """
+<a id="load-more" data-load-more-method="offset">Load more</a>
+"""
+    val ContentFromClass =
+      """
+<div class="meta-data">
+	<time class="icon-photography"> Nov 09, 2013 </time>
+	<span class="photographer">
+	 by
+	  <a href="link-to-photographer"></a>
+	</span>
+</div>
+"""
+    val ContentFromComposite =
+      """
+<div class="meta-data">
+	<time class="icon-photography"> Nov 09, 2013 </time>
+	<span class="photographer">
+	 by
+	  <a href="link-to-photographer"></a>
+	</span>
+</div>
+"""
+    val ContentFromTag =
+      """
+<div>
+	<a>whatever</a>
+</div>
+"""
   }
 
   object FilterLink {
