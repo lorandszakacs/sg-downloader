@@ -25,7 +25,7 @@ import Keys._
 
 name := "lorandszakacs-commons"
 
-organization := "lorandszakacs.com"
+organization := "com.lorandszakacs"
 
 version := "0.1-SNAPSHOT"
 
