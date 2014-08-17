@@ -23,10 +23,31 @@
  */
 package com.lorandszakacs.sgd.http
 
-import spray.http.Uri
+import scala.concurrent.{ExecutionContext, Future}
+
+import com.lorandszakacs.commons.html._
+
+import akka.actor.ActorSystem
+import spray.client.pipelining._
+import spray.http.{StatusCodes, Uri}
 
 trait Client {
 
+  implicit def actorSystem: ActorSystem
+  implicit def executionContext: ExecutionContext
+
   def authentication: AuthenticationInfo
 
+  private val authenticate = authentication
+
+  def getPage(uri: Uri): Future[Html] = {
+    (authenticate and Get(uri)) ~> sendReceive map { response =>
+      if (response.status == StatusCodes.OK || response.status == StatusCodes.NotModified) {
+        Html(response.entity.asString)
+      } else {
+        throw new Exception(s"Failed to get page. Response: ${response.toString}")
+      }
+
+    }
+  }
 }

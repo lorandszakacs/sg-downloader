@@ -29,7 +29,7 @@ import scala.language.postfixOps
 import scala.util.Try
 
 import akka.actor.ActorSystem
-import spray.client.pipelining.{ Get, Post, WithTransformation, header2AddHeader, sendReceive, sendReceive$default$3 }
+import spray.client.pipelining._
 import spray.http.{ FormData, HttpCookie, HttpHeader }
 import spray.http.{ HttpRequest, StatusCodes, Uri }
 import spray.http.HttpHeaders.{ Cookie, RawHeader }
@@ -80,6 +80,8 @@ sealed trait CSRFInfo {
   def refererHeader: HttpHeader = RawHeader("Referer", referer)
 
   def apply(originalRequest: HttpRequest): HttpRequest = originalRequest ~> cookieHeader ~> XCSRFTokenHeader ~> refererHeader
+
+  def and(originalRequest: HttpRequest): HttpRequest = this.apply(originalRequest)
 
   override def toString = s"\n${getClass.getSimpleName}\n--headers:\n\t${cookieHeader.toString}\n\t${XCSRFTokenHeader.toString}\n\t${refererHeader.toString}"
 }
