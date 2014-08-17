@@ -45,6 +45,8 @@ mainClass := Some("com.lorandszakacs.sgd.app.Main")
 //required to create the default `sbt` folder structure
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + EclipseCreateSrc.Managed
 
+EclipseKeys.withSource := true
+
 //===================================================
 //         dependencies for testing libraries
 //===================================================
