@@ -42,11 +42,6 @@ javaOptions in Test ++= Seq("-Xmx1G")
 
 mainClass := Some("com.lorandszakacs.sgd.app.Main")
 
-//required to create the default `sbt` folder structure
-EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + EclipseCreateSrc.Managed
-
-EclipseKeys.withSource := true
-
 //===================================================
 //         dependencies for testing libraries
 //===================================================
@@ -67,3 +62,12 @@ libraryDependencies ++= Seq(
   "io.spray" %% "spray-util" % "1.3.1" withSources(),
   "io.spray" %% "spray-client" % "1.3.1" withSources()
 )
+
+//===================================================
+//         dependencies for IDE configurations
+//===================================================
+
+//required to create the default `sbt` folder structure
+EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + EclipseCreateSrc.Managed
+
+EclipseKeys.withSource := true
