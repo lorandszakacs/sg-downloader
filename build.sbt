@@ -30,7 +30,7 @@ organization := "com.lorandszakacs"
 
 version := "0.1"
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.1"
 
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8")
 
@@ -60,6 +60,10 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
   "com.lorandszakacs" %% "lorandszakacs-commons" % "0.1-SNAPSHOT" changing() withSources(),
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2" withSources(),
-  "com.typesafe.akka" %% "akka-actor" % "2.3.4" withSources(),
-  "io.spray" % "spray-client" % "1.3.1" withSources()
+  "com.typesafe.akka" %% "akka-actor" % "2.3.2" withSources(),
+  "io.spray" %% "spray-can" % "1.3.1" withSources(),
+  "io.spray" %% "spray-http" % "1.3.1" withSources(),
+  "io.spray" %% "spray-httpx" % "1.3.1" withSources(),
+  "io.spray" %% "spray-util" % "1.3.1" withSources(),
+  "io.spray" %% "spray-client" % "1.3.1" withSources()
 )
