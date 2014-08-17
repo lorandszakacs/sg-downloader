@@ -28,12 +28,12 @@ import java.io.File
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
-object HtmlProcessor {
-  def apply(contents: String) = new HtmlProcessor(Jsoup.parse(contents))
+object Html {
+  def apply(contents: String) = new Html(Jsoup.parse(contents))
 
-  def apply(file: File) = new HtmlProcessor(Jsoup.parse(file, "UTF-8"))
+  def apply(file: File) = new Html(Jsoup.parse(file, "UTF-8"))
 }
 
-class HtmlProcessor private (val document: Document) {
+class Html private (val document: Document) {
   def filter(f: HtmlFilter): Option[List[String]] = f.apply(document)
 }

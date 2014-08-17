@@ -31,7 +31,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("Tag filter") {
     it("should return the only tag") {
-      val html = HtmlProcessor(SimplifiedData.FilterTag.SingleTag)
+      val html = Html(SimplifiedData.FilterTag.SingleTag)
       val tag = html filter Tag("a")
       tag match {
         case None => fail("should have found some tag")
@@ -40,7 +40,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return both flat tags") {
-      val html = HtmlProcessor(SimplifiedData.FilterTag.FlatTags)
+      val html = Html(SimplifiedData.FilterTag.FlatTags)
       val tag = html filter Tag("a")
       tag match {
         case None => fail("should have found some tag")
@@ -49,7 +49,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return all three nested tags") {
-      val html = HtmlProcessor(SimplifiedData.FilterTag.NestedTags)
+      val html = Html(SimplifiedData.FilterTag.NestedTags)
       val tag = html filter Tag("a")
       tag match {
         case None => fail("should have found some tag")
@@ -58,7 +58,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return the elements with the specified tag from within all the top level elements") {
-      val html = HtmlProcessor(SimplifiedData.FilterTag.NestedTagsWithinFlatTags)
+      val html = Html(SimplifiedData.FilterTag.NestedTagsWithinFlatTags)
       val tag = html filter Tag("a")
       tag match {
         case None => fail("should have found some tag")
@@ -71,7 +71,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` when looking for a tag that doesn't exists") {
-      val html = HtmlProcessor(SimplifiedData.FilterTag.NestedTags)
+      val html = Html(SimplifiedData.FilterTag.NestedTags)
       val tag = html filter Tag("no-such-tag")
       tag match {
         case None => info("properly returned `None`")
@@ -80,7 +80,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return all 45 elements with tag `li`") {
-      val html = HtmlProcessor(RealLifeData.PhotoSetOfTheDay)
+      val html = Html(RealLifeData.PhotoSetOfTheDay)
       val tags = html filter Tag("li")
       tags match {
         case None => fail("should have found some tag")
@@ -94,7 +94,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("Class filter") {
     it("should return the only class") {
-      val html = HtmlProcessor(SimplifiedData.FilterClass.SingleClass)
+      val html = Html(SimplifiedData.FilterClass.SingleClass)
       val clazz = html filter Class("meta-data")
       clazz match {
         case None => fail("should have found some class")
@@ -103,7 +103,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return both flat classes") {
-      val html = HtmlProcessor(SimplifiedData.FilterClass.FlatClasses)
+      val html = Html(SimplifiedData.FilterClass.FlatClasses)
       val clazz = html filter Class("meta-data")
       clazz match {
         case None => fail("should have found some class")
@@ -113,7 +113,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return both nested classes") {
-      val html = HtmlProcessor(SimplifiedData.FilterClass.NestedClasses)
+      val html = Html(SimplifiedData.FilterClass.NestedClasses)
       val clazz = html filter Class("meta-data")
       clazz match {
         case None => fail("should have found some class")
@@ -123,7 +123,7 @@ class HtmlProcessorTest extends FunSpec {
 
     //FIXME: this fails because of a bug in Jsoup where classes with spaces are parsed as two seperate classes.
     ignore("should return elements with classes containing spaces") {
-      val html = HtmlProcessor(SimplifiedData.FilterClass.ClassWithSpaceInTheName)
+      val html = Html(SimplifiedData.FilterClass.ClassWithSpaceInTheName)
       val clazz = html filter Class("button login")
       clazz match {
         case None => fail("should have found some class")
@@ -133,7 +133,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` when looking for a class that doesn't exists") {
-      val html = HtmlProcessor(SimplifiedData.FilterClass.NestedClasses)
+      val html = Html(SimplifiedData.FilterClass.NestedClasses)
       val clazz = html filter Class("no-such-class")
       clazz match {
         case None => info("properly returned `None`")
@@ -142,7 +142,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should filter out the 4 existing `image-section` classes") {
-      val html = HtmlProcessor(RealLifeData.AlbumPageMemberReview)
+      val html = Html(RealLifeData.AlbumPageMemberReview)
       val classes = html filter Class("image-section")
       classes match {
         case None => fail("should have found some class")
@@ -151,7 +151,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should filter out the 9 existing `image-section` classes") {
-      val html = HtmlProcessor(RealLifeData.AlbumPageSetOfTheDay)
+      val html = Html(RealLifeData.AlbumPageSetOfTheDay)
       val classes = html filter Class("image-section")
       classes match {
         case None => fail("should have found some class")
@@ -160,7 +160,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should filter out the 45 existing `photo-container` classes") {
-      val html = HtmlProcessor(RealLifeData.PhotoSetOfTheDay)
+      val html = Html(RealLifeData.PhotoSetOfTheDay)
       val classes = html filter Class("photo-container")
       classes match {
         case None => fail("should have found some class")
@@ -174,7 +174,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("Attribute filter") {
     it("should filter out the 4 existing elements with a `href` attribute") {
-      val html = HtmlProcessor(RealLifeData.AlbumPageMemberReview)
+      val html = Html(RealLifeData.AlbumPageMemberReview)
       val hrefs = html filter Attribute("href")
       hrefs match {
         case None => fail("should have found some attribute")
@@ -187,7 +187,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` when looking for an attribute that doesn't exists") {
-      val html = HtmlProcessor(SimplifiedData.FilterTag.NestedTags)
+      val html = Html(SimplifiedData.FilterTag.NestedTags)
       val attribute = html filter Attribute("no-such-attr")
       attribute match {
         case None => info("properly returned `None`")
@@ -198,7 +198,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("grabbing the Values of elements filtered by Attributes") {
     it("should return `data-index`attribute contents") {
-      val html = HtmlProcessor(RealLifeData.PhotoSetOfTheDay)
+      val html = Html(RealLifeData.PhotoSetOfTheDay)
       val dataIndex = html filter Value(Attribute("data-index"))
       dataIndex match {
         case None => fail("should have found some dataIndex")
@@ -213,7 +213,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("HrefLink filter") {
     it("should filter out the one link in the html") {
-      val html = HtmlProcessor(SimplifiedData.FilterLink.SingleLink)
+      val html = Html(SimplifiedData.FilterLink.SingleLink)
       val links = html filter HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -225,7 +225,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should filter out the two nested links in the html") {
-      val html = HtmlProcessor(SimplifiedData.FilterLink.NestedLinks)
+      val html = Html(SimplifiedData.FilterLink.NestedLinks)
       val links = html filter HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -238,7 +238,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should filter out two flat links") {
-      val html = HtmlProcessor(SimplifiedData.FilterLink.FlatLinks)
+      val html = Html(SimplifiedData.FilterLink.FlatLinks)
       val links = html filter HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -253,7 +253,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("RetainFirst of HrefLink filter") {
     it("should retain only the first link when composed with a RetainFirst filter, on rhs") {
-      val html = HtmlProcessor(SimplifiedData.FilterLink.NestedLinks)
+      val html = Html(SimplifiedData.FilterLink.NestedLinks)
       val links = html filter RetainFirst(HrefLink())
       links match {
         case None => fail("should have found some hrefs")
@@ -265,7 +265,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should retain only the first link when composed with a RetainFirst filter, on lhs") {
-      val html = HtmlProcessor(SimplifiedData.FilterLink.NestedLinks)
+      val html = Html(SimplifiedData.FilterLink.NestedLinks)
       val links = html filter RetainFirst(HrefLink())
       links match {
         case None => fail("should have found some hrefs")
@@ -279,7 +279,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("Content filter") {
     it("should return only the date from the `icon-photography` class") {
-      val html = HtmlProcessor(SimplifiedData.FilterContent.ContentFromClass)
+      val html = Html(SimplifiedData.FilterContent.ContentFromClass)
       val content = html filter Content(Class("icon-photography"))
       content match {
         case None => fail("should have found something")
@@ -291,7 +291,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return only the contents of the `div` tag") {
-      val html = HtmlProcessor(SimplifiedData.FilterContent.ContentFromTag)
+      val html = Html(SimplifiedData.FilterContent.ContentFromTag)
       val content = html filter Content(Tag("div"))
       content match {
         case None => fail("should have found something")
@@ -303,7 +303,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return only the contents of the `id` attribute") {
-      val html = HtmlProcessor(SimplifiedData.FilterContent.ContentFromAttribute)
+      val html = Html(SimplifiedData.FilterContent.ContentFromAttribute)
       val content = html filter Content(Attribute("id"))
       content match {
         case None => fail("should have found something")
@@ -315,7 +315,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return the contents of a Composite Filter") {
-      val html = HtmlProcessor(SimplifiedData.FilterContent.ContentFromComposite)
+      val html = Html(SimplifiedData.FilterContent.ContentFromComposite)
       val content = html filter Content(Class("meta-data") && Class("photographer"))
       content match {
         case None => fail("should have found something")
@@ -329,7 +329,7 @@ class HtmlProcessorTest extends FunSpec {
 
   describe("Combining filters") {
     it("should return all the links contained within the `photo-container` classes contained within the first `image-section` class") {
-      val html = HtmlProcessor(ComplexData.Combination.TwoTopLevelImageSections)
+      val html = Html(ComplexData.Combination.TwoTopLevelImageSections)
       val links = html filter RetainFirst(Class("image-section")) && Class("photo-container") && HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -342,7 +342,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return all the links contained within the `photo-container` classes contained within both `image-section` class") {
-      val html = HtmlProcessor(ComplexData.Combination.TwoTopLevelImageSections)
+      val html = Html(ComplexData.Combination.TwoTopLevelImageSections)
       val links = html filter Class("image-section") && Class("photo-container") && HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -357,7 +357,7 @@ class HtmlProcessorTest extends FunSpec {
 
     it("should return all the links contained within the `photo-container` classes contained within both `image-section` class" +
       "even though the middle `image-section` class contains no photocontainers") {
-      val html = HtmlProcessor(ComplexData.Combination.ThreeTopLevelImageSectionsMiddleOneEmpty)
+      val html = Html(ComplexData.Combination.ThreeTopLevelImageSectionsMiddleOneEmpty)
       val links = html filter Class("image-section") && Class("photo-container") && HrefLink()
       links match {
         case None => fail("should have found some hrefs")
@@ -371,7 +371,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` if the first filter in the combination returns `None`") {
-      val html = HtmlProcessor(ComplexData.Combination.TwoTopLevelImageSections)
+      val html = Html(ComplexData.Combination.TwoTopLevelImageSections)
       val links = html filter Class("non-existent-class") && Class("photo-container") && HrefLink()
       links match {
         case None => info("returned `None`, as expected")
@@ -380,7 +380,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` if the filter in middle the combination returns `None`") {
-      val html = HtmlProcessor(ComplexData.Combination.TwoTopLevelImageSections)
+      val html = Html(ComplexData.Combination.TwoTopLevelImageSections)
       val links = html filter Class("image-section") && Class("non-existent-class") && HrefLink()
       links match {
         case None => info("returned `None`, as expected")
@@ -389,7 +389,7 @@ class HtmlProcessorTest extends FunSpec {
     }
 
     it("should return `None` if the last filter in the combination returns `None`") {
-      val html = HtmlProcessor(ComplexData.Combination.TwoTopLevelImageSections)
+      val html = Html(ComplexData.Combination.TwoTopLevelImageSections)
       val links = html filter Class("image-section") && Class("photo-container") && Attribute("non-existent-attribute")
       links match {
         case None => info("returned `None`, as expected")
