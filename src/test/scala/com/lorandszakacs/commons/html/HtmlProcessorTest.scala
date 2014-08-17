@@ -21,13 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.lorandszakacs.util.html
+package com.lorandszakacs.commons.html
 
 import org.scalatest.FunSpec
 
-import com.lorandszakacs.util.html.data.ComplexData
-import com.lorandszakacs.util.html.data.RealLifeData
-import com.lorandszakacs.util.html.data.SimplifiedData
+import com.lorandszakacs.commons.html.data._
 
 class HtmlProcessorTest extends FunSpec {
 
