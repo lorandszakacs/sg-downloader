@@ -41,21 +41,25 @@ javaOptions in Test ++= Seq("-Xmx1G")
 
 mainClass := None
 
-//required to create the default `sbt` folder structure
-EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + EclipseCreateSrc.Managed
-
-EclipseKeys.withSource := true
-
 //===================================================
 //         dependencies for testing libraries
 //===================================================
 libraryDependencies ++= Seq(
-  "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test"
+  "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test" withSources()
 )
 
 //===================================================
 //         dependencies for dev libraries
 //===================================================
 libraryDependencies ++= Seq(
-  "org.jsoup" % "jsoup" % "1.7.3"
+  "org.jsoup" % "jsoup" % "1.7.3" withSources()
 )
+
+//===================================================
+//         dependencies for IDE configurations
+//===================================================
+
+//required to create the default `sbt` folder structure
+EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + EclipseCreateSrc.Managed
+
+EclipseKeys.withSource := true
