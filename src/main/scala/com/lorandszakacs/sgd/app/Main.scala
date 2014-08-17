@@ -24,10 +24,34 @@
 package com.lorandszakacs.sgd.app
 
 import com.lorandszakacs.sgd.repl.Repl
+import scala.io.StdIn
+import com.lorandszakacs.sgd.http.Login
+import com.lorandszakacs.sgd.http.SGClient
+import akka.actor.ActorSystem
+import scala.util.Success
+import scala.util.Failure
 
 object Main extends App {
+  def shutdown(system: ActorSystem) {
+    system.shutdown()
+  }
+
   println("sg-downloader")
-  val repl = new Repl()
-  repl.start()
-  println("exiting sg-downloader.")
+  println("please login to start.")
+  val user = { print("user:"); StdIn.readLine() }
+  val pwd = { print("pwd:"); val result = StdIn.readLine(); println(); result }
+  implicit val system = ActorSystem("test-login-client")
+  import system.dispatcher
+  SGClient(user, pwd) match {
+    case Success(sgClient) =>
+      println(sgClient.authentication.toString)
+      val repl = new Repl()
+      repl.start()
+      println("exiting sg-downloader.")
+      shutdown(system)
+    case Failure(e) =>
+      System.err.println(s"failed to login:\n${e.getMessage}")
+      println(s"exiting sg-downloader")
+      shutdown(system)
+  }
 }

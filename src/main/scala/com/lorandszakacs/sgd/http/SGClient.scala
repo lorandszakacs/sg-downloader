@@ -24,9 +24,21 @@
 package com.lorandszakacs.sgd.http
 
 import spray.http.Uri
+import akka.actor.ActorSystem
+import scala.concurrent.ExecutionContext
+import scala.util.Try
 
-trait Client {
+object SGClient {
+  private val initialAccessPoint = "https://suicidegirls.com"
+  private val loginAccessPoint = "https://suicidegirls.com/login/"
 
-  def authentication: AuthenticationInfo
+  private val referer = "https://suicidegirls.com/"
+
+  def apply(userName: String, password: String)(implicit actorSystem: ActorSystem, executionContext: ExecutionContext): Try[Client] = {
+    Login(initialAccessPoint, loginAccessPoint, referer, userName, password).map(info => new SGClient(info))
+  }
+}
+
+class SGClient private (val authentication: AuthenticationInfo)(implicit val actorSystem: ActorSystem, val executionContext: ExecutionContext) extends Client {
 
 }
