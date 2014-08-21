@@ -15,9 +15,10 @@ import com.lorandszakacs.sgd.model._
 import com.lorandszakacs.sgd.client.data.PhotoSetPage
 import com.lorandszakacs.sgd.http.Parser
 
-object TestDownload extends App {
+object TestSGClient extends App {
   implicit val system = ActorSystem("test-login-client")
   import system.dispatcher
+  //partial=false&offset=33
 
   val user = { print("user:"); StdIn.readLine() }
   val pwd = { print("pwd:"); val result = StdIn.readLine(); println(); result }
