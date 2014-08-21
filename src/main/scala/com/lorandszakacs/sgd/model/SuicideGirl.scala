@@ -3,30 +3,42 @@ package com.lorandszakacs.sgd.model
 import spray.http.Uri
 import java.time.LocalDate
 
-case class SuicideGirl(
-  val uri: Uri,
-  val name: String) {
+class SuicideGirl(
+  uriP: => Uri,
+  nameP: => String) {
 
-  val path = name
+  lazy val path = nameP
+  lazy val uri = uriP
+  lazy val name = nameP
 }
 
-case class PhotoSet(
-  val uri: Uri,
-  val name: String,
-  val photos: List[Photo],
-  val date: LocalDate,
-  val ownerSuicideGirl: SuicideGirl) {
+class PhotoSet(
+  uriP: => Uri,
+  nameP: => String,
+  photosP: => List[Photo],
+  dateP: => LocalDate,
+  ownerSuicideGirlP: => SuicideGirl) {
 
-  private val readableDate = s"${date.getYear()}.${date.getMonth()}.${date.getDayOfMonth()}"
+  lazy val uri: Uri = uriP
+  lazy val name: String = nameP
+  lazy val photos: List[Photo] = photosP
+  lazy val date: LocalDate = dateP
+  lazy val ownerSuicideGirl: SuicideGirl = ownerSuicideGirlP
 
-  val normalizedName = name.replace(" ", "-").replace("?", "-").replace("/", "-").replace("\\", "-")
-  val path = s"${ownerSuicideGirl.path}/${readableDate}-${normalizedName}"
+  private def readableDate = s"${date.getYear()}.${date.getMonth()}.${date.getDayOfMonth()}"
+
+  def normalizedName = name.replace(" ", "-").replace("?", "-").replace("/", "-").replace("\\", "-")
+  def path = s"${ownerSuicideGirl.path}/${readableDate}-${normalizedName}"
 }
 
-case class Photo(
-  val uri: Uri,
-  val index: Int,
-  val containingPhotoSet: PhotoSet) {
+class Photo(
+  uriP: => Uri,
+  indexP: => Int,
+  containingPhotoSetP: => PhotoSet) {
 
-  val path = s"${containingPhotoSet.path}/${containingPhotoSet.path.replace("/", ".")}-${index}"
+  lazy val uri: Uri = uriP
+  lazy val index: Int = indexP
+  lazy val containingPhotoSet: PhotoSet = containingPhotoSetP
+
+  def path = s"${containingPhotoSet.path}/${containingPhotoSet.path.replace("/", ".")}-${index}"
 }
