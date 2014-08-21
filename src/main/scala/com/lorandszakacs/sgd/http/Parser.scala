@@ -10,6 +10,13 @@ import com.lorandszakacs.sgd.model.PhotoShallow
 import spray.http.Uri
 
 object Parser {
+  def gatherPhotoSetLinks(html: Html): Try[List[Uri]] = {
+    html filter (Tag("header") && Attribute("post_id") && Tag("h2") && Class("title") && RetainFirst(Tag("a")) && HrefLink()) match {
+      case None => Failure(new Exception("Did not find any PhotoSet links."))
+      case Some(links) => Success(links.map(Uri(_)))
+    }
+  }
+
   def parsePhotoSetPage(html: Html, albumPageUri: Uri): Try[PhotoSetShallow] = {
     //article-feed album-view clearfix
     val metaData: Html = (html filter RetainFirst(Class("content-box"))) match {
