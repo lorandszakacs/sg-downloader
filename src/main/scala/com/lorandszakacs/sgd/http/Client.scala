@@ -47,7 +47,8 @@ trait Client {
       } else {
         throw new Exception(s"Failed to get page. Response: ${response.toString}")
       }
-
     }
   }
+  
+  
 }

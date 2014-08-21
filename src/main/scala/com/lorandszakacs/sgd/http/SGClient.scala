@@ -23,18 +23,18 @@
  */
 package com.lorandszakacs.sgd.http
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{ Failure, Try }
+import scala.collection.mutable.ListBuffer
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
+import scala.util.{Failure, Success, Try}
+
+import com.lorandszakacs.commons.html._
 import com.lorandszakacs.sgd.model._
+
 import akka.actor.ActorSystem
 import spray.http.Uri
 import spray.http.Uri.apply
-import scala.collection.mutable.ListBuffer
-import scala.concurrent.Await
-import com.lorandszakacs.commons.html.Html
-import scala.util.Success
-import scala.concurrent.duration._
-import scala.language.postfixOps
 
 object SGClient {
   private val initialAccessPoint = "https://suicidegirls.com"
@@ -45,21 +45,27 @@ object SGClient {
   def apply(userName: String, password: String)(implicit actorSystem: ActorSystem, executionContext: ExecutionContext): Try[SGClient] = {
     Login(initialAccessPoint, loginAccessPoint, referer, userName, password).map(info => new SGClient(info))
   }
+
+  def apply()(implicit actorSystem: ActorSystem, executionContext: ExecutionContext) = {
+    new SGClient(new NoAuthenticationInfo)
+  }
 }
 
-class SGClient private (val authentication: AuthenticationInfo)(implicit val actorSystem: ActorSystem, val executionContext: ExecutionContext) extends Client {
+class SGClient protected (val authentication: AuthenticationInfo)(implicit val actorSystem: ActorSystem, val executionContext: ExecutionContext) extends Client {
 
-  private def albumPageUri(name: String) = s"https://suicidegirls.com/girls/${name}/photos/view/photosets/"
+  private def photoSetsPageUri(name: String) = s"https://suicidegirls.com/girls/${name.toLowerCase}/photos/view/photosets/"
 
   def getPhotoSet(albumPageUri: Uri): Future[Try[PhotoSetShallow]] = {
     getPage(albumPageUri) map { html =>
       Parser.parsePhotoSetPage(html, albumPageUri)
     } recover {
-      case e: Throwable => Failure(new Exception(s"Failed to getPhotoSet for uri:${albumPageUri}, because:`${e.getMessage()}`", e))
+      case e: Throwable => Failure(new Exception(s"Failed to get PhotoSet for uri:${albumPageUri}, because:`${e.getMessage()}`", e))
     }
   }
 
-  def getPhotoSetUris(sgPhotoSetsPage: Uri): Future[Try[List[Uri]]] = {
+  def getPhotoSetUris(name: String): Future[Try[List[Uri]]] = {
+    val sgPhotoSetsPage = photoSetsPageUri(name)
+
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)

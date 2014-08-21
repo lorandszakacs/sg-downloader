@@ -21,42 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.lorandszakacs.sgd.client.data
+package com.lorandszakacs.sgd.app
 
-import java.time.LocalDate
-
-import scala.io.Source
-
-import com.lorandszakacs.commons.html._
-
+import scala.io.StdIn
+import scala.language.postfixOps
+import scala.util.{ Failure, Success }
+import com.lorandszakacs.sgd.http.SGClient
+import akka.actor.ActorSystem
 import spray.http.Uri
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
-trait PhotoSetPage {
-  def html = {
-    val resourceName = s"${getClass.getSimpleName().replace("$", "")}.html"
-    val URL = getClass.getResource(resourceName)
-    val source = Source.fromURL(URL)
-    Html(source.getLines().mkString("\n"))
+object TestSGClientWithAuthentication extends App {
+  implicit val system = ActorSystem("test-login-client")
+  import system.dispatcher
+
+  val user = { print("user:"); StdIn.readLine() }
+  val pwd = { print("pwd:"); val result = StdIn.readLine(); println(); result }
+  val sgClient = SGClient(user, pwd) match {
+    case Success(client) =>
+      println(client.authentication.toString)
+      client
+    case Failure(e) =>
+      throw e
   }
 
-  def uri: Uri
-  def numberOfPhotos: Int
-  def title: String
-  def date: LocalDate
+  system.shutdown()
 }
-
-object PhotoSetPagePartialDate extends PhotoSetPage {
-  def uri: Uri = "https://suicidegirls.com/girls/dwam/album/1239337/adieu-tristesse/"
-  def numberOfPhotos: Int = 53
-  def title: String = "Adieu Tristesse"
-  def date: LocalDate = LocalDate.of(2014, 1, 18)
-}
-
-object PhotoSetPageFullDate extends PhotoSetPage {
-  def uri: Uri = "https://suicidegirls.com/girls/dwam/album/977051/limportance-d-etre-ernest/"
-  def numberOfPhotos: Int = 45
-  def title: String = "Limportance d etre Ernest"
-  def date: LocalDate = LocalDate.of(2013, 2, 7)
-}
-
-
