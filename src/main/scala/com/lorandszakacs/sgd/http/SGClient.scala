@@ -23,15 +23,13 @@
  */
 package com.lorandszakacs.sgd.http
 
-import java.time.LocalDate
-
 import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{ Failure, Success, Try }
+import scala.util.{ Failure, Try }
 
-import com.lorandszakacs.commons.html._
 import com.lorandszakacs.sgd.model._
 
 import akka.actor.ActorSystem
+import spray.http.Uri
 import spray.http.Uri.apply
 
 object SGClient {
@@ -49,10 +47,11 @@ class SGClient private (val authentication: AuthenticationInfo)(implicit val act
 
   private def albumPageUri(name: String) = s"https://suicidegirls.com/girls/${name}/photos/view/photosets/"
 
-  def getPhotos(albumPage: Html): List[PhotoShallow] = {
-    albumPage filter Class("image-section") && Tag("li") && Class("photo-container") && RetainFirst(HrefLink()) match {
-      case Some(links) => links.zip(1 to links.length).map(pair => PhotoShallow(pair._1, pair._2))
-      case None => throw new Exception(s"Failed to extract any Photo from this document:${albumPage.document.toString}")
+  def getPhotoSet(albumPageUri: Uri): Future[Try[PhotoSetShallow]] = {
+    getPage(albumPageUri) map { html =>
+      Parser.parsePhotoSetPage(html, albumPageUri)
+    } recover {
+      case e: Throwable => Failure(new Exception(s"Failed to getPhotoSet for uri:${albumPageUri}, because:`${e.getMessage()}`", e))
     }
   }
 

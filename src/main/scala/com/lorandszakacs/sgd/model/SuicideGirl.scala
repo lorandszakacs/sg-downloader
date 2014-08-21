@@ -21,26 +21,26 @@ class SuicideGirl private (
 }
 
 object PhotoSet {
-  def apply(uri: => Uri, name: => String, photos: => List[Photo], date: => LocalDate, ownerSuicideGirl: => SuicideGirl) =
-    new PhotoSet(uri, name, photos, date, ownerSuicideGirl)
+  def apply(uri: => Uri, title: => String, photos: => List[Photo], date: => LocalDate, ownerSuicideGirl: => SuicideGirl) =
+    new PhotoSet(uri, title, photos, date, ownerSuicideGirl)
 }
 
 class PhotoSet private (
   uriP: => Uri,
-  nameP: => String,
+  titleP: => String,
   photosP: => List[Photo],
   dateP: => LocalDate,
   ownerSuicideGirlP: => SuicideGirl) {
 
   lazy val uri: Uri = uriP
-  lazy val name: String = nameP
+  lazy val title: String = titleP
   lazy val photos: List[Photo] = photosP
   lazy val date: LocalDate = dateP
   lazy val ownerSuicideGirl: SuicideGirl = ownerSuicideGirlP
 
   private def readableDate = s"${date.getYear()}.${date.getMonth()}.${date.getDayOfMonth()}"
 
-  def normalizedName = name.replace(" ", "-").replace("?", "-").replace("/", "-").replace("\\", "-")
+  def normalizedName = title.replace(" ", "-").replace("?", "-").replace("/", "-").replace("\\", "-")
   def path = s"${ownerSuicideGirl.path}/${readableDate}-${normalizedName}"
 }
 
@@ -73,13 +73,22 @@ case class SuicideGirlShallow(
 
 case class PhotoSetShallow(
   uri: Uri,
-  name: String,
+  title: String,
   photos: List[PhotoShallow],
   date: LocalDate) {
   def apply(sg: SuicideGirl): PhotoSet = {
-    def set: PhotoSet = PhotoSet(uri, name, photos.map(_.apply(set)), date, sg)
+    def set: PhotoSet = PhotoSet(uri, title, photos.map(_.apply(set)), date, sg)
     set
   }
+
+  override def toString =
+    s"""
+uri=${uri}
+title=${title}
+date=${date.toString()}
+photos=
+  ${photos.mkString("\n\t")}
+"""
 }
 
 case class PhotoShallow(
