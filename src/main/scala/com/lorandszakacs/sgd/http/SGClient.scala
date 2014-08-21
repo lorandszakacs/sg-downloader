@@ -25,12 +25,16 @@ package com.lorandszakacs.sgd.http
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Try }
-
 import com.lorandszakacs.sgd.model._
-
 import akka.actor.ActorSystem
 import spray.http.Uri
 import spray.http.Uri.apply
+import scala.collection.mutable.ListBuffer
+import scala.concurrent.Await
+import com.lorandszakacs.commons.html.Html
+import scala.util.Success
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 object SGClient {
   private val initialAccessPoint = "https://suicidegirls.com"
@@ -52,6 +56,46 @@ class SGClient private (val authentication: AuthenticationInfo)(implicit val act
       Parser.parsePhotoSetPage(html, albumPageUri)
     } recover {
       case e: Throwable => Failure(new Exception(s"Failed to getPhotoSet for uri:${albumPageUri}, because:`${e.getMessage()}`", e))
+    }
+  }
+
+  def getPhotoSetUris(sgPhotoSetsPage: Uri): Future[Try[List[Uri]]] = {
+    def isEndPage(html: Html) = {
+      val PartialPageLoadingEndMarker = "No photos available."
+      html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
+    }
+    def requestMore(uri: Uri, offset: Int) = Uri(s"${uri.toString}?partial=true&offset=${offset}")
+
+    def loadPageRepeatedly(firstHtml: Html): Try[List[Uri]] = {
+      val photoSetUris = ListBuffer[Uri]()
+      photoSetUris ++= Parser.gatherPhotoSetLinks(firstHtml).get
+
+      val offsetStep = 9
+      var offset = offsetStep
+      println("initialSize=" + photoSetUris.length)
+      var stop = false
+      do {
+        println(s"New page: ${offset}")
+        val newPage = Await.result(getPage(requestMore(sgPhotoSetsPage, offset)), 1 minute)
+        offset += offsetStep
+        if (isEndPage(newPage) || offset > 100) {
+          stop = true
+        } else {
+          Parser.gatherPhotoSetLinks(newPage) match {
+            case Success(s) =>
+              photoSetUris ++= s
+              println("New size=" + photoSetUris.size)
+            case Failure(e) => throw new Exception(s"Failed while gathering the subsequent pages. At offset: ${offset}", e)
+          }
+        }
+      } while (!stop)
+      Success(photoSetUris.toList)
+    }
+
+    getPage(sgPhotoSetsPage) map { html =>
+      loadPageRepeatedly(html)
+    } recover {
+      case e: Throwable => Failure(e)
     }
   }
 
