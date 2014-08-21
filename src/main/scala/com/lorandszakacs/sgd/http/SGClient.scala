@@ -24,10 +24,10 @@
 package com.lorandszakacs.sgd.http
 
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 import com.lorandszakacs.commons.html._
 import com.lorandszakacs.sgd.model._
@@ -47,7 +47,7 @@ object SGClient {
   }
 
   def apply()(implicit actorSystem: ActorSystem, executionContext: ExecutionContext) = {
-    new SGClient(new NoAuthenticationInfo)
+    new SGClient(NoAuthenticationInfo)
   }
 }
 

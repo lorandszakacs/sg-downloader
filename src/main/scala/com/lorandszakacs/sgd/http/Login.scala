@@ -154,7 +154,7 @@ class AuthenticationInfo(val csrfTokenCookie: HttpCookie, val sessionIdCookie: H
   def cookieHeader = Cookie(sessionIdCookie, csrfTokenCookie, gaCookie)
 }
 
-class NoAuthenticationInfo extends AuthenticationInfo(null, null, null) {
+object NoAuthenticationInfo extends AuthenticationInfo(null, null, null) {
   override def apply(originalRequest: HttpRequest): HttpRequest = originalRequest
   override def toString = s"${getClass.getName()}"
 }
