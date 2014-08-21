@@ -54,6 +54,23 @@ object SGClient {
 class SGClient protected (val authentication: AuthenticationInfo)(implicit val actorSystem: ActorSystem, val executionContext: ExecutionContext) extends Client {
 
   private def photoSetsPageUri(name: String) = s"https://suicidegirls.com/girls/${name.toLowerCase}/photos/view/photosets/"
+  private def photoSetUri(suffix: Uri) = Uri.apply(s"https://suicidegirls.com${suffix.toString}")
+
+  def getSuicideGirlShallow(name: String): Future[Try[SuicideGirlShallow]] = {
+    val shallowSets: Future[List[PhotoSetShallow]] = getPhotoSetUris(name).map(_.get).flatMap { photoSetUris: List[Uri] =>
+      val listOfFutureSets = photoSetUris map { uri =>
+        val e: Future[PhotoSetShallow] = getPhotoSet(photoSetUri(uri)).map(_.get)
+        e
+      }
+      Future.sequence(listOfFutureSets)
+    }
+    shallowSets map { sets =>
+      Success(SuicideGirlShallow(
+        uri = photoSetsPageUri(name),
+        name,
+        photoSets = sets))
+    }
+  }
 
   def getPhotoSet(albumPageUri: Uri): Future[Try[PhotoSetShallow]] = {
     getPage(albumPageUri) map { html =>

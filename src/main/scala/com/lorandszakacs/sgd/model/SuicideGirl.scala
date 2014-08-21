@@ -69,6 +69,16 @@ case class SuicideGirlShallow(
     def sg: SuicideGirl = SuicideGirl(uri, name, photoSets.map(_.apply(sg)))
     sg
   }
+
+  override def toString =
+    s"""
+name=${name}
+uri=${uri}
+photosets=${photoSets.length}
++++
+${photoSets.mkString("---")}
++++
+"""
 }
 
 case class PhotoSetShallow(

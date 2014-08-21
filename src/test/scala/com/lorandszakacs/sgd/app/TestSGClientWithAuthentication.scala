@@ -46,5 +46,15 @@ object TestSGClientWithAuthentication extends App {
       throw e
   }
 
+  def sgShallow(name: String) = {
+    val result = Await.result(sgClient.getSuicideGirlShallow(name), 2 minute).get
+    println(s"------ ${name}:${result.photoSets.size}---------")
+    println(result.toString)
+    println("---------------------------------------")
+    result
+  }
+
+  sgShallow("Dwam")
+
   system.shutdown()
 }
