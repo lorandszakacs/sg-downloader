@@ -1,9 +1,15 @@
 package com.lorandszakacs.sgd.model
 
-import spray.http.Uri
 import java.time.LocalDate
 
-class SuicideGirl(
+import spray.http.Uri
+
+object SuicideGirl {
+  def apply(uri: => Uri, name: => String, photoSets: => List[PhotoSet]) =
+    new SuicideGirl(uri, name, photoSets)
+}
+
+class SuicideGirl private (
   uriP: => Uri,
   nameP: => String,
   photoSetsP: => List[PhotoSet]) {
@@ -14,7 +20,12 @@ class SuicideGirl(
   lazy val photoSets = photoSetsP
 }
 
-class PhotoSet(
+object PhotoSet {
+  def apply(uri: => Uri, name: => String, photos: => List[Photo], date: => LocalDate, ownerSuicideGirl: => SuicideGirl) =
+    new PhotoSet(uri, name, photos, date, ownerSuicideGirl)
+}
+
+class PhotoSet private (
   uriP: => Uri,
   nameP: => String,
   photosP: => List[Photo],
@@ -33,7 +44,12 @@ class PhotoSet(
   def path = s"${ownerSuicideGirl.path}/${readableDate}-${normalizedName}"
 }
 
-class Photo(
+object Photo {
+  def apply(uri: => Uri, index: => Int, containingPhotoSet: => PhotoSet) =
+    new Photo(uri, index, containingPhotoSet)
+}
+
+class Photo private (
   uriP: => Uri,
   indexP: => Int,
   containingPhotoSetP: => PhotoSet) {
@@ -43,4 +59,28 @@ class Photo(
   lazy val containingPhotoSet: PhotoSet = containingPhotoSetP
 
   def path = s"${containingPhotoSet.path}/${containingPhotoSet.path.replace("/", ".")}-${index}"
+}
+
+case class SuicideGirlShallow(
+  uri: Uri,
+  name: String,
+  photoSets: List[PhotoSetShallow]) {
+  def apply(): SuicideGirl = {
+    def sg: SuicideGirl = SuicideGirl(uri, name, photoSets.map(_.apply(sg)))
+    sg
+  }
+}
+
+case class PhotoSetShallow(
+  uri: Uri,
+  name: String,
+  photos: List[Photo],
+  date: LocalDate) {
+  def apply(sg: SuicideGirl): PhotoSet = ???
+}
+
+case class PhotoShallow(
+  uri: Uri,
+  index: Int) {
+
 }
