@@ -24,6 +24,20 @@ class ParserTests extends FlatSpec with Matchers {
     Parser.parsePhotoSetPage(expected.html, expected.uri) match {
       case Success(result) =>
         result.photos should have length expected.numberOfPhotos
+        result.date should equal(expected.date)
+        result.title should equal(expected.title)
+      case Failure(e) =>
+        fail("did not return any photos", e)
+    }
+  }
+
+  it should "return a PhotoSet object from a page with a partial date" in {
+    val expected = PhotoSetPagePartialDate
+    Parser.parsePhotoSetPage(expected.html, expected.uri) match {
+      case Success(result) =>
+        result.photos should have length expected.numberOfPhotos
+        result.date should equal(expected.date)
+        result.title should equal(expected.title)
       case Failure(e) =>
         fail("did not return any photos", e)
     }

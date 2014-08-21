@@ -11,15 +11,16 @@ import spray.http.Uri
 
 object Parser {
   def parsePhotoSetPage(html: Html, albumPageUri: Uri): Try[PhotoSetShallow] = {
-    val content: Html = (html filter Class("content-box")) match {
+    //article-feed album-view clearfix
+    val metaData: Html = (html filter RetainFirst(Class("content-box"))) match {
       case None => throw new Exception(s"Could not find album meta-data.")
-      case Some(l) => if (l.length == 1) Html(l.head) else throw new Exception(s"Found too much meta-data for album.")
+      case Some(l) => Html(l.head)
     }
-    val title: String = (content filter Class("title")) match {
+    val title: String = (metaData filter Content(Class("title"))) match {
       case None => throw new Exception(s"Could not find the title of the album.")
-      case Some(l) => if (l.length == 1) l.head else throw new Exception(s"Found too many titles for album.")
+      case Some(l) => if (l.length == 1) l.head.trim() else throw new Exception(s"Found too many titles for album.")
     }
-    val date: LocalDate = (content filter Content(Tag("time"))) match {
+    val date: LocalDate = (metaData filter Content(Tag("time"))) match {
       case None => throw new Exception(s"Could not find the date of the album.")
       case Some(l) => if (l.length == 1) { parseStringToLocalDate(l.head).get } else throw new Exception(s"Found too many dates for album.")
     }
@@ -59,7 +60,7 @@ object Parser {
           val simplifiedDatePattern = """(\w\w\w) (\d*)""".r
           val simplifiedDatePattern(month, day) = time
           val monthAsInt = months(month)
-          val localDate = LocalDate.of(monthAsInt, day.toInt, LocalDate.now().getYear())
+          val localDate = LocalDate.of(LocalDate.now().getYear(), monthAsInt, day.toInt)
           Success(localDate)
         } catch {
           case e: Throwable => Failure(e)
