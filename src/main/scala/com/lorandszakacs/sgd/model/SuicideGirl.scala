@@ -74,13 +74,20 @@ case class SuicideGirlShallow(
 case class PhotoSetShallow(
   uri: Uri,
   name: String,
-  photos: List[Photo],
+  photos: List[PhotoShallow],
   date: LocalDate) {
-  def apply(sg: SuicideGirl): PhotoSet = ???
+  def apply(sg: SuicideGirl): PhotoSet = {
+    def set: PhotoSet = PhotoSet(uri, name, photos.map(_.apply(set)), date, sg)
+    set
+  }
 }
 
 case class PhotoShallow(
   uri: Uri,
   index: Int) {
-
+  override def toString = s"$index -> $uri"
+  def apply(photoSet: PhotoSet): Photo = {
+    def photo: Photo = Photo(uri, index, photoSet)
+    photo
+  }
 }
