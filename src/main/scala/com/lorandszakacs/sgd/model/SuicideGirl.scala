@@ -5,11 +5,13 @@ import java.time.LocalDate
 
 class SuicideGirl(
   uriP: => Uri,
-  nameP: => String) {
+  nameP: => String,
+  photoSetsP: => List[PhotoSet]) {
 
   lazy val path = nameP
   lazy val uri = uriP
   lazy val name = nameP
+  lazy val photoSets = photoSetsP
 }
 
 class PhotoSet(
