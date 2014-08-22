@@ -18,6 +18,13 @@ class SuicideGirl private (
   lazy val uri = uriP
   lazy val name = nameP
   lazy val photoSets = photoSetsP
+
+  override lazy val toString =
+    s"""
+---------${name}:${photoSets.length}---------
+uri=${uri}
+${photoSets.mkString("", "\n", "")}
+"""
 }
 
 object PhotoSet {
@@ -38,10 +45,21 @@ class PhotoSet private (
   lazy val date: LocalDate = dateP
   lazy val ownerSuicideGirl: SuicideGirl = ownerSuicideGirlP
 
-  private def readableDate = s"${date.getYear()}.${date.getMonth()}.${date.getDayOfMonth()}"
+  private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
+  private def readableDate = s"${date.getYear()}-${digitFormat(date.getMonthValue)}-${digitFormat(date.getDayOfMonth())}"
 
   def normalizedName = title.replace(" ", "-").replace("?", "-").replace("/", "-").replace("\\", "-")
   def path = s"${ownerSuicideGirl.path}/${readableDate}-${normalizedName}"
+
+  override lazy val toString =
+    s"""
+${"\t"}title = ${title}
+${"\t"}date  = ${date.toString}
+${"\t"}uri   = ${uri.toString}
+${"\t"}path  = ${path}
+${"\t_________________"}
+${photos.mkString("", "\t\t\n", "")}
+${"\t================="}"""
 }
 
 object Photo {
@@ -59,6 +77,9 @@ class Photo private (
   lazy val containingPhotoSet: PhotoSet = containingPhotoSetP
 
   def path = s"${containingPhotoSet.path}/${containingPhotoSet.path.replace("/", ".")}-${index}"
+
+  private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
+  override lazy val toString = s"\t\t${digitFormat(index)} -> ${uri}"
 }
 
 case class SuicideGirlShallow(
@@ -70,14 +91,11 @@ case class SuicideGirlShallow(
     sg
   }
 
-  override def toString =
+  override lazy val toString =
     s"""
-name=${name}
+---------${name}:${photoSets.length}---------
 uri=${uri}
-photosets=${photoSets.length}
-+++
-${photoSets.mkString("---")}
-+++
+${photoSets.mkString("", "\n", "")}
 """
 }
 
@@ -91,22 +109,24 @@ case class PhotoSetShallow(
     set
   }
 
-  override def toString =
+  override lazy val toString =
     s"""
-uri=${uri}
-title=${title}
-date=${date.toString()}
-photos=
-  ${photos.mkString("\n\t")}
-"""
+${"\t"}title = ${title}
+${"\t"}date  = ${date.toString}
+${"\t"}uri   = ${uri.toString}
+${"\t_________________"}
+${photos.mkString("", "\t\t\n", "")}
+${"\t================="}"""
 }
 
 case class PhotoShallow(
   uri: Uri,
   index: Int) {
-  override def toString = s"$index -> $uri"
   def apply(photoSet: PhotoSet): Photo = {
     def photo: Photo = Photo(uri, index, photoSet)
     photo
   }
+
+  private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
+  override lazy val toString = s"\t\t${digitFormat(index)} -> ${uri}"
 }

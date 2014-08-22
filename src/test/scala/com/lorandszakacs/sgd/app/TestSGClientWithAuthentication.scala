@@ -48,13 +48,18 @@ object TestSGClientWithAuthentication extends App {
 
   def sgShallow(name: String) = {
     val result = Await.result(sgClient.getSuicideGirlShallow(name), 2 minute).get
-    println(s"------ ${name}:${result.photoSets.size}---------")
     println(result.toString)
-    println("---------------------------------------")
     result
   }
 
-  sgShallow("Dwam")
+  def sg(name: String) = {
+    val result = Await.result(sgClient.getSuicideGirl(name), 2 minute).get
+    println(result.toString)
+    result
+  }
+
+  sg("Dwam")
+  sg("Evette")
 
   system.shutdown()
 }
