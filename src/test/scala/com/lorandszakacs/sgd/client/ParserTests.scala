@@ -63,5 +63,15 @@ class ParserTests extends FlatSpec with Matchers {
       case Failure(e) => fail("did not return any SG Names", e)
     }
   }
+  
+  it should "return all the HopefulNames from the profile listing page" in {
+    val expected = HopefulProfileListPage
+    Parser.gatherHopefulNames(expected.html) match {
+      case Success(result) =>
+        result should have length expected.numberOfSGs
+        result should equal(expected.names)
+      case Failure(e) => fail("did not return any SG Names", e)
+    }
+  }
 
 }

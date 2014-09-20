@@ -49,12 +49,22 @@ object SGClient {
   def apply()(implicit actorSystem: ActorSystem, executionContext: ExecutionContext) = {
     new SGClient(NoAuthenticationInfo)
   }
+  
+  trait Reporter {
+    def apply(offset: Int, offsetStep: Int): Unit
+  }
+
+  private object DefaultReporter extends Reporter {
+    def apply(offset: Int, offsetStep: Int): Unit = {}
+  }
 }
 
 class SGClient protected (val authentication: AuthenticationInfo)(implicit val actorSystem: ActorSystem, val executionContext: ExecutionContext) extends Client {
 
   private def photoSetsPageUri(name: String): Uri = Uri(s"https://suicidegirls.com/girls/${name.toLowerCase}/photos/view/photosets/")
   private def photoSetUri(suffix: Uri) = Uri(s"https://suicidegirls.com${suffix.toString}")
+  private def sgListPageUri: Uri = Uri(s"https://suicidegirls.com/profiles/girl/followers/")
+  private def hopefulListPageUri: Uri = Uri(s"https://suicidegirls.com/profiles/hopeful/followers/")
 
   def getSuicideGirl(name: String): Future[Try[SuicideGirl]] = {
     getSuicideGirlShallow(name).map(_.map(sgShallow => sgShallow()))
@@ -85,17 +95,38 @@ class SGClient protected (val authentication: AuthenticationInfo)(implicit val a
   }
 
   def getPhotoSetUris(name: String): Future[Try[List[Uri]]] = {
-    val sgPhotoSetsPage = photoSetsPageUri(name)
-
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
+    val sgPhotoSetsPage = photoSetsPageUri(name)
 
     loadPageRepeatedly[Uri](sgPhotoSetsPage, 9, Parser.gatherPhotoSetLinks, isEndPage)
   }
 
-  def loadPageRepeatedly[T](uri: Uri, offsetStep: Integer, parsingFunction: Html => Try[List[T]], isEndPage: Html => Boolean, cutOffLimit: Int = Int.MaxValue): Future[Try[List[T]]] = {
+  def gatherSGNames(limit: Int, reporter: SGClient.Reporter): Future[Try[List[String]]] = {
+    def isEndPage(html: Html) = {
+      val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
+      html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
+    }
+
+    loadPageRepeatedly[String](sgListPageUri, 12, Parser.gatherSGNames, isEndPage, limit, reporter)
+  }
+
+  def gatherHopefulNames(limit: Int, reporter: SGClient.Reporter): Future[Try[List[String]]] = {
+    def isEndPage(html: Html) = {
+      val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
+      html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
+    }
+
+    loadPageRepeatedly[String](hopefulListPageUri, 12, Parser.gatherHopefulNames, isEndPage, limit, reporter)
+  }
+
+  private def loadPageRepeatedly[T](uri: Uri, offsetStep: Int,
+    parsingFunction: Html => Try[List[T]],
+    isEndPage: Html => Boolean,
+    cutOffLimit: Int = Int.MaxValue,
+    reporter: SGClient.Reporter = SGClient.DefaultReporter): Future[Try[List[T]]] = {
 
     def requestMore(uri: Uri, offset: Int) = Uri(s"${uri.toString}?partial=true&offset=${offset}")
 
@@ -111,6 +142,7 @@ class SGClient protected (val authentication: AuthenticationInfo)(implicit val a
         if (isEndPage(newPage) || offset > cutOffLimit) {
           stop = true
         } else {
+          reporter(offset, offsetStep)
           parsingFunction(newPage) match {
             case Success(s) =>
               photoSetUris ++= s

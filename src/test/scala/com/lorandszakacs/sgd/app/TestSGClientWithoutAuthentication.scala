@@ -31,12 +31,19 @@ import akka.actor.ActorSystem
 import spray.http.Uri
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import java.io.File
+import com.lorandszakacs.sgd.http.SGClient
 
 object TestSGClientWithoutAuthentication extends App {
   implicit val system = ActorSystem("test-login-client")
   import system.dispatcher
 
   val sgClient = SGClient()
+
+  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
+    val p = new java.io.PrintWriter(f)
+    try { op(p) } finally { p.close() }
+  }
 
   def albums(name: String) = {
     val result = Await.result(sgClient.getPhotoSetUris(name), 1 minute).get
@@ -46,9 +53,49 @@ object TestSGClientWithoutAuthentication extends App {
     result
   }
 
-  albums("Sash")
-  albums("James")
-  albums("Posh")
+  def SGNames(limit: Int): Seq[String] = {
+    def reporter = new SGClient.Reporter {
+      def apply(offset: Int, offsetStep: Int) = {
+        if (offset % (offsetStep * 6) == 0)
+          println(s"at:$offset")
+      }
+    }
+
+    val result = Await.result(sgClient.gatherSGNames(limit, reporter), 1 hour).get.sorted
+    println(s"-----SGNAMES: ${result.length}")
+    val file = new File("/Users/lorand/Downloads/sgs/sgs.txt")
+    if (!file.exists()) {
+      printToFile(file)(p => {
+        result.foreach(p.println)
+      })
+    }
+    result
+  }
+
+  def HopefulNames(limit: Int): Seq[String] = {
+    def reporter = new SGClient.Reporter {
+      def apply(offset: Int, offsetStep: Int) = {
+        if (offset % (offsetStep * 5) == 0)
+          println(s"at:$offset")
+      }
+    }
+
+    val result = Await.result(sgClient.gatherHopefulNames(limit, reporter), 1 hour).get.distinct.sorted
+    println(s"-----Hopefuls: ${result.length}")
+    val file = new File("/Users/lorand/Downloads/sgs/hopefuls.txt")
+    if (!file.exists()) {
+      printToFile(file)(p => {
+        result.foreach(p.println)
+      })
+    }
+    result
+  }
+
+  //  val allSGNames = SGNames(Int.MaxValue)
+  val allHopefuls = HopefulNames(Int.MaxValue)
+
+  //  albums(allSGNames.head)
+  albums(allHopefuls.head)
 
   system.shutdown()
 }
