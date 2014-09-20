@@ -53,4 +53,15 @@ class ParserTests extends FlatSpec with Matchers {
         fail("did not return any PhotoSetLinks", e)
     }
   }
+
+  it should "return all the SG names from the profile listing page" in {
+    val expected = SGProfileListPage
+    Parser.gatherSGNames(expected.html) match {
+      case Success(result) =>
+        result should have length expected.numberOfSGs
+        result should equal(expected.names)
+      case Failure(e) => fail("did not return any SG Names", e)
+    }
+  }
+
 }

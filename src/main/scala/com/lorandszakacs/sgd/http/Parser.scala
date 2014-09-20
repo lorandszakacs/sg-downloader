@@ -40,6 +40,13 @@ object Parser {
     }
   }
 
+  def gatherSGNames(html: Html): Try[List[String]] = {
+    html filter (Class("image-section") && RetainFirst(Tag("a")) && HrefLink()) match {
+      case None => Failure(new Exception("Did not find any Profile links."))
+      case Some(links) => Success(links.map(_.replace("/girls/", "").replace("/", "").capitalize))
+    }
+  }
+
   def parsePhotoSetPage(html: Html, albumPageUri: Uri): Try[PhotoSetShallow] = {
     //article-feed album-view clearfix
     val metaData: Html = (html filter RetainFirst(Class("content-box"))) match {
