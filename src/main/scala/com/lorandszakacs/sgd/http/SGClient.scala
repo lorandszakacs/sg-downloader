@@ -53,8 +53,8 @@ object SGClient {
 
 class SGClient protected (val authentication: AuthenticationInfo)(implicit val actorSystem: ActorSystem, val executionContext: ExecutionContext) extends Client {
 
-  private def photoSetsPageUri(name: String) = s"https://suicidegirls.com/girls/${name.toLowerCase}/photos/view/photosets/"
-  private def photoSetUri(suffix: Uri) = Uri.apply(s"https://suicidegirls.com${suffix.toString}")
+  private def photoSetsPageUri(name: String): Uri = Uri(s"https://suicidegirls.com/girls/${name.toLowerCase}/photos/view/photosets/")
+  private def photoSetUri(suffix: Uri) = Uri(s"https://suicidegirls.com${suffix.toString}")
 
   def getSuicideGirl(name: String): Future[Try[SuicideGirl]] = {
     getSuicideGirlShallow(name).map(_.map(sgShallow => sgShallow()))
@@ -91,38 +91,34 @@ class SGClient protected (val authentication: AuthenticationInfo)(implicit val a
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
+
+    loadPageRepeatedly[Uri](sgPhotoSetsPage, 9, Parser.gatherPhotoSetLinks, isEndPage)
+  }
+
+  def loadPageRepeatedly[T](uri: Uri, offsetStep: Integer, parsingFunction: Html => Try[List[T]], isEndPage: Html => Boolean, cutOffLimit: Int = Int.MaxValue): Future[Try[List[T]]] = {
+
     def requestMore(uri: Uri, offset: Int) = Uri(s"${uri.toString}?partial=true&offset=${offset}")
 
-    def loadPageRepeatedly(firstHtml: Html): Try[List[Uri]] = {
-      val photoSetUris = ListBuffer[Uri]()
-      photoSetUris ++= Parser.gatherPhotoSetLinks(firstHtml).get
+    getPage(uri) map { firstHtml =>
+      val photoSetUris = ListBuffer[T]()
+      photoSetUris ++= parsingFunction(firstHtml).get
 
-      val offsetStep = 9
       var offset = offsetStep
-      println("initialSize=" + photoSetUris.length)
       var stop = false
       do {
-        println(s"New page: ${offset}")
-        val newPage = Await.result(getPage(requestMore(sgPhotoSetsPage, offset)), 1 minute)
+        val newPage = Await.result(getPage(requestMore(uri, offset)), 1 minute)
         offset += offsetStep
-        if (isEndPage(newPage) || offset > 100) {
+        if (isEndPage(newPage) || offset > cutOffLimit) {
           stop = true
         } else {
-          Parser.gatherPhotoSetLinks(newPage) match {
+          parsingFunction(newPage) match {
             case Success(s) =>
               photoSetUris ++= s
-              println("New size=" + photoSetUris.size)
             case Failure(e) => throw new Exception(s"Failed while gathering the subsequent pages. At offset: ${offset}", e)
           }
         }
       } while (!stop)
       Success(photoSetUris.toList)
-    }
-
-    getPage(sgPhotoSetsPage) map { html =>
-      loadPageRepeatedly(html)
-    } recover {
-      case e: Throwable => Failure(e)
     }
   }
 
