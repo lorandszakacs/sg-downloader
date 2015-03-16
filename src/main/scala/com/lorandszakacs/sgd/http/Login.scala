@@ -28,7 +28,8 @@ import spray.http.{HttpRequest, StatusCodes, Uri}
 import spray.http.HttpHeaders.{Cookie, RawHeader}
 
 object Login {
-  def apply(initialAccessPoint: Uri, loginAccessPoint: Uri, referer: String, user: String, pwd: String)(implicit actorSystem: ActorSystem, executionContext: ExecutionContext): Try[AuthenticationInfo] = {
+  def apply(initialAccessPoint: Uri, loginAccessPoint: Uri, referer: String, user: String, pwd: String)
+    (implicit actorSystem: ActorSystem, executionContext: ExecutionContext): Try[AuthenticationInfo] = {
     def loginFuture = Get(initialAccessPoint) ~>
       sendReceive flatMap { getResponse =>
       val loginInfo = LoginInfo(getResponse.headers, referer).getOrElse(throw new Exception("Response headers did not contain the CSRF token"))
@@ -52,10 +53,6 @@ object Login {
 
 }
 
-/**
- * @author lorand
- *
- */
 sealed trait CSRFInfo {
   def referer: String
 
@@ -81,10 +78,6 @@ sealed trait CSRFInfo {
   override def toString = s"\n${getClass.getSimpleName}\n--headers:\n\t${cookieHeader.toString}\n\t${XCSRFTokenHeader.toString}\n\t${refererHeader.toString}"
 }
 
-/**
- * @author lorand
- *
- */
 object CookieHeaderInterpreter {
   def extractCookie(headers: List[HttpHeader], cookieName: String): Option[HttpCookie] = {
     val cookieHeadersOnly = headers.filter(c => (c.name == "Set-Cookie") && c.value.contains(cookieName) && c.value.contains("="))
@@ -98,10 +91,6 @@ object CookieHeaderInterpreter {
   }
 }
 
-/**
- * @author lorand
- *
- */
 private object LoginInfo {
   final val CSRFCookieName = "csrftoken"
 
@@ -112,10 +101,6 @@ private object LoginInfo {
   }
 }
 
-/**
- * @author lorand
- *
- */
 private class LoginInfo private(val csrfTokenCookie: HttpCookie, val referer: String) extends CSRFInfo {
   def cookieHeader = Cookie(csrfTokenCookie, gaCookie)
 
@@ -130,10 +115,6 @@ private class LoginInfo private(val csrfTokenCookie: HttpCookie, val referer: St
 
 }
 
-/**
- * @author lorand
- *
- */
 private object AuthenticationInfo {
   final val CSRFCookieName = "csrftoken"
   final val SessionIdCookieName = "sessionid"
