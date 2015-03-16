@@ -29,19 +29,31 @@ import scala.util.{Failure, Success}
  */
 object TestLogin extends App {
   implicit val system = ActorSystem("test-login-client")
+
   import com.lorandszakacs.sgd.app.TestLogin.system.dispatcher
 
   val Referer = "https://suicidegirls.com/"
   val initialAccessPoint = "https://suicidegirls.com"
   val loginAccessPoint = "https://suicidegirls.com/login/"
-  val user = { print("user:"); StdIn.readLine() }
-  val pwd = { print("pwd:"); val result = StdIn.readLine(); println(); result }
+  val user = {
+    print("user:")
+    StdIn.readLine()
+  }
+  val pwd = {
+    print("pwd:")
+    val result = StdIn.readLine()
+    println()
+    result
+  }
+
   val loginInfo = Login.apply(initialAccessPoint, loginAccessPoint, Referer, user, pwd) match {
     case Success(info) =>
       println(info.toString)
+      system.shutdown()
       info
     case Failure(e) =>
-      println(e.toString())
+      println(e.toString)
+      system.shutdown()
       throw e
   }
 

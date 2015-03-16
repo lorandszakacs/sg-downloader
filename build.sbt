@@ -1,19 +1,16 @@
-/**
- * Copyright 2015 Lorand Szakacs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
+// Copyright 2015 Lorand Szakacs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 import sbt._
 import Process._
@@ -48,9 +45,10 @@ libraryDependencies ++= Seq(
 //         dependencies for dev libraries
 //===================================================
 libraryDependencies ++= Seq(
-  "com.lorandszakacs" %% "util-html" % "0.1.0" withSources(),
+  "com.lorandszakacs" %% "util-html" % "0.1.1" withSources(),
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2" withSources(),
   "com.typesafe.akka" %% "akka-actor" % "2.3.8" withSources(),
+  "com.github.nscala-time" %% "nscala-time" % "1.8.0" withSources(),
   "io.spray" %% "spray-can" % "1.3.2" withSources(),
   "io.spray" %% "spray-http" % "1.3.2" withSources(),
   "io.spray" %% "spray-httpx" % "1.3.2" withSources(),

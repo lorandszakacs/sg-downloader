@@ -16,50 +16,50 @@
  */
 package com.lorandszakacs.sgd.http
 
-import scala.util.Try
+import scala.util._
 import com.lorandszakacs.sgd.model.PhotoSetShallow
-import scala.util.Success
-import scala.util.Failure
 import com.lorandszakacs.util.html._
-import java.time.LocalDate
+import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sgd.model.PhotoShallow
 import spray.http.Uri
 
 object Parser {
   def gatherPhotoSetLinks(html: Html): Try[List[Uri]] = {
     html filter (Tag("header") && Attribute("post_id") && Tag("h2") && Class("title") && RetainFirst(Tag("a")) && HrefLink()) match {
-      case None => Failure(new Exception("Did not find any PhotoSet links."))
-      case Some(links) => Success(links.map(Uri(_)))
+      case Nil => Failure(new Exception("Did not find any PhotoSet links."))
+      case links => Success(links.map(Uri(_)))
     }
   }
 
   def gatherSGNames(html: Html): Try[List[String]] = {
     html filter (Class("image-section") && RetainFirst(Tag("a")) && HrefLink()) match {
-      case None => Failure(new Exception("Did not find any Profile links."))
-      case Some(links) => Success(links.map(_.replace("/girls/", "").replace("/", "").capitalize))
+      case Nil => Failure(new Exception("Did not find any Profile links."))
+      case links => Success(links.map(_.replace("/girls/", "").replace("/", "").capitalize))
     }
   }
-  
+
   def gatherHopefulNames(html: Html): Try[List[String]] = {
     html filter (Class("image-section") && RetainFirst(Tag("a")) && HrefLink()) match {
-      case None => Failure(new Exception("Did not find any Profile links."))
-      case Some(links) => Success(links.map(_.replace("/members/", "").replace("/", "").capitalize))
+      case Nil => Failure(new Exception("Did not find any Profile links."))
+      case links => Success(links.map(_.replace("/members/", "").replace("/", "").capitalize))
     }
   }
 
   def parsePhotoSetPage(html: Html, albumPageUri: Uri): Try[PhotoSetShallow] = {
     //article-feed album-view clearfix
-    val metaData: Html = (html filter RetainFirst(Class("content-box"))) match {
-      case None => throw new Exception(s"Could not find album meta-data.")
-      case Some(l) => Html(l.head)
+    val metaData: Html = html filter RetainFirst(Class("content-box")) match {
+      case Nil => throw new Exception(s"Could not find album meta-data.")
+      case l => Html(l.head)
     }
-    val title: String = (metaData filter Content(Class("title"))) match {
-      case None => throw new Exception(s"Could not find the title of the album.")
-      case Some(l) => if (l.length == 1) l.head.trim() else throw new Exception(s"Found too many titles for album.")
+    val title: String = metaData filter Content(Class("title")) match {
+      case Nil => throw new Exception(s"Could not find the title of the album.")
+      case l => if (l.length == 1) l.head.trim() else throw new Exception(s"Found too many titles for album.")
     }
-    val date: LocalDate = (metaData filter Content(Tag("time"))) match {
-      case None => throw new Exception(s"Could not find the date of the album.")
-      case Some(l) => if (l.length == 1) { parseStringToLocalDate(l.head).get } else throw new Exception(s"Found too many dates for album.")
+    val date: DateTime = metaData filter Content(Tag("time")) match {
+      case Nil => throw new Exception(s"Could not find the date of the album.")
+      case l => if (l.length == 1) {
+        parseStringToDateTime(l.head).get
+      } else throw new Exception(s"Found too many dates for album.")
     }
     val photos = parsePhotos(html) match {
       case Success(ps) => ps
@@ -70,8 +70,8 @@ object Parser {
 
   def parsePhotos(albumPage: Html): Try[List[PhotoShallow]] = {
     albumPage filter Class("image-section") && Tag("li") && Class("photo-container") && RetainFirst(HrefLink()) match {
-      case Some(links) => Try(links.zip(1 to links.length).map(pair => PhotoShallow(pair._1, pair._2)))
-      case None => throw new Exception(s"Failed to extract any Photo from this document:${albumPage.document.toString}")
+      case Nil => throw new Exception(s"Failed to extract any Photo from this document:${albumPage.document.toString}")
+      case links => Try(links.zip(1 to links.length).map(pair => PhotoShallow(pair._1, pair._2)))
     }
   }
 
@@ -80,7 +80,7 @@ object Parser {
     7 -> "Jul", 8 -> "Aug", 9 -> "Sep",
     10 -> "Oct", 11 -> "Nov", 12 -> "Dec").map(p => p._2 -> p._1)
 
-  private def parseStringToLocalDate(t: String): Try[LocalDate] = {
+  private def parseStringToDateTime(t: String): Try[DateTime] = {
     val time = t.trim()
     try {
       //Aug 1, 2012
@@ -89,20 +89,24 @@ object Parser {
 
       val monthAsInt = months(month)
 
-      val localDate = LocalDate.of(year.toInt, monthAsInt, day.toInt)
-      Success(localDate)
+      val dateTime = new DateTime(DateTimeZone.UTC)
+                     .withDate(year.toInt, monthAsInt, day.toInt)
+                     .withTimeAtStartOfDay()
+
+      Success(dateTime)
     } catch {
-      case e: Throwable => {
+      case e: Throwable =>
         try {
           val simplifiedDatePattern = """(\w\w\w) (\d*)""".r
           val simplifiedDatePattern(month, day) = time
           val monthAsInt = months(month)
-          val localDate = LocalDate.of(LocalDate.now().getYear(), monthAsInt, day.toInt)
-          Success(localDate)
+          val dateTime = new DateTime(DateTimeZone.UTC)
+                          .withDate(DateTime.now.getYear, monthAsInt, day.toInt)
+                          .withTimeAtStartOfDay()
+          Success(dateTime)
         } catch {
           case e: Throwable => Failure(e)
         }
-      }
     }
   }
 }

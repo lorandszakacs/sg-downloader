@@ -16,7 +16,7 @@
  */
 package com.lorandszakacs.sgd.client.data
 
-import java.time.LocalDate
+import com.github.nscala_time.time.Imports._
 
 import scala.io.Source
 
@@ -37,24 +37,35 @@ trait PhotoSetPage {
     Html(source.getLines().mkString("\n"))
   }
 
+  def currentYear: Int = DateTime.now(DateTimeZone.UTC).getYear
+
   def uri: Uri
+
   def numberOfPhotos: Int
+
   def title: String
-  def date: LocalDate
+
+  def date: DateTime
 }
 
 object PhotoSetPagePartialDate extends PhotoSetPage {
   def uri: Uri = "https://suicidegirls.com/girls/dwam/album/1239337/adieu-tristesse/"
+
   def numberOfPhotos: Int = 53
+
   def title: String = "Adieu Tristesse"
-  def date: LocalDate = LocalDate.of(2014, 1, 18)
+
+  def date: DateTime = DateTime.parse("2015-01-18T00:00:00.000Z").withYear(currentYear)
 }
 
 object PhotoSetPageFullDate extends PhotoSetPage {
   def uri: Uri = "https://suicidegirls.com/girls/dwam/album/977051/limportance-d-etre-ernest/"
+
   def numberOfPhotos: Int = 45
+
   def title: String = "Limportance d etre Ernest"
-  def date: LocalDate = LocalDate.of(2013, 2, 7)
+
+  def date: DateTime = DateTime.parse("2013-02-07T00:00:00.000Z")
 }
 
 

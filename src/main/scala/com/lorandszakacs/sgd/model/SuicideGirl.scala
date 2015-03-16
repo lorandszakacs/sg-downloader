@@ -16,8 +16,7 @@
  */
 package com.lorandszakacs.sgd.model
 
-import java.time.LocalDate
-
+import com.github.nscala_time.time.Imports._
 import spray.http.Uri
 
 /**
@@ -49,7 +48,7 @@ ${photoSets.mkString("", "\n", "")}
 }
 
 object PhotoSet {
-  def apply(uri: => Uri, title: => String, photos: => List[Photo], date: => LocalDate, ownerSuicideGirl: => SuicideGirl) =
+  def apply(uri: => Uri, title: => String, photos: => List[Photo], date: => DateTime, ownerSuicideGirl: => SuicideGirl) =
     new PhotoSet(uri, title, photos, date, ownerSuicideGirl)
 }
 
@@ -57,18 +56,20 @@ class PhotoSet private(
   uriP: => Uri,
   titleP: => String,
   photosP: => List[Photo],
-  dateP: => LocalDate,
+  dateP: => DateTime,
   ownerSuicideGirlP: => SuicideGirl) {
 
   lazy val uri: Uri = uriP
   lazy val title: String = titleP
   lazy val photos: List[Photo] = photosP
-  lazy val date: LocalDate = dateP
+  lazy val date: DateTime = dateP
   lazy val ownerSuicideGirl: SuicideGirl = ownerSuicideGirlP
+
+  val dateTimeFormatter = DateTimeFormat.forPattern("YYYY-MM-dd").withZoneUTC()
 
   private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
 
-  private def readableDate = s"${date.getYear()}-${digitFormat(date.getMonthValue)}-${digitFormat(date.getDayOfMonth())}"
+  private def readableDate = date.toString(dateTimeFormatter)
 
   def normalizedName = title.replace(" ", "-").replace("?", "-").replace("/", "-").replace("\\", "-")
 
@@ -127,7 +128,7 @@ case class PhotoSetShallow(
   uri: Uri,
   title: String,
   photos: List[PhotoShallow],
-  date: LocalDate) {
+  date: DateTime) {
   def apply(sg: SuicideGirl): PhotoSet = {
     def set: PhotoSet = PhotoSet(uri, title, photos.map(_.apply(set)), date, sg)
     set
