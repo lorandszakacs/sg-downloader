@@ -32,6 +32,6 @@ object Html {
   def apply(file: File) = new Html(Jsoup.parse(file, "UTF-8"))
 }
 
-class Html private(val document: Document) {
-  def filter(f: HtmlFilter): Option[List[String]] = f.apply(document)
+case class Html private(document: Document) {
+  def filter(f: HtmlFilter): List[String] = f.apply(document)
 }

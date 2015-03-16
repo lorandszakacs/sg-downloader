@@ -16,13 +16,11 @@
  */
 package com.lorandszakacs.util.html
 
-import scala.Option.option2Iterable
-import scala.collection.mutable.ListBuffer
-
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
+import org.jsoup.nodes.{Document, Element}
 import org.jsoup.select.Elements
+
+import scala.collection.mutable.ListBuffer
 
 /**
  * @author Lorand Szakacs, lsz@lorandszakacs.com
@@ -32,12 +30,10 @@ import org.jsoup.select.Elements
 protected sealed trait HtmlFilter {
   def &&(that: HtmlFilter): HtmlFilter = CompositeFilter(this, that)
 
-  def apply(doc: Document): Option[List[String]] = {
+  def apply(doc: Document): List[String] = {
     val elements = filter(doc)
     val listOfElements = elementsToList(elements)
-    if (listOfElements.isEmpty)
-      return None
-    Some(listOfElements map (_.toString))
+    listOfElements map (_.toString)
   }
 
   protected final def elementsToList(elements: Elements): List[Element] = {
@@ -49,7 +45,7 @@ protected sealed trait HtmlFilter {
     buff.toList
   }
 
-  def apply(htmlChunk: String): Option[List[String]] = {
+  def apply(htmlChunk: String): List[String] = {
     val doc = Jsoup.parseBodyFragment(htmlChunk)
     apply(doc)
   }
@@ -58,30 +54,22 @@ protected sealed trait HtmlFilter {
 }
 
 private case class CompositeFilter(first: HtmlFilter, second: HtmlFilter) extends HtmlFilter {
-  override def apply(doc: Document): Option[List[String]] = {
+  override def apply(doc: Document): List[String] = {
     val resultsFirst = first(doc)
     applySecond(resultsFirst)
 
   }
 
-  override def apply(htmlChunk: String): Option[List[String]] = {
+  override def apply(htmlChunk: String): List[String] = {
     val resultsFirst = first(htmlChunk)
     applySecond(resultsFirst)
   }
 
-  private def applySecond(resultsFirst: Option[List[String]]): Option[List[String]] = {
-    resultsFirst match {
-      case None => None
-      case Some(result) =>
-        val finalResult = result.flatMap(r => second(r)).flatten
-        if (finalResult.isEmpty)
-          None
-        else
-          Some(finalResult)
-    }
+  private def applySecond(resultsFirst: List[String]): List[String] = {
+    resultsFirst.flatMap(r => second(r))
   }
 
-  override def filter(doc: Document): Elements = null
+  override def filter(doc: Document): Elements = ???
 }
 
 case class Attribute(attribute: String) extends HtmlFilter {
@@ -97,12 +85,12 @@ case class Tag(tagName: String) extends HtmlFilter {
 }
 
 case class HrefLink() extends HtmlFilter {
-  override def apply(doc: Document): Option[List[String]] = {
+  override def apply(doc: Document): List[String] = {
     val hrefAttributes = Value(Attribute("href"))
     hrefAttributes.apply(doc)
   }
 
-  override def filter(doc: Document): Elements = null
+  override def filter(doc: Document): Elements = ???
 }
 
 /*
@@ -112,46 +100,33 @@ case class HrefLink() extends HtmlFilter {
  */
 
 case class RetainFirst(filter: HtmlFilter) extends HtmlFilter {
-  override def apply(doc: Document): Option[List[String]] = {
+  override def apply(doc: Document): List[String] = {
     val allItems = filter.apply(doc)
-    allItems match {
-      case None => None
-      case Some(items) => Some(List(items(0)))
-    }
+    allItems.take(1)
   }
 
-  override def filter(doc: Document): Elements = null
+  override def filter(doc: Document): Elements = ???
 }
 
 case class Value(attribute: Attribute) extends HtmlFilter {
 
-  override def apply(doc: Document): Option[List[String]] = {
+  override def apply(doc: Document): List[String] = {
     val elementsWithAttribute = elementsToList(filter(doc))
-    if (elementsWithAttribute.isEmpty)
-      None
-    else {
-      val attributeContent = elementsWithAttribute map (e => e.attr(attribute.attribute).toString)
-      Some(attributeContent.toList)
-    }
+    elementsWithAttribute map (e => e.attr(attribute.attribute))
   }
 
   override def filter(doc: Document): Elements = doc.getElementsByAttribute(attribute.attribute)
 }
 
 case class Content(filter: HtmlFilter) extends HtmlFilter {
-  override def apply(doc: Document): Option[List[String]] = {
+  override def apply(doc: Document): List[String] = {
     val filtered = filter.apply(doc)
-    filtered match {
-      case None => None
-      case Some(items) =>
-        val docs = items map (e => Jsoup.parse(e))
-        //because we reparse whatever the result was is being put in a new body
-        //e.body().children().first() will always return non-null.
-        val result = docs map (e => e.body().children().first().html())
-        Some(result)
-    }
+    val docs = filtered map (e => Jsoup.parse(e))
+    //because we reparse whatever the result was is being put in a new body
+    //e.body().children().first() will always return non-null.
+    docs map (e => e.body().children().first().html())
   }
 
-  override def filter(doc: Document): Elements = null
+  override def filter(doc: Document): Elements = ???
 }
 
