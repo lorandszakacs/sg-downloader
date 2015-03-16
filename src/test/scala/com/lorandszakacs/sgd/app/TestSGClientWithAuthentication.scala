@@ -32,10 +32,19 @@ import scala.util.{Failure, Success}
  */
 object TestSGClientWithAuthentication extends App {
   implicit val system = ActorSystem("test-login-client")
+
   import com.lorandszakacs.sgd.app.TestSGClientWithAuthentication.system.dispatcher
 
-  val user = { print("user:"); StdIn.readLine() }
-  val pwd = { print("pwd:"); val result = StdIn.readLine(); println(); result }
+  val user = {
+    print("user:")
+    StdIn.readLine()
+  }
+  val pwd = {
+    print("pwd:")
+    val result = StdIn.readLine()
+    println()
+    result
+  }
   val sgClient = SGClient(user, pwd) match {
     case Success(client) =>
       println(client.authentication.toString)
@@ -45,7 +54,7 @@ object TestSGClientWithAuthentication extends App {
   }
 
   def sgShallow(name: String) = {
-    val result = Await.result(sgClient.getSuicideGirlShallow(name), 2 minute).get
+    val result = Await.result(sgClient.getSuicideGirl(name), 2 minute).get
     println(result.toString)
     result
   }

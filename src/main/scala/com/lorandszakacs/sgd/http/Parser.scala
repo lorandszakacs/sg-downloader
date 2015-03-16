@@ -17,10 +17,9 @@
 package com.lorandszakacs.sgd.http
 
 import scala.util._
-import com.lorandszakacs.sgd.model.PhotoSetShallow
 import com.lorandszakacs.util.html._
 import com.github.nscala_time.time.Imports._
-import com.lorandszakacs.sgd.model.PhotoShallow
+import com.lorandszakacs.sgd.model._
 import spray.http.Uri
 
 object Parser {
@@ -45,7 +44,7 @@ object Parser {
     }
   }
 
-  def parsePhotoSetPage(html: Html, albumPageUri: Uri): Try[PhotoSetShallow] = {
+  def parsePhotoSetPage(html: Html, albumPageUri: Uri): Try[PhotoSet] = {
     //article-feed album-view clearfix
     val metaData: Html = html filter RetainFirst(Class("content-box")) match {
       case Nil => throw new Exception(s"Could not find album meta-data.")
@@ -65,13 +64,13 @@ object Parser {
       case Success(ps) => ps
       case Failure(e) => throw new Exception(s"Failed to gather the links for page.", e)
     }
-    Success(PhotoSetShallow(albumPageUri, title, photos, date))
+    Success(PhotoSet(uri = albumPageUri, title = title, photos = photos, date = date))
   }
 
-  def parsePhotos(albumPage: Html): Try[List[PhotoShallow]] = {
+  def parsePhotos(albumPage: Html): Try[List[Photo]] = {
     albumPage filter Class("image-section") && Tag("li") && Class("photo-container") && RetainFirst(HrefLink()) match {
       case Nil => throw new Exception(s"Failed to extract any Photo from this document:${albumPage.document.toString}")
-      case links => Try(links.zip(1 to links.length).map(pair => PhotoShallow(pair._1, pair._2)))
+      case links => Try(links.zip(1 to links.length).map(pair => Photo(pair._1, pair._2)))
     }
   }
 
@@ -101,8 +100,8 @@ object Parser {
           val simplifiedDatePattern(month, day) = time
           val monthAsInt = months(month)
           val dateTime = new DateTime(DateTimeZone.UTC)
-                          .withDate(DateTime.now.getYear, monthAsInt, day.toInt)
-                          .withTimeAtStartOfDay()
+                         .withDate(DateTime.now.getYear, monthAsInt, day.toInt)
+                         .withTimeAtStartOfDay()
           Success(dateTime)
         } catch {
           case e: Throwable => Failure(e)

@@ -24,135 +24,45 @@ import spray.http.Uri
  * @since 16 Mar 2015
  *
  */
-object SuicideGirl {
-  def apply(uri: => Uri, name: => String, photoSets: => List[PhotoSet]) =
-    new SuicideGirl(uri, name, photoSets)
-}
-
-class SuicideGirl private(
-  uriP: => Uri,
-  nameP: => String,
-  photoSetsP: => List[PhotoSet]) {
-
-  lazy val path = nameP
-  lazy val uri = uriP
-  lazy val name = nameP
-  lazy val photoSets = photoSetsP
-
-  override lazy val toString =
-    s"""
----------${name}:${photoSets.length}---------
-uri=${uri}
-${photoSets.mkString("", "\n", "")}
-"""
-}
-
-object PhotoSet {
-  def apply(uri: => Uri, title: => String, photos: => List[Photo], date: => DateTime, ownerSuicideGirl: => SuicideGirl) =
-    new PhotoSet(uri, title, photos, date, ownerSuicideGirl)
-}
-
-class PhotoSet private(
-  uriP: => Uri,
-  titleP: => String,
-  photosP: => List[Photo],
-  dateP: => DateTime,
-  ownerSuicideGirlP: => SuicideGirl) {
-
-  lazy val uri: Uri = uriP
-  lazy val title: String = titleP
-  lazy val photos: List[Photo] = photosP
-  lazy val date: DateTime = dateP
-  lazy val ownerSuicideGirl: SuicideGirl = ownerSuicideGirlP
-
-  val dateTimeFormatter = DateTimeFormat.forPattern("YYYY-MM-dd").withZoneUTC()
-
-  private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
-
-  private def readableDate = date.toString(dateTimeFormatter)
-
-  def normalizedName = title.replace(" ", "-").replace("?", "-").replace("/", "-").replace("\\", "-")
-
-  def path = s"${ownerSuicideGirl.path}/${readableDate}-${normalizedName}"
-
-  override lazy val toString =
-    s"""
-${"\t"}title = ${title}
-${"\t"}date  = ${date.toString}
-${"\t"}uri   = ${uri.toString}
-${"\t"}path  = ${path}
-${"\t_________________"}
-${photos.mkString("", "\t\t\n", "")}
-${"\t================="}"""
-}
-
-object Photo {
-  def apply(uri: => Uri, index: => Int, containingPhotoSet: => PhotoSet) =
-    new Photo(uri, index, containingPhotoSet)
-}
-
-class Photo private(
-  uriP: => Uri,
-  indexP: => Int,
-  containingPhotoSetP: => PhotoSet) {
-
-  lazy val uri: Uri = uriP
-  lazy val index: Int = indexP
-  lazy val containingPhotoSet: PhotoSet = containingPhotoSetP
-
-  def path = s"${containingPhotoSet.path}/${containingPhotoSet.path.replace("/", ".")}-${index}"
-
-  private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
-
-  override lazy val toString = s"\t\t${digitFormat(index)} -> ${uri}"
-}
-
-case class SuicideGirlShallow(
+case class SuicideGirl(
   uri: Uri,
   name: String,
-  photoSets: List[PhotoSetShallow]) {
-  def apply(): SuicideGirl = {
-    def sg: SuicideGirl = SuicideGirl(uri, name, photoSets.map(_.apply(sg)))
-    sg
-  }
+  photoSets: List[PhotoSet]) {
 
   override lazy val toString =
     s"""
----------${name}:${photoSets.length}---------
-uri=${uri}
-${photoSets.mkString("", "\n", "")}
-"""
+        ---------$name:${photoSets.length}---------
+        uri=$uri
+        ${photoSets.mkString("", "\n", "")}
+      """.stripMargin(' ')
 }
 
-case class PhotoSetShallow(
+case class PhotoSet(
   uri: Uri,
   title: String,
-  photos: List[PhotoShallow],
+  photos: List[Photo],
   date: DateTime) {
-  def apply(sg: SuicideGirl): PhotoSet = {
-    def set: PhotoSet = PhotoSet(uri, title, photos.map(_.apply(set)), date, sg)
-    set
-  }
 
   override lazy val toString =
     s"""
-${"\t"}title = ${title}
-${"\t"}date  = ${date.toString}
-${"\t"}uri   = ${uri.toString}
-${"\t_________________"}
-${photos.mkString("", "\t\t\n", "")}
-${"\t================="}"""
+        ${"\t"}title = $title
+        ${"\t"}date  = ${date.toString(Util.dateTimeFormat)}
+        ${"\t"}uri   = ${uri.toString()}
+        ${"\t_________________"}
+        ${photos.mkString("", "\t\t\n", "")}
+        ${"\t================="}
+      """.stripMargin(' ')
 }
 
-case class PhotoShallow(
+case class Photo(
   uri: Uri,
   index: Int) {
-  def apply(photoSet: PhotoSet): Photo = {
-    def photo: Photo = Photo(uri, index, photoSet)
-    photo
-  }
 
   private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
 
-  override lazy val toString = s"\t\t${digitFormat(index)} -> ${uri}"
+  override lazy val toString = s"\t\t${digitFormat(index)} -> $uri"
+}
+
+private[model] object Util {
+  final val dateTimeFormat = DateTimeFormat.forPattern("YYYY-MM-dd")
 }

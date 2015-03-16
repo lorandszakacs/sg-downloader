@@ -17,10 +17,10 @@
 package com.lorandszakacs.sgd.http
 
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 import com.lorandszakacs.util.html._
 import com.lorandszakacs.sgd.model._
@@ -42,7 +42,7 @@ object SGClient {
   def apply()(implicit actorSystem: ActorSystem, executionContext: ExecutionContext) = {
     new SGClient(NoAuthenticationInfo)
   }
-  
+
   trait Reporter {
     def apply(offset: Int, offsetStep: Int): Unit
   }
@@ -50,36 +50,37 @@ object SGClient {
   private object DefaultReporter extends Reporter {
     def apply(offset: Int, offsetStep: Int): Unit = {}
   }
+
 }
 
-class SGClient protected (val authentication: AuthenticationInfo)(implicit val actorSystem: ActorSystem, val executionContext: ExecutionContext) extends Client {
+class SGClient protected(val authentication: AuthenticationInfo)(implicit val actorSystem: ActorSystem, val executionContext: ExecutionContext) extends Client {
 
   private def photoSetsPageUri(name: String): Uri = Uri(s"https://suicidegirls.com/girls/${name.toLowerCase}/photos/view/photosets/")
+
   private def photoSetUri(suffix: Uri) = Uri(s"https://suicidegirls.com${suffix.toString}")
+
   private def sgListPageUri: Uri = Uri(s"https://suicidegirls.com/profiles/girl/followers/")
+
   private def hopefulListPageUri: Uri = Uri(s"https://suicidegirls.com/profiles/hopeful/followers/")
 
-  def getSuicideGirl(name: String): Future[Try[SuicideGirl]] = {
-    getSuicideGirlShallow(name).map(_.map(sgShallow => sgShallow()))
-  }
 
-  def getSuicideGirlShallow(name: String): Future[Try[SuicideGirlShallow]] = {
-    val shallowSets: Future[List[PhotoSetShallow]] = getPhotoSetUris(name).map(_.get).flatMap { photoSetUris: List[Uri] =>
+  def getSuicideGirl(name: String): Future[Try[SuicideGirl]] = {
+    val shallowSets: Future[List[PhotoSet]] = getPhotoSetUris(name).map(_.get).flatMap { photoSetUris: List[Uri] =>
       val listOfFutureSets = photoSetUris map { uri =>
-        val e: Future[PhotoSetShallow] = getPhotoSet(photoSetUri(uri)).map(_.get)
+        val e: Future[PhotoSet] = getPhotoSet(photoSetUri(uri)).map(_.get)
         e
       }
       Future.sequence(listOfFutureSets)
     }
     shallowSets map { sets =>
-      Success(SuicideGirlShallow(
+      Success(SuicideGirl(
         uri = photoSetsPageUri(name),
         name,
         photoSets = sets))
     }
   }
 
-  def getPhotoSet(albumPageUri: Uri): Future[Try[PhotoSetShallow]] = {
+  def getPhotoSet(albumPageUri: Uri): Future[Try[PhotoSet]] = {
     getPage(albumPageUri) map { html =>
       Parser.parsePhotoSetPage(html, albumPageUri)
     } recover {
