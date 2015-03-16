@@ -1,25 +1,18 @@
 /**
- * The MIT License (MIT)
+ * Copyright 2015 Lorand Szakacs
  *
- * Copyright (c) 2014 Lorand Szakacs
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
  */
 package com.lorandszakacs.util.html
 
@@ -32,7 +25,8 @@ import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 
 /**
- * @author lorand
+ * @author Lorand Szakacs, lsz@lorandszakacs.com
+ * @since 16 Mar 2015
  *
  */
 protected sealed trait HtmlFilter {
@@ -47,9 +41,9 @@ protected sealed trait HtmlFilter {
   }
 
   protected final def elementsToList(elements: Elements): List[Element] = {
-    val buff = ListBuffer[Element]();
+    val buff = ListBuffer[Element]()
     val iterator = elements.iterator()
-    while (iterator.hasNext()) {
+    while (iterator.hasNext) {
       buff.append(iterator.next())
     }
     buff.toList
@@ -63,11 +57,7 @@ protected sealed trait HtmlFilter {
   protected def filter(doc: Document): Elements
 }
 
-/**
- * @author lorand
- *
- */
-private case class CompositeFilter(val first: HtmlFilter, val second: HtmlFilter) extends HtmlFilter {
+private case class CompositeFilter(first: HtmlFilter, second: HtmlFilter) extends HtmlFilter {
   override def apply(doc: Document): Option[List[String]] = {
     val resultsFirst = first(doc)
     applySecond(resultsFirst)
@@ -82,47 +72,30 @@ private case class CompositeFilter(val first: HtmlFilter, val second: HtmlFilter
   private def applySecond(resultsFirst: Option[List[String]]): Option[List[String]] = {
     resultsFirst match {
       case None => None
-      case Some(result) => {
+      case Some(result) =>
         val finalResult = result.flatMap(r => second(r)).flatten
         if (finalResult.isEmpty)
           None
         else
           Some(finalResult)
-      }
     }
   }
 
   override def filter(doc: Document): Elements = null
 }
 
-/**
- * @author lorand
- *
- */
-case class Attribute(val attribute: String) extends HtmlFilter {
+case class Attribute(attribute: String) extends HtmlFilter {
   override def filter(doc: Document): Elements = doc.getElementsByAttribute(attribute)
 }
 
-/**
- * @author lorand
- *
- */
-case class Class(val className: String) extends HtmlFilter {
+case class Class(className: String) extends HtmlFilter {
   override def filter(doc: Document): Elements = doc.getElementsByClass(className)
 }
 
-/**
- * @author lorand
- *
- */
-case class Tag(val tagName: String) extends HtmlFilter {
+case class Tag(tagName: String) extends HtmlFilter {
   override def filter(doc: Document): Elements = doc.getElementsByTag(tagName)
 }
 
-/**
- * @author lorand
- *
- */
 case class HrefLink() extends HtmlFilter {
   override def apply(doc: Document): Option[List[String]] = {
     val hrefAttributes = Value(Attribute("href"))
@@ -138,10 +111,6 @@ case class HrefLink() extends HtmlFilter {
  * =================================================
  */
 
-/**
- * @author lorand
- *
- */
 case class RetainFirst(filter: HtmlFilter) extends HtmlFilter {
   override def apply(doc: Document): Option[List[String]] = {
     val allItems = filter.apply(doc)
@@ -150,14 +119,11 @@ case class RetainFirst(filter: HtmlFilter) extends HtmlFilter {
       case Some(items) => Some(List(items(0)))
     }
   }
+
   override def filter(doc: Document): Elements = null
 }
 
-/**
- * @author lorand
- *
- */
-case class Value(val attribute: Attribute) extends HtmlFilter {
+case class Value(attribute: Attribute) extends HtmlFilter {
 
   override def apply(doc: Document): Option[List[String]] = {
     val elementsWithAttribute = elementsToList(filter(doc))
@@ -172,22 +138,17 @@ case class Value(val attribute: Attribute) extends HtmlFilter {
   override def filter(doc: Document): Elements = doc.getElementsByAttribute(attribute.attribute)
 }
 
-/**
- * @author lorand
- *
- */
-case class Content(val filter: HtmlFilter) extends HtmlFilter {
+case class Content(filter: HtmlFilter) extends HtmlFilter {
   override def apply(doc: Document): Option[List[String]] = {
     val filtered = filter.apply(doc)
     filtered match {
       case None => None
-      case Some(items) => {
+      case Some(items) =>
         val docs = items map (e => Jsoup.parse(e))
         //because we reparse whatever the result was is being put in a new body
         //e.body().children().first() will always return non-null.
         val result = docs map (e => e.body().children().first().html())
         Some(result)
-      }
     }
   }
 
