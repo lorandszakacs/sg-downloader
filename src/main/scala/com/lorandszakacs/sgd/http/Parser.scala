@@ -27,7 +27,7 @@ import scala.util.Try
 import com.lorandszakacs.sgd.model.PhotoSetShallow
 import scala.util.Success
 import scala.util.Failure
-import com.lorandszakacs.commons.html._
+import com.lorandszakacs.util.html._
 import java.time.LocalDate
 import com.lorandszakacs.sgd.model.PhotoShallow
 import spray.http.Uri

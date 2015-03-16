@@ -25,7 +25,7 @@ package com.lorandszakacs.sgd.http
 
 import scala.concurrent.{ExecutionContext, Future}
 
-import com.lorandszakacs.commons.html._
+import com.lorandszakacs.util.html._
 
 import akka.actor.ActorSystem
 import spray.client.pipelining._

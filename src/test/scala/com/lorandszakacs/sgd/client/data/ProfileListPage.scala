@@ -1,7 +1,7 @@
 package com.lorandszakacs.sgd.client.data
 
 import scala.io.Source
-import com.lorandszakacs.commons.html.Html
+import com.lorandszakacs.util.html.Html
 import spray.http.Uri
 
 object SGProfileListPage {

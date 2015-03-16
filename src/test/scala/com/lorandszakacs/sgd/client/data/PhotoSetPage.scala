@@ -27,7 +27,7 @@ import java.time.LocalDate
 
 import scala.io.Source
 
-import com.lorandszakacs.commons.html._
+import com.lorandszakacs.util.html._
 
 import spray.http.Uri
 

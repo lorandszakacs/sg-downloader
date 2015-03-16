@@ -29,7 +29,7 @@ import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 import scala.util.{ Failure, Success, Try }
 
-import com.lorandszakacs.commons.html._
+import com.lorandszakacs.util.html._
 import com.lorandszakacs.sgd.model._
 
 import akka.actor.ActorSystem

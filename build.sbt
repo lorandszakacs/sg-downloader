@@ -46,21 +46,21 @@ mainClass := Some("com.lorandszakacs.sgd.app.Main")
 //         dependencies for testing libraries
 //===================================================
 libraryDependencies ++= Seq(
-  "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test" withSources()
+  "org.scalatest" %% "scalatest" % "2.2.4" % "test" withSources()
 )
 
 //===================================================
 //         dependencies for dev libraries
 //===================================================
 libraryDependencies ++= Seq(
-  "com.lorandszakacs" %% "lorandszakacs-commons" % "0.1-SNAPSHOT" changing() withSources(),
+  "com.lorandszakacs" %% "util-html" % "0.1.0" changing() withSources(),
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2" withSources(),
-  "com.typesafe.akka" %% "akka-actor" % "2.3.2" withSources(),
-  "io.spray" %% "spray-can" % "1.3.1" withSources(),
-  "io.spray" %% "spray-http" % "1.3.1" withSources(),
-  "io.spray" %% "spray-httpx" % "1.3.1" withSources(),
-  "io.spray" %% "spray-util" % "1.3.1" withSources(),
-  "io.spray" %% "spray-client" % "1.3.1" withSources()
+  "com.typesafe.akka" %% "akka-actor" % "2.3.8" withSources(),
+  "io.spray" %% "spray-can" % "1.3.2" withSources(),
+  "io.spray" %% "spray-http" % "1.3.2" withSources(),
+  "io.spray" %% "spray-httpx" % "1.3.2" withSources(),
+  "io.spray" %% "spray-util" % "1.3.2" withSources(),
+  "io.spray" %% "spray-client" % "1.3.2" withSources()
 )
 
 //===================================================
