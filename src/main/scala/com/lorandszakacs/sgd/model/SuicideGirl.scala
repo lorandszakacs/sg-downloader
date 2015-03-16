@@ -1,15 +1,36 @@
+/**
+ * Copyright 2015 Lorand Szakacs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package com.lorandszakacs.sgd.model
 
 import java.time.LocalDate
 
 import spray.http.Uri
 
+/**
+ * @author Lorand Szakacs, lsz@lorandszakacs.com
+ * @since 16 Mar 2015
+ *
+ */
 object SuicideGirl {
   def apply(uri: => Uri, name: => String, photoSets: => List[PhotoSet]) =
     new SuicideGirl(uri, name, photoSets)
 }
 
-class SuicideGirl private (
+class SuicideGirl private(
   uriP: => Uri,
   nameP: => String,
   photoSetsP: => List[PhotoSet]) {
@@ -32,7 +53,7 @@ object PhotoSet {
     new PhotoSet(uri, title, photos, date, ownerSuicideGirl)
 }
 
-class PhotoSet private (
+class PhotoSet private(
   uriP: => Uri,
   titleP: => String,
   photosP: => List[Photo],
@@ -46,9 +67,11 @@ class PhotoSet private (
   lazy val ownerSuicideGirl: SuicideGirl = ownerSuicideGirlP
 
   private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
+
   private def readableDate = s"${date.getYear()}-${digitFormat(date.getMonthValue)}-${digitFormat(date.getDayOfMonth())}"
 
   def normalizedName = title.replace(" ", "-").replace("?", "-").replace("/", "-").replace("\\", "-")
+
   def path = s"${ownerSuicideGirl.path}/${readableDate}-${normalizedName}"
 
   override lazy val toString =
@@ -67,7 +90,7 @@ object Photo {
     new Photo(uri, index, containingPhotoSet)
 }
 
-class Photo private (
+class Photo private(
   uriP: => Uri,
   indexP: => Int,
   containingPhotoSetP: => PhotoSet) {
@@ -79,6 +102,7 @@ class Photo private (
   def path = s"${containingPhotoSet.path}/${containingPhotoSet.path.replace("/", ".")}-${index}"
 
   private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
+
   override lazy val toString = s"\t\t${digitFormat(index)} -> ${uri}"
 }
 
@@ -128,5 +152,6 @@ case class PhotoShallow(
   }
 
   private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
+
   override lazy val toString = s"\t\t${digitFormat(index)} -> ${uri}"
 }

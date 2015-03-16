@@ -1,12 +1,33 @@
+/**
+ * Copyright 2015 Lorand Szakacs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package com.lorandszakacs.sgd.client
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.{FlatSpec, Matchers}
 
 import com.lorandszakacs.sgd.client.data._
 import com.lorandszakacs.sgd.http.Parser
 
+/**
+ * @author Lorand Szakacs, lsz@lorandszakacs.com
+ * @since 16 Mar 2015
+ *
+ */
 class ParserTests extends FlatSpec with Matchers {
 
   behavior of "Parser"
@@ -63,7 +84,7 @@ class ParserTests extends FlatSpec with Matchers {
       case Failure(e) => fail("did not return any SG Names", e)
     }
   }
-  
+
   it should "return all the HopefulNames from the profile listing page" in {
     val expected = HopefulProfileListPage
     Parser.gatherHopefulNames(expected.html) match {

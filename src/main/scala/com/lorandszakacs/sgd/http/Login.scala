@@ -1,58 +1,51 @@
 /**
- * The MIT License (MIT)
+ * Copyright 2015 Lorand Szakacs
  *
- * Copyright (c) 2014 Lorand Szakacs
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
  */
 package com.lorandszakacs.sgd.http
 
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 import scala.util.Try
 
 import akka.actor.ActorSystem
 import spray.client.pipelining._
-import spray.http.{ FormData, HttpCookie, HttpHeader }
-import spray.http.{ HttpRequest, StatusCodes, Uri }
-import spray.http.HttpHeaders.{ Cookie, RawHeader }
+import spray.http.{FormData, HttpCookie, HttpHeader}
+import spray.http.{HttpRequest, StatusCodes, Uri}
+import spray.http.HttpHeaders.{Cookie, RawHeader}
 
 object Login {
   def apply(initialAccessPoint: Uri, loginAccessPoint: Uri, referer: String, user: String, pwd: String)(implicit actorSystem: ActorSystem, executionContext: ExecutionContext): Try[AuthenticationInfo] = {
     def loginFuture = Get(initialAccessPoint) ~>
       sendReceive flatMap { getResponse =>
-        val loginInfo = LoginInfo(getResponse.headers, referer).getOrElse(throw new Exception("Response headers did not contain the CSRF token"))
-        val postRequest = loginInfo(Post(loginAccessPoint), user, pwd)
-        postRequest ~> sendReceive
-      } map { response =>
-        if (response.status == StatusCodes.OK || response.status == StatusCodes.Created) {
-          val authenticationInfo = AuthenticationInfo(response.headers, referer)
-          authenticationInfo match {
-            case None => throw new Exception(s"Login failed or something changed on the server side. The login attempt returned status: ${response.status}. But the appropriate header tokens were not found or were malformed.")
-            case Some(info) =>
-              info
-          }
-        } else {
-          throw new Exception(s"Login failed. The returned status code was: ${response.status}. The entire response was:\n${response.toString}")
+      val loginInfo = LoginInfo(getResponse.headers, referer).getOrElse(throw new Exception("Response headers did not contain the CSRF token"))
+      val postRequest = loginInfo(Post(loginAccessPoint), user, pwd)
+      postRequest ~> sendReceive
+    } map { response =>
+      if (response.status == StatusCodes.OK || response.status == StatusCodes.Created) {
+        val authenticationInfo = AuthenticationInfo(response.headers, referer)
+        authenticationInfo match {
+          case None => throw new Exception(s"Login failed or something changed on the server side. The login attempt returned status: ${response.status}. But the appropriate header tokens were not found or were malformed.")
+          case Some(info) =>
+            info
         }
+      } else {
+        throw new Exception(s"Login failed. The returned status code was: ${response.status}. The entire response was:\n${response.toString}")
       }
+    }
 
     Try(Await.result(loginFuture, 1 minute))
   }
@@ -65,7 +58,9 @@ object Login {
  */
 sealed trait CSRFInfo {
   def referer: String
+
   def csrfTokenCookie: HttpCookie
+
   def cookieHeader: HttpHeader
 
   /**
@@ -121,8 +116,9 @@ private object LoginInfo {
  * @author lorand
  *
  */
-private class LoginInfo private (val csrfTokenCookie: HttpCookie, val referer: String) extends CSRFInfo {
+private class LoginInfo private(val csrfTokenCookie: HttpCookie, val referer: String) extends CSRFInfo {
   def cookieHeader = Cookie(csrfTokenCookie, gaCookie)
+
   def formData(user: String, pwd: String) = FormData(Seq(
     ("csrfmiddlewaretoken", csrfTokenCookie.content),
     "username" -> user,
@@ -156,5 +152,6 @@ class AuthenticationInfo(val csrfTokenCookie: HttpCookie, val sessionIdCookie: H
 
 object NoAuthenticationInfo extends AuthenticationInfo(null, null, null) {
   override def apply(originalRequest: HttpRequest): HttpRequest = originalRequest
+
   override def toString = s"${getClass.getName()}"
 }
