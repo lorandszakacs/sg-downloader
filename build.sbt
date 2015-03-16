@@ -30,7 +30,7 @@ organization := "com.lorandszakacs"
 
 version := "0.1"
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.5"
 
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8")
 
@@ -46,7 +46,7 @@ mainClass := Some("com.lorandszakacs.sgd.app.Main")
 //         dependencies for testing libraries
 //===================================================
 libraryDependencies ++= Seq(
-  "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test" withSources()
+  "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test" withSources()
 )
 
 //===================================================
