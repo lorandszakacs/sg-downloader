@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.lorandszakacs.commons.html
+package com.lorandszakacs.util.html
 
 import java.io.File
 

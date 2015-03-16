@@ -23,11 +23,11 @@
 import sbt._
 import Keys._
 
-name := "lorandszakacs-commons"
+name := "util-html"
 
 organization := "com.lorandszakacs"
 
-version := "0.1-SNAPSHOT"
+version := "0.1.0"
 
 scalaVersion := "2.11.5"
 
@@ -45,7 +45,7 @@ mainClass := None
 //         dependencies for testing libraries
 //===================================================
 libraryDependencies ++= Seq(
-  "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test" withSources()
+  "org.scalatest" %% "scalatest" % "2.2.4" % "test" withSources()
 )
 
 //===================================================

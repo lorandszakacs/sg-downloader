@@ -1,4 +1,4 @@
-package com.lorandszakacs.commons.html.data
+package com.lorandszakacs.util.html.data
 
 object SimplifiedData {
   object FilterClass {
