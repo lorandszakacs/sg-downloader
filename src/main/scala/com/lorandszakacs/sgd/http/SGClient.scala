@@ -82,7 +82,7 @@ class SGClient protected(val authentication: AuthenticationInfo)(implicit val ac
 
   def getPhotoSet(albumPageUri: Uri): Future[Try[PhotoSet]] = {
     getPage(albumPageUri) map { html =>
-      Parser.parsePhotoSetPage(html, albumPageUri)
+      SGContentParser.parsePhotoSetPage(html, albumPageUri)
     } recover {
       case e: Throwable => Failure(new Exception(s"Failed to get PhotoSet for uri:${albumPageUri}, because:`${e.getMessage()}`", e))
     }
@@ -95,7 +95,7 @@ class SGClient protected(val authentication: AuthenticationInfo)(implicit val ac
     }
     val sgPhotoSetsPage = photoSetsPageUri(name)
 
-    loadPageRepeatedly[Uri](sgPhotoSetsPage, 9, Parser.gatherPhotoSetLinks, isEndPage)
+    loadPageRepeatedly[Uri](sgPhotoSetsPage, 9, SGContentParser.gatherPhotoSetLinks, isEndPage)
   }
 
   def gatherSGNames(limit: Int, reporter: SGClient.Reporter): Future[Try[List[String]]] = {
@@ -104,7 +104,7 @@ class SGClient protected(val authentication: AuthenticationInfo)(implicit val ac
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
 
-    loadPageRepeatedly[String](sgListPageUri, 12, Parser.gatherSGNames, isEndPage, limit, reporter)
+    loadPageRepeatedly[String](sgListPageUri, 12, SGContentParser.gatherSGNames, isEndPage, limit, reporter)
   }
 
   def gatherHopefulNames(limit: Int, reporter: SGClient.Reporter): Future[Try[List[String]]] = {
@@ -113,7 +113,7 @@ class SGClient protected(val authentication: AuthenticationInfo)(implicit val ac
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
 
-    loadPageRepeatedly[String](hopefulListPageUri, 12, Parser.gatherHopefulNames, isEndPage, limit, reporter)
+    loadPageRepeatedly[String](hopefulListPageUri, 12, SGContentParser.gatherHopefulNames, isEndPage, limit, reporter)
   }
 
   private def loadPageRepeatedly[T](uri: Uri, offsetStep: Int,

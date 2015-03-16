@@ -21,7 +21,7 @@ import scala.util.{Failure, Success}
 import org.scalatest.{FlatSpec, Matchers}
 
 import com.lorandszakacs.sgd.client.data._
-import com.lorandszakacs.sgd.http.Parser
+import com.lorandszakacs.sgd.http.SGContentParser
 
 /**
  * @author Lorand Szakacs, lsz@lorandszakacs.com
@@ -30,11 +30,11 @@ import com.lorandszakacs.sgd.http.Parser
  */
 class ParserTests extends FlatSpec with Matchers {
 
-  behavior of "Parser"
+  behavior of "SGContentParser"
 
   it should "return all the links from a PhotoSetPage" in {
     val expected = PhotoSetPageFullDate
-    Parser.parsePhotos(expected.html) match {
+    SGContentParser.parsePhotos(expected.html) match {
       case Success(result) => result should have length expected.numberOfPhotos
       case Failure(e) => fail("did not return any photos", e)
     }
@@ -42,7 +42,7 @@ class ParserTests extends FlatSpec with Matchers {
 
   it should "return a PhotoSet object from a page with a full date" in {
     val expected = PhotoSetPageFullDate
-    Parser.parsePhotoSetPage(expected.html, expected.uri) match {
+    SGContentParser.parsePhotoSetPage(expected.html, expected.uri) match {
       case Success(result) =>
         result.photos should have length expected.numberOfPhotos
         result.date should equal(expected.date)
@@ -54,7 +54,7 @@ class ParserTests extends FlatSpec with Matchers {
 
   it should "return a PhotoSet object from a page with a partial date" in {
     val expected = PhotoSetPagePartialDate
-    Parser.parsePhotoSetPage(expected.html, expected.uri) match {
+    SGContentParser.parsePhotoSetPage(expected.html, expected.uri) match {
       case Success(result) =>
         result.photos should have length expected.numberOfPhotos
         result.date should equal(expected.date)
@@ -66,7 +66,7 @@ class ParserTests extends FlatSpec with Matchers {
 
   it should "return all PhotoSet URLs from a SG page" in {
     val expected = SGSetPage
-    Parser.gatherPhotoSetLinks(expected.html) match {
+    SGContentParser.gatherPhotoSetLinks(expected.html) match {
       case Success(result) =>
         result should have length expected.numberOfPhotoSets
         result.diff(expected.photoSetURIs) should be(Nil)
@@ -77,7 +77,7 @@ class ParserTests extends FlatSpec with Matchers {
 
   it should "return all the SG names from the profile listing page" in {
     val expected = SGProfileListPage
-    Parser.gatherSGNames(expected.html) match {
+    SGContentParser.gatherSGNames(expected.html) match {
       case Success(result) =>
         result should have length expected.numberOfSGs
         result should equal(expected.names)
@@ -87,7 +87,7 @@ class ParserTests extends FlatSpec with Matchers {
 
   it should "return all the HopefulNames from the profile listing page" in {
     val expected = HopefulProfileListPage
-    Parser.gatherHopefulNames(expected.html) match {
+    SGContentParser.gatherHopefulNames(expected.html) match {
       case Success(result) =>
         result should have length expected.numberOfSGs
         result should equal(expected.names)

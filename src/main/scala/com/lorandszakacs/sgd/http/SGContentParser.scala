@@ -22,7 +22,7 @@ import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sgd.model._
 import spray.http.Uri
 
-object Parser {
+object SGContentParser {
   def gatherPhotoSetLinks(html: Html): Try[List[Uri]] = {
     html filter (Tag("header") && Attribute("post_id") && Tag("h2") && Class("title") && RetainFirst(Tag("a")) && HrefLink()) match {
       case Nil => Failure(new Exception("Did not find any PhotoSet links."))
