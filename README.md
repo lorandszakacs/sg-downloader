@@ -1,4 +1,4 @@
-util-html-filter
+util-html
 ================
 
 This is a very simple, easy to use library that can be used to extract information from html code by combining different pre-defined filters. Filters are combined  using a very intuitive syntax.  
