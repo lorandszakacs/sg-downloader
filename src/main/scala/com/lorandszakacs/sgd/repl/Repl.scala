@@ -23,29 +23,30 @@
  */
 package com.lorandszakacs.sgd.repl
 
+import com.lorandszakacs.sgd.parser.command.{CommandVisitorFail, DefaultCommandInterpreter, Exit, SGCommandParser}
+
 import scala.io.StdIn
-import com.lorandszakacs.sgd.parser.command.CommandVisitorFail
-import com.lorandszakacs.sgd.parser.command.Exit
-import com.lorandszakacs.sgd.parser.command.SGCommandParser
-import com.lorandszakacs.sgd.parser.command.DefaultCommandInterpreter
+import scala.util.control.Breaks
 
 class Repl() {
   def start(): Unit = {
     val interpreter = DefaultCommandInterpreter
     println("type -help for instructions")
-    while (true) {
+
+    val loop = new Breaks
+    loop.breakable {
       print("> ")
-      val input = StdIn.readLine
-      val command = SGCommandParser.apply(input);
-      command match {
-        case Exit() => { return }
-        case _ => {
+      val input = StdIn.readLine()
+      SGCommandParser(input) match {
+        case Exit() =>
+          loop.break()
+        case command =>
           val result = interpreter.visit(command)
           result match {
-            case CommandVisitorFail(msg) => println(msg)
-            case _ => Unit
+            case CommandVisitorFail(msg) =>
+              println(msg)
+            case _ => ()
           }
-        }
       }
     }
   }

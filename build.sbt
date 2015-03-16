@@ -53,7 +53,7 @@ libraryDependencies ++= Seq(
 //         dependencies for dev libraries
 //===================================================
 libraryDependencies ++= Seq(
-  "com.lorandszakacs" %% "util-html" % "0.1.0" changing() withSources(),
+  "com.lorandszakacs" %% "util-html" % "0.1.0" withSources(),
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2" withSources(),
   "com.typesafe.akka" %% "akka-actor" % "2.3.8" withSources(),
   "io.spray" %% "spray-can" % "1.3.2" withSources(),
