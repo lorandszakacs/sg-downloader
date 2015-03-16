@@ -31,13 +31,13 @@ import spray.http.{StatusCodes, Uri}
  */
 trait Client {
 
+  private val authenticate = authentication
+
   implicit def actorSystem: ActorSystem
 
   implicit def executionContext: ExecutionContext
 
   def authentication: AuthenticationInfo
-
-  private val authenticate = authentication
 
   def getPage(uri: Uri): Future[Html] = {
     (authenticate and Get(uri)) ~> sendReceive map { response =>

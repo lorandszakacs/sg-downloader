@@ -36,15 +36,8 @@ object TestSGClientWithoutAuthentication extends App {
   import com.lorandszakacs.sgd.app.TestSGClientWithoutAuthentication.system.dispatcher
 
   val sgClient = SGClient()
-
-  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
-    val p = new java.io.PrintWriter(f)
-    try {
-      op(p)
-    } finally {
-      p.close()
-    }
-  }
+  //  val allSGNames = SGNames(Int.MaxValue)
+  val allHopefuls = HopefulNames(Int.MaxValue)
 
   def albums(name: String) = {
     val result = Await.result(sgClient.getPhotoSetUris(name), 1 minute).get
@@ -92,8 +85,14 @@ object TestSGClientWithoutAuthentication extends App {
     result
   }
 
-  //  val allSGNames = SGNames(Int.MaxValue)
-  val allHopefuls = HopefulNames(Int.MaxValue)
+  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
+    val p = new java.io.PrintWriter(f)
+    try {
+      op(p)
+    } finally {
+      p.close()
+    }
+  }
 
   //  albums(allSGNames.head)
   albums(allHopefuls.head)

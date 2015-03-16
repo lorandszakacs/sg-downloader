@@ -29,19 +29,24 @@ import scala.util.{Failure, Success}
  *
  */
 object Main extends App {
-  def shutdown(system: ActorSystem) {
-    system.shutdown()
+  val user = {
+    print("user:");
+    StdIn.readLine()
   }
 
   println("sg-downloader")
   println("please login to start.")
-  val user = {
-    print("user:"); StdIn.readLine()
-  }
   val pwd = {
-    print("pwd:"); val result = StdIn.readLine(); println(); result
+    print("pwd:");
+    val result = StdIn.readLine();
+    println();
+    result
   }
   implicit val system = ActorSystem("test-login-client")
+
+  def shutdown(system: ActorSystem) {
+    system.shutdown()
+  }
 
   import com.lorandszakacs.sgd.app.Main.system.dispatcher
 

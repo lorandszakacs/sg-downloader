@@ -23,6 +23,11 @@ import com.lorandszakacs.sgd.model._
 import spray.http.Uri
 
 object SGContentParser {
+  private val months = Map(1 -> "Jan", 2 -> "Feb", 3 -> "Mar",
+    4 -> "Apr", 5 -> "May", 6 -> "Jun",
+    7 -> "Jul", 8 -> "Aug", 9 -> "Sep",
+    10 -> "Oct", 11 -> "Nov", 12 -> "Dec").map(p => p._2 -> p._1)
+
   def gatherPhotoSetLinks(html: Html): Try[List[Uri]] = {
     html filter (Tag("header") && Attribute("post_id") && Tag("h2") && Class("title") && RetainFirst(Tag("a")) && HrefLink()) match {
       case Nil => Failure(new Exception("Did not find any PhotoSet links."))
@@ -73,11 +78,6 @@ object SGContentParser {
       case links => Try(links.zip(1 to links.length).map(pair => Photo(pair._1, pair._2)))
     }
   }
-
-  private val months = Map(1 -> "Jan", 2 -> "Feb", 3 -> "Mar",
-    4 -> "Apr", 5 -> "May", 6 -> "Jun",
-    7 -> "Jul", 8 -> "Aug", 9 -> "Sep",
-    10 -> "Oct", 11 -> "Nov", 12 -> "Dec").map(p => p._2 -> p._1)
 
   private def parseStringToDateTime(t: String): Try[DateTime] = {
     val time = t.trim()

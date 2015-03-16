@@ -26,13 +26,6 @@ import spray.http.Uri
  *
  */
 object SGSetPage {
-  def html = {
-    val resourceName = s"${getClass.getSimpleName().replace("$", "")}.html"
-    val URL = getClass.getResource(resourceName)
-    val source = Source.fromURL(URL)
-    Html(source.getLines().mkString("\n"))
-  }
-
   val photoSetURIs = List(
     "/girls/dwam/album/1239337/adieu-tristesse/",
     "/girls/dwam/album/977051/limportance-d-etre-ernest/",
@@ -43,6 +36,12 @@ object SGSetPage {
     "/girls/nemesis/album/975237/zilf/",
     "/girls/dwam/album/975049/sun-with-a-moustache/",
     "/girls/dwam/album/994298/boxe-francaise/").map(Uri(_))
-
   val numberOfPhotoSets = photoSetURIs.length
+
+  def html = {
+    val resourceName = s"${getClass.getSimpleName().replace("$", "")}.html"
+    val URL = getClass.getResource(resourceName)
+    val source = Source.fromURL(URL)
+    Html(source.getLines().mkString("\n"))
+  }
 }

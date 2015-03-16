@@ -22,7 +22,9 @@ package com.lorandszakacs.sgd.parser.command
  *
  */
 sealed trait CommandVisitorResult
+
 case class CommandVisitorFail(msg: String) extends CommandVisitorResult
+
 case class CommandVisitorSuccess() extends CommandVisitorResult
 
 trait CommandVisitor {

@@ -58,9 +58,9 @@ case class Photo(
   uri: Uri,
   index: Int) {
 
-  private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
-
   override lazy val toString = s"\t\t${digitFormat(index)} -> $uri"
+
+  private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
 }
 
 private[model] object Util {

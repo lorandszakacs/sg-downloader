@@ -26,13 +26,6 @@ import scala.io.Source
  *
  */
 object SGProfileListPage {
-  def html = {
-    val resourceName = s"${getClass.getSimpleName().replace("$", "")}.html"
-    val URL = getClass.getResource(resourceName)
-    val source = Source.fromURL(URL)
-    Html(source.getLines().mkString("\n"))
-  }
-
   val names = List("Sash",
     "Kemper",
     "Radeo",
@@ -45,18 +38,17 @@ object SGProfileListPage {
     "Annalee",
     "Bully",
     "Rambo")
-
   val numberOfSGs = names.length
-}
 
-object HopefulProfileListPage {
   def html = {
     val resourceName = s"${getClass.getSimpleName().replace("$", "")}.html"
     val URL = getClass.getResource(resourceName)
     val source = Source.fromURL(URL)
     Html(source.getLines().mkString("\n"))
   }
+}
 
+object HopefulProfileListPage {
   val names = List("Nuru",
     "Lain_",
     "Drica",
@@ -69,6 +61,12 @@ object HopefulProfileListPage {
     "Davieduke",
     "Vikat",
     "Foxynova")
-
   val numberOfSGs = names.length
+
+  def html = {
+    val resourceName = s"${getClass.getSimpleName().replace("$", "")}.html"
+    val URL = getClass.getResource(resourceName)
+    val source = Source.fromURL(URL)
+    Html(source.getLines().mkString("\n"))
+  }
 }
