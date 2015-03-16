@@ -29,7 +29,7 @@ organization := "com.lorandszakacs"
 
 version := "0.1-SNAPSHOT"
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.5"
 
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8")
 
@@ -45,14 +45,14 @@ mainClass := None
 //         dependencies for testing libraries
 //===================================================
 libraryDependencies ++= Seq(
-  "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test" withSources()
+  "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test" withSources()
 )
 
 //===================================================
 //         dependencies for dev libraries
 //===================================================
 libraryDependencies ++= Seq(
-  "org.jsoup" % "jsoup" % "1.7.3" withSources()
+  "org.jsoup" % "jsoup" % "1.8.1" withSources()
 )
 
 //===================================================

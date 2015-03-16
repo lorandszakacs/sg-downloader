@@ -217,10 +217,9 @@ class HtmlProcessorTest extends FunSpec {
       val links = html filter HrefLink()
       links match {
         case None => fail("should have found some hrefs")
-        case Some(links) => {
+        case Some(links) =>
           assert(1 === links.length)
           assert(links(0) === "first-link/foo")
-        }
       }
     }
 
@@ -229,11 +228,10 @@ class HtmlProcessorTest extends FunSpec {
       val links = html filter HrefLink()
       links match {
         case None => fail("should have found some hrefs")
-        case Some(links) => {
+        case Some(links) =>
           assert(2 === links.length)
           assert(links(0) === "first-link/foo")
           assert(links(1) === "second-link/foo")
-        }
       }
     }
 
@@ -242,11 +240,10 @@ class HtmlProcessorTest extends FunSpec {
       val links = html filter HrefLink()
       links match {
         case None => fail("should have found some hrefs")
-        case Some(links) => {
+        case Some(links) =>
           assert(2 === links.length)
           assert(links(0) === "first-link/foo")
           assert(links(1) === "second-link/foo")
-        }
       }
     }
   }
@@ -257,10 +254,9 @@ class HtmlProcessorTest extends FunSpec {
       val links = html filter RetainFirst(HrefLink())
       links match {
         case None => fail("should have found some hrefs")
-        case Some(links) => {
+        case Some(links) =>
           assert(1 === links.length)
           assert(links(0) === "first-link/foo")
-        }
       }
     }
 
@@ -269,10 +265,9 @@ class HtmlProcessorTest extends FunSpec {
       val links = html filter RetainFirst(HrefLink())
       links match {
         case None => fail("should have found some hrefs")
-        case Some(links) => {
+        case Some(links) =>
           assert(1 === links.length)
           assert(links(0) === "first-link/foo")
-        }
       }
     }
   }
@@ -283,10 +278,9 @@ class HtmlProcessorTest extends FunSpec {
       val content = html filter Content(Class("icon-photography"))
       content match {
         case None => fail("should have found something")
-        case Some(date) => {
+        case Some(date) =>
           assert(1 === date.length)
           assert("Nov 09, 2013" === date(0).trim)
-        }
       }
     }
 
@@ -295,10 +289,9 @@ class HtmlProcessorTest extends FunSpec {
       val content = html filter Content(Tag("div"))
       content match {
         case None => fail("should have found something")
-        case Some(div) => {
+        case Some(div) =>
           assert(1 === div.length)
           assert("<a>whatever</a>" === div(0).trim)
-        }
       }
     }
 
@@ -307,10 +300,9 @@ class HtmlProcessorTest extends FunSpec {
       val content = html filter Content(Attribute("id"))
       content match {
         case None => fail("should have found something")
-        case Some(loadMore) => {
+        case Some(loadMore) =>
           assert(1 === loadMore.length)
           assert("Load more" === loadMore(0).trim)
-        }
       }
     }
 
@@ -319,10 +311,9 @@ class HtmlProcessorTest extends FunSpec {
       val content = html filter Content(Class("meta-data") && Class("photographer"))
       content match {
         case None => fail("should have found something")
-        case Some(by) => {
+        case Some(by) =>
           assert(1 === by.length)
           assert(by(0).trim.startsWith("by"))
-        }
       }
     }
   }
@@ -333,11 +324,10 @@ class HtmlProcessorTest extends FunSpec {
       val links = html filter RetainFirst(Class("image-section")) && Class("photo-container") && HrefLink()
       links match {
         case None => fail("should have found some hrefs")
-        case Some(links) => {
+        case Some(links) =>
           assert(45 === links.length)
           assert("link0" === links(0))
           assert("link44" === links(44))
-        }
       }
     }
 
@@ -346,12 +336,11 @@ class HtmlProcessorTest extends FunSpec {
       val links = html filter Class("image-section") && Class("photo-container") && HrefLink()
       links match {
         case None => fail("should have found some hrefs")
-        case Some(links) => {
+        case Some(links) =>
           assert(46 === links.length)
           assert("link0" === links(0))
           assert("link44" === links(44))
           assert("BOGUS LINK!!" === links(45))
-        }
       }
     }
 
@@ -361,12 +350,11 @@ class HtmlProcessorTest extends FunSpec {
       val links = html filter Class("image-section") && Class("photo-container") && HrefLink()
       links match {
         case None => fail("should have found some hrefs")
-        case Some(links) => {
+        case Some(links) =>
           assert(3 === links.length)
           assert("link0" === links(0))
           assert("link44" === links(1))
           assert("BOGUS LINK!!" === links(2))
-        }
       }
     }
 
