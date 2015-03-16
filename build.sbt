@@ -25,7 +25,7 @@ organization := "com.lorandszakacs"
 
 version := "0.1"
 
-scalaVersion := "2.11.5"
+scalaVersion := "2.11.6"
 
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8")
 
