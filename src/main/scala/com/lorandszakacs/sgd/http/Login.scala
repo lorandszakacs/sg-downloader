@@ -16,37 +16,40 @@
  */
 package com.lorandszakacs.sgd.http
 
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent._
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 import scala.util.Try
 
 import akka.actor.ActorSystem
 import spray.client.pipelining._
-import spray.http.{FormData, HttpCookie, HttpHeader}
-import spray.http.{HttpRequest, StatusCodes, Uri}
+import spray.http._
 import spray.http.HttpHeaders.{Cookie, RawHeader}
 
 object Login {
   def apply(initialAccessPoint: Uri, loginAccessPoint: Uri, referer: String, user: String, pwd: String)
     (implicit actorSystem: ActorSystem, executionContext: ExecutionContext): Try[AuthenticationInfo] = {
-    def loginFuture = Get(initialAccessPoint) ~>
-      sendReceive flatMap { getResponse =>
-      val loginInfo = LoginInfo(getResponse.headers, referer).getOrElse(throw new Exception("Response headers did not contain the CSRF token"))
-      val postRequest = loginInfo(Post(loginAccessPoint), user, pwd)
-      postRequest ~> sendReceive
-    } map { response =>
-      if (response.status == StatusCodes.OK || response.status == StatusCodes.Created) {
-        val authenticationInfo = AuthenticationInfo(response.headers, referer)
-        authenticationInfo match {
-          case None => throw new Exception(s"Login failed or something changed on the server side. The login attempt returned status: ${response.status}. But the appropriate header tokens were not found or were malformed.")
-          case Some(info) =>
-            info
-        }
-      } else {
-        throw new Exception(s"Login failed. The returned status code was: ${response.status}. The entire response was:\n${response.toString}")
+    val loginFuture = for {
+      loginPage: HttpResponse <- Get(initialAccessPoint) ~> sendReceive
+
+      loginInfo: LoginInfo = LoginInfo(loginPage.headers, referer).getOrElse(throw new Exception("Response headers did not contain the CSRF token"))
+
+      loginRequest: HttpRequest = loginInfo(Post(loginAccessPoint), user, pwd)
+
+      loginResponse: HttpResponse <- loginRequest ~> sendReceive
+
+      _ <- Future {
+        if (!(loginResponse.status == StatusCodes.OK || loginResponse.status == StatusCodes.Created))
+          throw new Exception(s"Login failed. The returned status code was: ${loginResponse.status}. The entire response was:\n${loginResponse.toString}")
       }
-    }
+
+      authenticationInfo = AuthenticationInfo(loginResponse.headers, referer)
+
+    } yield authenticationInfo match {
+        case None => throw new Exception(s"Login failed or something changed on the server side. The login attempt returned status: ${loginResponse.status}. But the appropriate header tokens were not found or were malformed.")
+        case Some(info) =>
+          info
+      }
 
     Try(Await.result(loginFuture, 1 minute))
   }
@@ -61,7 +64,7 @@ sealed trait CSRFInfo {
   def cookieHeader: HttpHeader
 
   /**
-   * This method might be obsolute. The browser includes this in the header,
+   * This method might be obsolete. The browser includes this in the header,
    * but login works without this header as well.
    */
   def XCSRFTokenHeader: HttpHeader = RawHeader("X-CSRFToken", csrfTokenCookie.content)

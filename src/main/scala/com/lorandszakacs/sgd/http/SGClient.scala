@@ -16,6 +16,8 @@
  */
 package com.lorandszakacs.sgd.http
 
+import com.lorandszakacs.sgd.daoservice.api.{PhotoSet, SuicideGirl}
+
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.DurationInt
@@ -23,7 +25,6 @@ import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
 import com.lorandszakacs.util.html._
-import com.lorandszakacs.sgd.model._
 
 import akka.actor.ActorSystem
 import spray.http.Uri
@@ -54,7 +55,7 @@ object SGClient {
 }
 
 class SGClient protected(override val authentication: AuthenticationInfo)
-  (override implicit val actorSystem: ActorSystem, override val executionContext: ExecutionContext) extends Client {
+  (override implicit val actorSystem: ActorSystem, override implicit val executionContext: ExecutionContext) extends Client {
 
   def getSuicideGirl(name: String): Future[Try[SuicideGirl]] = {
     val shallowSets: Future[List[PhotoSet]] = getPhotoSetUris(name).map(_.get).flatMap { photoSetUris: List[Uri] =>

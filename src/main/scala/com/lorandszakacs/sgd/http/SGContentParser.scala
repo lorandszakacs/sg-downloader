@@ -16,10 +16,11 @@
  */
 package com.lorandszakacs.sgd.http
 
+import com.lorandszakacs.sgd.daoservice.api.{PhotoSet, Photo}
+
 import scala.util._
 import com.lorandszakacs.util.html._
 import com.github.nscala_time.time.Imports._
-import com.lorandszakacs.sgd.model._
 import spray.http.Uri
 
 object SGContentParser {

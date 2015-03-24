@@ -20,6 +20,7 @@ import akka.actor.ActorSystem
 import com.lorandszakacs.sgd.http.SGClient
 import com.lorandszakacs.sgd.repl.Repl
 
+import scala.concurrent.ExecutionContext
 import scala.io.StdIn
 import scala.util.{Failure, Success}
 
@@ -30,25 +31,24 @@ import scala.util.{Failure, Success}
  */
 object Main extends App {
   val user = {
-    print("user:");
+    print("user:")
     StdIn.readLine()
   }
 
   println("sg-downloader")
   println("please login to start.")
   val pwd = {
-    print("pwd:");
-    val result = StdIn.readLine();
-    println();
+    print("pwd:")
+    val result = StdIn.readLine()
+    println()
     result
   }
-  implicit val system = ActorSystem("test-login-client")
+  implicit val system: ActorSystem = ActorSystem("test-login-client")
+  implicit val dispatcher: ExecutionContext = system.dispatcher
 
   def shutdown(system: ActorSystem) {
     system.shutdown()
   }
-
-  import com.lorandszakacs.sgd.app.Main.system.dispatcher
 
   SGClient(user, pwd) match {
     case Success(sgClient) =>

@@ -16,13 +16,12 @@
  */
 package com.lorandszakacs.sgd.http
 
-import scala.concurrent.{ExecutionContext, Future}
-
-import com.lorandszakacs.util.html._
-
 import akka.actor.ActorSystem
+import com.lorandszakacs.util.html._
 import spray.client.pipelining._
 import spray.http.{StatusCodes, Uri}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * @author Lorand Szakacs, lsz@lorandszakacs.com
@@ -40,6 +39,7 @@ trait Client {
   def authentication: AuthenticationInfo
 
   def getPage(uri: Uri): Future[Html] = {
+    akka.http.model.HttpRequest
     (authenticate and Get(uri)) ~> sendReceive map { response =>
       if (response.status == StatusCodes.OK || response.status == StatusCodes.NotModified) {
         Html(response.entity.asString)
