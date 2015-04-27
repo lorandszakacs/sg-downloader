@@ -15,7 +15,6 @@
  *
  */
 
-
 import sbt._
 import Keys._
 import com.lorandszakacs.sbt.commonbuild.plugin.CommonBuildPlugin._
