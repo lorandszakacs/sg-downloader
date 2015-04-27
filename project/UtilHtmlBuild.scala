@@ -21,7 +21,7 @@ import Keys._
 import com.lorandszakacs.sbt.commonbuild.plugin.CommonBuildPlugin._
 
 /**
- * @author Lorand Szakacs, lorand.szakacs@busymachines.com
+ * @author Lorand Szakacs, lsz@lorandszakacs.com
  * @since 16 Mar 2015
  *
  */
