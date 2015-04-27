@@ -35,7 +35,7 @@ object SgdBuild extends CommonBuild {
       )
   )
 
-  override def projectVersion: String = "0.1.0"
+  override def projectVersion: String = "0.1.0-SNAPSHOT"
 
   override def devDependencies: Seq[ModuleID] = Seq(
     dev.lorandszakacsUtilHtml,
