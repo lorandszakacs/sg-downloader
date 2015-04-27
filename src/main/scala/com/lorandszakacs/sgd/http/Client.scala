@@ -44,7 +44,7 @@ trait Client {
       if (response.status == StatusCodes.OK || response.status == StatusCodes.NotModified) {
         Html(response.entity.asString)
       } else {
-        throw new Exception(s"Failed to get page:${uri.toString}.\nResponse: ${response.toString}")
+        throw new Exception(s"Failed to get page:$uri.\nResponse: ${response.toString}")
       }
     }
   }

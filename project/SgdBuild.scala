@@ -50,7 +50,9 @@ object SgdBuild extends CommonBuild {
     dev.sprayHttpx,
     dev.sprayClient,
     dev.sprayUtil,
-    dev.nScalaJodaTime
+    dev.nScalaJodaTime,
+    dev.scalaLogging,
+    dev.logbackClassic
   )
 
   override def runtimeDependencies: Seq[ModuleID] = Nil

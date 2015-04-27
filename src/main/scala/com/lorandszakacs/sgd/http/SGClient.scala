@@ -17,6 +17,7 @@
 package com.lorandszakacs.sgd.http
 
 import com.lorandszakacs.sgd.daoservice.api.{PhotoSet, SuicideGirl}
+import com.typesafe.scalalogging.StrictLogging
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -32,7 +33,7 @@ import spray.http.Uri.apply
 
 object SGClient {
   private val initialAccessPoint = "https://suicidegirls.com"
-  private val loginAccessPoint = "https://suicidegirls.com/login/"
+  private val loginAccessPoint   = "https://suicidegirls.com/login/"
 
   private val referrer = "https://suicidegirls.com/"
 
@@ -43,19 +44,10 @@ object SGClient {
   def apply()(implicit actorSystem: ActorSystem, executionContext: ExecutionContext) = {
     new SGClient(NoAuthenticationInfo)
   }
-
-  trait Reporter {
-    def apply(offset: Int, offsetStep: Int): Unit
-  }
-
-  private object DefaultReporter extends Reporter {
-    def apply(offset: Int, offsetStep: Int): Unit = {}
-  }
-
 }
 
-class SGClient protected(override val authentication: AuthenticationInfo)
-  (override implicit val actorSystem: ActorSystem, override implicit val executionContext: ExecutionContext) extends Client {
+class SGClient private(override val authentication: AuthenticationInfo)
+  (override implicit val actorSystem: ActorSystem, override implicit val executionContext: ExecutionContext) extends Client with StrictLogging {
 
   def getSuicideGirl(name: String): Future[Try[SuicideGirl]] = {
     val shallowSets: Future[List[PhotoSet]] = getPhotoSetUris(name).map(_.get).flatMap { photoSetUris: List[Uri] =>
@@ -73,15 +65,17 @@ class SGClient protected(override val authentication: AuthenticationInfo)
     }
   }
 
-  private def photoSetsPageUri(name: String): Uri = Uri(s"https://suicidegirls.com/girls/${name.toLowerCase}/photos/view/photosets/")
+  private def photoSetsPageUri(name: String): Uri =
+    Uri(s"https://suicidegirls.com/girls/${name.toLowerCase }/photos/view/photosets/")
 
-  private def photoSetUri(suffix: Uri) = Uri(s"https://suicidegirls.com${suffix.toString}")
+  private def photoSetUri(suffix: Uri) =
+    Uri(s"https://suicidegirls.com${suffix.toString() }")
 
   def getPhotoSet(albumPageUri: Uri): Future[Try[PhotoSet]] = {
     getPage(albumPageUri) map { html =>
       SGContentParser.parsePhotoSetPage(html, albumPageUri)
     } recover {
-      case e: Throwable => Failure(new Exception(s"Failed to get PhotoSet for uri:${albumPageUri}, because:`${e.getMessage()}`", e))
+      case e: Throwable => Failure(new Exception(s"Failed to get PhotoSet for uri:$albumPageUri, because:`${e.getMessage }`", e))
     }
   }
 
@@ -95,24 +89,27 @@ class SGClient protected(override val authentication: AuthenticationInfo)
     loadPageRepeatedly[Uri](sgPhotoSetsPage, 9, SGContentParser.gatherPhotoSetLinks, isEndPage)
   }
 
-  def gatherSGNames(limit: Int, reporter: SGClient.Reporter): Future[Try[List[String]]] = {
+  def gatherSGNames(limit: Int): Future[Try[List[String]]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
 
-    loadPageRepeatedly[String](sgListPageUri, 12, SGContentParser.gatherSGNames, isEndPage, limit, reporter)
+    loadPageRepeatedly[String](sgListPageUri, 12, SGContentParser.gatherSGNames, isEndPage, limit)
   }
 
-  private def sgListPageUri: Uri = Uri(s"https://suicidegirls.com/profiles/girl/followers/")
+  private def sgListPageUri: Uri =
+    Uri(s"https://suicidegirls.com/profiles/girl/followers/")
 
-  private def loadPageRepeatedly[T](uri: Uri, offsetStep: Int,
+  private def loadPageRepeatedly[T](
+    uri: Uri, offsetStep: Int,
     parsingFunction: Html => Try[List[T]],
     isEndPage: Html => Boolean,
-    cutOffLimit: Int = Int.MaxValue,
-    reporter: SGClient.Reporter = SGClient.DefaultReporter): Future[Try[List[T]]] = {
+    cutOffLimit: Int = Int.MaxValue
+    ): Future[Try[List[T]]] = {
 
-    def requestMore(uri: Uri, offset: Int) = Uri(s"${uri.toString}?partial=true&offset=${offset}")
+    def requestMore(uri: Uri, offset: Int) =
+      Uri(s"$uri?partial=true&offset=$offset")
 
     getPage(uri) map { firstHtml =>
       val photoSetUris = ListBuffer[T]()
@@ -126,11 +123,12 @@ class SGClient protected(override val authentication: AuthenticationInfo)
         if (isEndPage(newPage) || offset > cutOffLimit) {
           stop = true
         } else {
-          reporter(offset, offsetStep)
+          //FIXME: add logging
+          logger.info(s"\n\tload repeatedly: $offset $offsetStep")
           parsingFunction(newPage) match {
             case Success(s) =>
               photoSetUris ++= s
-            case Failure(e) => throw new Exception(s"Failed while gathering the subsequent pages. At offset: ${offset}", e)
+            case Failure(e) => throw new Exception(s"Failed while gathering the subsequent pages. At offset: $offset", e)
           }
         }
       } while (!stop)
@@ -138,15 +136,16 @@ class SGClient protected(override val authentication: AuthenticationInfo)
     }
   }
 
-  def gatherHopefulNames(limit: Int, reporter: SGClient.Reporter): Future[Try[List[String]]] = {
+  def gatherHopefulNames(limit: Int): Future[Try[List[String]]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
 
-    loadPageRepeatedly[String](hopefulListPageUri, 12, SGContentParser.gatherHopefulNames, isEndPage, limit, reporter)
+    loadPageRepeatedly[String](hopefulListPageUri, 12, SGContentParser.gatherHopefulNames, isEndPage, limit)
   }
 
-  private def hopefulListPageUri: Uri = Uri(s"https://suicidegirls.com/profiles/hopeful/followers/")
+  private def hopefulListPageUri: Uri =
+    Uri(s"https://suicidegirls.com/profiles/hopeful/followers/")
 
 }

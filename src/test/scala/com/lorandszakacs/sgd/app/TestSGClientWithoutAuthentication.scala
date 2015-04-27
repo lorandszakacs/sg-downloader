@@ -35,52 +35,46 @@ object TestSGClientWithoutAuthentication extends App {
 
   import com.lorandszakacs.sgd.app.TestSGClientWithoutAuthentication.system.dispatcher
 
-  val sgClient = SGClient()
-  //  val allSGNames = SGNames(Int.MaxValue)
-  val allHopefuls = HopefulNames(Int.MaxValue)
+  val sgClient   = SGClient()
+  val allSGNames = SGNames(20)
+  //  val allHopefuls = HopefulNames(Int.MaxValue)
 
   def albums(name: String) = {
     val result = Await.result(sgClient.getPhotoSetUris(name), 1 minute).get
-    println(s"------ ${name}:${result.size}---------")
+    println(s"------ $name:${result.size }---------")
     println(result.mkString("\n"))
     println("---------------------------------------")
     result
   }
 
   def SGNames(limit: Int): Seq[String] = {
-    def reporter = new SGClient.Reporter {
-      def apply(offset: Int, offsetStep: Int) = {
-        if (offset % (offsetStep * 6) == 0)
-          println(s"at:$offset")
-      }
-    }
 
-    val result = Await.result(sgClient.gatherSGNames(limit, reporter), 1 hour).get.sorted
-    println(s"-----SGNAMES: ${result.length}")
+    val result = Await.result(sgClient.gatherSGNames(limit), 1 hour).get.sorted
+    println(s"-----SGNAMES: ${result.length }")
     val file = new File("/Users/lorand/Downloads/sgs/sgs.txt")
     if (!file.exists()) {
-      printToFile(file)(p => {
-        result.foreach(p.println)
-      })
+      printToFile(file) { p =>
+        result.foreach { sgName: String =>
+          println(s"\t$sgName")
+          p.println(sgName)
+        }
+      }
     }
     result
   }
 
   def HopefulNames(limit: Int): Seq[String] = {
-    def reporter = new SGClient.Reporter {
-      def apply(offset: Int, offsetStep: Int) = {
-        if (offset % (offsetStep * 5) == 0)
-          println(s"at:$offset")
-      }
-    }
 
-    val result = Await.result(sgClient.gatherHopefulNames(limit, reporter), 1 hour).get.distinct.sorted
-    println(s"-----Hopefuls: ${result.length}")
+    val result = Await.result(sgClient.gatherHopefulNames(limit), 1 hour).get.distinct.sorted
+    println(s"-----Hopefuls: ${result.length }")
     val file = new File("/Users/lorand/Downloads/sgs/hopefuls.txt")
     if (!file.exists()) {
-      printToFile(file)(p => {
-        result.foreach(p.println)
-      })
+      printToFile(file) { p =>
+        result.foreach { hopefulName =>
+          println(s"\t$hopefulName")
+          p.println()
+        }
+      }
     }
     result
   }
@@ -94,8 +88,8 @@ object TestSGClientWithoutAuthentication extends App {
     }
   }
 
-  //  albums(allSGNames.head)
-  albums(allHopefuls.head)
+  albums(allSGNames.head)
+  //  albums(allHopefuls.head)
 
   system.shutdown()
 }
