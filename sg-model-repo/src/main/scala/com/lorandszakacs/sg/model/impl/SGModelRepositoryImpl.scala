@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.model.impl
 
-import com.lorandszakacs.sg.model.{SuicideGirlIndex, SuicideGirl, SGModelRepository}
+import com.lorandszakacs.sg.model.{HopefulIndex, SuicideGirlIndex, SuicideGirl, SGModelRepository}
 
 import scala.concurrent.{Future, ExecutionContext}
 
@@ -15,7 +15,14 @@ private[model] class SGModelRepositoryImpl(
   val suicideGirlsDao: SuicideGirlsDao,
   val hopefulsDao: HopefulsDao
 )(implicit val ec: ExecutionContext) extends SGModelRepository {
-  override def createOrUpdateSGIndex(index: SuicideGirlIndex): Future[Unit] = ???
+
+  override def createOrUpdateSGIndex(index: SuicideGirlIndex): Future[Unit] = {
+    nameIndexDao.createOrUpdateSuicideGirlsIndex(index.names)
+  }
+
+  override def createOrUpdateHopefulIndex(index: HopefulIndex): Future[Unit] = {
+    nameIndexDao.createOrUpdateHopefulIndex(index.names)
+  }
 
   override def writeSG(sg: SuicideGirl): Future[Unit] = ???
 

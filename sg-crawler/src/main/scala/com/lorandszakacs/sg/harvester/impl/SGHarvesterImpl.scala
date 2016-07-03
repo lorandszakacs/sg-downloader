@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.harvester.impl
 
 import com.lorandszakacs.sg.crawler.ModelAndPhotoSetCrawler
 import com.lorandszakacs.sg.harvester.SGHarvester
-import com.lorandszakacs.sg.model.{SuicideGirl, SGModelRepository}
+import com.lorandszakacs.sg.model.{HopefulIndex, SuicideGirlIndex, SuicideGirl, SGModelRepository}
 
 import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration._
@@ -21,9 +21,29 @@ private[harvester] class SGHarvesterImpl(
   val ec: ExecutionContext
 ) extends SGHarvester {
 
-  override def updateSGIndex(maxTime: FiniteDuration): Future[List[String]] = ???
+  override def updateSGIndex(maxNrOfSGs: Int): Future[List[String]] = {
+    for {
+      names <- modelCrawler.gatherSGNames(maxNrOfSGs)
+      _ <- modelRepo.createOrUpdateSGIndex {
+        SuicideGirlIndex(
+          names = names,
+          number = names.length
+        )
+      }
+    } yield names
+  }
 
-  override def updateHopefulIndex(timeout: FiniteDuration = 1 hour): Future[List[String]] = ???
+  override def updateHopefulIndex(maxNrOfHopefuls: Int): Future[List[String]] = {
+    for {
+      names <- modelCrawler.gatherHopefulNames(maxNrOfHopefuls)
+      _ <- modelRepo.createOrUpdateHopefulIndex {
+        HopefulIndex(
+          names = names,
+          number = names.length
+        )
+      }
+    } yield names
+  }
 
   override def gatherPhotoSetInformationForSGsInIndex(timeout: FiniteDuration = 1 hour): Future[List[SuicideGirl]] = ???
 

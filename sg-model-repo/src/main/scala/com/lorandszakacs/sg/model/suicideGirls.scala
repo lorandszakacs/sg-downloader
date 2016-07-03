@@ -69,6 +69,11 @@ final case class Hopeful(
   override def updatePhotoSets(newPhotoSets: List[PhotoSet]): Hopeful = this.copy(photoSets = newPhotoSets)
 }
 
+final case class HopefulIndex(
+  names: List[String],
+  number: Int
+)
+
 object PhotoSet {
   def apply(url: String, title: String, date: LocalDate, photos: List[Photo] = Nil) = {
     new PhotoSet(url.trim, title.toUpperCase, date, photos)
