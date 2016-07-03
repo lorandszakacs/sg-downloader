@@ -95,19 +95,8 @@ class GirlAndPhotoSetCrawlerTests extends PageCrawlerTest {
     */
   it should "... gather the first 48 SG names by followers" in { crawler =>
     whenReady(crawler.gatherSGNames(48)) { names: List[String] =>
-
-      println {
-        s"""
-           |
-          |names:
-           |${names}
-           |
-          |
-        """.stripMargin
-      }
-
       withClue("... size") {
-        names should have size 50
+        names should have size 48
       }
 
       withClue("... content") {
