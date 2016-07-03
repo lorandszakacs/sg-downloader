@@ -7,30 +7,35 @@ import com.github.nscala_time.time.Imports._
   * @since 16 Mar 2015
   *
   */
-final case class SuicideGirl(
-  uri: String,
-  name: String,
-  photoSets: List[PhotoSet]
-) {
 
-  def addPhotoSet(ph: PhotoSet): SuicideGirl = {
+sealed trait Girl[T <: Girl[T]] {
+  def uri: String
+
+  def name: String
+
+  def photoSets: List[PhotoSet]
+
+  def updatePhotoSets(newPhotoSets: List[PhotoSet]): T
+
+  final def addPhotoSet(ph: PhotoSet): T = {
     if (photoSets.exists(_.canonicalId == ph.canonicalId)) {
       throw PhotoSetAlreadyExistsException(name, ph)
     } else {
-      this.copy(photoSets = ph :: this.photoSets)
+      updatePhotoSets(ph :: this.photoSets)
     }
   }
 
-  def updatePhotoSet(ph: PhotoSet): SuicideGirl = {
+  final def updatePhotoSet(ph: PhotoSet): T = {
     if (!photoSets.exists(_.canonicalId == ph.canonicalId)) {
       throw PhotoSetDoesNotExistException(name, ph)
     } else {
       val newPHS = photoSets map { oldPH =>
         if (oldPH == ph) ph else oldPH
       }
-      this.copy(photoSets = newPHS)
+      updatePhotoSets(newPHS)
     }
   }
+
 
   override def toString =
     s"""
@@ -38,6 +43,25 @@ final case class SuicideGirl(
         uri=$uri
         ${photoSets.mkString("", "\n", "")}
       """.stripMargin(' ')
+}
+
+
+final case class SuicideGirl(
+  uri: String,
+  name: String,
+  photoSets: List[PhotoSet]
+) extends Girl[SuicideGirl] {
+
+  override def updatePhotoSets(newPhotoSets: List[PhotoSet]): SuicideGirl = this.copy(photoSets = newPhotoSets)
+}
+
+final case class Hopeful(
+  uri: String,
+  name: String,
+  photoSets: List[PhotoSet]
+) extends Girl[Hopeful] {
+
+  override def updatePhotoSets(newPhotoSets: List[PhotoSet]): Hopeful = this.copy(photoSets = newPhotoSets)
 }
 
 final case class PhotoSet(
