@@ -1,5 +1,4 @@
-package com.lorandszakacs.sg.http
-
+package com.lorandszakacs.sg.http.impl
 
 /**
   * Copyright 2015 Lorand Szakacs
@@ -20,10 +19,11 @@ package com.lorandszakacs.sg.http
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl._
-import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.HttpMethods._
+import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
+import com.lorandszakacs.sg.http.{FailedToGetPageException, SGClient}
 import com.lorandszakacs.util.html._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,20 +34,20 @@ import scala.concurrent.{ExecutionContext, Future}
   * @since 03 Jul 2016
   *
   */
-object SGClient {
-  def apply()(implicit actorSystem: ActorSystem, ec: ExecutionContext) = new SGClient(identity)
+private[http] object SGClientImpl {
+  private[http] def apply()(implicit actorSystem: ActorSystem, ec: ExecutionContext) = new SGClientImpl(identity)
 
   def apply(authenticate: HttpRequest => HttpRequest)(implicit actorSystem: ActorSystem, ec: ExecutionContext) = {
-    new SGClient(authenticate)
+    new SGClientImpl(authenticate)
   }
 }
 
-final class SGClient private(val authenticate: HttpRequest => HttpRequest)(implicit val actorSystem: ActorSystem, val ec: ExecutionContext) {
+private[impl] final class SGClientImpl private(val authenticate: HttpRequest => HttpRequest)(implicit val actorSystem: ActorSystem, val ec: ExecutionContext) extends SGClientImpl {
 
   private val http: HttpExt = Http()
   private implicit val materializer = ActorMaterializer()
 
-  def getPage(uri: Uri): Future[Html] = {
+  override def getPage(uri: Uri): Future[Html] = {
     val req = HttpRequest(
       method = GET,
       uri = uri

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package com.lorandszakacs.sg.crawler.page.data
+package com.lorandszakacs.sg.crawler.impl.data
 
 import com.lorandszakacs.util.html.Html
 

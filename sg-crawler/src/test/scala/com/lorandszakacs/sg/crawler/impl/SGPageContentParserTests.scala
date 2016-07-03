@@ -14,10 +14,9 @@
   * limitations under the License.
   *
   */
-package com.lorandszakacs.sg.crawler.page
+package com.lorandszakacs.sg.crawler.impl
 
-import akka.http.scaladsl.model.Uri
-import com.lorandszakacs.sg.crawler.page.data._
+import com.lorandszakacs.sg.crawler.impl.data._
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.{Failure, Success}

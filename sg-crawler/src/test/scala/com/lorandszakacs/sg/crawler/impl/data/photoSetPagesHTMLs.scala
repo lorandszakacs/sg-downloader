@@ -14,7 +14,7 @@
   * limitations under the License.
   *
   */
-package com.lorandszakacs.sg.crawler.page.data
+package com.lorandszakacs.sg.crawler.impl.data
 
 import akka.http.scaladsl.model.Uri
 import com.github.nscala_time.time.Imports._

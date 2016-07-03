@@ -55,6 +55,11 @@ final case class SuicideGirl(
   override def updatePhotoSets(newPhotoSets: List[PhotoSet]): SuicideGirl = this.copy(photoSets = newPhotoSets)
 }
 
+final case class SuicideGirlIndex(
+  names: List[String],
+  number: Int
+)
+
 final case class Hopeful(
   uri: String,
   name: String,

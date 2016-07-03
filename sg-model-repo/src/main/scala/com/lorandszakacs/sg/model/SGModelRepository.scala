@@ -12,6 +12,8 @@ import scala.concurrent.Future
   */
 trait SGModelRepository {
 
+  def createOrUpdateSGIndex(index: SuicideGirlIndex): Future[Unit]
+
   def writeSG(sg: SuicideGirl): Future[Unit]
 
   def writeOrUpdate(sg: SuicideGirl): Future[Unit]

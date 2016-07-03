@@ -1,4 +1,4 @@
-package com.lorandszakacs.sg.crawler.page
+package com.lorandszakacs.sg.crawler
 
 import com.lorandszakacs.util.html.Html
 

@@ -1,14 +1,15 @@
-package com.lorandszakacs.sg.crawler.page
+package com.lorandszakacs.sg.crawler.impl
 
 import akka.http.scaladsl.model.Uri
-import com.lorandszakacs.sg.http.SGClient
+import com.lorandszakacs.sg.crawler.FailedToRepeatedlyLoadPageException
+import com.lorandszakacs.sg.http.impl.SGClient
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html.Html
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.{Await, Future, ExecutionContext}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
@@ -17,13 +18,13 @@ import scala.util.{Failure, Success, Try}
   * All public methods ensure that the URIs are fully qualified, and not relative!
   *
   * This crawler only fetches a complete list of [[SuicideGirl]], and/or [[Hopeful]]s with
-  * all their [[PhotoSet]]s, but none of the media links
+  * all their [[PhotoSet]]s, but none of the photo links
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 03 Jul 2016
   *
   */
-final class GirlAndPhotoSetCrawler(sGClient: SGClient)(implicit val ec: ExecutionContext) extends StrictLogging {
+final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec: ExecutionContext) extends StrictLogging {
 
   private val SGsSortedByFollowers = "https://www.suicidegirls.com/profiles/girl/followers/"
   private val HopefulsSortedByFollowers = "https://www.suicidegirls.com/profiles/hopeful/followers/"

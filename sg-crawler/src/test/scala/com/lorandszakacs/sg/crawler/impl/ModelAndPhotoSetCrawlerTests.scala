@@ -1,19 +1,21 @@
-package com.lorandszakacs.sg.crawler.page
+package com.lorandszakacs.sg.crawler.impl
 
-
-import akka.http.scaladsl.model.Uri
-import com.lorandszakacs.sg.http.SGClient
+import com.lorandszakacs.sg.crawler.page.PageCrawlerTest
+import com.lorandszakacs.sg.http.impl.SGClient
 import com.lorandszakacs.sg.model._
 import org.joda.time.LocalDate
 import org.scalatest.Outcome
 
 /**
   *
+  * This test requires an active internet connection,
+  * since it fetches live data!
+  *
   * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 03 Jul 2016
   *
   */
-class GirlAndPhotoSetCrawlerTests extends PageCrawlerTest {
+class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
 
   //===============================================================================================
   //===============================================================================================
@@ -131,11 +133,11 @@ class GirlAndPhotoSetCrawlerTests extends PageCrawlerTest {
   //===============================================================================================
   //===============================================================================================
 
-  override type FixtureParam = GirlAndPhotoSetCrawler
+  override type FixtureParam = ModelAndPhotoSetCrawler
 
   override protected def withFixture(test: OneArgTest): Outcome = {
     val client = SGClient()
-    val crawler = new GirlAndPhotoSetCrawler(client)
+    val crawler = new ModelAndPhotoSetCrawler(client)
     test.apply(crawler)
   }
 }
