@@ -8,7 +8,7 @@ import com.github.nscala_time.time.Imports._
   *
   */
 
-sealed trait Girl[T <: Girl[T]] {
+sealed trait Model[T <: Model[T]] {
   def uri: String
 
   def name: String
@@ -50,7 +50,7 @@ final case class SuicideGirl(
   uri: String,
   name: String,
   photoSets: List[PhotoSet]
-) extends Girl[SuicideGirl] {
+) extends Model[SuicideGirl] {
 
   override def updatePhotoSets(newPhotoSets: List[PhotoSet]): SuicideGirl = this.copy(photoSets = newPhotoSets)
 }
@@ -59,7 +59,7 @@ final case class Hopeful(
   uri: String,
   name: String,
   photoSets: List[PhotoSet]
-) extends Girl[Hopeful] {
+) extends Model[Hopeful] {
 
   override def updatePhotoSets(newPhotoSets: List[PhotoSet]): Hopeful = this.copy(photoSets = newPhotoSets)
 }

@@ -1,19 +1,19 @@
 /**
- * Copyright 2015 Lorand Szakacs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
+  * Copyright 2015 Lorand Szakacs
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  *
+  */
 package com.lorandszakacs.sg.crawler.page
 
 import akka.http.scaladsl.model.Uri
@@ -31,7 +31,7 @@ object SGContentParser {
 
   def gatherPhotoSetLinks(html: Html): Try[List[Uri]] = {
     html filter (Tag("header") && Attribute("post_id") && Tag("h2") && Class("title") && RetainFirst(Tag("a")) && HrefLink()) match {
-      case Nil => Failure(new Exception("Did not find any PhotoSet links."))
+      case Nil => Failure(HTMLPageDidNotContainAnyPhotoSetLinksException(html))
       case links => Success(links.map(Uri(_)))
     }
   }
@@ -90,8 +90,8 @@ object SGContentParser {
       val monthAsInt = months(month)
 
       val dateTime = new DateTime(DateTimeZone.UTC)
-                     .withDate(year.toInt, monthAsInt, day.toInt)
-                     .withTimeAtStartOfDay()
+        .withDate(year.toInt, monthAsInt, day.toInt)
+        .withTimeAtStartOfDay()
 
       Success(dateTime)
     } catch {
@@ -101,8 +101,8 @@ object SGContentParser {
           val simplifiedDatePattern(month, day) = time
           val monthAsInt = months(month)
           val dateTime = new DateTime(DateTimeZone.UTC)
-                         .withDate(DateTime.now.getYear, monthAsInt, day.toInt)
-                         .withTimeAtStartOfDay()
+            .withDate(DateTime.now.getYear, monthAsInt, day.toInt)
+            .withTimeAtStartOfDay()
           Success(dateTime)
         } catch {
           case e: Throwable => Failure(e)

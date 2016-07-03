@@ -16,7 +16,8 @@
 // */
 //package com.lorandszakacs.sgd.http
 //
-//import com.lorandszakacs.sgd.daoservice.api.{PhotoSet, SuicideGirl}
+//import akka.http.scaladsl.model.Uri
+//import com.lorandszakacs.sg.model._
 //import com.typesafe.scalalogging.StrictLogging
 //
 //import scala.collection.mutable.ListBuffer
@@ -28,26 +29,24 @@
 //import com.lorandszakacs.util.html._
 //
 //import akka.actor.ActorSystem
-//import spray.http.Uri
-//import spray.http.Uri.apply
 //
 //object SGClient {
-//  private val initialAccessPoint = "https://suicidegirls.com"
-//  private val loginAccessPoint   = "https://suicidegirls.com/login/"
-//
-//  private val referrer = "https://suicidegirls.com/"
-//
-//  def apply(userName: String, password: String)(implicit actorSystem: ActorSystem, executionContext: ExecutionContext): Try[SGClient] = {
-//    Login(initialAccessPoint, loginAccessPoint, referrer, userName, password).map(info => new SGClient(info))
-//  }
-//
-//  def apply()(implicit actorSystem: ActorSystem, executionContext: ExecutionContext) = {
-//    new SGClient(NoAuthenticationInfo)
-//  }
+////  private val initialAccessPoint = "https://suicidegirls.com"
+////  private val loginAccessPoint   = "https://suicidegirls.com/login/"
+////
+////  private val referrer = "https://suicidegirls.com/"
+////
+////  def apply(userName: String, password: String)(implicit actorSystem: ActorSystem, executionContext: ExecutionContext): Try[SGClient] = {
+////    Login(initialAccessPoint, loginAccessPoint, referrer, userName, password).map(info => new SGClient(info))
+////  }
+////
+////  def apply()(implicit actorSystem: ActorSystem, executionContext: ExecutionContext) = {
+////    new SGClient(NoAuthenticationInfo)
+////  }
 //}
 //
-//class SGClient private(override val authentication: AuthenticationInfo)
-//  (override implicit val actorSystem: ActorSystem, override implicit val executionContext: ExecutionContext) extends Client with StrictLogging {
+//class SGClient private()
+//  (implicit val actorSystem: ActorSystem, override implicit val executionContext: ExecutionContext) extends Client with StrictLogging {
 //
 //  def getSuicideGirl(name: String): Future[Try[SuicideGirl]] = {
 //    val shallowSets: Future[List[PhotoSet]] = getPhotoSetUris(name).map(_.get).flatMap { photoSetUris: List[Uri] =>
