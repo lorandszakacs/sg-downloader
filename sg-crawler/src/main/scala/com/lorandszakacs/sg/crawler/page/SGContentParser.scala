@@ -22,6 +22,7 @@ import com.lorandszakacs.sg.model.{Photo, PhotoSet}
 import com.lorandszakacs.util.html._
 
 import scala.util._
+import scala.util.control.NonFatal
 
 object SGContentParser {
   private val months = Map(1 -> "Jan", 2 -> "Feb", 3 -> "Mar",
@@ -29,18 +30,10 @@ object SGContentParser {
     7 -> "Jul", 8 -> "Aug", 9 -> "Sep",
     10 -> "Oct", 11 -> "Nov", 12 -> "Dec").map(p => p._2 -> p._1)
 
-  @scala.deprecated("not as useful as the one that gathers PhotoSet", "now")
-  def gatherPhotoSetLinks(html: Html): Try[List[Uri]] = {
-    html filter (Tag("header") && Attribute("post_id") && Tag("h2") && Class("title") && RetainFirst(Tag("a")) && HrefLink()) match {
-      case Nil => Failure(HTMLPageDidNotContainAnyPhotoSetLinksException(html))
-      case links => Success(links.map(Uri(_)))
-    }
-  }
-
   /**
     * this filter will yield elements like the following:
 
-    *{{{
+    * {{{
     * <header post_id="997826" posttype="album" class="header clearfix">
     * <div class="top-bar">
     * <h2 class="title"> <a href="/girls/moon/album/997826/mirage/">Mirage</a> </h2>
@@ -70,7 +63,7 @@ object SGContentParser {
     * </div>
     * </div>
     * </header>
-    *}}}
+    * }}}
     */
   def gatherPhotoSets(html: Html): Try[List[PhotoSet]] = Try {
     val albumElement = Tag("header") && Attribute("post_id")
@@ -140,26 +133,28 @@ object SGContentParser {
 
   private def parseStringToDateTime(t: String): Try[LocalDate] = {
     val time = t.trim()
-    try {
-      //Aug 1, 2012
-      val datePattern = """(\w\w\w) (\d*), (\d\d\d\d)""".r
-      val datePattern(month, day, year) = time
+    if (t.contains("hrs")) {
+      val nrOfHours = t.replace(" hrs", "")
+      Try(DateTime.now.minusHours(nrOfHours.toInt)) map {
+        _.toLocalDate
+      }
+    } else {
+      Try {
+        val datePattern = """(\w\w\w) (\d*), (\d\d\d\d)""".r
+        val datePattern(month, day, year) = time
 
-      val monthAsInt = months(month)
+        val monthAsInt = months(month)
 
-      val dateTime = new LocalDate(year.toInt, monthAsInt, day.toInt)
-      Success(dateTime)
-    } catch {
-      case e: Throwable =>
-        try {
+        val dateTime = new LocalDate(year.toInt, monthAsInt, day.toInt)
+        dateTime
+      } recoverWith {
+        case NonFatal(e) => Try {
           val simplifiedDatePattern = """(\w\w\w) (\d*)""".r
           val simplifiedDatePattern(month, day) = time
           val monthAsInt = months(month)
-          val date = new LocalDate(DateTime.now.getYear, monthAsInt, day.toInt)
-          Success(date)
-        } catch {
-          case e: Throwable => Failure(e)
+          new LocalDate(DateTime.now.getYear, monthAsInt, day.toInt)
         }
+      }
     }
   }
 }

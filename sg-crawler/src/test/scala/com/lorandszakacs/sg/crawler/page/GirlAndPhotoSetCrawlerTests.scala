@@ -1,9 +1,11 @@
 package com.lorandszakacs.sg.crawler.page
 
+
 import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.http.SGClient
-import org.scalatest.concurrent.{ScalaFutures, Futures}
-import org.scalatest.{Outcome, fixture}
+import com.lorandszakacs.sg.model._
+import org.joda.time.LocalDate
+import org.scalatest.Outcome
 
 /**
   *
@@ -27,14 +29,20 @@ class GirlAndPhotoSetCrawlerTests extends PageCrawlerTest {
     * had only one single set
     */
   it should "... fetch URIs for a page that does not need a subsequent query -- odina" in { crawler =>
-    whenReady(crawler.getPhotoSetUris("odina")) { uris: List[Uri] =>
+    whenReady(crawler.getPhotoSetInformation("odina")) { sets: List[PhotoSet] =>
 
       withClue("size") {
-        uris should have size 1
+        sets should have size 1
       }
 
       withClue("content") {
-        uris should contain(Uri("https://www.suicidegirls.com/members/odina/album/2745718/do-i-wanna-know/"))
+        sets should contain {
+          PhotoSet(
+            url = "https://www.suicidegirls.com/members/odina/album/2745718/do-i-wanna-know/",
+            title = "DO I WANNA KNOW",
+            date = LocalDate.parse("2016-07-03")
+          )
+        }
       }
 
     }
@@ -46,15 +54,28 @@ class GirlAndPhotoSetCrawlerTests extends PageCrawlerTest {
     * had 22 sets. And has not published a new set in ages.
     */
   it should "... fetch URIs for a page that needs several queries -- zoli" in { crawler =>
-    whenReady(crawler.getPhotoSetUris("zoli")) { uris: List[Uri] =>
+    whenReady(crawler.getPhotoSetInformation("zoli")) { uris: List[PhotoSet] =>
 
       withClue("... size") {
         uris should have size 22
       }
 
       withClue("... content") {
-        uris should contain(Uri("https://www.suicidegirls.com/girls/zoli/album/996153/lounge-act/"))
-        uris should contain(Uri("https://www.suicidegirls.com/girls/zoli/album/969351/the-beat/"))
+        uris should contain {
+          PhotoSet(
+            url = "https://www.suicidegirls.com/girls/zoli/album/996153/lounge-act/",
+            title = "lounge act",
+            date = LocalDate.parse("2012-10-17")
+          )
+        }
+
+        uris should contain {
+          PhotoSet(
+            url = "https://www.suicidegirls.com/girls/zoli/album/969351/the-beat/",
+            title = "THE BEAT",
+            date = LocalDate.parse("2006-05-03")
+          )
+        }
       }
 
     }

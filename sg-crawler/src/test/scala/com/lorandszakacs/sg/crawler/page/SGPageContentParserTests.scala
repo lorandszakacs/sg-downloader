@@ -63,34 +63,12 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
     }
   }
 
-  it should "return all PhotoSet URLs from a SG page" in {
-    val expected = SGSetPageAllInPast
-    SGContentParser.gatherPhotoSetLinks(expected.html) match {
-      case Success(result) =>
-        result should have length expected.numberOfPhotoSets
-        result.diff(expected.photoSetURIs) should be(Nil)
-      case Failure(e) =>
-        fail("did not return any PhotoSetLinks", e)
-    }
-  }
-
   it should "return all PhotoSets from a SG page" in {
     val expected = SGSetPageAllInPast
     SGContentParser.gatherPhotoSets(expected.html) match {
       case Success(result) =>
         result should have length expected.numberOfPhotoSets
         result.diff(expected.photoSets) should be(Nil)
-      case Failure(e) =>
-        fail("did not return any PhotoSetLinks", e)
-    }
-  }
-
-  it should "return all PhotoSet URLs from a SG page, in which all sets are in the past" in {
-    val expected = SGSetPageSomeInPast
-    SGContentParser.gatherPhotoSetLinks(expected.html) match {
-      case Success(result) =>
-        result should have length expected.numberOfPhotoSets
-        result.diff(expected.photoSetURIs) should be(Nil)
       case Failure(e) =>
         fail("did not return any PhotoSetLinks", e)
     }

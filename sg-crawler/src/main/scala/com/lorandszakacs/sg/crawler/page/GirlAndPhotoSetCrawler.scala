@@ -34,9 +34,10 @@ final class GirlAndPhotoSetCrawler(sGClient: SGClient)(implicit val ec: Executio
     * To see if this still holds true.
     *
     * @return
-    * all URIs to the [[PhotoSet]] of a given [[Model]]
+    * the [[PhotoSet]]s of the given model.
+    * All elements of the list will have: [[PhotoSet.photos.isEmpty]]
     */
-  def getPhotoSetUris(modelName: String): Future[List[Uri]] = {
+  def getPhotoSetInformation(modelName: String): Future[List[PhotoSet]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -44,13 +45,15 @@ final class GirlAndPhotoSetCrawler(sGClient: SGClient)(implicit val ec: Executio
     val pageURI = photoSetsPageUri(modelName)
 
     for {
-      relativeURIs <- loadPageRepeatedly[Uri](
+      setsWithRelativeURIs <- loadPageRepeatedly[PhotoSet](
         uri = pageURI,
         offsetStep = 9,
-        parsingFunction = SGContentParser.gatherPhotoSetLinks,
+        parsingFunction = SGContentParser.gatherPhotoSets,
         isEndPage = isEndPage
       )
-    } yield relativeURIs map makeFullPathURI
+    } yield setsWithRelativeURIs map { ph =>
+      ph.copy(url = makeFullPathURI(ph.url).toString)
+    }
   }
 
   /**

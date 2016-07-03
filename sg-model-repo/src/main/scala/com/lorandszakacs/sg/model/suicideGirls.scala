@@ -79,6 +79,12 @@ final class PhotoSet private(
 
   def id: String = url
 
+  def updateURL(newURL: String): PhotoSet = this.copy(url = newURL)
+
+  def copy(url: String = url, title: String = title, date: LocalDate = date, photos: List[Photo] = photos): PhotoSet = {
+    new PhotoSet(url, title, date, photos)
+  }
+
   override def toString =
     s"""
         ${"\t"}title = $title
