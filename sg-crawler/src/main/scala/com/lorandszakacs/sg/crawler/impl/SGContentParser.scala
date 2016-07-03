@@ -18,14 +18,14 @@ package com.lorandszakacs.sg.crawler.impl
 
 import akka.http.scaladsl.model.Uri
 import com.github.nscala_time.time.Imports._
-import com.lorandszakacs.sg.crawler.page.{SetRepresentationDidNotContainTimeTagException, SetRepresentationDidNotContainTitleException, SetRepresentationDidNotContainURLException}
+import com.lorandszakacs.sg.crawler._
 import com.lorandszakacs.sg.model.{Photo, PhotoSet}
 import com.lorandszakacs.util.html._
 
 import scala.util._
 import scala.util.control.NonFatal
 
-private[page] object SGContentParser {
+private[impl] object SGContentParser {
   private val months = Map(1 -> "Jan", 2 -> "Feb", 3 -> "Mar",
     4 -> "Apr", 5 -> "May", 6 -> "Jun",
     7 -> "Jul", 8 -> "Aug", 9 -> "Sep",

@@ -1,10 +1,15 @@
 package com.lorandszakacs.sg.crawler.impl
 
+import akka.actor.ActorSystem
+import akka.http.scaladsl.model.HttpRequest
+import com.lorandszakacs.sg.crawler.{ModelAndPhotoSetCrawler, PageCrawlerAssembly}
 import com.lorandszakacs.sg.crawler.page.PageCrawlerTest
-import com.lorandszakacs.sg.http.impl.SGClient
+import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.model._
 import org.joda.time.LocalDate
 import org.scalatest.Outcome
+
+import scala.concurrent.ExecutionContext
 
 /**
   *
@@ -136,8 +141,14 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
   override type FixtureParam = ModelAndPhotoSetCrawler
 
   override protected def withFixture(test: OneArgTest): Outcome = {
-    val client = SGClient()
-    val crawler = new ModelAndPhotoSetCrawler(client)
-    test.apply(crawler)
+    val assembly = new PageCrawlerAssembly with SGClientAssembly {
+      override implicit def actorSystem: ActorSystem = ModelAndPhotoSetCrawlerTests.this.actorSystem
+
+      override implicit def executionContext: ExecutionContext = ModelAndPhotoSetCrawlerTests.this.ec
+
+      override def authentication: (HttpRequest) => HttpRequest = identity
+    }
+
+    test.apply(assembly.modelAndSetCrawler)
   }
 }

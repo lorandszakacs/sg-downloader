@@ -42,7 +42,7 @@ private[http] object SGClientImpl {
   }
 }
 
-private[impl] final class SGClientImpl private(val authenticate: HttpRequest => HttpRequest)(implicit val actorSystem: ActorSystem, val ec: ExecutionContext) extends SGClientImpl {
+private[impl] final class SGClientImpl private(val authenticate: HttpRequest => HttpRequest)(implicit val actorSystem: ActorSystem, val ec: ExecutionContext) extends SGClient {
 
   private val http: HttpExt = Http()
   private implicit val materializer = ActorMaterializer()
