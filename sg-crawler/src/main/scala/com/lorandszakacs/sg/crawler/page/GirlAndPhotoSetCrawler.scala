@@ -25,6 +25,46 @@ import scala.util.{Failure, Success, Try}
   */
 final class GirlAndPhotoSetCrawler(sGClient: SGClient)(implicit val ec: ExecutionContext) extends StrictLogging {
 
+  private val SGsSortedByFollowers = "https://www.suicidegirls.com/profiles/girl/followers/"
+  private val HopefulsSortedByFollowers = "https://www.suicidegirls.com/profiles/hopeful/followers/"
+
+  /**
+    * Gathers the names of all available [[SuicideGirl]]s
+    */
+  def gatherSGNames(limit: Int): Future[List[String]] = {
+    def isEndPage(html: Html) = {
+      val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
+      html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
+    }
+
+    loadPageRepeatedly[String](
+      uri = SGsSortedByFollowers,
+      offsetStep = 12,
+      parsingFunction = SGContentParser.gatherSGNames,
+      isEndPage = isEndPage,
+      cutOffLimit = limit
+    )
+  }
+
+
+  /**
+    * Gathers the names of all available [[Hopeful]]s
+    */
+  def gatherHopefulNames(limit: Int): Future[List[String]] = {
+    def isEndPage(html: Html) = {
+      val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
+      html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
+    }
+
+    loadPageRepeatedly[String](
+      uri = HopefulsSortedByFollowers,
+      offsetStep = 12,
+      parsingFunction = SGContentParser.gatherHopefulNames,
+      isEndPage = isEndPage,
+      cutOffLimit = limit
+    )
+  }
+
   /**
     *
     * At the time of writing, there are at most 9 sets displayed per such a page.
@@ -37,7 +77,7 @@ final class GirlAndPhotoSetCrawler(sGClient: SGClient)(implicit val ec: Executio
     * the [[PhotoSet]]s of the given model.
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]]
     */
-  def getPhotoSetInformation(modelName: String): Future[List[PhotoSet]] = {
+  def gatherPhotoSetInformationFor(modelName: String): Future[List[PhotoSet]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -82,7 +122,7 @@ final class GirlAndPhotoSetCrawler(sGClient: SGClient)(implicit val ec: Executio
     * @param parsingFunction
     * @param isEndPage
     * @param cutOffLimit
-    * @tparam T
+    * @param throttle
     * @return
     */
   private def loadPageRepeatedly[T](
@@ -90,6 +130,7 @@ final class GirlAndPhotoSetCrawler(sGClient: SGClient)(implicit val ec: Executio
     offsetStep: Int,
     parsingFunction: Html => Try[List[T]],
     isEndPage: Html => Boolean,
+    throttle: FiniteDuration = 100 millis,
     cutOffLimit: Int = Int.MaxValue
   ): Future[List[T]] = {
 
@@ -103,6 +144,7 @@ final class GirlAndPhotoSetCrawler(sGClient: SGClient)(implicit val ec: Executio
       var offset = offsetStep
       var stop = false
       do {
+        Thread.sleep(throttle.toMillis)
         val newPage = Await.result(sGClient.getPage(offsetUri(uri, offset)), 1 minute)
         offset += offsetStep
         if (isEndPage(newPage) || offset > cutOffLimit) {

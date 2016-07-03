@@ -29,7 +29,7 @@ class GirlAndPhotoSetCrawlerTests extends PageCrawlerTest {
     * had only one single set
     */
   it should "... fetch URIs for a page that does not need a subsequent query -- odina" in { crawler =>
-    whenReady(crawler.getPhotoSetInformation("odina")) { sets: List[PhotoSet] =>
+    whenReady(crawler.gatherPhotoSetInformationFor("odina")) { sets: List[PhotoSet] =>
 
       withClue("size") {
         sets should have size 1
@@ -54,7 +54,7 @@ class GirlAndPhotoSetCrawlerTests extends PageCrawlerTest {
     * had 22 sets. And has not published a new set in ages.
     */
   it should "... fetch URIs for a page that needs several queries -- zoli" in { crawler =>
-    whenReady(crawler.getPhotoSetInformation("zoli")) { uris: List[PhotoSet] =>
+    whenReady(crawler.gatherPhotoSetInformationFor("zoli")) { uris: List[PhotoSet] =>
 
       withClue("... size") {
         uris should have size 22
@@ -78,6 +78,64 @@ class GirlAndPhotoSetCrawlerTests extends PageCrawlerTest {
         }
       }
 
+    }
+  }
+
+  //===============================================================================================
+  //===============================================================================================
+
+  behavior of "GirlAndPhotoSetCrawler.gatherSGNames"
+
+  //===============================================================================================
+  //===============================================================================================
+
+  /**
+    * It's important to keep in mind that since this is live data that is being fetched,
+    * this test might fail. Therefore one must always be vigilant.
+    */
+  it should "... gather the first 48 SG names by followers" in { crawler =>
+    whenReady(crawler.gatherSGNames(48)) { names: List[String] =>
+
+      println {
+        s"""
+           |
+          |names:
+           |${names}
+           |
+          |
+        """.stripMargin
+      }
+
+      withClue("... size") {
+        names should have size 50
+      }
+
+      withClue("... content") {
+        names should contain("Sash")
+        names should contain("Kemper")
+        names should contain("Gogo")
+      }
+
+    }
+  }
+
+  //===============================================================================================
+  //===============================================================================================
+
+  it should "... gather the first 48 Hopeful names by followers" in { crawler =>
+    whenReady(crawler.gatherHopefulNames(48)) { names: List[String] =>
+
+      println {
+        s"""
+           |hopeful names:
+           |${names.mkString("\n")}
+           |
+        """.stripMargin
+      }
+
+      withClue("... size") {
+        names should have size 48
+      }
     }
   }
 
