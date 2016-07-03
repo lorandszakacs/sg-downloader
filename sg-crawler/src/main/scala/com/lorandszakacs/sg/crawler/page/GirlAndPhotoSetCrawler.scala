@@ -19,7 +19,7 @@ import scala.util.{Failure, Success, Try}
   * This crawler only fetches a complete list of [[SuicideGirl]], and/or [[Hopeful]]s with
   * all their [[PhotoSet]]s, but none of the media links
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 03 Jul 2016
   *
   */

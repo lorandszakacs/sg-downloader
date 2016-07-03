@@ -6,7 +6,7 @@ import scala.concurrent.Future
   *
   * Used to do basic CRUD on the SG information about: SGs, Hopefuls, images, photosets, etc.
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 03 Jul 2016
   *
   */
