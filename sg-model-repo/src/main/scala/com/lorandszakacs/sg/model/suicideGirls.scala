@@ -67,8 +67,8 @@ final case class Hopeful(
 final case class PhotoSet(
   uri: String,
   title: String,
-  photos: List[Photo],
-  date: DateTime
+  date: LocalDate,
+  photos: List[Photo] = Nil
 ) {
 
   def canonicalId: String = uri

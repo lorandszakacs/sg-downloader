@@ -60,7 +60,7 @@ object SGContentParser {
       case Nil => throw new Exception(s"Could not find the title of the album.")
       case l => if (l.length == 1) l.head.trim() else throw new Exception(s"Found too many titles for album.")
     }
-    val date: DateTime = metaData filter Content(Tag("time")) match {
+    val date: LocalDate = metaData filter Content(Tag("time")) match {
       case Nil => throw new Exception(s"Could not find the date of the album.")
       case l => if (l.length == 1) {
         parseStringToDateTime(l.head).get
@@ -70,7 +70,7 @@ object SGContentParser {
       case Success(ps) => ps
       case Failure(e) => throw new Exception(s"Failed to gather the links for page.", e)
     }
-    Success(PhotoSet(uri = albumPageUri.toString, title = title, photos = photos, date = date))
+    Success(PhotoSet(uri = albumPageUri.toString, title = title, date = date, photos = photos))
   }
 
   def parsePhotos(albumPage: Html): Try[List[Photo]] = {
@@ -80,7 +80,7 @@ object SGContentParser {
     }
   }
 
-  private def parseStringToDateTime(t: String): Try[DateTime] = {
+  private def parseStringToDateTime(t: String): Try[LocalDate] = {
     val time = t.trim()
     try {
       //Aug 1, 2012
@@ -89,10 +89,7 @@ object SGContentParser {
 
       val monthAsInt = months(month)
 
-      val dateTime = new DateTime(DateTimeZone.UTC)
-        .withDate(year.toInt, monthAsInt, day.toInt)
-        .withTimeAtStartOfDay()
-
+      val dateTime = new LocalDate(year.toInt, monthAsInt, day.toInt)
       Success(dateTime)
     } catch {
       case e: Throwable =>
@@ -100,10 +97,8 @@ object SGContentParser {
           val simplifiedDatePattern = """(\w\w\w) (\d*)""".r
           val simplifiedDatePattern(month, day) = time
           val monthAsInt = months(month)
-          val dateTime = new DateTime(DateTimeZone.UTC)
-            .withDate(DateTime.now.getYear, monthAsInt, day.toInt)
-            .withTimeAtStartOfDay()
-          Success(dateTime)
+          val date = new LocalDate(DateTime.now.getYear, monthAsInt, day.toInt)
+          Success(date)
         } catch {
           case e: Throwable => Failure(e)
         }
