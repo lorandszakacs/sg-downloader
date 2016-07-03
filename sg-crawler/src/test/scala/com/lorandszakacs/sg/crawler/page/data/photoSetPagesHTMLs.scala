@@ -1,19 +1,19 @@
 /**
- * Copyright 2015 Lorand Szakacs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
+  * Copyright 2015 Lorand Szakacs
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  *
+  */
 package com.lorandszakacs.sg.crawler.page.data
 
 import akka.http.scaladsl.model.Uri
@@ -24,10 +24,10 @@ import scala.io.Source
 import com.lorandszakacs.util.html._
 
 /**
- * @author Lorand Szakacs, lsz@lorandszakacs.com
- * @since 16 Mar 2015
- *
- */
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
+  * @since 16 Mar 2015
+  *
+  */
 trait PhotoSetPage {
   def html = {
     val resourceName = s"${getClass.getSimpleName.replace("$", "")}.html"
@@ -44,7 +44,7 @@ trait PhotoSetPage {
 
   def title: String
 
-  def date: DateTime
+  def date: LocalDate
 }
 
 object PhotoSetPagePartialDate extends PhotoSetPage {
@@ -52,9 +52,9 @@ object PhotoSetPagePartialDate extends PhotoSetPage {
 
   def numberOfPhotos: Int = 53
 
-  def title: String = "Adieu Tristesse"
+  def title: String = "ADIEU TRISTESSE"
 
-  def date: DateTime = DateTime.parse("2015-01-18T00:00:00.000Z").withYear(currentYear)
+  def date: LocalDate = LocalDate.parse("2015-01-18").withYear(currentYear)
 }
 
 object PhotoSetPageFullDate extends PhotoSetPage {
@@ -62,9 +62,9 @@ object PhotoSetPageFullDate extends PhotoSetPage {
 
   def numberOfPhotos: Int = 45
 
-  def title: String = "Limportance d etre Ernest"
+  def title: String = "LIMPORTANCE D ETRE ERNEST"
 
-  def date: DateTime = DateTime.parse("2013-02-07T00:00:00.000Z")
+  def date: LocalDate = LocalDate.parse("2013-02-07")
 }
 
 

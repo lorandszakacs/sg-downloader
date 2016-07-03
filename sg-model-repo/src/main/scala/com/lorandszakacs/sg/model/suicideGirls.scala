@@ -18,7 +18,7 @@ sealed trait Model[T <: Model[T]] {
   def updatePhotoSets(newPhotoSets: List[PhotoSet]): T
 
   final def addPhotoSet(ph: PhotoSet): T = {
-    if (photoSets.exists(_.canonicalId == ph.canonicalId)) {
+    if (photoSets.exists(_.id == ph.id)) {
       throw PhotoSetAlreadyExistsException(name, ph)
     } else {
       updatePhotoSets(ph :: this.photoSets)
@@ -26,7 +26,7 @@ sealed trait Model[T <: Model[T]] {
   }
 
   final def updatePhotoSet(ph: PhotoSet): T = {
-    if (!photoSets.exists(_.canonicalId == ph.canonicalId)) {
+    if (!photoSets.exists(_.id == ph.id)) {
       throw PhotoSetDoesNotExistException(name, ph)
     } else {
       val newPHS = photoSets map { oldPH =>
@@ -64,24 +64,44 @@ final case class Hopeful(
   override def updatePhotoSets(newPhotoSets: List[PhotoSet]): Hopeful = this.copy(photoSets = newPhotoSets)
 }
 
-final case class PhotoSet(
-  uri: String,
-  title: String,
-  date: LocalDate,
-  photos: List[Photo] = Nil
+object PhotoSet {
+  def apply(url: String, title: String, date: LocalDate, photos: List[Photo] = Nil) = {
+    new PhotoSet(url.trim, title.toUpperCase, date, photos)
+  }
+}
+
+final class PhotoSet private(
+  val url: String,
+  val title: String,
+  val date: LocalDate,
+  val photos: List[Photo]
 ) {
 
-  def canonicalId: String = uri
+  def id: String = url
 
-  override lazy val toString =
+  override def toString =
     s"""
         ${"\t"}title = $title
         ${"\t"}date  = ${date.toString(Util.dateTimeFormat)}
-        ${"\t"}uri   = ${uri.toString}
+        ${"\t"}uri   = ${url.toString}
         ${"\t_________________"}
         ${photos.mkString("", "\t\t\n", "")}
         ${"\t================="}
       """.stripMargin(' ')
+
+  override def equals(other: Any): Boolean = other match {
+    case that: PhotoSet =>
+      url == that.url &&
+        title == that.title &&
+        date == that.date &&
+        photos == that.photos
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(url, title, date, photos)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 final case class Photo(

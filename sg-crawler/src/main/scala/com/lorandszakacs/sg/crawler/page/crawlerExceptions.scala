@@ -20,3 +20,26 @@ final case class HTMLPageDidNotContainAnyPhotoSetLinksException(html: Html) exte
   """.stripMargin
 )
 
+final case class SetRepresentationDidNotContainTimeTagException(html: Html) extends Exception(
+  s"""
+     |HTML element contain any information about the date of the set:
+     |${html.toString}
+  """.stripMargin
+)
+
+final case class SetRepresentationDidNotContainTitleException(html: Html) extends Exception(
+  s"""
+     |HTML element contain any information about the title of the set:
+     |${html.toString}
+  """.stripMargin
+)
+
+final case class SetRepresentationDidNotContainURLException(html: Html) extends Exception(
+  s"""
+     |HTML element contain any URL links to set:
+     |${html.toString}
+  """.stripMargin
+)
+
+
+
