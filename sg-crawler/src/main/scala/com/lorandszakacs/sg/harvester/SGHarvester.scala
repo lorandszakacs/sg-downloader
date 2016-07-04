@@ -1,5 +1,6 @@
 package com.lorandszakacs.sg.harvester
 
+import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model._
 
 import scala.concurrent.Future
@@ -21,7 +22,7 @@ trait SGHarvester {
     * @return
     * a list of all the names of the SGs in the index
     */
-  def updateSGIndex(maxNrOfSGs: Int): Future[List[String]]
+  def updateSGIndex(maxNrOfSGs: Int)(implicit pc: PatienceConfig): Future[List[String]]
 
   /**
     * Fetches all [[Hopeful]] names from the website, and updates them in the
@@ -30,11 +31,11 @@ trait SGHarvester {
     * @return
     * a list of all the names of the SGs in the index
     */
-  def updateHopefulIndex(maxNrOfHopefuls: Int): Future[List[String]]
+  def updateHopefulIndex(maxNrOfHopefuls: Int)(implicit pc: PatienceConfig): Future[List[String]]
 
   /**
     * Updates [[SuicideGirl.photoSets]] with [[com.lorandszakacs.sg.model.PhotoSet]]s with all information
     * except the image links.
     */
-  def gatherPhotoSetInformationForSGsInIndex(timeout: FiniteDuration = 1 hour): Future[List[SuicideGirl]]
+  def gatherPhotoSetInformationForSGsInIndex(implicit pc: PatienceConfig): Future[List[SuicideGirl]]
 }

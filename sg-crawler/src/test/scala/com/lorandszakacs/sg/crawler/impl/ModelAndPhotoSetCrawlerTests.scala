@@ -10,6 +10,7 @@ import org.joda.time.LocalDate
 import org.scalatest.Outcome
 
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.FiniteDuration
 
 /**
   *

@@ -21,6 +21,7 @@ import java.util.concurrent.Executors
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpRequest
 import com.lorandszakacs.sg.harvester.SGHarvesterAssembly
+import com.lorandszakacs.sg.http.PatienceConfig
 import com.typesafe.scalalogging.StrictLogging
 import reactivemongo.api.{MongoConnection, MongoDriver, DefaultDB}
 
@@ -38,22 +39,14 @@ object Main extends App with StrictLogging {
     system.terminate()
   }
 
+  implicit val patienceConfig: PatienceConfig = PatienceConfig(200 millis)
   implicit val ec: ExecutionContext = Assembly.executionContext
 
   logger.info("Starting harverster")
 
   logger.info("Gathering all SGs")
   val updateIndex = for {
-    _ <- Assembly.sgHarvester.updateSGIndex(Int.MaxValue)
-    _ = println {
-      """
-        |
-        |
-        |FINISHED SGs!!!
-        |
-        |
-      """.stripMargin
-    }
+  //    _ <- Assembly.sgHarvester.updateSGIndex(Int.MaxValue, 200 millis)
     _ <- Assembly.sgHarvester.updateHopefulIndex(Int.MaxValue)
   } yield ()
 

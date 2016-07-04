@@ -2,6 +2,7 @@ package com.lorandszakacs.sg.harvester.impl
 
 import com.lorandszakacs.sg.crawler.ModelAndPhotoSetCrawler
 import com.lorandszakacs.sg.harvester.SGHarvester
+import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model.{HopefulIndex, SuicideGirlIndex, SuicideGirl, SGModelRepository}
 
 import scala.concurrent.{Future, ExecutionContext}
@@ -21,7 +22,7 @@ private[harvester] class SGHarvesterImpl(
   val ec: ExecutionContext
 ) extends SGHarvester {
 
-  override def updateSGIndex(maxNrOfSGs: Int): Future[List[String]] = {
+  override def updateSGIndex(maxNrOfSGs: Int)(implicit pc: PatienceConfig): Future[List[String]] = {
     for {
       names <- modelCrawler.gatherSGNames(maxNrOfSGs)
       _ <- modelRepo.createOrUpdateSGIndex {
@@ -33,7 +34,7 @@ private[harvester] class SGHarvesterImpl(
     } yield names
   }
 
-  override def updateHopefulIndex(maxNrOfHopefuls: Int): Future[List[String]] = {
+  override def updateHopefulIndex(maxNrOfHopefuls: Int)(implicit pc: PatienceConfig): Future[List[String]] = {
     for {
       names <- modelCrawler.gatherHopefulNames(maxNrOfHopefuls)
       _ <- modelRepo.createOrUpdateHopefulIndex {
@@ -45,6 +46,6 @@ private[harvester] class SGHarvesterImpl(
     } yield names
   }
 
-  override def gatherPhotoSetInformationForSGsInIndex(timeout: FiniteDuration = 1 hour): Future[List[SuicideGirl]] = ???
+  override def gatherPhotoSetInformationForSGsInIndex(implicit pc: PatienceConfig): Future[List[SuicideGirl]] = ???
 
 }

@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.crawler.impl
 
 import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.crawler.{ModelAndPhotoSetCrawler, FailedToRepeatedlyLoadPageException}
-import com.lorandszakacs.sg.http.SGClient
+import com.lorandszakacs.sg.http.{PatienceConfig, SGClient}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html.Html
 import com.typesafe.scalalogging.StrictLogging
@@ -32,7 +32,7 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
   /**
     * Gathers the names of all available [[SuicideGirl]]s
     */
-  def gatherSGNames(limit: Int): Future[List[String]] = {
+  def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): Future[List[String]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -51,7 +51,7 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
   /**
     * Gathers the names of all available [[Hopeful]]s
     */
-  def gatherHopefulNames(limit: Int): Future[List[String]] = {
+  def gatherHopefulNames(limit: Int)(implicit pc: PatienceConfig): Future[List[String]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -78,7 +78,7 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
     * the [[PhotoSet]]s of the given model.
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]]
     */
-  def gatherPhotoSetInformationFor(modelName: String): Future[List[PhotoSet]] = {
+  def gatherPhotoSetInformationFor(modelName: String)(implicit pc: PatienceConfig): Future[List[PhotoSet]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -123,7 +123,6 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
     * @param parsingFunction
     * @param isEndPage
     * @param cutOffLimit
-    * @param throttle
     * @return
     */
   private def loadPageRepeatedly[T](
@@ -131,9 +130,8 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
     offsetStep: Int,
     parsingFunction: Html => Try[List[T]],
     isEndPage: Html => Boolean,
-    throttle: FiniteDuration = 100 millis,
     cutOffLimit: Int = Int.MaxValue
-  ): Future[List[T]] = {
+  )(implicit pc: PatienceConfig): Future[List[T]] = {
 
     def offsetUri(uri: Uri, offset: Int) =
       Uri(s"$uri?partial=true&offset=$offset")
@@ -145,7 +143,7 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
       var offset = offsetStep
       var stop = false
       do {
-        Thread.sleep(throttle.toMillis)
+        Thread.sleep(pc.throttle.toMillis)
         val newPage = Await.result(sGClient.getPage(offsetUri(uri, offset)), 1 minute)
         offset += offsetStep
         if (isEndPage(newPage) || offset > cutOffLimit) {
