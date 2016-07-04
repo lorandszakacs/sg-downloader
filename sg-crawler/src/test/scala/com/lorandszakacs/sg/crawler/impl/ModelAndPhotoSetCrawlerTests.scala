@@ -232,7 +232,6 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
 
       override implicit def executionContext: ExecutionContext = ModelAndPhotoSetCrawlerTests.this.ec
 
-      override def authentication: (HttpRequest) => HttpRequest = identity
     }
 
     test.apply(assembly.modelAndSetCrawler)

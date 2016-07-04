@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.http
 
-import akka.http.scaladsl.model.Uri
+import akka.http.scaladsl.model.{HttpRequest, Uri}
 import com.lorandszakacs.util.html.Html
 
 import scala.concurrent.Future
@@ -13,4 +13,6 @@ import scala.concurrent.Future
   */
 trait SGClient {
   def getPage(uri: Uri): Future[Html]
+
+  def authenticate(username: String, plainTextPassword: String): Future[(HttpRequest => HttpRequest)]
 }

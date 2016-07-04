@@ -48,8 +48,6 @@ object assembly extends SGHarvesterAssembly {
 
   override implicit def executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
 
-  override def authentication: (HttpRequest) => HttpRequest = identity
-
   override def db: DefaultDB = try {
     val mongoDriver = new MongoDriver()
     val connection = mongoDriver.connection(MongoConnection.parseURI("""mongodb://localhost""").get)
