@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.model.impl
 
-import com.lorandszakacs.sg.model.{HopefulIndex, SuicideGirlIndex, SuicideGirl, SGModelRepository}
+import com.lorandszakacs.sg.model._
 
 import scala.concurrent.{Future, ExecutionContext}
 
@@ -11,26 +11,21 @@ import scala.concurrent.{Future, ExecutionContext}
   *
   */
 private[model] class SGModelRepositoryImpl(
-  val nameIndexDao: NameIndexDao,
+  val indexDao: IndexDao,
   val suicideGirlsDao: SuicideGirlsDao,
   val hopefulsDao: HopefulsDao
 )(implicit val ec: ExecutionContext) extends SGModelRepository {
 
   override def createOrUpdateSGIndex(index: SuicideGirlIndex): Future[Unit] = {
-    nameIndexDao.createOrUpdateSuicideGirlsIndex(index.names)
+    indexDao.createOrUpdateSuicideGirlsIndex(index.names)
   }
 
   override def createOrUpdateHopefulIndex(index: HopefulIndex): Future[Unit] = {
-    nameIndexDao.createOrUpdateHopefulIndex(index.names)
+    indexDao.createOrUpdateHopefulIndex(index.names)
   }
 
-  override def writeSG(sg: SuicideGirl): Future[Unit] = ???
+  override def createOrUpdateLastProcessed(l: LastProcessedIndex): Future[Unit] = {
+    indexDao.createOrUpdateLastProcessedStatus(l)
+  }
 
-  override def findSG(sgName: String): Future[Option[SuicideGirl]] = ???
-
-  override def findSGsWithNoPhotoLinks(): Future[Seq[SuicideGirl]] = ???
-
-  override def writeOrUpdate(sg: SuicideGirl): Future[Unit] = ???
-
-  override def updateSG(sg: SuicideGirl): Future[Unit] = ???
 }
