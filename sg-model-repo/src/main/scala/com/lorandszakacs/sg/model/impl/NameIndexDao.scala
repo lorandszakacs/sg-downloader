@@ -17,7 +17,7 @@ final private[model] class NameIndexDao(val db: DB)(implicit val ec: ExecutionCo
   override protected val collectionName: String = "model-index"
 
   private val SGIndexId = "suicide-girls-index"
-  private val HopefulIndexId = "suicide-girls-index"
+  private val HopefulIndexId = "hopeful-index"
   private val Names = "names"
   private val Number = "number"
 
@@ -27,7 +27,7 @@ final private[model] class NameIndexDao(val db: DB)(implicit val ec: ExecutionCo
   def createOrUpdateSuicideGirlsIndex(names: List[String]): Future[Unit] = {
     val d = BSONDocument(
       _id -> SGIndexId,
-      "names" -> names,
+      "names" -> names.sorted,
       "number" -> names.length
     )
 
@@ -38,7 +38,7 @@ final private[model] class NameIndexDao(val db: DB)(implicit val ec: ExecutionCo
   def createOrUpdateHopefulIndex(names: List[String]): Future[Unit] = {
     val d = BSONDocument(
       _id -> HopefulIndexId,
-      "names" -> names,
+      "names" -> names.sorted,
       "number" -> names.length
     )
 

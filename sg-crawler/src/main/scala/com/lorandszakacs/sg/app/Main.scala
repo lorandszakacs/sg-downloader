@@ -46,7 +46,7 @@ object Main extends App with StrictLogging {
 
   logger.info("Gathering all SGs")
   val updateIndex = for {
-  //    _ <- Assembly.sgHarvester.updateSGIndex(Int.MaxValue, 200 millis)
+  //    _ <- Assembly.sgHarvester.updateSGIndex(Int.MaxValue)
     _ <- Assembly.sgHarvester.updateHopefulIndex(Int.MaxValue)
   } yield ()
 
