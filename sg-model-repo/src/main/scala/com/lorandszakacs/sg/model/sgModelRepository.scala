@@ -32,7 +32,7 @@ final case class SuicideGirlIndex(
   number: Int
 )
 
-trait LastProcessedIndex {
+sealed trait LastProcessedIndex {
   def url: String
 
   def timestamp: DateTime
