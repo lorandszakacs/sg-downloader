@@ -20,7 +20,7 @@ final private[model] class IndexDao(val db: DB)(implicit val ec: ExecutionContex
   private val Names = "names"
   private val Number = "number"
 
-  def createOrUpdateSuicideGirlsIndex(names: List[String]): Future[Unit] = {
+  def createOrUpdateSuicideGirlsIndex(names: List[ModelName]): Future[Unit] = {
     val d = BSONDocument(
       _id -> SGIndexId,
       Names -> names.sorted,
@@ -30,7 +30,7 @@ final private[model] class IndexDao(val db: DB)(implicit val ec: ExecutionContex
   }
 
 
-  def createOrUpdateHopefulIndex(names: List[String]): Future[Unit] = {
+  def createOrUpdateHopefulIndex(names: List[ModelName]): Future[Unit] = {
     val d = BSONDocument(
       _id -> HopefulIndexId,
       Names -> names.sorted,

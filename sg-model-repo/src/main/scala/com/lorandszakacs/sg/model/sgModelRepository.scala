@@ -23,12 +23,12 @@ trait SGModelRepository {
 
 
 final case class HopefulIndex(
-  names: List[String],
+  names: List[ModelName],
   number: Int
 )
 
 final case class SuicideGirlIndex(
-  names: List[String],
+  names: List[ModelName],
   number: Int
 )
 

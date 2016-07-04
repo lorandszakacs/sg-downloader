@@ -8,13 +8,23 @@ import com.github.nscala_time.time.Imports._
   *
   */
 
-sealed trait Model[T <: Model[T]] {
+sealed trait Model {
   def uri: String
 
-  def name: String
+  def name: ModelName
 
   def photoSets: List[PhotoSet]
 
+  override def toString =
+    s"""
+        ---------$name:${photoSets.length}---------
+        uri=$uri
+        ${photoSets.mkString("", "\n", "")}
+      """.stripMargin(' ')
+}
+
+sealed trait ModelUpdater[T <: Model] {
+  this: Model =>
   def updatePhotoSets(newPhotoSets: List[PhotoSet]): T
 
   final def addPhotoSet(ph: PhotoSet): T = {
@@ -36,30 +46,44 @@ sealed trait Model[T <: Model[T]] {
     }
   }
 
-
-  override def toString =
-    s"""
-        ---------$name:${photoSets.length}---------
-        uri=$uri
-        ${photoSets.mkString("", "\n", "")}
-      """.stripMargin(' ')
 }
 
+object ModelName {
+  def apply(name: String): ModelName = {
+    new ModelName(name.trim.toLowerCase)
+  }
+}
+
+final class ModelName(
+  val name: String
+) {
+  override def toString: String = name
+
+  override def equals(other: Any): Boolean = other match {
+    case that: ModelName =>
+      name == that.name
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    name.hashCode * 31
+  }
+}
 
 final case class SuicideGirl(
   uri: String,
-  name: String,
+  name: ModelName,
   photoSets: List[PhotoSet]
-) extends Model[SuicideGirl] {
+) extends Model with ModelUpdater[SuicideGirl] {
 
   override def updatePhotoSets(newPhotoSets: List[PhotoSet]): SuicideGirl = this.copy(photoSets = newPhotoSets)
 }
 
 final case class Hopeful(
   uri: String,
-  name: String,
+  name: ModelName,
   photoSets: List[PhotoSet]
-) extends Model[Hopeful] {
+) extends Model with ModelUpdater[Hopeful] {
 
   override def updatePhotoSets(newPhotoSets: List[PhotoSet]): Hopeful = this.copy(photoSets = newPhotoSets)
 }
