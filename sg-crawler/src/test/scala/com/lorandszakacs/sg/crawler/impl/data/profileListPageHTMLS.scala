@@ -39,7 +39,9 @@ object SGProfileListPage {
     "Phecda",
     "Annalee",
     "Bully",
-    "Rambo")
+    "Rambo"
+  )
+
   val numberOfSGs = names.length
 
   def html = {
@@ -63,7 +65,9 @@ object HopefulProfileListPage {
     "Lenka87",
     "Davieduke",
     "Vikat",
-    "Foxynova")
+    "Foxynova"
+  )
+
   val numberOfSGs = names.length
 
   def html = {

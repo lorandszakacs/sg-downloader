@@ -126,24 +126,12 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
     SGContentParser.gatherNewestPhotoSets(expected.html) match {
       case Success(result) =>
         result should have length expected.numberOfModels
-        println {
-          s"""
-             |
-            |got:
-             |${result.head}
-             |
-            |
-            |expected:
-             |${expected.models.head}
-             |
-          """.stripMargin
-        }
-
         result.head.photoSetURI should equal(expected.models.head.photoSetURI)
         result.head.name should equal(expected.models.head.name)
         result.head.photoSets should equal(expected.models.head.photoSets)
-        result.head should equal(expected.models.head)
 
+        result.head should equal(expected.models.head)
+        result.take(4).diff(expected.models) should equal(Nil)
 
       case Failure(e) => fail("did not return any Models", e)
     }

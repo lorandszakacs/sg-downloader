@@ -17,7 +17,7 @@ sealed trait Model {
 
   override def toString =
     s"""
-        ---------${name.name} : ${photoSets.length}---------
+        ---------${this.getClass.getSimpleName}: ${name.name} : ${photoSets.length}---------
         uri=$photoSetURI
         ${photoSets.mkString("", "\n", "")}
       """.stripMargin(' ')

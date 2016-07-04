@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.crawler.impl.data
 
 import akka.http.scaladsl.model.Uri
 import com.github.nscala_time.time.Imports._
-import com.lorandszakacs.sg.model.{ModelName, PhotoSet, SuicideGirl, Model}
+import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html.Html
 
 import scala.io.Source
@@ -40,6 +40,45 @@ object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage {
         PhotoSet(
           url = "https://www.suicidegirls.com/girls/saria/album/2752796/infinite-fire/",
           title = "INFINITE FIRE",
+          date = new LocalDate("2016-07-04"),
+          photos = Nil
+        )
+      )
+    ),
+
+    SuicideGirl(
+      photoSetURI = "https://www.suicidegirls.com/girls/valkyria/photos/view/photosets/",
+      name = "valkyria",
+      photoSets = List(
+        PhotoSet(
+          url = "https://www.suicidegirls.com/girls/valkyria/album/2750395/pictures-of-home/",
+          title = "PICTURES OF HOME",
+          date = new LocalDate("2016-07-04"),
+          photos = Nil
+        )
+      )
+    ),
+
+    Hopeful(
+      photoSetURI = "https://www.suicidegirls.com/girls/rias/photos/view/photosets/",
+      name = "rias",
+      photoSets = List(
+        PhotoSet(
+          url = "https://www.suicidegirls.com/members/rias/album/2749693/cats-blues/",
+          title = "CAT'S BLUES",
+          date = new LocalDate("2016-07-04"),
+          photos = Nil
+        )
+      )
+    ),
+
+    Hopeful(
+      photoSetURI = "https://www.suicidegirls.com/girls/insatiableindica/photos/view/photosets/",
+      name = "insatiableindica",
+      photoSets = List(
+        PhotoSet(
+          url = "https://www.suicidegirls.com/members/insatiableindica/album/2748045/gamer-girl/",
+          title = "GAMER GIRL",
           date = new LocalDate("2016-07-04"),
           photos = Nil
         )
