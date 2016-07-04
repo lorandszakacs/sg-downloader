@@ -34,6 +34,13 @@ final case class SetRepresentationDidNotContainTitleException(html: Html) extend
   """.stripMargin
 )
 
+final case class SetRepresentationDidNotContainModelNameException(html: Html) extends Exception(
+  s"""
+     |HTML element contain any information about the name of the model:
+     |${html.toString}
+  """.stripMargin
+)
+
 final case class SetRepresentationDidNotContainURLException(html: Html) extends Exception(
   s"""
      |HTML element contain any URL links to set:
@@ -41,5 +48,18 @@ final case class SetRepresentationDidNotContainURLException(html: Html) extends 
   """.stripMargin
 )
 
+final case class ExpectedAtLeastOneSetFromHomePageElementsException(html: Html) extends Exception(
+  s"""
+     |HTML element contain sets:
+     |${html.toString}
+  """.stripMargin
+)
 
+final case class DidNotFindAnySuicideGirlProfileLinksException() extends Exception(
+  "Did not find any suicide girls profile links"
+)
+
+final case class DidNotFindAnyHopefulProfileLinksException() extends Exception(
+  "Did not find any hopeful girls profile links"
+)
 

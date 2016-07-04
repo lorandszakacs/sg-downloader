@@ -29,6 +29,12 @@ private[impl] trait MongoDAO {
     override def write(t: ModelName): BSONString = BSONString(t.name)
   }
 
+  protected implicit val photoSetTitleBSON: BSONHandler[BSONString, PhotoSetTitle] = new BSONHandler[BSONString, PhotoSetTitle] {
+    override def read(bson: BSONString): PhotoSetTitle = PhotoSetTitle(bson.value)
+
+    override def write(t: PhotoSetTitle): BSONString = BSONString(t.name)
+  }
+
   protected implicit val localDateBSON: BSONHandler[BSONString, LocalDate] = new BSONHandler[BSONString, LocalDate] {
     private final val format = DateTimeFormat.forPattern("YYYY-MM-dd")
 
@@ -47,26 +53,7 @@ private[impl] trait MongoDAO {
     Macros.handler[Photo]
 
   protected implicit val photoSetBSON: BSONDocumentReader[PhotoSet] with BSONDocumentWriter[PhotoSet] with BSONHandler[BSONDocument, PhotoSet] =
-    new BSONDocumentReader[PhotoSet] with BSONDocumentWriter[PhotoSet] with BSONHandler[BSONDocument, PhotoSet] {
-      val URL = "url"
-      val Title = "title"
-      val Date = "date"
-      val Photos = "photos"
-
-      override def write(t: PhotoSet): BSONDocument = BSONDocument(
-        URL -> t.url,
-        Title -> t.title,
-        Date -> t.date,
-        Photos -> t.photos
-      )
-
-      override def read(bson: BSONDocument): PhotoSet = PhotoSet(
-        url = bson.getAsTry[String](URL).get,
-        title = bson.getAsTry[String](Title).get,
-        date = bson.getAsTry[LocalDate](Date).get,
-        photos = bson.getAsTry[List[Photo]](Photos).get
-      )
-    }
+    Macros.handler[PhotoSet]
 
 
   protected implicit val suicideGirlBSON: BSONDocumentReader[SuicideGirl] with BSONDocumentWriter[SuicideGirl] with BSONHandler[BSONDocument, SuicideGirl] =

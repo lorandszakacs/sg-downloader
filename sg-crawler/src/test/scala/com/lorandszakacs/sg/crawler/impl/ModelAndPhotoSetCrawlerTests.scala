@@ -2,15 +2,14 @@ package com.lorandszakacs.sg.crawler.impl
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpRequest
-import com.lorandszakacs.sg.crawler.{ModelAndPhotoSetCrawler, PageCrawlerAssembly}
 import com.lorandszakacs.sg.crawler.page.PageCrawlerTest
+import com.lorandszakacs.sg.crawler.{ModelAndPhotoSetCrawler, PageCrawlerAssembly}
 import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.model._
 import org.joda.time.LocalDate
 import org.scalatest.Outcome
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.FiniteDuration
 
 /**
   *
@@ -37,7 +36,7 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
     * had only one single set
     */
   it should "... fetch URIs for a page that does not need a subsequent query -- odina" in { crawler =>
-    whenReady(crawler.gatherPhotoSetInformationFor("odina")) { sets: List[PhotoSet] =>
+    whenReady(crawler.gatherPhotoSetInformationFor(ModelName("odina"))) { sets: List[PhotoSet] =>
 
       withClue("size") {
         sets should have size 1
@@ -62,7 +61,7 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
     * had 22 sets. And has not published a new set in ages.
     */
   it should "... fetch URIs for a page that needs several queries -- zoli" in { crawler =>
-    whenReady(crawler.gatherPhotoSetInformationFor("zoli")) { uris: List[PhotoSet] =>
+    whenReady(crawler.gatherPhotoSetInformationFor(ModelName("zoli"))) { uris: List[PhotoSet] =>
 
       withClue("... size") {
         uris should have size 22
@@ -102,15 +101,15 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
     * this test might fail. Therefore one must always be vigilant.
     */
   it should "... gather the first 48 SG names by followers" in { crawler =>
-    whenReady(crawler.gatherSGNames(48)) { names: List[String] =>
+    whenReady(crawler.gatherSGNames(48)) { names: List[ModelName] =>
       withClue("... size") {
         names should have size 48
       }
 
       withClue("... content") {
-        names should contain("Sash")
-        names should contain("Kemper")
-        names should contain("Gogo")
+        names should contain("Sash".toModelName)
+        names should contain("Kemper".toModelName)
+        names should contain("Gogo".toModelName)
       }
 
     }
@@ -120,7 +119,7 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
   //===============================================================================================
 
   it should "... gather the first 48 Hopeful names by followers" in { crawler =>
-    whenReady(crawler.gatherHopefulNames(48)) { names: List[String] =>
+    whenReady(crawler.gatherHopefulNames(48)) { names: List[ModelName] =>
 
       println {
         s"""

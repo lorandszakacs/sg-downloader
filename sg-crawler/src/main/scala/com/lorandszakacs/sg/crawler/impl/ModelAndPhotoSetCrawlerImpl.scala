@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.crawler.impl
 
 import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.crawler.{ModelAndPhotoSetCrawler, FailedToRepeatedlyLoadPageException}
-import com.lorandszakacs.sg.http.{PatienceConfig, SGClient}
+import com.lorandszakacs.sg.http.{SGURLBuilder, PatienceConfig, SGClient}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html.Html
 import com.typesafe.scalalogging.StrictLogging
@@ -24,7 +24,7 @@ import scala.util.{Failure, Success, Try}
   * @since 03 Jul 2016
   *
   */
-final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec: ExecutionContext) extends ModelAndPhotoSetCrawler with StrictLogging {
+final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec: ExecutionContext) extends ModelAndPhotoSetCrawler with SGURLBuilder with StrictLogging {
 
   private val SGsSortedByFollowers = "https://www.suicidegirls.com/profiles/girl/followers/"
   private val HopefulsSortedByFollowers = "https://www.suicidegirls.com/profiles/hopeful/followers/"
@@ -32,13 +32,13 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
   /**
     * Gathers the names of all available [[SuicideGirl]]s
     */
-  def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): Future[List[String]] = {
+  def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
 
-    loadPageRepeatedly[String](
+    loadPageRepeatedly[ModelName](
       uri = SGsSortedByFollowers,
       offsetStep = 12,
       parsingFunction = SGContentParser.gatherSGNames,
@@ -51,13 +51,13 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
   /**
     * Gathers the names of all available [[Hopeful]]s
     */
-  def gatherHopefulNames(limit: Int)(implicit pc: PatienceConfig): Future[List[String]] = {
+  def gatherHopefulNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
 
-    loadPageRepeatedly[String](
+    loadPageRepeatedly[ModelName](
       uri = HopefulsSortedByFollowers,
       offsetStep = 12,
       parsingFunction = SGContentParser.gatherHopefulNames,
@@ -78,42 +78,23 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
     * the [[PhotoSet]]s of the given model.
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]]
     */
-  def gatherPhotoSetInformationFor(modelName: String)(implicit pc: PatienceConfig): Future[List[PhotoSet]] = {
+  def gatherPhotoSetInformationFor(modelName: ModelName)(implicit pc: PatienceConfig): Future[List[PhotoSet]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
-    val pageURI = photoSetsPageUri(modelName)
+    val pageURI = photoSetsPageURL(modelName)
 
     for {
-      setsWithRelativeURIs <- loadPageRepeatedly[PhotoSet](
+      sets <- loadPageRepeatedly[PhotoSet](
         uri = pageURI,
         offsetStep = 9,
-        parsingFunction = SGContentParser.gatherPhotoSets,
+        parsingFunction = SGContentParser.gatherPhotoSetsForModel,
         isEndPage = isEndPage
       )
-    } yield setsWithRelativeURIs map { ph =>
-      ph.copy(url = makeFullPathURI(ph.url).toString)
-    }
+    } yield sets
   }
 
-  /**
-    * This is the URI to the page containing all [[PhotoSet]] of a [[Model]]
-    */
-  private def photoSetsPageUri(modelName: String): Uri =
-    Uri(s"https://www.suicidegirls.com/girls/${modelName.toLowerCase}/photos/view/photosets/")
-
-  private def makeFullPathURI(uri: String): Uri = {
-    if (uri.startsWith("/")) {
-      Uri(s"https://www.suicidegirls.com$uri")
-    } else {
-      Uri(s"https://www.suicidegirls.com/$uri")
-    }
-  }
-
-  private def makeFullPathURI(uri: Uri): Uri = {
-    makeFullPathURI(uri.toString)
-  }
 
   /**
     *
@@ -161,4 +142,13 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
       photoSetUris.toList
     }
   }
+
+  /**
+    * This page contains elements like the following which need to be parsed
+    *
+    * {{{
+    *
+    * }}}
+    */
+  override def gatherNewestSets(limit: Int)(implicit pc: PatienceConfig): Future[List[Model]] = ???
 }

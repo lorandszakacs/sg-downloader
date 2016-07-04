@@ -9,7 +9,7 @@ import com.github.nscala_time.time.Imports._
   */
 
 sealed trait Model {
-  def uri: String
+  def photoSetURI: String
 
   def name: ModelName
 
@@ -17,8 +17,8 @@ sealed trait Model {
 
   override def toString =
     s"""
-        ---------$name:${photoSets.length}---------
-        uri=$uri
+        ---------${name.name} : ${photoSets.length}---------
+        uri=$photoSetURI
         ${photoSets.mkString("", "\n", "")}
       """.stripMargin(' ')
 }
@@ -54,10 +54,10 @@ object ModelName {
   }
 }
 
-final class ModelName(
+final class ModelName private(
   val name: String
 ) {
-  override def toString: String = name
+  override def toString: String = s"ModelName($name)"
 
   override def equals(other: Any): Boolean = other match {
     case that: ModelName =>
@@ -70,8 +70,30 @@ final class ModelName(
   }
 }
 
+object PhotoSetTitle {
+  def apply(name: String): PhotoSetTitle = {
+    new PhotoSetTitle(name.trim.toUpperCase.replace("  ", "").replace("\t", " "))
+  }
+}
+
+final class PhotoSetTitle private(
+  val name: String
+) {
+  override def toString: String = s"PhotoSetTitle($name)"
+
+  override def equals(other: Any): Boolean = other match {
+    case that: PhotoSetTitle =>
+      name == that.name
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    name.hashCode * 31
+  }
+}
+
 final case class SuicideGirl(
-  uri: String,
+  photoSetURI: String,
   name: ModelName,
   photoSets: List[PhotoSet]
 ) extends Model with ModelUpdater[SuicideGirl] {
@@ -80,7 +102,7 @@ final case class SuicideGirl(
 }
 
 final case class Hopeful(
-  uri: String,
+  photoSetURI: String,
   name: ModelName,
   photoSets: List[PhotoSet]
 ) extends Model with ModelUpdater[Hopeful] {
@@ -88,50 +110,25 @@ final case class Hopeful(
   override def updatePhotoSets(newPhotoSets: List[PhotoSet]): Hopeful = this.copy(photoSets = newPhotoSets)
 }
 
-object PhotoSet extends ((String, String, LocalDate, List[Photo]) => PhotoSet) {
-  def apply(url: String, title: String, date: LocalDate, photos: List[Photo] = Nil) = {
-    new PhotoSet(url.trim, title.toUpperCase, date, photos)
-  }
-}
-
-final class PhotoSet private(
-  val url: String,
-  val title: String,
-  val date: LocalDate,
-  val photos: List[Photo]
+final case class PhotoSet private(
+  url: String,
+  title: PhotoSetTitle,
+  date: LocalDate,
+  photos: List[Photo] = Nil
 ) {
 
   def id: String = url
 
   def updateURL(newURL: String): PhotoSet = this.copy(url = newURL)
 
-  def copy(url: String = url, title: String = title, date: LocalDate = date, photos: List[Photo] = photos): PhotoSet = {
-    new PhotoSet(url, title, date, photos)
-  }
-
   override def toString =
     s"""
-        ${"\t"}title = $title
-        ${"\t"}date  = ${date.toString(Util.dateTimeFormat)}
-        ${"\t"}uri   = ${url.toString}
-        ${"\t_________________"}
-        ${photos.mkString("", "\t\t\n", "")}
-        ${"\t================="}
-      """.stripMargin(' ')
-
-  override def equals(other: Any): Boolean = other match {
-    case that: PhotoSet =>
-      url == that.url &&
-        title == that.title &&
-        date == that.date &&
-        photos == that.photos
-    case _ => false
-  }
-
-  override def hashCode(): Int = {
-    val state = Seq(url, title, date, photos)
-    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
-  }
+       |${"\t"}title = $title
+       |${"\t"}date  = ${date.toString(Util.dateTimeFormat)}
+       |${"\t"}uri   = ${url.toString}
+       |${photos.mkString("\t{\n", "\t\t\n", "\n\t}")}
+       |${"\t_________________"}
+      """.stripMargin
 }
 
 final case class Photo(

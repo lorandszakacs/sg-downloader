@@ -18,6 +18,7 @@ package com.lorandszakacs.sg.crawler.impl.data
 
 import akka.http.scaladsl.model.Uri
 import com.github.nscala_time.time.Imports._
+import com.lorandszakacs.sg.model.PhotoSetTitle
 
 import scala.io.Source
 
@@ -42,7 +43,7 @@ trait PhotoSetPage {
 
   def numberOfPhotos: Int
 
-  def title: String
+  def title: PhotoSetTitle
 
   def date: LocalDate
 }
@@ -52,7 +53,7 @@ object PhotoSetPagePartialDate extends PhotoSetPage {
 
   def numberOfPhotos: Int = 53
 
-  def title: String = "ADIEU TRISTESSE"
+  def title: PhotoSetTitle = "ADIEU TRISTESSE"
 
   def date: LocalDate = LocalDate.parse("2015-01-18").withYear(currentYear)
 }
@@ -62,7 +63,7 @@ object PhotoSetPageFullDate extends PhotoSetPage {
 
   def numberOfPhotos: Int = 45
 
-  def title: String = "LIMPORTANCE D ETRE ERNEST"
+  def title: PhotoSetTitle = "LIMPORTANCE D ETRE ERNEST"
 
   def date: LocalDate = LocalDate.parse("2013-02-07")
 }

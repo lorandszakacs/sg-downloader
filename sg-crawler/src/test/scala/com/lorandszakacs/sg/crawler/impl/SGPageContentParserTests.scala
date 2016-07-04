@@ -30,6 +30,8 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
 
   behavior of "SGContentParser"
 
+  //===============================================================================================
+
   it should "return all the links from a PhotoSetPage" in {
     val expected = PhotoSetPageFullDate
     SGContentParser.parsePhotos(expected.html) match {
@@ -37,6 +39,8 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
       case Failure(e) => fail("did not return any photos", e)
     }
   }
+
+  //===============================================================================================
 
   it should "return a PhotoSet object from a page with a full date" in {
     val expected = PhotoSetPageFullDate
@@ -50,6 +54,8 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
     }
   }
 
+  //===============================================================================================
+
   it should "return a PhotoSet object from a page with a partial date" in {
     val expected = PhotoSetPagePartialDate
     SGContentParser.parsePhotoSetPage(expected.html, expected.uri) match {
@@ -62,9 +68,11 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
     }
   }
 
+  //===============================================================================================
+
   it should "return all PhotoSets from a SG page" in {
     val expected = SGSetPageAllInPast
-    SGContentParser.gatherPhotoSets(expected.html) match {
+    SGContentParser.gatherPhotoSetsForModel(expected.html) match {
       case Success(result) =>
         result should have length expected.numberOfPhotoSets
         result.diff(expected.photoSets) should be(Nil)
@@ -73,16 +81,21 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
     }
   }
 
+  //===============================================================================================
+
   it should "return all PhotoSets from a SG page, in which all sets are in the past" in {
     val expected = SGSetPageSomeInPast
-    SGContentParser.gatherPhotoSets(expected.html) match {
+    SGContentParser.gatherPhotoSetsForModel(expected.html) match {
       case Success(result) =>
         result should have length expected.numberOfPhotoSets
-        result.diff(expected.photoSets) should be(Nil)
+        result.head should equal(expected.photoSets.head)
+        result.diff(expected.photoSets) should equal(Nil)
       case Failure(e) =>
         fail("did not return any PhotoSetLinks", e)
     }
   }
+
+  //===============================================================================================
 
   it should "return all the SG names from the profile listing page" in {
     val expected = SGProfileListPage
@@ -94,6 +107,8 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
     }
   }
 
+  //===============================================================================================
+
   it should "return all the HopefulNames from the profile listing page" in {
     val expected = HopefulProfileListPage
     SGContentParser.gatherHopefulNames(expected.html) match {
@@ -103,5 +118,37 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
       case Failure(e) => fail("did not return any SG Names", e)
     }
   }
+
+  //===============================================================================================
+
+  it should "return all the Models from the newest photos page" in {
+    val expected = NewestPhotosPageWithDoubleModelSet
+    SGContentParser.gatherNewestPhotoSets(expected.html) match {
+      case Success(result) =>
+        result should have length expected.numberOfModels
+        println {
+          s"""
+             |
+            |got:
+             |${result.head}
+             |
+            |
+            |expected:
+             |${expected.models.head}
+             |
+          """.stripMargin
+        }
+
+        result.head.photoSetURI should equal(expected.models.head.photoSetURI)
+        result.head.name should equal(expected.models.head.name)
+        result.head.photoSets should equal(expected.models.head.photoSets)
+        result.head should equal(expected.models.head)
+
+
+      case Failure(e) => fail("did not return any Models", e)
+    }
+  }
+
+  //===============================================================================================
 
 }

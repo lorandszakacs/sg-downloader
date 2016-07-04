@@ -1,7 +1,7 @@
 package com.lorandszakacs.sg.crawler
 
 import com.lorandszakacs.sg.http.PatienceConfig
-import com.lorandszakacs.sg.model.PhotoSet
+import com.lorandszakacs.sg.model._
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
@@ -14,9 +14,11 @@ import scala.concurrent.duration.FiniteDuration
   */
 trait ModelAndPhotoSetCrawler {
 
-  def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): Future[List[String]]
+  def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]]
 
-  def gatherHopefulNames(limit: Int)(implicit pc: PatienceConfig): Future[List[String]]
+  def gatherHopefulNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]]
 
-  def gatherPhotoSetInformationFor(modelName: String)(implicit pc: PatienceConfig): Future[List[PhotoSet]]
+  def gatherNewestSets(limit: Int)(implicit pc: PatienceConfig): Future[List[Model]]
+
+  def gatherPhotoSetInformationFor(modelName: ModelName)(implicit pc: PatienceConfig): Future[List[PhotoSet]]
 }

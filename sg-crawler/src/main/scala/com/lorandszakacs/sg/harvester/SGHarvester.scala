@@ -22,7 +22,7 @@ trait SGHarvester {
     * @return
     * a list of all the names of the SGs in the index
     */
-  def updateSGIndex(maxNrOfSGs: Int)(implicit pc: PatienceConfig): Future[List[String]]
+  def updateSGIndex(maxNrOfSGs: Int)(implicit pc: PatienceConfig): Future[List[ModelName]]
 
   /**
     * Fetches all [[Hopeful]] names from the website, and updates them in the
@@ -31,7 +31,15 @@ trait SGHarvester {
     * @return
     * a list of all the names of the SGs in the index
     */
-  def updateHopefulIndex(maxNrOfHopefuls: Int)(implicit pc: PatienceConfig): Future[List[String]]
+  def updateHopefulIndex(maxNrOfHopefuls: Int)(implicit pc: PatienceConfig): Future[List[ModelName]]
+
+  /**
+    * Gathers all, or the max number of [[PhotoSet]] from the last harvesting.
+    *
+    * It harvests the following page:
+    * https://www.suicidegirls.com/photos/
+    */
+  def gatherNewestPhotosAndUpdateIndex(maxNrOfSets: Int)(implicit pc: PatienceConfig): Future[List[Model]]
 
   /**
     * Updates [[SuicideGirl.photoSets]] with [[com.lorandszakacs.sg.model.PhotoSet]]s with all information
