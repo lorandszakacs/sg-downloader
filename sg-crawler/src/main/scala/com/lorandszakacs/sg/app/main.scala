@@ -20,8 +20,10 @@ import java.util.concurrent.Executors
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpRequest
+import com.lorandszakacs.sg.app.repl.HarvesterRepl
 import com.lorandszakacs.sg.harvester.SGHarvesterAssembly
 import com.lorandszakacs.sg.http.PatienceConfig
+import com.lorandszakacs.sgd.repl.Repl
 import com.typesafe.scalalogging.StrictLogging
 import reactivemongo.api.{MongoConnection, MongoDriver, DefaultDB}
 
@@ -35,29 +37,13 @@ import scala.language.postfixOps
   *
   */
 object Main extends App with StrictLogging {
-  def shutdown(system: ActorSystem) {
-    system.terminate()
-  }
 
-  implicit val patienceConfig: PatienceConfig = PatienceConfig(200 millis)
-  implicit val ec: ExecutionContext = Assembly.executionContext
+  val repl = new HarvesterRepl(assembly)
+  repl.start()
 
-  logger.info("Starting harverster")
-
-  logger.info("Gathering all SGs")
-  val updateIndex = for {
-  //    _ <- Assembly.sgHarvester.updateSGIndex(Int.MaxValue)
-    _ <- Assembly.sgHarvester.updateHopefulIndex(Int.MaxValue)
-  } yield ()
-
-  Await.result(updateIndex, 6 hours)
-  logger.info("exiting!")
-  shutdown(Assembly.actorSystem)
-  Assembly.db.connection.close()
-  System.exit(0)
 }
 
-object Assembly extends SGHarvesterAssembly {
+object assembly extends SGHarvesterAssembly {
   override implicit def actorSystem: ActorSystem = ActorSystem("test-login-client")
 
   override implicit def executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
@@ -67,7 +53,7 @@ object Assembly extends SGHarvesterAssembly {
   override def db: DefaultDB = try {
     val mongoDriver = new MongoDriver()
     val connection = mongoDriver.connection(MongoConnection.parseURI("""mongodb://localhost""").get)
-    connection("suicide-girl-repo")
+    Await.result(connection.database("suicide-girl-repo"), 1 minute)
   } catch {
     case e: Throwable =>
       throw new IllegalStateException(s"Failed to initialize Mongo database. Because: ${e.getMessage}", e)

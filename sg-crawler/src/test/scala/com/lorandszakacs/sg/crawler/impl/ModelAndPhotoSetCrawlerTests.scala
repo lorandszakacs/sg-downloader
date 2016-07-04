@@ -172,20 +172,8 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
       models
     }
     val index = 13
-    val expectedLength = index
     val latest = previousModels(index)
-    val lastProcessed: LastProcessedIndex = latest match {
-      case h: Hopeful =>
-        LastProcessedHopeful(
-          timestamp = DateTime.now(),
-          hopeful = h
-        )
-      case sg: SuicideGirl =>
-        LastProcessedSG(
-          timestamp = DateTime.now(),
-          suicidegirl = sg
-        )
-    }
+    val lastProcessed: LastProcessedMarker = crawler.createLastProcessedIndex(latest)
 
     withClue("... now gathering only a part of the processed sets") {
       whenReady(crawler.gatherNewestModelInformation(48, Option(lastProcessed))) { models: List[Model] =>

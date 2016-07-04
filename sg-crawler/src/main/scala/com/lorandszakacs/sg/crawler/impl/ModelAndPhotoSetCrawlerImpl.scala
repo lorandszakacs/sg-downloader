@@ -97,7 +97,7 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
   }
 
 
-  override def gatherNewestModelInformation(limit: Int, lastProcessedIndex: Option[LastProcessedIndex])(implicit pc: PatienceConfig): Future[List[Model]] = {
+  override def gatherNewestModelInformation(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -178,13 +178,4 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
       photoSetUris.toList
     }
   }
-
-  /**
-    * This page contains elements like the following which need to be parsed
-    *
-    * {{{
-    *
-    * }}}
-    */
-  override def gatherNewestSets(limit: Int)(implicit pc: PatienceConfig): Future[List[Model]] = ???
 }

@@ -6,7 +6,7 @@ import com.lorandszakacs.sg.harvester.impl.SGHarvesterImpl
 import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.model.SGModelAssembly
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Future, ExecutionContext}
 
 /**
   *
@@ -26,4 +26,10 @@ trait SGHarvesterAssembly extends PageCrawlerAssembly with SGClientAssembly with
     modelAndSetCrawler,
     sgModelRepository
   )
+
+  final def shutdown(): Future[Unit] = {
+    db.connection.close()
+    Thread.sleep(100)
+    actorSystem.terminate() map (_ => ())
+  }
 }

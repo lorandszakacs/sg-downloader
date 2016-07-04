@@ -22,35 +22,42 @@ private[harvester] class SGHarvesterImpl(
   val ec: ExecutionContext
 ) extends SGHarvester {
 
-  override def updateSGIndex(maxNrOfSGs: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
+  override def reindexSGNames(maxNrOfSGs: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
     for {
       names <- modelCrawler.gatherSGNames(maxNrOfSGs)
-      _ <- modelRepo.createOrUpdateSGIndex {
-        SuicideGirlIndex(
-          names = names,
-          number = names.length
-        )
-      }
+      _ <- modelRepo.reindexSGs(names)
     } yield names
   }
 
-  override def updateHopefulIndex(maxNrOfHopefuls: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
+  override def reindexHopefulsNames(maxNrOfHopefuls: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
     for {
       names <- modelCrawler.gatherHopefulNames(maxNrOfHopefuls)
-      _ <- modelRepo.createOrUpdateHopefulIndex {
-        HopefulIndex(
-          names = names,
-          number = names.length
-        )
-      }
+      _ <- modelRepo.reindexHopefuls(names)
     } yield names
   }
 
-  override def gatherNewestPhotosAndUpdateIndex(maxNrOfSets: Int)(implicit pc: PatienceConfig): Future[List[Model]] = {
-    modelCrawler.gatherNewestSets(maxNrOfSets)
-    ???
+  override def gatherNewestPhotosAndUpdateIndex(maxNrOfModels: Int)(implicit pc: PatienceConfig): Future[List[Model]] = {
+    for {
+      lastProcessedOpt: Option[LastProcessedMarker] <- modelRepo.lastProcessedIndex
+
+      newModels: List[Model] <- modelCrawler.gatherNewestModelInformation(maxNrOfModels, lastProcessedOpt)
+
+      _: Unit <- if (newModels.nonEmpty) {
+        val gatheredNewerPhotoSet = lastProcessedOpt.exists { lp =>
+          val newestPhotoset: PhotoSet = newModels.head.photoSets.headOption.getOrElse(throw new AssertionError("... should have at least one set"))
+          lp.lastPhotoSetID != newestPhotoset.id
+        }
+        if (!gatheredNewerPhotoSet) {
+          Future.successful(())
+        } else {
+          val newIndex: LastProcessedMarker = modelCrawler.createLastProcessedIndex(newModels.head)
+          modelRepo.createOrUpdateLastProcessed(newIndex)
+        }
+      } else {
+        Future.successful(())
+      }
+      (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = newModels.`SG|Hopeful`
+      _ <- modelRepo.updateIndexes(newHopefuls = newHopefuls, newSGs = newSGS)
+    } yield newModels
   }
-
-  override def gatherPhotoSetInformationForSGsInIndex(implicit pc: PatienceConfig): Future[List[SuicideGirl]] = ???
-
 }

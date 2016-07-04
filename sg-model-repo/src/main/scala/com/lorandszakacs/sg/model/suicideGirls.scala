@@ -19,6 +19,10 @@ sealed trait Model {
 
   def isSuicideGirl: Boolean
 
+  def asSuicideGirls: Option[SuicideGirl]
+
+  def asHopeful: Option[Hopeful]
+
   override def toString =
     s"""
         ---------${this.getClass.getSimpleName}: ${name.name} : ${photoSets.length}---------
@@ -62,6 +66,15 @@ final class ModelName private(
   val name: String
 ) {
   override def toString: String = s"ModelName($name)"
+
+  /**
+    * Hopefuls lose prefix, or suffix underscores in names
+    * when they become SGs, therefore this is useful to determine
+    * if one has become an SG.
+    *
+    * @return
+    */
+  def stripUnderscore: ModelName = ModelName(name.stripPrefix("_").stripPrefix("__").stripSuffix("_").stripSuffix("__"))
 
   override def equals(other: Any): Boolean = other match {
     case that: ModelName =>
@@ -107,6 +120,10 @@ final case class SuicideGirl(
   override def isHopeful: Boolean = false
 
   override def isSuicideGirl: Boolean = true
+
+  override def asSuicideGirls: Option[SuicideGirl] = Option(this)
+
+  override def asHopeful: Option[Hopeful] = None
 }
 
 final case class Hopeful(
@@ -120,6 +137,10 @@ final case class Hopeful(
   override def isHopeful: Boolean = true
 
   override def isSuicideGirl: Boolean = false
+
+  override def asSuicideGirls: Option[SuicideGirl] = None
+
+  override def asHopeful: Option[Hopeful] = Option(this)
 }
 
 final case class PhotoSet private(

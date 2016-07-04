@@ -13,26 +13,34 @@ import scala.concurrent.Future
   *
   */
 trait SGModelRepository {
+  def reindexSGs(names: List[ModelName]): Future[Unit]
 
-  def createOrUpdateSGIndex(index: SuicideGirlIndex): Future[Unit]
+  def reindexHopefuls(names: List[ModelName]): Future[Unit]
 
-  def createOrUpdateHopefulIndex(index: HopefulIndex): Future[Unit]
+  def updateIndexes(newHopefuls: List[Hopeful], newSGs: List[SuicideGirl]): Future[Unit]
 
-  def createOrUpdateLastProcessed(l: LastProcessedIndex): Future[Unit]
+  def updateIndexesForNames(newHopefuls: List[ModelName], newSGs: List[ModelName]): Future[Unit]
+
+  def createOrUpdateLastProcessed(l: LastProcessedMarker): Future[Unit]
+
+  def lastProcessedIndex: Future[Option[LastProcessedMarker]]
+
 }
 
 
 final case class HopefulIndex(
   names: List[ModelName],
+  needsReindexing: List[ModelName],
   number: Int
 )
 
 final case class SuicideGirlIndex(
   names: List[ModelName],
+  needsReindexing: List[ModelName],
   number: Int
 )
 
-sealed trait LastProcessedIndex {
+sealed trait LastProcessedMarker {
   def timestamp: DateTime
 
   def model: Model
@@ -46,13 +54,13 @@ sealed trait LastProcessedIndex {
 case class LastProcessedSG(
   timestamp: DateTime,
   suicidegirl: SuicideGirl
-) extends LastProcessedIndex {
+) extends LastProcessedMarker {
   override def model: Model = suicidegirl
 }
 
 case class LastProcessedHopeful(
   timestamp: DateTime,
   hopeful: Hopeful
-) extends LastProcessedIndex {
+) extends LastProcessedMarker {
   override def model: Model = hopeful
 }

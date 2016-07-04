@@ -29,6 +29,12 @@ private[impl] trait MongoDAO {
     override def write(t: ModelName): BSONString = BSONString(t.name)
   }
 
+  protected implicit val suicideGirlsIndexBSON: BSONDocumentReader[SuicideGirlIndex] with BSONDocumentWriter[SuicideGirlIndex] with BSONHandler[BSONDocument, SuicideGirlIndex] =
+    Macros.handler[SuicideGirlIndex]
+
+  protected implicit val hopefulIndexBSON: BSONDocumentReader[HopefulIndex] with BSONDocumentWriter[HopefulIndex] with BSONHandler[BSONDocument, HopefulIndex] =
+    Macros.handler[HopefulIndex]
+
   protected implicit val photoSetTitleBSON: BSONHandler[BSONString, PhotoSetTitle] = new BSONHandler[BSONString, PhotoSetTitle] {
     override def read(bson: BSONString): PhotoSetTitle = PhotoSetTitle(bson.value)
 
@@ -62,6 +68,6 @@ private[impl] trait MongoDAO {
   protected implicit val hopefulBSON: BSONDocumentReader[Hopeful] with BSONDocumentWriter[Hopeful] with BSONHandler[BSONDocument, Hopeful] =
     Macros.handler[Hopeful]
 
-  protected implicit val lastProcessedStatusBSON: BSONDocumentReader[LastProcessedIndex] with BSONDocumentWriter[LastProcessedIndex] with BSONHandler[BSONDocument, LastProcessedIndex] =
-    Macros.handlerOpts[LastProcessedIndex, AllImplementations with SaveSimpleName]
+  protected implicit val lastProcessedStatusBSON: BSONDocumentReader[LastProcessedMarker] with BSONDocumentWriter[LastProcessedMarker] with BSONHandler[BSONDocument, LastProcessedMarker] =
+    Macros.handlerOpts[LastProcessedMarker, AllImplementations with SaveSimpleName]
 }
