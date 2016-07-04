@@ -43,8 +43,15 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
     """.stripMargin
   )
 
-  private val HarvestNew = Command(
+  private val ReindexAll = Command(
     "3",
+    s"""
+       |Composite operation of ${ReindexHopefuls.id} and ${ReindexSuicideGirls.id}
+    """.stripMargin
+  )
+
+  private val HarvestNew = Command(
+    "4",
     """
       |harvest and reindex new entires. Will mark for reindexing all SGs and hopefulls that were created, from:
       |https://www.suicidegirls.com/photos/all/recent/all/
@@ -56,7 +63,7 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
     "exit."
   )
 
-  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, HarvestNew)
+  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, HarvestNew).sortBy(_.id)
 
   private implicit val patienceConfig: PatienceConfig = PatienceConfig(200 millis)
   private implicit val ec: ExecutionContext = harvesterAssembly.executionContext
@@ -100,7 +107,7 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
           print {
             """
               |
-              |-------------- finished harvesting and queing to reindex Suicide Girls --------------
+              |-------------- finished harvesting and queuing to reindex Suicide Girls --------------
               |
             """.stripMargin
           }
@@ -114,7 +121,20 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
           print {
             """
               |
-              |-------------- finished harvesting and queing to reindex Hopefuls --------------
+              |-------------- finished harvesting and queuing to reindex Hopefuls --------------
+              |
+            """.stripMargin
+          }
+
+        //----------------------------------------
+
+        case ReindexAll.id =>
+          val future = harvester.reindexAll(Int.MaxValue)
+          Await.result(future, 4 hours)
+          print {
+            """
+              |
+              |-------------- finished harvesting and queuing to reindex all --------------
               |
             """.stripMargin
           }
@@ -128,7 +148,7 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
           print {
             s"""
                |
-               |-------------- finished harvesting and queing to reindex all new entries --------------
+               |-------------- finished harvesting and queuing to reindex all new entries --------------
                |${allNew.map(_.name.name).mkString("\n")}
                |---------------------------------------------------------------------------------------
                |
@@ -136,6 +156,9 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
           }
 
         //----------------------------------------
+
+        case unknown =>
+          println(s"unknown command: $unknown. Please type help for more information.")
       }
 
     }

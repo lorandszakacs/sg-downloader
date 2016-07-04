@@ -193,6 +193,37 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
   //===============================================================================================
   //===============================================================================================
 
+  it should "... gather the first 48 new sets, then use first one as latest. No subsequent models should be returned" in { crawler =>
+    val previousModels = whenReady(crawler.gatherNewestModelInformation(48, None)) { models: List[Model] =>
+      withClue("... size") {
+        models should have size 48
+      }
+      withClue("... distribution") {
+        assert(models.exists(_.isHopeful), "... there should be at least one hopeful in the past 48 new sets")
+        assert(models.exists(_.isSuicideGirl), "... there should be at least one suicidegirl in the past 48 new sets")
+      }
+      models
+    }
+    val index = 0
+    val latest = previousModels(index)
+    val lastProcessed: LastProcessedMarker = crawler.createLastProcessedIndex(latest)
+
+    withClue("... now gathering only a part of the processed sets") {
+      whenReady(crawler.gatherNewestModelInformation(48, Option(lastProcessed))) { models: List[Model] =>
+        withClue("... size") {
+          models should have size index
+        }
+        withClue("... distribution") {
+          assert(!models.exists(_.name == latest.name), "... the latest model should not be in this list")
+        }
+        models
+      }
+    }
+  }
+
+  //===============================================================================================
+  //===============================================================================================
+
   override type FixtureParam = ModelAndPhotoSetCrawler
 
   override protected def withFixture(test: OneArgTest): Outcome = {

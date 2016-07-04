@@ -31,12 +31,12 @@ final private[model] class IndexDao(val db: DB)(implicit val ec: ExecutionContex
   }
 
   def reindexSGs(names: List[ModelName]): Future[Unit] = {
-    val sorted = names.distinct.sorted
+    val sanitized = names.distinct.sorted
     val d = BSONDocument(
       _id -> SGIndexId,
-      Names -> sorted,
-      NeedsReindexing -> sorted,
-      Number -> names.length
+      Names -> sanitized,
+      NeedsReindexing -> sanitized,
+      Number -> sanitized.length
     )
     val q = BSONDocument(_id -> SGIndexId)
 
@@ -47,7 +47,7 @@ final private[model] class IndexDao(val db: DB)(implicit val ec: ExecutionContex
     val sanitizedNames = i.names.distinct.sorted
     val sanitizedIndex = i.copy(
       names = sanitizedNames,
-      needsReindexing = i.names.distinct.sorted,
+      needsReindexing = i.needsReindexing.distinct.sorted,
       number = sanitizedNames.length
     )
     val q = BSONDocument(_id -> SGIndexId)
@@ -80,7 +80,7 @@ final private[model] class IndexDao(val db: DB)(implicit val ec: ExecutionContex
     val sanitizedNames = i.names.distinct.sorted
     val sanitizedIndex = i.copy(
       names = sanitizedNames,
-      needsReindexing = i.names.distinct.sorted,
+      needsReindexing = i.needsReindexing.distinct.sorted,
       number = sanitizedNames.length
     )
     val q = BSONDocument(_id -> HopefulIndexId)
@@ -89,7 +89,12 @@ final private[model] class IndexDao(val db: DB)(implicit val ec: ExecutionContex
   }
 
   def createOrUpdateLastProcessedStatus(status: LastProcessedMarker): Future[Unit] = {
-    val d: BSONDocument = lastProcessedStatusBSON.write(status) ++ (_id -> LastProcessedId)
+    val temp: BSONDocument = status match {
+      case h: LastProcessedHopeful => lastProcessedHopefulBSON.write(h)
+      case sg: LastProcessedSG => lastProcessedSuicideGirlBSON.write(sg)
+    }
+    val d = temp ++ (_id -> LastProcessedId)
+
     val s: BSONDocument = BSONDocument(_id -> LastProcessedId)
 
     collection.update(selector = s, update = d, upsert = true) map { _ => () }
@@ -97,6 +102,18 @@ final private[model] class IndexDao(val db: DB)(implicit val ec: ExecutionContex
 
   def lastProcessedStatus: Future[Option[LastProcessedMarker]] = {
     val q: BSONDocument = BSONDocument(_id -> LastProcessedId)
-    collection.find(q).one[LastProcessedMarker]
+    val b = collection.find(q).one[BSONDocument]
+    val r: Future[Option[LastProcessedMarker]] = b map {
+      case None => None
+      case Some(bson) =>
+        bson.getAs[String]("className") match {
+          case None => throw new AssertionError("lastProcessedMarker.className field should exist")
+          case Some(x) => x match {
+            case "LastProcessedHopeful" => Option(lastProcessedHopefulBSON.read(bson))
+            case "LastProcessedSG" => Option(lastProcessedHopefulBSON.read(bson))
+          }
+        }
+    }
+    r
   }
 }

@@ -105,7 +105,8 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
     def isEndInput(models: List[Model]): Boolean = {
       lastProcessedIndex match {
         case None => false
-        case Some(lpi) => models.exists(_.photoSets.exists(_.id == lpi.lastPhotoSetID))
+        case Some(lpi) =>
+          models.exists(_.photoSets.exists(_.id == lpi.lastPhotoSetID))
       }
 
     }
@@ -151,12 +152,18 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
       Uri(s"$uri?partial=true&offset=$offset")
 
     sGClient.getPage(offsetUri(uri, 0)) map { firstHtml =>
-      val photoSetUris = ListBuffer[T]()
-      photoSetUris ++= parsingFunction(firstHtml).get
-
+      val result = ListBuffer[T]()
+      val firstBatch = parsingFunction(firstHtml).get
       var offset = offsetStep
+
       var stop = false
-      do {
+      result ++= firstBatch
+
+      if (isEndInput(firstBatch)) {
+        stop = true
+      }
+
+      while (!stop) {
         Thread.sleep(pc.throttle.toMillis)
         val newPage = Await.result(sGClient.getPage(offsetUri(uri, offset)), 1 minute)
         offset += offsetStep
@@ -166,7 +173,7 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
           logger.info(s"load repeatedly: $offset $offsetStep")
           parsingFunction(newPage) match {
             case Success(s) =>
-              photoSetUris ++= s
+              result ++= s
               if (isEndInput(s)) {
                 stop = true
               }
@@ -174,8 +181,9 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
               throw FailedToRepeatedlyLoadPageException(offset, e)
           }
         }
-      } while (!stop)
-      photoSetUris.toList
+      }
+
+      result.toList
     }
   }
 }

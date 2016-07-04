@@ -334,13 +334,13 @@ private[impl] object SGContentParser extends SGURLBuilder {
       Try(DateTime.now.minusHours(nrOfHours.toInt)) map {
         _.toLocalDate
       }
-    } else if (t.contains("min")) {
-      val nrOfMinutes = t.replace(" min", "")
+    } else if (t.contains("mins")) {
+      val nrOfMinutes = t.replace(" mins", "")
       Try(DateTime.now.minusMinutes(nrOfMinutes.toInt)) map {
         _.toLocalDate
       }
-    } else if (t.contains("mins")) {
-      val nrOfMinutes = t.replace(" mins", "")
+    } else if (t.contains("min")) {
+      val nrOfMinutes = t.replace(" min", "")
       Try(DateTime.now.minusMinutes(nrOfMinutes.toInt)) map {
         _.toLocalDate
       }

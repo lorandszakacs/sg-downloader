@@ -4,6 +4,7 @@ import com.lorandszakacs.sg.crawler.ModelAndPhotoSetCrawler
 import com.lorandszakacs.sg.harvester.SGHarvester
 import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model._
+import com.typesafe.scalalogging.StrictLogging
 
 import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration._
@@ -20,7 +21,7 @@ private[harvester] class SGHarvesterImpl(
   val modelRepo: SGModelRepository
 )(implicit
   val ec: ExecutionContext
-) extends SGHarvester {
+) extends SGHarvester with StrictLogging {
 
   override def reindexSGNames(maxNrOfSGs: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
     for {
@@ -34,6 +35,24 @@ private[harvester] class SGHarvesterImpl(
       names <- modelCrawler.gatherHopefulNames(maxNrOfHopefuls)
       _ <- modelRepo.reindexHopefuls(names)
     } yield names
+  }
+
+  override def reindexAll(maxNrOfReindexing: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
+    for {
+      newModels: List[Model] <- modelCrawler.gatherNewestModelInformation(1, None)
+      newStatusMarker = modelCrawler.createLastProcessedIndex(newModels.head)
+      _ <- modelRepo.createOrUpdateLastProcessed(newStatusMarker)
+
+      _ = logger.info(s"created new status marker: ${newStatusMarker.lastPhotoSetID}")
+
+      sgNames <- this.reindexSGNames(maxNrOfReindexing)
+      _ = logger.info(s"finished reindexing: ${sgNames.length} SuicideGirls")
+      remainingNr = maxNrOfReindexing - sgNames.length
+
+      hopefulNames <- this.reindexHopefulsNames(remainingNr)
+      _ = logger.info(s"finished reindexing: ${hopefulNames.length} Hopefuls")
+
+    } yield sgNames ++ hopefulNames
   }
 
   override def gatherNewestPhotosAndUpdateIndex(maxNrOfModels: Int)(implicit pc: PatienceConfig): Future[List[Model]] = {

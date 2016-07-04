@@ -5,7 +5,7 @@ import com.lorandszakacs.sg.model._
 import org.joda.time.LocalDate
 import reactivemongo.api.DB
 import reactivemongo.api.collections.bson.BSONCollection
-import reactivemongo.bson.Macros.Options.{SaveSimpleName, AllImplementations}
+import reactivemongo.bson.Macros.Options.{SaveSimpleName, SimpleAllImplementations}
 import reactivemongo.bson._
 
 /**
@@ -68,6 +68,9 @@ private[impl] trait MongoDAO {
   protected implicit val hopefulBSON: BSONDocumentReader[Hopeful] with BSONDocumentWriter[Hopeful] with BSONHandler[BSONDocument, Hopeful] =
     Macros.handler[Hopeful]
 
-  protected implicit val lastProcessedStatusBSON: BSONDocumentReader[LastProcessedMarker] with BSONDocumentWriter[LastProcessedMarker] with BSONHandler[BSONDocument, LastProcessedMarker] =
-    Macros.handlerOpts[LastProcessedMarker, AllImplementations with SaveSimpleName]
+  protected implicit val lastProcessedHopefulBSON: BSONDocumentReader[LastProcessedHopeful] with BSONDocumentWriter[LastProcessedHopeful] with BSONHandler[BSONDocument, LastProcessedHopeful] =
+    Macros.handlerOpts[LastProcessedHopeful, SaveSimpleName]
+
+  implicit val lastProcessedSuicideGirlBSON: BSONDocumentReader[LastProcessedSG] with BSONDocumentWriter[LastProcessedSG] with BSONHandler[BSONDocument, LastProcessedSG] =
+    Macros.handlerOpts[LastProcessedSG, SaveSimpleName]
 }

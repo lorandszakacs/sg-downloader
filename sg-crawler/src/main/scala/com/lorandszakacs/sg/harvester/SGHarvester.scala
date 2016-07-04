@@ -33,6 +33,14 @@ trait SGHarvester {
     */
   def reindexHopefulsNames(maxNrOfHopefuls: Int)(implicit pc: PatienceConfig): Future[List[ModelName]]
 
+
+  /**
+    * The composite of [[reindexSGNames]] and [[reindexHopefulsNames]].
+    *
+    * Additionally, it will ensure that the latest processing status updated
+    */
+  def reindexAll(maxNrOfReindexing: Int)(implicit pc: PatienceConfig): Future[List[ModelName]]
+
   /**
     * Gathers all, or the max number of [[PhotoSet]] from the last harvesting.
     *
