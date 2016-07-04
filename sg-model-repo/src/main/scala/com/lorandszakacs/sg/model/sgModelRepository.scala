@@ -33,19 +33,26 @@ final case class SuicideGirlIndex(
 )
 
 sealed trait LastProcessedIndex {
-  def url: String
-
   def timestamp: DateTime
+
+  def model: Model
+
+  final def lastPhotoSetID = {
+    val ph: PhotoSet = model.photoSets.headOption.getOrElse(throw new AssertionError("... tried to get lastPhotoSet, of ProccessedIndex, but it did not exist"))
+    ph.id
+  }
 }
 
 case class LastProcessedSG(
-  url: String,
   timestamp: DateTime,
   suicidegirl: SuicideGirl
-) extends LastProcessedIndex
+) extends LastProcessedIndex {
+  override def model: Model = suicidegirl
+}
 
 case class LastProcessedHopeful(
-  url: String,
   timestamp: DateTime,
   hopeful: Hopeful
-) extends LastProcessedIndex
+) extends LastProcessedIndex {
+  override def model: Model = hopeful
+}

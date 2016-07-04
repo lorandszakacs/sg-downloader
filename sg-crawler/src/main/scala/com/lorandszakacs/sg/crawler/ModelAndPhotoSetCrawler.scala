@@ -21,4 +21,6 @@ trait ModelAndPhotoSetCrawler {
   def gatherNewestSets(limit: Int)(implicit pc: PatienceConfig): Future[List[Model]]
 
   def gatherPhotoSetInformationFor(modelName: ModelName)(implicit pc: PatienceConfig): Future[List[PhotoSet]]
+
+  def gatherNewestModelInformation(limit: Int, lastProcessedIndex: Option[LastProcessedIndex])(implicit pc: PatienceConfig): Future[List[Model]]
 }

@@ -15,6 +15,10 @@ sealed trait Model {
 
   def photoSets: List[PhotoSet]
 
+  def isHopeful: Boolean
+
+  def isSuicideGirl: Boolean
+
   override def toString =
     s"""
         ---------${this.getClass.getSimpleName}: ${name.name} : ${photoSets.length}---------
@@ -99,6 +103,10 @@ final case class SuicideGirl(
 ) extends Model with ModelUpdater[SuicideGirl] {
 
   override def updatePhotoSets(newPhotoSets: List[PhotoSet]): SuicideGirl = this.copy(photoSets = newPhotoSets)
+
+  override def isHopeful: Boolean = false
+
+  override def isSuicideGirl: Boolean = true
 }
 
 final case class Hopeful(
@@ -108,6 +116,10 @@ final case class Hopeful(
 ) extends Model with ModelUpdater[Hopeful] {
 
   override def updatePhotoSets(newPhotoSets: List[PhotoSet]): Hopeful = this.copy(photoSets = newPhotoSets)
+
+  override def isHopeful: Boolean = true
+
+  override def isSuicideGirl: Boolean = false
 }
 
 final case class PhotoSet private(

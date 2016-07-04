@@ -28,11 +28,12 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
 
   private val SGsSortedByFollowers = "https://www.suicidegirls.com/profiles/girl/followers/"
   private val HopefulsSortedByFollowers = "https://www.suicidegirls.com/profiles/hopeful/followers/"
+  private val NewestSets = "https://www.suicidegirls.com/photos/all/recent/all/"
 
   /**
     * Gathers the names of all available [[SuicideGirl]]s
     */
-  def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
+  override def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -51,7 +52,7 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
   /**
     * Gathers the names of all available [[Hopeful]]s
     */
-  def gatherHopefulNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
+  override def gatherHopefulNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -78,7 +79,7 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
     * the [[PhotoSet]]s of the given model.
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]]
     */
-  def gatherPhotoSetInformationFor(modelName: ModelName)(implicit pc: PatienceConfig): Future[List[PhotoSet]] = {
+  override def gatherPhotoSetInformationFor(modelName: ModelName)(implicit pc: PatienceConfig): Future[List[PhotoSet]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -93,6 +94,37 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
         isEndPage = isEndPage
       )
     } yield sets
+  }
+
+
+  override def gatherNewestModelInformation(limit: Int, lastProcessedIndex: Option[LastProcessedIndex])(implicit pc: PatienceConfig): Future[List[Model]] = {
+    def isEndPage(html: Html) = {
+      val PartialPageLoadingEndMarker = "No photos available."
+      html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
+    }
+    def isEndInput(models: List[Model]): Boolean = {
+      lastProcessedIndex match {
+        case None => false
+        case Some(lpi) => models.exists(_.photoSets.exists(_.id == lpi.lastPhotoSetID))
+      }
+
+    }
+    loadPageRepeatedly[Model](
+      uri = NewestSets,
+      offsetStep = 24,
+      parsingFunction = SGContentParser.gatherNewestPhotoSets,
+      isEndPage = isEndPage,
+      isEndInput = isEndInput,
+      cutOffLimit = limit
+    ) map { models =>
+      if (lastProcessedIndex.isEmpty)
+        models
+      else
+        models.takeWhile { m =>
+          val photoset = m.photoSets.headOption.getOrElse(throw new AssertionError("... tried to get lastPhotoSet, of a NewestModelPhotoSet, but it did not exist"))
+          lastProcessedIndex.isEmpty || (photoset.id != lastProcessedIndex.get.lastPhotoSetID)
+        }
+    }
   }
 
 
@@ -111,7 +143,8 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
     offsetStep: Int,
     parsingFunction: Html => Try[List[T]],
     isEndPage: Html => Boolean,
-    cutOffLimit: Int = Int.MaxValue
+    cutOffLimit: Int = Int.MaxValue,
+    isEndInput: List[T] => Boolean = { ls: List[T] => false }
   )(implicit pc: PatienceConfig): Future[List[T]] = {
 
     def offsetUri(uri: Uri, offset: Int) =
@@ -134,6 +167,9 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
           parsingFunction(newPage) match {
             case Success(s) =>
               photoSetUris ++= s
+              if (isEndInput(s)) {
+                stop = true
+              }
             case Failure(e) =>
               throw FailedToRepeatedlyLoadPageException(offset, e)
           }

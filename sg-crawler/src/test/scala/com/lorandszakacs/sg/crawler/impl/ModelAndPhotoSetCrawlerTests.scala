@@ -6,7 +6,8 @@ import com.lorandszakacs.sg.crawler.page.PageCrawlerTest
 import com.lorandszakacs.sg.crawler.{ModelAndPhotoSetCrawler, PageCrawlerAssembly}
 import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.model._
-import org.joda.time.LocalDate
+import org.joda.time.{DateTime, LocalDate}
+import org.joda.time.format.DateTimeFormat
 import org.scalatest.Outcome
 
 import scala.concurrent.ExecutionContext
@@ -131,6 +132,72 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
 
       withClue("... size") {
         names should have size 48
+      }
+    }
+  }
+
+  //===============================================================================================
+  //===============================================================================================
+
+  behavior of "GirlAndPhotoSetCrawler.gatherNewestModelInformation"
+
+  //===============================================================================================
+  //===============================================================================================
+
+  it should "... gather the first 48 new sets" in { crawler =>
+    whenReady(crawler.gatherNewestModelInformation(48, None)) { models: List[Model] =>
+
+      withClue("... size") {
+        models should have size 48
+      }
+      withClue("... distribution") {
+        assert(models.exists(_.isHopeful), "... there should be at least one hopeful in the past 48 new sets")
+        assert(models.exists(_.isSuicideGirl), "... there should be at least one suicidegirl in the past 48 new sets")
+      }
+    }
+  }
+
+  //===============================================================================================
+  //===============================================================================================
+
+  it should "... gather the first 48 new sets, then use one in the middle as the latest processed, and return only the ones before it" in { crawler =>
+    val previousModels = whenReady(crawler.gatherNewestModelInformation(48, None)) { models: List[Model] =>
+      withClue("... size") {
+        models should have size 48
+      }
+      withClue("... distribution") {
+        assert(models.exists(_.isHopeful), "... there should be at least one hopeful in the past 48 new sets")
+        assert(models.exists(_.isSuicideGirl), "... there should be at least one suicidegirl in the past 48 new sets")
+      }
+      models
+    }
+    val index = 13
+    val expectedLength = index
+    val latest = previousModels(index)
+    val lastProcessed: LastProcessedIndex = latest match {
+      case h: Hopeful =>
+        LastProcessedHopeful(
+          timestamp = DateTime.now(),
+          hopeful = h
+        )
+      case sg: SuicideGirl =>
+        LastProcessedSG(
+          timestamp = DateTime.now(),
+          suicidegirl = sg
+        )
+    }
+
+    withClue("... now gathering only a part of the processed sets") {
+      whenReady(crawler.gatherNewestModelInformation(48, Option(lastProcessed))) { models: List[Model] =>
+        withClue("... size") {
+          models should have size index
+        }
+        withClue("... distribution") {
+          assert(!models.exists(_.name == latest.name), "... the latest model should not be in this list")
+          assert(models.exists(_.isHopeful), "... there should be at least one hopeful in the past 48 new sets")
+          assert(models.exists(_.isSuicideGirl), "... there should be at least one suicidegirl in the past 48 new sets")
+        }
+        models
       }
     }
   }
