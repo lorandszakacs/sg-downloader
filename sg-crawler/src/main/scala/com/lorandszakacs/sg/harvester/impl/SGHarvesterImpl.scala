@@ -3,12 +3,14 @@ package com.lorandszakacs.sg.harvester.impl
 import com.lorandszakacs.sg.crawler.{PhotoMediaLinksCrawler, ModelAndPhotoSetCrawler}
 import com.lorandszakacs.sg.harvester.SGHarvester
 import com.lorandszakacs.sg.http.PatienceConfig
+import com.lorandszakacs.sg.model.Model.{HopefulFactory, ModelFactory, SuicideGirlFactory}
 import com.lorandszakacs.sg.model._
 import com.typesafe.scalalogging.StrictLogging
 
-import scala.concurrent.{Future, ExecutionContext}
-import scala.concurrent.duration._
+import com.lorandszakacs.util.monads.future.FutureUtil._
 import scala.language.postfixOps
+import scala.util._
+import scala.util.control.NonFatal
 
 /**
   *
@@ -68,24 +70,83 @@ private[harvester] class SGHarvesterImpl(
           lp.lastPhotoSetID != newestPhotoset.id
         }
         if (!gatheredNewerPhotoSet) {
-          Future.successful(())
+          UnitFuture
         } else {
           val newIndex: LastProcessedMarker = modelCrawler.createLastProcessedIndex(newModels.head)
           modelRepo.createOrUpdateLastProcessed(newIndex)
         }
       } else {
-        Future.successful(())
+        UnitFuture
       }
       (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = newModels.`SG|Hopeful`
       _ <- modelRepo.updateIndexes(newHopefuls = newHopefuls, newSGs = newSGS)
     } yield newModels
   }
 
+
   override def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username: String, password: String)(implicit pc: PatienceConfig): Future[List[Model]] = {
     for {
       _ <- photoCrawler.authenticateIfNeeded(username, password)
-      result: List[Model] <- Future.successful(Nil)
+      sgIndex <- modelRepo.suicideGirlIndex
+      hopefulIndex <- modelRepo.hopefulIndex
+
+      sgs: List[Try[SuicideGirl]] <- Future.serialize(sgIndex.names) { sgName =>
+        harvestSuicideGirlAndUpdateIndex(sgName) map Success.apply recover {
+          case NonFatal(e) =>
+            logger.error(s"failed to harvest SG: ${sgName.name}", e)
+            Failure(e)
+        }
+      }
+
+      hopefuls: List[Try[Hopeful]] <- Future.serialize(hopefulIndex.names) { hopefulName =>
+        harvestHopefulAndUpdateIndex(hopefulName) map Success.apply recover {
+          case NonFatal(e) =>
+            logger.error(s"failed to harvest hopeful: ${hopefulName.name}", e)
+            Failure(e)
+        }
+      }
+      result: List[Model] = sgs.filter(_.isSuccess).map(_.get) ++ hopefuls.filter(_.isSuccess).map(_.get)
     } yield result
   }
 
+  private def harvestSuicideGirlAndUpdateIndex(sgName: ModelName)(implicit pc: PatienceConfig): Future[SuicideGirl] = {
+    for {
+      sg <- harvestModel(SuicideGirlFactory, sgName)
+      _ <- modelRepo.createOrUpdateSG(sg)
+    } yield sg
+  }
+
+  private def harvestHopefulAndUpdateIndex(hopefulName: ModelName)(implicit pc: PatienceConfig): Future[Hopeful] = {
+    for {
+      hopeful <- harvestModel(HopefulFactory, hopefulName)
+      _ <- modelRepo.createOrUpdateHopeful(hopeful)
+    } yield hopeful
+  }
+
+  /**
+    *
+    * Assumes that [[photoCrawler.authentication]] is valid in order to access specific
+    * page information.
+    *
+    * @return
+    * [[Model]] with complete information as it is available on the live website
+    *
+    */
+  private def harvestModel[T <: Model with ModelUpdater[T]](mf: ModelFactory[T], modelName: ModelName)(implicit pc: PatienceConfig): Future[T] = {
+    for {
+      modelWithNoPhotos <- modelCrawler.gatherPhotoSetInformationForModel(mf)(modelName)
+      fullPhotoSets: List[PhotoSet] <- Future.serialize(modelWithNoPhotos.photoSets) { ph: PhotoSet =>
+        for {
+          photos <- photoCrawler.gatherAllPhotosFromSetPage(ph.url)
+        } yield {
+          Thread.sleep(pc.throttle.toMillis)
+          ph.copy(photos = photos)
+        }
+      }
+    } yield {
+      val result = modelWithNoPhotos.updatePhotoSets(fullPhotoSets)
+      logger.info(s"harvested ${mf.name}: ${modelName.name}. #photoSets: ${result.photoSets.length} #photos: ${result.numberOfPhotos}")
+      result
+    }
+  }
 }

@@ -17,11 +17,11 @@ private[model] class SGModelRepositoryImpl(
 )(implicit val ec: ExecutionContext) extends SGModelRepository {
 
   override def reindexSGs(names: List[ModelName]): Future[Unit] = {
-    indexDao.reindexSGs(names)
+    indexDao.rewriteSGIndex(names)
   }
 
   override def reindexHopefuls(names: List[ModelName]): Future[Unit] = {
-    indexDao.reindexHopefuls(names)
+    indexDao.rewriteHopefulsIndex(names)
   }
 
   override def updateIndexes(newHopefuls: List[Hopeful], newSGs: List[SuicideGirl]): Future[Unit] = {
@@ -47,8 +47,8 @@ private[model] class SGModelRepositoryImpl(
         names = (oldHopefuls.names ++ newHopefuls).filterNot(n => hopefulsThatBecameSGS.contains(n.stripUnderscore)),
         needsReindexing = (oldHopefuls.needsReindexing ++ newHopefuls).filterNot(n => hopefulsThatBecameSGS.contains(n.stripUnderscore))
       )
-      _ <- indexDao.updateHopefulIndex(newHopefulIndex)
-      _ <- indexDao.updateSGIndex(newSGIndex)
+      _ <- indexDao.rewriteHopefulsIndex(newHopefulIndex)
+      _ <- indexDao.rewriteSGIndex(newSGIndex)
 
     } yield ()
   }
@@ -59,6 +59,28 @@ private[model] class SGModelRepositoryImpl(
 
   override def lastProcessedIndex: Future[Option[LastProcessedMarker]] = {
     indexDao.lastProcessedStatus
+  }
+
+  override def suicideGirlIndex: Future[SuicideGirlIndex] = {
+    indexDao.suicideGirlsIndex
+  }
+
+  override def hopefulIndex: Future[HopefulIndex] = {
+    indexDao.hopefulIndex
+  }
+
+  override def createOrUpdateSG(sg: SuicideGirl): Future[Unit] = {
+    for {
+      _ <- suicideGirlsDao.createOrUpdate(sg)
+      _ <- indexDao.markSGAsIndexed(sg.name)
+    } yield ()
+  }
+
+  override def createOrUpdateHopeful(hopeful: Hopeful): Future[Unit] = {
+    for {
+      _ <- hopefulsDao.createOrUpdate(hopeful)
+      _ <- indexDao.markHopefulAsIndexed(hopeful.name)
+    } yield ()
   }
 
 }

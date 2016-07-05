@@ -3,6 +3,7 @@ package com.lorandszakacs.sg.crawler.impl
 import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.crawler.{ModelAndPhotoSetCrawler, FailedToRepeatedlyLoadPageException}
 import com.lorandszakacs.sg.http._
+import com.lorandszakacs.sg.model.Model.ModelFactory
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html.Html
 import com.typesafe.scalalogging.StrictLogging
@@ -79,9 +80,9 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
     *
     * @return
     * the [[PhotoSet]]s of the given model.
-    * All elements of the list will have: [[PhotoSet.photos.isEmpty]]
+    * All elements of the list will have: [[PhotoSet.photos.isEmpty]], and [[PhotoSet.url]] will be a full path URL.
     */
-  override def gatherPhotoSetInformationFor(modelName: ModelName)(implicit pc: PatienceConfig): Future[List[PhotoSet]] = {
+  override def gatherPhotoSetInformationForModel[T <: Model](mf: ModelFactory[T])(modelName: ModelName)(implicit pc: PatienceConfig): Future[T] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -95,10 +96,21 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
         parsingFunction = SGContentParser.gatherPhotoSetsForModel,
         isEndPage = isEndPage
       )
-    } yield sets
+    } yield {
+      logger.info(s"gathered all sets for ${mf.name} ${modelName.name}. #sets: ${sets.length}")
+      mf(photoSetURI = pageURI.toString, name = modelName, photoSets = sets)
+    }
   }
 
 
+  /**
+    *
+    * Gathers information about the latest published sets from:
+    * https://www.suicidegirls.com/photos/all/recent/all/
+    *
+    * The amount of crawling is limited by the absolute limit, or by the set identified by [[LastProcessedMarker.lastPhotoSetID]]
+    * This last set is not included in the results.
+    */
   override def gatherNewestModelInformation(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
@@ -172,7 +184,7 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
         if (isEndPage(newPage) || offset > cutOffLimit) {
           stop = true
         } else {
-          logger.info(s"load repeatedly: $offset $offsetStep")
+          logger.debug(s"load repeatedly: currentOffset=$offset; step=$offsetStep")
           parsingFunction(newPage) match {
             case Success(s) =>
               result ++= s

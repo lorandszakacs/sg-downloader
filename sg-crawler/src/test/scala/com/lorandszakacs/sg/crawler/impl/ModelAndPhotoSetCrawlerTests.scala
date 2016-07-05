@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpRequest
 import com.lorandszakacs.sg.crawler.{ModelAndPhotoSetCrawler, PageCrawlerAssembly}
 import com.lorandszakacs.sg.http.SGClientAssembly
+import com.lorandszakacs.sg.model.Model.{SuicideGirlFactory, HopefulFactory}
 import com.lorandszakacs.sg.model._
 import org.joda.time.{DateTime, LocalDate}
 import org.joda.time.format.DateTimeFormat
@@ -36,7 +37,8 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
     * had only one single set
     */
   it should "... fetch URIs for a page that does not need a subsequent query -- odina" in { crawler =>
-    whenReady(crawler.gatherPhotoSetInformationFor(ModelName("odina"))) { sets: List[PhotoSet] =>
+    whenReady(crawler.gatherPhotoSetInformationForModel(HopefulFactory)(ModelName("odina"))) { h: Hopeful =>
+      val sets: List[PhotoSet] = h.photoSets
 
       withClue("size") {
         sets should have size 1
@@ -61,14 +63,15 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
     * had 22 sets. And has not published a new set in ages.
     */
   it should "... fetch URIs for a page that needs several queries -- zoli" in { crawler =>
-    whenReady(crawler.gatherPhotoSetInformationFor(ModelName("zoli"))) { uris: List[PhotoSet] =>
+    whenReady(crawler.gatherPhotoSetInformationForModel(SuicideGirlFactory)(ModelName("zoli"))) { sg: SuicideGirl =>
+      val sets: List[PhotoSet] = sg.photoSets
 
       withClue("... size") {
-        uris should have size 22
+        sets should have size 22
       }
 
       withClue("... content") {
-        uris should contain {
+        sets should contain {
           PhotoSet(
             url = "https://www.suicidegirls.com/girls/zoli/album/996153/lounge-act/",
             title = "lounge act",
@@ -76,7 +79,7 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
           )
         }
 
-        uris should contain {
+        sets should contain {
           PhotoSet(
             url = "https://www.suicidegirls.com/girls/zoli/album/969351/the-beat/",
             title = "THE BEAT",

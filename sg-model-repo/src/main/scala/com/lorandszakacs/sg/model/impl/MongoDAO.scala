@@ -63,10 +63,23 @@ private[impl] trait MongoDAO {
 
 
   protected implicit val suicideGirlBSON: BSONDocumentReader[SuicideGirl] with BSONDocumentWriter[SuicideGirl] with BSONHandler[BSONDocument, SuicideGirl] =
-    Macros.handler[SuicideGirl]
+    new BSONDocumentReader[SuicideGirl] with BSONDocumentWriter[SuicideGirl] with BSONHandler[BSONDocument, SuicideGirl] {
+      private val handler = Macros.handler[SuicideGirl]
+
+      override def write(t: SuicideGirl): BSONDocument = handler.write(t) ++ (_id -> t.name)
+
+      override def read(bson: BSONDocument): SuicideGirl = handler.read(bson)
+    }
 
   protected implicit val hopefulBSON: BSONDocumentReader[Hopeful] with BSONDocumentWriter[Hopeful] with BSONHandler[BSONDocument, Hopeful] =
-    Macros.handler[Hopeful]
+    new BSONDocumentReader[Hopeful] with BSONDocumentWriter[Hopeful] with BSONHandler[BSONDocument, Hopeful] {
+      private val handler: BSONDocumentReader[Hopeful] with BSONDocumentWriter[Hopeful] with BSONHandler[BSONDocument, Hopeful] = Macros.handler[Hopeful]
+
+      override def write(t: Hopeful): BSONDocument = handler.write(t) ++ (_id -> t.name)
+
+      override def read(bson: BSONDocument): Hopeful = handler.read(bson)
+    }
+
 
   protected implicit val lastProcessedHopefulBSON: BSONDocumentReader[LastProcessedHopeful] with BSONDocumentWriter[LastProcessedHopeful] with BSONHandler[BSONDocument, LastProcessedHopeful] =
     Macros.handlerOpts[LastProcessedHopeful, SaveSimpleName]

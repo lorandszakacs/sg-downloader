@@ -25,6 +25,20 @@ trait SGModelRepository {
 
   def lastProcessedIndex: Future[Option[LastProcessedMarker]]
 
+  def suicideGirlIndex: Future[SuicideGirlIndex]
+
+  def hopefulIndex: Future[HopefulIndex]
+
+  /**
+    * Updates or creates [[SuicideGirl]], removes the name from [[SuicideGirlIndex.needsReindexing]]
+    */
+  def createOrUpdateSG(sg: SuicideGirl): Future[Unit]
+
+  /**
+    * Updates or creates [[Hopeful]], removes the name from [[HopefulIndex.needsReindexing]]
+    */
+  def createOrUpdateHopeful(hopeful: Hopeful): Future[Unit]
+
 }
 
 

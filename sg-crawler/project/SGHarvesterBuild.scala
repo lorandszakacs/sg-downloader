@@ -24,7 +24,7 @@ import com.lorandszakacs.sbt.commonbuild.plugin.CommonBuildPlugin._
   * @since 16 Mar 2015
   *
   */
-object SGCrawlerBuild extends CommonBuild {
+object SGHarvesterBuild extends CommonBuild {
 
   lazy val sgModel = RootProject(file("../sg-model-repo"))
 
@@ -69,7 +69,12 @@ object SGCrawlerBuild extends CommonBuild {
 
   override def pluginSettings: Seq[Setting[_]] = Nil
 
-  override def otherSettings: Seq[Setting[_]] = Nil
+  override def otherSettings: Seq[Setting[_]] = Seq(
+    fork in run := true,
+    javaOptions in run ++= Seq(
+      "-Xms1G", "-Xmx4G", "-XX:+UseConcMarkSweepGC"
+    )
+  )
 
   override def publishingInfo: Option[PublishInfo] = None
 }

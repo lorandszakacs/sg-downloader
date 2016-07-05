@@ -26,6 +26,7 @@ import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.util.html._
+import com.lorandszakacs.util.monads.future.FutureUtil._
 
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
@@ -272,11 +273,7 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
       for {
         page <- getPage(uri)(newAuthentication)
         loginButton = (page filter Tag("div") && Class("login-form-wrapper")).headOption
-        _ <- if (loginButton.isDefined) {
-          Future.failed(FailedToVerifyNewAuthenticationException(uri))
-        } else {
-          Future.successful(())
-        }
+        _ <- when(loginButton.isDefined) failWith FailedToVerifyNewAuthenticationException(uri)
       } yield ()
     }
 

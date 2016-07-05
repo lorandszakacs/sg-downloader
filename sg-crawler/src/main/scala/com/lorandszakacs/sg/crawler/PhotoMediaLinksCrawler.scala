@@ -1,7 +1,7 @@
 package com.lorandszakacs.sg.crawler
 
 import com.lorandszakacs.sg.http.Authentication
-import com.lorandszakacs.sg.model.ModelName
+import com.lorandszakacs.sg.model.{Photo, ModelName}
 
 import scala.concurrent.Future
 
@@ -24,7 +24,7 @@ trait PhotoMediaLinksCrawler {
     */
   def authenticateIfNeeded(username: String, plainTextPassword: String): Future[Authentication]
 
-  def gatherAllLinksForSetPage(photoSetPageUri: String): Future[List[String]]
+  def gatherAllPhotosFromSetPage(photoSetPageUri: String): Future[List[Photo]]
 
   def authentication: Authentication
 }

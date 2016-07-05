@@ -2,11 +2,37 @@ package com.lorandszakacs.sg.model
 
 import com.github.nscala_time.time.Imports._
 
+import scala.language.postfixOps
+
 /**
   * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 16 Mar 2015
   *
   */
+object Model {
+
+  sealed trait ModelFactory[T <: Model] {
+    def apply(photoSetURI: String, name: ModelName, photoSets: List[PhotoSet]): T
+
+    def name: String
+  }
+
+  object SuicideGirlFactory extends ModelFactory[SuicideGirl] {
+    override def apply(photoSetURI: String, name: ModelName, photoSets: List[PhotoSet]): SuicideGirl =
+      SuicideGirl(photoSetURI = photoSetURI, name = name, photoSets = photoSets)
+
+    override def name: String = "suicide girl"
+  }
+
+  object HopefulFactory extends ModelFactory[Hopeful] {
+    override def apply(photoSetURI: String, name: ModelName, photoSets: List[PhotoSet]): Hopeful = {
+      Hopeful(photoSetURI = photoSetURI, name = name, photoSets = photoSets)
+    }
+
+    override def name: String = "hopeful"
+  }
+
+}
 
 sealed trait Model {
   def photoSetURI: String
@@ -22,6 +48,10 @@ sealed trait Model {
   def asSuicideGirls: Option[SuicideGirl]
 
   def asHopeful: Option[Hopeful]
+
+  final def numberOfSets: Int = photoSets.length
+
+  final def numberOfPhotos: Int = photoSets.map(_.photos.length).sum
 
   override def toString =
     s"""
@@ -143,7 +173,7 @@ final case class Hopeful(
   override def asHopeful: Option[Hopeful] = Option(this)
 }
 
-final case class PhotoSet private(
+final case class PhotoSet(
   url: String,
   title: PhotoSetTitle,
   date: LocalDate,
@@ -151,8 +181,6 @@ final case class PhotoSet private(
 ) {
 
   def id: String = url
-
-  def updateURL(newURL: String): PhotoSet = this.copy(url = newURL)
 
   override def toString =
     s"""
@@ -165,11 +193,11 @@ final case class PhotoSet private(
 }
 
 final case class Photo(
-  uri: String,
+  url: String,
   index: Int
 ) {
 
-  override def toString = s"\t\t${digitFormat(index)} -> $uri"
+  override def toString = s"\t\t${digitFormat(index)} -> $url"
 
   private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
 }

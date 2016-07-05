@@ -11,6 +11,7 @@
     <logger name="reactivemongo.api.MongoDriver" level="ERROR" />
     <logger name="reactivemongo.core.actors.MongoDBSystem" level="ERROR" />
     <logger name="reactivemongo.core.actors.MonitorActor" level="ERROR" />
+    <logger name="com.lorandszakacs.sg.crawler.impl.ModelAndPhotoSetCrawlerImpl" level="INFO" />
     <logger name="akka://mongodb-akka" level="ERROR" />
 
     <root level="debug">

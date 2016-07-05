@@ -2,9 +2,10 @@ package com.lorandszakacs.sg.crawler.impl
 
 import com.lorandszakacs.sg.crawler.PhotoMediaLinksCrawler
 import com.lorandszakacs.sg.http._
+import com.lorandszakacs.sg.model.Photo
 import com.typesafe.scalalogging.StrictLogging
 
-import scala.concurrent.{Future, ExecutionContext}
+import com.lorandszakacs.util.monads.future.FutureUtil._
 
 /**
   *
@@ -29,8 +30,11 @@ private[crawler] class PhotoMediaLinksCrawlerImpl(private var sGClient: SGClient
     }
   }
 
-  override def gatherAllLinksForSetPage(photoSetPageUri: String): Future[List[String]] = {
-    ???
+  override def gatherAllPhotosFromSetPage(photoSetPageUri: String): Future[List[Photo]] = {
+    for {
+      photoSetPageHTML <- sGClient.getPage(photoSetPageUri)
+      photos <- Future fromTry SGContentParser.parsePhotos(photoSetPageHTML)
+    } yield photos
   }
 
   override def authentication: Authentication = _authentication
