@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.crawler.impl
 
 import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.crawler.{ModelAndPhotoSetCrawler, FailedToRepeatedlyLoadPageException}
-import com.lorandszakacs.sg.http.{SGURLBuilder, PatienceConfig, SGClient}
+import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html.Html
 import com.typesafe.scalalogging.StrictLogging
@@ -25,6 +25,8 @@ import scala.util.{Failure, Success, Try}
   *
   */
 final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec: ExecutionContext) extends ModelAndPhotoSetCrawler with SGURLBuilder with StrictLogging {
+
+  private[this] implicit val Authentication: Authentication = IdentityAuthentication
 
   private val SGsSortedByFollowers = "https://www.suicidegirls.com/profiles/girl/followers/"
   private val HopefulsSortedByFollowers = "https://www.suicidegirls.com/profiles/hopeful/followers/"

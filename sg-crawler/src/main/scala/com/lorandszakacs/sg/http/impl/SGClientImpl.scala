@@ -21,11 +21,13 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl._
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers._
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
-import com.lorandszakacs.sg.http.{FailedToGetPageException, SGClient}
+import com.lorandszakacs.sg.http._
 import com.lorandszakacs.util.html._
 
+import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
@@ -35,34 +37,29 @@ import scala.concurrent.{ExecutionContext, Future}
   *
   */
 private[http] object SGClientImpl {
-  private[http] def apply()(implicit actorSystem: ActorSystem, ec: ExecutionContext) = new SGClientImpl(identity)
-
-  def apply(authenticate: HttpRequest => HttpRequest)(implicit actorSystem: ActorSystem, ec: ExecutionContext) = {
-    new SGClientImpl(authenticate)
-  }
-
+  private[http] def apply()(implicit actorSystem: ActorSystem, ec: ExecutionContext) = new SGClientImpl()
 }
 
-private[impl] final class SGClientImpl private(val authenticate: HttpRequest => HttpRequest)(implicit val actorSystem: ActorSystem, val ec: ExecutionContext) extends SGClient {
+private[impl] final class SGClientImpl private()(implicit val actorSystem: ActorSystem, val ec: ExecutionContext) extends SGClient {
 
   private val http: HttpExt = Http()
   private implicit val materializer = ActorMaterializer()
 
-  override def getPage(uri: Uri): Future[Html] = {
+  override def getPage(uri: Uri)(implicit authentication: Authentication): Future[Html] = {
     val req = HttpRequest(
       method = GET,
       uri = uri
     )
-    val reqWithAuth = authenticate(req)
+    val reqWithAuth = authentication(req)
 
     for {
       response <- http.singleRequest(reqWithAuth)
       body <- if (response.status == StatusCodes.OK || response.status == StatusCodes.NotModified) {
-        response.entity.dataBytes.runFold(ByteString(""))(_ ++ _)
+        response.entityAsString
       } else {
         Future.failed(FailedToGetPageException(uri, response))
       }
-      html = Html(body.decodeString("UTF-8"))
+      html = Html(body)
     } yield html
   }
 
@@ -110,10 +107,65 @@ private[impl] final class SGClientImpl private(val authenticate: HttpRequest => 
     *   Cookie: sessionid=``$FinalSessionID``; csrftoken=``$FinalCSRFToken``
     * }}}
     */
-  override def authenticate(username: String, plainTextPassword: String): Future[(HttpRequest => HttpRequest)] = {
+  def authenticate(username: String, plainTextPassword: String): Future[Authentication] = {
+    case class InitialData(
+      csrfToken: String,
+      SessionID: String
+    )
+    def getCookiesFromStartpage: Future[InitialData] = {
+      //TODO: generate random values for these two cookies
+      val cookies = Cookie(
+        HttpCookiePair("sessionid", "gAJ9cQEoVQpnZW5lcmljX2FkcQJOVQJhZHEDTnUu:1bK62V:sirfAXi5Ay75rzDpJwB5tGhZH0Q"),
+        HttpCookiePair("csrftoken", "ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z")
+      )
+      val headers: List[HttpHeader] = List(
+        cookies,
+        Origin(HttpOrigin("https://www.suicidegirls.com"))
+      )
+      val getRequest = HttpRequest(
+        method = GET,
+        uri = "https://www.suicidegirls.com/",
+        headers = headers
+      )
+      for {
+        response <- http.singleRequest(getRequest)
+        cookies <- if (response.status != StatusCodes.OK) {
+          Future.failed(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
+        } else {
+          val headers = response._2
+          val cookies: Seq[HttpCookie] = headers.filter(_.is("set-cookie")).map(c => HttpCookiePair(c.name(), c.value()).toCookie())
+          if (cookies.length != 2) {
+            Future.failed(ExpectedTwoSetCookieHeadersFromHomepage(getRequest.uri, headers))
+          } else {
+            println {
+              s"""
+                 |
+                 |------------------------
+                 |${cookies.mkString("\n\n")}
+                 |------------------------
+                 |
+              """.stripMargin
+            }
+            Future.successful(cookies)
+          }
+        }
+      } yield InitialData(
+        csrfToken = cookies.head.value,
+        SessionID = cookies(1).value
+      )
+    }
 
+    for {
+      initialData <- getCookiesFromStartpage
+    } yield { http: HttpRequest =>
+      http.cookies
+    }
 
     Future.failed(new RuntimeException("... lol, you forgot to delete SGClientImpl.authenticate"))
+  }
+
+  implicit class BuffedHttpResponse(val r: HttpResponse)(implicit val ec: ExecutionContext) {
+    def entityAsString: Future[String] = r.entity.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))
   }
 
 }

@@ -19,6 +19,6 @@ trait PageCrawlerAssembly extends SGClientAssembly {
 
   def modelAndSetCrawler: ModelAndPhotoSetCrawler = _modelAndSetCrawler
 
-  private[crawler] lazy val _modelAndSetCrawler = new ModelAndPhotoSetCrawlerImpl(sgClientWithNoAuthentication)
+  private[crawler] lazy val _modelAndSetCrawler = new ModelAndPhotoSetCrawlerImpl(suicideGirlsClient)
 
 }

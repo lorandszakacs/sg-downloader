@@ -18,9 +18,6 @@ trait SGClientAssembly {
 
   implicit def executionContext: ExecutionContext
 
-  lazy val sgClientWithNoAuthentication: SGClient = SGClientImpl(identity)
-
-  def sgClientWithAuthentication(authentication: HttpRequest => HttpRequest): SGClient =
-    SGClientImpl(authentication)
+  lazy val suicideGirlsClient: SGClient = SGClientImpl()
 
 }

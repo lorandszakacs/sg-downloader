@@ -1,4 +1,4 @@
-package com.lorandszakacs.sg.crawler.page
+package com.lorandszakacs.sg.crawler.impl
 
 import akka.actor.ActorSystem
 import com.lorandszakacs.sg.http
@@ -7,7 +7,6 @@ import org.scalatest.time.{Millis, Span}
 import org.scalatest.{Matchers, fixture}
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration
 
 /**
   *

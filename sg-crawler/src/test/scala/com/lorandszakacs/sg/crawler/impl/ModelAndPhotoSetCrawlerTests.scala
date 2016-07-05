@@ -2,7 +2,6 @@ package com.lorandszakacs.sg.crawler.impl
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpRequest
-import com.lorandszakacs.sg.crawler.page.PageCrawlerTest
 import com.lorandszakacs.sg.crawler.{ModelAndPhotoSetCrawler, PageCrawlerAssembly}
 import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.model._
