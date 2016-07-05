@@ -29,7 +29,7 @@ object SGHarvesterBuild extends CommonBuild {
   lazy val sgModel = RootProject(file("../sg-model-repo"))
 
   lazy val root = Project(
-    "sg-crawler",
+    "sg-harvester",
     file("."),
     settings = commonBuildSettings ++
       Seq(
@@ -70,7 +70,7 @@ object SGHarvesterBuild extends CommonBuild {
   override def pluginSettings: Seq[Setting[_]] = Nil
 
   override def otherSettings: Seq[Setting[_]] = Seq(
-    fork in run := true,
+    //    fork in run := true,
     javaOptions in run ++= Seq(
       "-Xms1G", "-Xmx4G", "-XX:+UseConcMarkSweepGC"
     )
