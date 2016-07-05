@@ -44,7 +44,7 @@ private[http] object SGClientImpl {
 private[impl] final class SGClientImpl private()(implicit val actorSystem: ActorSystem, val ec: ExecutionContext) extends SGClient {
 
   private val http: HttpExt = Http()
-  private implicit val materializer = ActorMaterializer()
+  private implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   override def getPage(uri: Uri)(implicit authentication: Authentication): Future[Html] = {
     val req = get(uri)
@@ -66,13 +66,7 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
     * ------------------------------------------
     * 1. GET ``https://www.suicidegirls.com/``
     *
-    * we add clientSide the cookies (THIS IS OBSOLETE!!!!):
-    * {{{
-    *   Origin: https://www.suicidegirls.com
-    *   Cookie: sessionid="gAJ9cQEoVQpnZW5lcmljX2FkcQJOVQJhZHEDTnUu:1bK62V:sirfAXi5Ay75rzDpJwB5tGhZH0Q"; csrftoken=ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z
-    * }}}
-    *
-    * we receive:
+    * we receive headers:
     *
     * {{{
     *   Set-Cookie: csrftoken=ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z; expires=Mon, 03-Jul-2017 15:44:51 GMT; Max-Age=31449600; Path=/
@@ -86,7 +80,9 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
     * we add headers:
     * {{{
     *   Origin: https://www.suicidegirls.com
+    *   Referer: https://www.suicidegirls.com/
     *   Cookie: csrftoken=``$CSRF``; sessionid=``$SessionID``
+    *   X-CSRFToken: $CSRF
     *   Form Data: csrfmiddlewaretoken=``$CSRF``&username=``$username``&password=``$plainTextPassword``
     * }}}
     *
@@ -109,8 +105,17 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
   def authenticate(username: String, plainTextPassword: String): Future[Authentication] = {
     case class StartPageTokens(
       csrfToken: String,
-      SessionID: String
-    )
+      sessionID: String
+    ) {
+      def toCookieHeader: RawHeader = RawHeader("Cookie", s"csrftoken=$csrfToken; sessionid=$sessionID")
+    }
+
+    case class LoginTokens(
+      csrfToken: String,
+      sessionID: String
+    ) {
+      def toCookieHeader: RawHeader = RawHeader("Cookie", s"sessionid=$sessionID; csrftoken=$csrfToken")
+    }
     /**
       * Needed because SG sends us bullshit, apparently:
       * {{{
@@ -134,13 +139,9 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
     }
 
     def getTokensFromStartPage: Future[StartPageTokens] = {
-      val headers: List[HttpHeader] = List(
-        Origin(HttpOrigin("https://www.suicidegirls.com"))
-      )
       val getRequest = HttpRequest(
         method = GET,
-        uri = "https://www.suicidegirls.com/",
-        headers = headers
+        uri = "https://www.suicidegirls.com/"
       )
       for {
         response <- http.singleRequest(getRequest)
@@ -173,12 +174,69 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
               sessionId <- Try(rawCookies.find(_._1 == "sessionid").getOrElse(throw ExpectedSessionIdSGHomepageException(getRequest.uri))._2)
             } yield StartPageTokens(
               csrfToken = csrfToken,
-              SessionID = sessionId
+              sessionID = sessionId
             )
             Future fromTry tokens
           }
         }
       } yield result
+    }
+
+    def postLoginAndGetTokens(tokens: StartPageTokens): Future[LoginTokens] = {
+      val headers: Seq[HttpHeader] = Seq(
+        tokens.toCookieHeader,
+        RawHeader("X-CSRFToken", tokens.csrfToken)
+      )
+      val entity = FormData.apply(
+        "csrfmiddlewaretoken" -> tokens.csrfToken,
+        "username" -> username,
+        "password" -> plainTextPassword
+      ).toEntity(HttpCharsets.`UTF-8`)
+
+      val loginRequest = post(
+        uri = "https://www.suicidegirls.com/login/",
+        headers = headers,
+        entity = entity
+      )
+
+      for {
+        response <- http.singleRequest(DefaultSGAuthentication(loginRequest))
+        tokens <- if (response.status != StatusCodes.Created) {
+          Future.failed(FailedToPostLoginException(loginRequest, response))
+        } else {
+          val headers = response._2
+
+          /**
+            * At this point in time the cookies will look like this:
+            * {{{
+                 Set-Cookie=sessionid=gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8
+                 Set-Cookie=csrftoken=ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z
+            * }}}
+            */
+          val wrongCookies: Seq[HttpCookie] = headers.filter(_.is("set-cookie")).map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
+          if (wrongCookies.length != 2) {
+            Future.failed(ExpectedTwoSetCookieHeadersFromLoginResponseException(loginRequest.uri, headers))
+          } else {
+            /**
+              * Will look like:
+              * {{{
+              *   (sessionid, gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8)
+              *   (csrftoken, ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z)
+              * }}}
+              */
+            val rawCookies: Seq[(String, String)] = wrongCookies flatMap (c => splitAtEqualChar(c.value))
+            val tokens = for {
+              csrfToken <- Try(rawCookies.find(_._1 == "csrftoken").getOrElse(throw ExpectedCSRFTokenOnSGLoginResponseException(loginRequest.uri))._2)
+              sessionId <- Try(rawCookies.find(_._1 == "sessionid").getOrElse(throw ExpectedSessionIdSGLoginResponseException(loginRequest.uri))._2)
+            } yield LoginTokens(
+              csrfToken = csrfToken,
+              sessionID = sessionId
+            )
+            Future fromTry tokens
+          }
+        }
+
+      } yield tokens
     }
 
     /**
@@ -224,21 +282,14 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
 
     for {
       initialTokens: StartPageTokens <- getTokensFromStartPage
-      _ = println {
-        s"""
-           |
-          |
-          |Managed to extract tokens:
-           |$initialTokens
-           |
-          |
-          |
-        """.stripMargin
-      }
+      loginTokens: LoginTokens <- postLoginAndGetTokens(initialTokens)
       newAuthentication = new Authentication {
         override def needsRefresh: Boolean = false
 
-        override def apply(req: HttpRequest): HttpRequest = req
+        override def apply(req: HttpRequest): HttpRequest = {
+          val newHeaders = req.headers :+ loginTokens.toCookieHeader
+          req.withHeaders(newHeaders)
+        }
       }
 
       _ <- verifyAuthentication(newAuthentication)
@@ -246,20 +297,24 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
   }
 
   private def get(uri: Uri, headers: Seq[HttpHeader] = Nil): HttpRequest = {
-    HttpRequest(
-      method = GET,
-      uri = uri,
-      headers = headers
-    )
+    DefaultSGAuthentication {
+      HttpRequest(
+        method = GET,
+        uri = uri,
+        headers = headers
+      )
+    }
   }
 
   private def post(uri: Uri, headers: Seq[HttpHeader] = Nil, entity: RequestEntity): HttpRequest = {
-    HttpRequest(
-      method = GET,
-      uri = uri,
-      headers = headers,
-      entity = entity
-    )
+    DefaultSGAuthentication {
+      HttpRequest(
+        method = POST,
+        uri = uri,
+        headers = headers,
+        entity = entity
+      )
+    }
   }
 
   implicit class BuffedHttpResponse(val r: HttpResponse)(implicit val ec: ExecutionContext) {

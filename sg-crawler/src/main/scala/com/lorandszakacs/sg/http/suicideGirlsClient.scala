@@ -1,6 +1,7 @@
 package com.lorandszakacs.sg.http
 
-import akka.http.scaladsl.model.{HttpRequest, Uri}
+import akka.http.scaladsl.model.headers.{Referer, HttpOrigin, Origin}
+import akka.http.scaladsl.model.{HttpHeader, HttpRequest, Uri}
 import com.lorandszakacs.util.html.Html
 
 import scala.concurrent.Future
@@ -32,8 +33,13 @@ trait Authentication {
   def needsRefresh: Boolean
 }
 
-object IdentityAuthentication extends Authentication {
-  override def apply(req: HttpRequest): HttpRequest = req
+object DefaultSGAuthentication extends Authentication {
+  private val OriginHeader: Origin = Origin(HttpOrigin("https://www.suicidegirls.com"))
+  private val RefererHeader: Referer = Referer("https://www.suicidegirls.com/")
+
+  private val defaultSGHeaders: Seq[HttpHeader] = Seq(OriginHeader, RefererHeader)
+
+  override def apply(req: HttpRequest): HttpRequest = req.withHeaders(req.headers ++ defaultSGHeaders)
 
   override def needsRefresh: Boolean = true
 }

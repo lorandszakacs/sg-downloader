@@ -26,7 +26,7 @@ import scala.util.{Failure, Success, Try}
   */
 final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec: ExecutionContext) extends ModelAndPhotoSetCrawler with SGURLBuilder with StrictLogging {
 
-  private[this] implicit val Authentication: Authentication = IdentityAuthentication
+  private[this] implicit val Authentication: Authentication = DefaultSGAuthentication
 
   private val SGsSortedByFollowers = "https://www.suicidegirls.com/profiles/girl/followers/"
   private val HopefulsSortedByFollowers = "https://www.suicidegirls.com/profiles/hopeful/followers/"

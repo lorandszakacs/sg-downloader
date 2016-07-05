@@ -53,17 +53,25 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
   private val HarvestNew = Command(
     "4",
     """
-      |harvest and reindex new entires. Will mark for reindexing all SGs and hopefulls that were created, from:
+      |harvest and reindex new entires. Will mark for reindexing all SGs and hopefuls that were created, from:
       |https://www.suicidegirls.com/photos/all/recent/all/
+    """.stripMargin
+  )
+
+  private val GatherSetInformation = Command(
+    "5",
+    """
+      |gather all set information for the suicidegirls, and hopefuls marked as to index.
+      |This requires authentication since it goes on the pages of each model.
     """.stripMargin
   )
 
   private val Exit = Command(
     "0",
-    "exit."
+    "\nexit."
   )
 
-  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, HarvestNew).sortBy(_.id)
+  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, HarvestNew, GatherSetInformation).sortBy(_.id)
 
   private implicit val patienceConfig: PatienceConfig = PatienceConfig(200 millis)
   private implicit val ec: ExecutionContext = harvesterAssembly.executionContext
@@ -89,13 +97,11 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
         case Help.id =>
 
           val string = all.map { c =>
-            s"${c.id} -> ${c.description}"
+            s"${c.id}: ${c.description}"
           } mkString "\n"
           print {
             s"""
-               |
-               |$string
-               |
+               |$string${"\n"}
             """.stripMargin
           }
 
@@ -105,11 +111,9 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
           val future = harvester.reindexSGNames(Int.MaxValue)
           Await.result(future, 2 hours)
           print {
-            """
-              |
-              |-------------- finished harvesting and queuing to reindex Suicide Girls --------------
-              |
-            """.stripMargin
+            s"""|
+                |-------------- finished harvesting and queuing to reindex Suicide Girls --------------
+                |""".stripMargin
           }
 
 
@@ -119,11 +123,9 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
           val future = harvester.reindexHopefulsNames(Int.MaxValue)
           Await.result(future, 2 hours)
           print {
-            """
-              |
-              |-------------- finished harvesting and queuing to reindex Hopefuls --------------
-              |
-            """.stripMargin
+            s"""|
+                |-------------- finished harvesting and queuing to reindex Hopefuls --------------
+                |""".stripMargin
           }
 
         //----------------------------------------
@@ -132,11 +134,9 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
           val future = harvester.reindexAll(Int.MaxValue)
           Await.result(future, 4 hours)
           print {
-            """
-              |
-              |-------------- finished harvesting and queuing to reindex all --------------
-              |
-            """.stripMargin
+            s"""|
+                |-------------- finished harvesting and queuing to reindex all --------------
+                |""".stripMargin
           }
 
         //----------------------------------------
@@ -148,14 +148,31 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
           print {
             s"""
                |
-               |-------------- finished harvesting and queuing to reindex all new entries --------------
+               |-------------- finished harvesting and queuing to reindex all new entries -------------
                |${allNew.map(_.name.name).mkString("\n")}
                |---------------------------------------------------------------------------------------
-               |
-            """.stripMargin
+               |""".stripMargin
           }
 
         //----------------------------------------
+
+        case GatherSetInformation.id =>
+          val username: String = {
+            print("\nplease insert username: ")
+            StdIn.readLine().trim()
+          }
+          val plainTextPassword: String = {
+            print("\nplease insert password: ")
+            StdIn.readLine().trim()
+          }
+          val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username, plainTextPassword)
+          val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = Await.result(future, 12 hours).`SG|Hopeful`
+          print {
+            s"""
+               |Suicide Girls: ${newSGS.length}
+               |Hopefuls: ${newHopefuls.length}
+               |""".stripMargin
+          }
 
         case unknown =>
           println(s"unknown command: $unknown. Please type help for more information.")

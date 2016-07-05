@@ -14,7 +14,7 @@ import scala.concurrent.{Future, ExecutionContext}
   */
 private[crawler] class PhotoMediaLinksCrawlerImpl(private var sGClient: SGClient)(implicit val ec: ExecutionContext) extends PhotoMediaLinksCrawler with SGURLBuilder with StrictLogging {
 
-  private[this] implicit var _authentication: Authentication = IdentityAuthentication
+  private[this] implicit var _authentication: Authentication = DefaultSGAuthentication
 
   override def authenticateIfNeeded(username: String, plainTextPassword: String): Future[Authentication] = {
     if (authentication.needsRefresh) {
