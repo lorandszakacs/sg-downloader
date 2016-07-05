@@ -102,7 +102,7 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
           print {
             s"""
                |$string${"\n"}
-            """.stripMargin
+               |""".stripMargin
           }
 
         //----------------------------------------
