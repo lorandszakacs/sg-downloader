@@ -44,6 +44,11 @@ trait SGHarvester {
   /**
     * Gathers all, or the max number of [[PhotoSet]] from the last harvesting.
     *
+    * Effects:
+    * - updates: [[SuicideGirlIndex]], and [[HopefulIndex]]
+    * - handles "transitions" of [[Hopeful]] to [[SuicideGirl]]
+    *
+    *
     * It harvests the following page:
     * https://www.suicidegirls.com/photos/
     */
