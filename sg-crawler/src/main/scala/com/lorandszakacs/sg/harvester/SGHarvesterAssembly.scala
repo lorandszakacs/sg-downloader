@@ -24,6 +24,7 @@ trait SGHarvesterAssembly extends PageCrawlerAssembly with SGClientAssembly with
 
   private[harvester] lazy val _sgHarvester = new SGHarvesterImpl(
     modelAndSetCrawler,
+    photoMediaLinksCrawler,
     sgModelRepository
   )
 

@@ -54,4 +54,16 @@ trait SGHarvester {
     */
   def gatherNewestPhotosAndUpdateIndex(maxNrOfModels: Int)(implicit pc: PatienceConfig): Future[List[Model]]
 
+
+  /**
+    * If necessary, will attempt to authenticate with the given username and password.
+    *
+    * Will gather all [[PhotoSet]]s, with all the [[PhotoSet.photos]] for all the [[SuicideGirl]]s
+    * and [[Hopeful]]s whose name can be found in the [[SuicideGirlIndex.needsReindexing]], and
+    * [[HopefulIndex.needsReindexing]] collections, respectively. Removes them from there if
+    * the gathering of all information was successful.
+    *
+    * @return
+    */
+  def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username: String, password: String)(implicit pc: PatienceConfig): Future[List[Model]]
 }

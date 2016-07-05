@@ -1,7 +1,7 @@
 package com.lorandszakacs.sg.crawler
 
 import akka.actor.ActorSystem
-import com.lorandszakacs.sg.crawler.impl.ModelAndPhotoSetCrawlerImpl
+import com.lorandszakacs.sg.crawler.impl.{PhotoMediaLinksCrawlerImpl, ModelAndPhotoSetCrawlerImpl}
 import com.lorandszakacs.sg.http.SGClientAssembly
 
 import scala.concurrent.ExecutionContext
@@ -19,6 +19,10 @@ trait PageCrawlerAssembly extends SGClientAssembly {
 
   def modelAndSetCrawler: ModelAndPhotoSetCrawler = _modelAndSetCrawler
 
+  def photoMediaLinksCrawler: PhotoMediaLinksCrawler = _photoCrawler
+
   private[crawler] lazy val _modelAndSetCrawler = new ModelAndPhotoSetCrawlerImpl(suicideGirlsClient)
+
+  private[crawler] lazy val _photoCrawler = new PhotoMediaLinksCrawlerImpl(suicideGirlsClient)
 
 }

@@ -29,6 +29,7 @@ import com.lorandszakacs.util.html._
 
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 /**
   *
@@ -46,10 +47,7 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
   private implicit val materializer = ActorMaterializer()
 
   override def getPage(uri: Uri)(implicit authentication: Authentication): Future[Html] = {
-    val req = HttpRequest(
-      method = GET,
-      uri = uri
-    )
+    val req = get(uri)
     val reqWithAuth = authentication(req)
 
     for {
@@ -57,7 +55,7 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
       body <- if (response.status == StatusCodes.OK || response.status == StatusCodes.NotModified) {
         response.entityAsString
       } else {
-        Future.failed(FailedToGetPageException(uri, response))
+        Future.failed(FailedToGetPageException(uri, req, response))
       }
       html = Html(body)
     } yield html
@@ -67,7 +65,8 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
     * Steps:
     * ------------------------------------------
     * 1. GET ``https://www.suicidegirls.com/``
-    * we add clientSide the cookies:
+    *
+    * we add clientSide the cookies (THIS IS OBSOLETE!!!!):
     * {{{
     *   Origin: https://www.suicidegirls.com
     *   Cookie: sessionid="gAJ9cQEoVQpnZW5lcmljX2FkcQJOVQJhZHEDTnUu:1bK62V:sirfAXi5Ay75rzDpJwB5tGhZH0Q"; csrftoken=ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z
@@ -108,18 +107,34 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
     * }}}
     */
   def authenticate(username: String, plainTextPassword: String): Future[Authentication] = {
-    case class InitialData(
+    case class StartPageTokens(
       csrfToken: String,
       SessionID: String
     )
-    def getCookiesFromStartpage: Future[InitialData] = {
-      //TODO: generate random values for these two cookies
-      val cookies = Cookie(
-        HttpCookiePair("sessionid", "gAJ9cQEoVQpnZW5lcmljX2FkcQJOVQJhZHEDTnUu:1bK62V:sirfAXi5Ay75rzDpJwB5tGhZH0Q"),
-        HttpCookiePair("csrftoken", "ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z")
-      )
+    /**
+      * Needed because SG sends us bullshit, apparently:
+      * {{{
+          Exception in thread "main" java.lang.IllegalArgumentException: requirement failed: ';' not allowed in cookie content ('sessionid=gAJ9cQEoVQJhZE5VCmdlbmVyaWNfYWROdS4:1bKQ7K:cQ3Lq5uJ35Ynw6HuBsaa2hX2o3E; Expires=Tue, 19 Jul 2016 13:10:22 GMT; Max-Age=1209600; Path=/; HttpOnly')
+      * }}}
+      */
+    def sanitizeCookiesValue(value: String): String = {
+      val firstSemicolonIndex = value.indexOf(";")
+      if (firstSemicolonIndex >= 0) {
+        value.take(firstSemicolonIndex)
+      } else value
+    }
+
+    def splitAtEqualChar(string: String): Option[(String, String)] = {
+      val split = string.split("=")
+      if (split.length != 2) {
+        None
+      } else Option {
+        (split(0), split(1))
+      }
+    }
+
+    def getTokensFromStartPage: Future[StartPageTokens] = {
       val headers: List[HttpHeader] = List(
-        cookies,
         Origin(HttpOrigin("https://www.suicidegirls.com"))
       )
       val getRequest = HttpRequest(
@@ -129,39 +144,122 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
       )
       for {
         response <- http.singleRequest(getRequest)
-        cookies <- if (response.status != StatusCodes.OK) {
+        result <- if (response.status != StatusCodes.OK) {
           Future.failed(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
         } else {
           val headers = response._2
-          val cookies: Seq[HttpCookie] = headers.filter(_.is("set-cookie")).map(c => HttpCookiePair(c.name(), c.value()).toCookie())
-          if (cookies.length != 2) {
+
+          /**
+            * At this point in time the cookies will look like this:
+            * {{{
+                 Set-Cookie=sessionid=gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8
+                 Set-Cookie=csrftoken=ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z
+            * }}}
+            */
+          val wrongCookies: Seq[HttpCookie] = headers.filter(_.is("set-cookie")).map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
+          if (wrongCookies.length != 2) {
             Future.failed(ExpectedTwoSetCookieHeadersFromHomepage(getRequest.uri, headers))
           } else {
-            println {
-              s"""
-                 |
-                 |------------------------
-                 |${cookies.mkString("\n\n")}
-                 |------------------------
-                 |
-              """.stripMargin
-            }
-            Future.successful(cookies)
+            /**
+              * Will look like:
+              * {{{
+              *   (sessionid, gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8)
+              *   (csrftoken, ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z)
+              * }}}
+              */
+            val rawCookies: Seq[(String, String)] = wrongCookies flatMap (c => splitAtEqualChar(c.value))
+            val tokens = for {
+              csrfToken <- Try(rawCookies.find(_._1 == "csrftoken").getOrElse(throw ExpectedCSRFTokenOnSGHomepageException(getRequest.uri))._2)
+              sessionId <- Try(rawCookies.find(_._1 == "sessionid").getOrElse(throw ExpectedSessionIdSGHomepageException(getRequest.uri))._2)
+            } yield StartPageTokens(
+              csrfToken = csrfToken,
+              SessionID = sessionId
+            )
+            Future fromTry tokens
           }
         }
-      } yield InitialData(
-        csrfToken = cookies.head.value,
-        SessionID = cookies(1).value
-      )
+      } yield result
+    }
+
+    /**
+      * Simply tries to go to:
+      * https://www.suicidegirls.com/members/$username/
+      *
+      * and verify that the login button is no longer there. HTML looks like the following:
+      * {{{
+            <div id="login">
+              <a class="button login">Login</a>
+
+              <div id="login-wrapper">
+                <div id="login-bg"></div>
+                <div class="login-form-wrapper">
+                  <form id="login-form" method="post" action="/login/"><input type='hidden' name='csrfmiddlewaretoken' value='0oNlDRsv9EHHr5jhfYW5OZIUYcD6ca8V' />
+                    <div>
+                      <div><!-- we built div city! -->
+                        <div class="errors"></div>
+                        <input id="username" autocapitalize="off" name="username" maxlength="254" />
+                        <input type="password" name="password" maxlength="100" />
+                        <button type="submit" class="button call-to-action">Login</button>
+                        <a class="forgot-password" href="/help/">Forgot Password?</a>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+      * }}}
+      */
+    def verifyAuthentication(newAuthentication: Authentication): Future[Unit] = {
+      val uri: Uri = s"https://www.suicidegirls.com/members/$username/"
+      for {
+        page <- getPage(uri)(newAuthentication)
+        loginButton = (page filter Tag("div") && Class("login-form-wrapper")).headOption
+        _ <- if (loginButton.isDefined) {
+          Future.failed(FailedToVerifyNewAuthenticationException(uri))
+        } else {
+          Future.successful(())
+        }
+      } yield ()
     }
 
     for {
-      initialData <- getCookiesFromStartpage
-    } yield { http: HttpRequest =>
-      http.cookies
-    }
+      initialTokens: StartPageTokens <- getTokensFromStartPage
+      _ = println {
+        s"""
+           |
+          |
+          |Managed to extract tokens:
+           |$initialTokens
+           |
+          |
+          |
+        """.stripMargin
+      }
+      newAuthentication = new Authentication {
+        override def needsRefresh: Boolean = false
 
-    Future.failed(new RuntimeException("... lol, you forgot to delete SGClientImpl.authenticate"))
+        override def apply(req: HttpRequest): HttpRequest = req
+      }
+
+      _ <- verifyAuthentication(newAuthentication)
+    } yield newAuthentication
+  }
+
+  private def get(uri: Uri, headers: Seq[HttpHeader] = Nil): HttpRequest = {
+    HttpRequest(
+      method = GET,
+      uri = uri,
+      headers = headers
+    )
+  }
+
+  private def post(uri: Uri, headers: Seq[HttpHeader] = Nil, entity: RequestEntity): HttpRequest = {
+    HttpRequest(
+      method = GET,
+      uri = uri,
+      headers = headers,
+      entity = entity
+    )
   }
 
   implicit class BuffedHttpResponse(val r: HttpResponse)(implicit val ec: ExecutionContext) {

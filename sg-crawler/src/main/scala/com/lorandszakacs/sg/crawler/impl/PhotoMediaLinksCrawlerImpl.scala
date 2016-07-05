@@ -17,11 +17,15 @@ private[crawler] class PhotoMediaLinksCrawlerImpl(private var sGClient: SGClient
   private[this] implicit var _authentication: Authentication = IdentityAuthentication
 
   override def authenticateIfNeeded(username: String, plainTextPassword: String): Future[Authentication] = {
-    for {
-      newAuthentication <- sGClient.authenticate(username, plainTextPassword)
-    } yield {
-      _authentication = newAuthentication
-      newAuthentication
+    if (authentication.needsRefresh) {
+      for {
+        newAuthentication <- sGClient.authenticate(username, plainTextPassword)
+      } yield {
+        _authentication = newAuthentication
+        newAuthentication
+      }
+    } else {
+      Future.successful(authentication)
     }
   }
 

@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.harvester.impl
 
-import com.lorandszakacs.sg.crawler.ModelAndPhotoSetCrawler
+import com.lorandszakacs.sg.crawler.{PhotoMediaLinksCrawler, ModelAndPhotoSetCrawler}
 import com.lorandszakacs.sg.harvester.SGHarvester
 import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model._
@@ -18,6 +18,7 @@ import scala.language.postfixOps
   */
 private[harvester] class SGHarvesterImpl(
   val modelCrawler: ModelAndPhotoSetCrawler,
+  val photoCrawler: PhotoMediaLinksCrawler,
   val modelRepo: SGModelRepository
 )(implicit
   val ec: ExecutionContext
@@ -79,4 +80,12 @@ private[harvester] class SGHarvesterImpl(
       _ <- modelRepo.updateIndexes(newHopefuls = newHopefuls, newSGs = newSGS)
     } yield newModels
   }
+
+  override def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username: String, password: String)(implicit pc: PatienceConfig): Future[List[Model]] = {
+    for {
+      _ <- photoCrawler.authenticateIfNeeded(username, password)
+      result: List[Model] <- Future.successful(Nil)
+    } yield result
+  }
+
 }
