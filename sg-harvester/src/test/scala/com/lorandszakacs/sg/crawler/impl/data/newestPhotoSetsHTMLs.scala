@@ -40,7 +40,7 @@ object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage {
         PhotoSet(
           url = "https://www.suicidegirls.com/girls/saria/album/2752796/infinite-fire/",
           title = "INFINITE FIRE",
-          date = new LocalDate("2016-07-04"),
+          date = LocalDate.today, //this set has a relative date, not absolute one
           photos = Nil
         )
       )
@@ -53,7 +53,7 @@ object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage {
         PhotoSet(
           url = "https://www.suicidegirls.com/girls/valkyria/album/2750395/pictures-of-home/",
           title = "PICTURES OF HOME",
-          date = new LocalDate("2016-07-04"),
+          date = LocalDate.today, //this set has a relative date, not absolute one
           photos = Nil
         )
       )
@@ -66,7 +66,7 @@ object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage {
         PhotoSet(
           url = "https://www.suicidegirls.com/members/rias/album/2749693/cats-blues/",
           title = "CAT'S BLUES",
-          date = new LocalDate("2016-07-04"),
+          date = LocalDate.today, //this set has a relative date, not absolute one,
           photos = Nil
         )
       )
@@ -79,7 +79,7 @@ object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage {
         PhotoSet(
           url = "https://www.suicidegirls.com/members/insatiableindica/album/2748045/gamer-girl/",
           title = "GAMER GIRL",
-          date = new LocalDate("2016-07-04"),
+          date = LocalDate.today, //this set has a relative date, not absolute one,
           photos = Nil
         )
       )
