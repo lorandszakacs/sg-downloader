@@ -13,7 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
   *
   */
 final private[model] class IndexDao(val db: DB)(implicit val ec: ExecutionContext) extends MongoDAO {
-  override protected val collectionName: String = "model-index"
+  override protected val collectionName: String = "models_index"
 
   private val SGIndexId = "suicide-girls-index"
   private val HopefulIndexId = "hopefuls-index"

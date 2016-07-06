@@ -13,7 +13,7 @@ import scala.concurrent._
   *
   */
 private[model] class SuicideGirlsDao(val db: DB)(implicit val ec: ExecutionContext) extends MongoDAO {
-  override protected val collectionName: String = "suicide-girls"
+  override protected val collectionName: String = "suicide_girls"
 
   def createOrUpdate(sg: SuicideGirl): Future[Unit] = {
     val q = BSONDocument(_id -> sg.name)
