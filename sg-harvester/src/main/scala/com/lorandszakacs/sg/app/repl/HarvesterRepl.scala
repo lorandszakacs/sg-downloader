@@ -66,17 +66,25 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
     """.stripMargin
   )
 
+  private val ShowModel = Command(
+    "show",
+    """
+      |Shows all information about a model.
+    """.stripMargin
+  )
+
   private val Exit = Command(
     "0",
     "\nexit."
   )
 
-  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, HarvestNew, GatherSetInformation).sortBy(_.id)
+  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, HarvestNew, GatherSetInformation, ShowModel).sortBy(_.id)
 
   private implicit val patienceConfig: PatienceConfig = PatienceConfig(200 millis)
   private implicit val ec: ExecutionContext = harvesterAssembly.executionContext
 
   private val harvester: SGHarvester = harvesterAssembly.sgHarvester
+  private val repo: SGModelRepository = harvesterAssembly.sgModelRepository
 
   def start(): Unit = {
     println("type help for instructions")
@@ -103,6 +111,22 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
             s"""
                |$string${"\n"}
                |""".stripMargin
+          }
+
+        //----------------------------------------
+
+        case ShowModel.id =>
+          print("name (case insensitive): ")
+          val name = StdIn.readLine()
+          val modelName = ModelName(name)
+          val future = repo.find(modelName)
+          val model = Await.result(future, 1 minute)
+          if (model.isDefined) {
+            println {
+              s"${model.get.toString}"
+            }
+          } else {
+            println(s"could not find model ${modelName.name}")
           }
 
         //----------------------------------------

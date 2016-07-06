@@ -40,6 +40,8 @@ trait SGModelRepository {
     */
   def createOrUpdateHopeful(hopeful: Hopeful): Future[Unit]
 
+  def find(modelName: ModelName): Future[Option[Model]]
+
 }
 
 

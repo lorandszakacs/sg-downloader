@@ -94,4 +94,11 @@ private[model] class SGModelRepositoryImpl(
     } yield ()
   }
 
+  override def find(modelName: ModelName): Future[Option[Model]] = {
+    for {
+      sg: Option[SuicideGirl] <- suicideGirlsDao.find(modelName)
+      hopeful: Option[Hopeful] <- hopefulsDao.find(modelName)
+    } yield if (sg.isDefined) sg else hopeful
+  }
+
 }

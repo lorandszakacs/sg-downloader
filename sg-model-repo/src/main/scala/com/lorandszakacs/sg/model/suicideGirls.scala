@@ -184,7 +184,7 @@ final case class PhotoSet(
 
   override def toString =
     s"""
-       |${"\t"}title = $title
+       |${"\t"}title = ${title.name}
        |${"\t"}date  = ${date.toString(Util.dateTimeFormat)}
        |${"\t"}uri   = ${url.toString}
        |${photos.mkString("\t{\n", "\t\t\n", "\n\t}")}
