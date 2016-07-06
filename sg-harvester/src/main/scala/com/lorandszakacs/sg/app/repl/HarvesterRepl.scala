@@ -121,12 +121,20 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
           val modelName = ModelName(name)
           val future = repo.find(modelName)
           val model = Await.result(future, 1 minute)
-          if (model.isDefined) {
-            println {
-              s"${model.get.toString}"
-            }
-          } else {
-            println(s"could not find model ${modelName.name}")
+
+          model match {
+            case Some(sg: SuicideGirl) =>
+              println {
+                sg.reverseSets.toString
+              }
+
+            case Some(hopeful: Hopeful) =>
+              println {
+                hopeful.reverseSets.toString
+              }
+
+            case None =>
+              println(s"could not find model ${modelName.name}")
           }
 
         //----------------------------------------

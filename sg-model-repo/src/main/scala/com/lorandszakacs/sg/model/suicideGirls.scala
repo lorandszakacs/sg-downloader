@@ -54,16 +54,17 @@ sealed trait Model {
   final def numberOfPhotos: Int = photoSets.map(_.photos.length).sum
 
   override def toString =
-    s"""
-        ---------${this.getClass.getSimpleName}: ${name.name} : ${photoSets.length}---------
-        uri=$photoSetURI
-        ${photoSets.mkString("", "\n", "")}
-      """.stripMargin(' ')
+    s"""|---------${this.getClass.getSimpleName}: ${name.name} : ${photoSets.length}---------
+        |url=$photoSetURI
+        |${photoSets.mkString("", "\n", "")}
+        |""".stripMargin
 }
 
 sealed trait ModelUpdater[T <: Model] {
   this: Model =>
   def updatePhotoSets(newPhotoSets: List[PhotoSet]): T
+
+  final def reverseSets: T = updatePhotoSets(this.photoSets.reverse)
 
   final def addPhotoSet(ph: PhotoSet): T = {
     if (photoSets.exists(_.id == ph.id)) {
@@ -184,11 +185,11 @@ final case class PhotoSet(
 
   override def toString =
     s"""
-       |${"\t"}title = ${title.name}
-       |${"\t"}date  = ${date.toString(Util.dateTimeFormat)}
-       |${"\t"}uri   = ${url.toString}
-       |${photos.mkString("\t{\n", "\t\t\n", "\n\t}")}
-       |${"\t_________________"}
+       |title = ${title.name}
+       |date  = ${date.toString(Util.dateTimeFormat)}
+       |uri   = ${url.toString}
+       |${photos.mkString("{\n\t", "\n\t", "\n}")}
+       |${"_________________"}
       """.stripMargin
 }
 
@@ -197,7 +198,7 @@ final case class Photo(
   index: Int
 ) {
 
-  override def toString = s"\t\t${digitFormat(index)} -> $url"
+  override def toString = s"$url"
 
   private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
 }
