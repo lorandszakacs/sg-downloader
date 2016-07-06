@@ -131,7 +131,7 @@ final private[model] class IndexDao(val db: DB)(implicit val ec: ExecutionContex
           case None => throw new AssertionError("lastProcessedMarker.className field should exist")
           case Some(x) => x match {
             case "LastProcessedHopeful" => Option(lastProcessedHopefulBSON.read(bson))
-            case "LastProcessedSG" => Option(lastProcessedHopefulBSON.read(bson))
+            case "LastProcessedSG" => Option(lastProcessedSuicideGirlBSON.read(bson))
           }
         }
     }
