@@ -90,7 +90,7 @@ private[harvester] class SGHarvesterImpl(
       sgIndex <- modelRepo.suicideGirlIndex
       hopefulIndex <- modelRepo.hopefulIndex
 
-      sgs: List[Try[SuicideGirl]] <- Future.serialize(sgIndex.names) { sgName =>
+      sgs: List[Try[SuicideGirl]] <- Future.serialize(sgIndex.needsReindexing) { sgName =>
         harvestSuicideGirlAndUpdateIndex(sgName) map Success.apply recover {
           case NonFatal(e) =>
             logger.error(s"failed to harvest SG: ${sgName.name}", e)
@@ -98,7 +98,7 @@ private[harvester] class SGHarvesterImpl(
         }
       }
 
-      hopefuls: List[Try[Hopeful]] <- Future.serialize(hopefulIndex.names) { hopefulName =>
+      hopefuls: List[Try[Hopeful]] <- Future.serialize(hopefulIndex.needsReindexing) { hopefulName =>
         harvestHopefulAndUpdateIndex(hopefulName) map Success.apply recover {
           case NonFatal(e) =>
             logger.error(s"failed to harvest hopeful: ${hopefulName.name}", e)
