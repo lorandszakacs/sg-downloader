@@ -16,12 +16,11 @@
   */
 package com.lorandszakacs.sg.crawler.impl.data
 
-import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.model.PhotoSet
+import com.lorandszakacs.util.html.Html
 import org.joda.time.LocalDate
 
 import scala.io.Source
-import com.lorandszakacs.util.html.Html
 
 /**
   *

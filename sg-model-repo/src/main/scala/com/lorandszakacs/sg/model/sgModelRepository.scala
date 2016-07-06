@@ -36,6 +36,7 @@ trait SGModelRepository {
 
   /**
     * Updates or creates [[Hopeful]], removes the name from [[HopefulIndex.needsReindexing]]
+    *
     */
   def createOrUpdateHopeful(hopeful: Hopeful): Future[Unit]
 

@@ -19,16 +19,13 @@ package com.lorandszakacs.sg.app
 import java.util.concurrent.Executors
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.HttpRequest
 import com.lorandszakacs.sg.app.repl.HarvesterRepl
 import com.lorandszakacs.sg.harvester.SGHarvesterAssembly
-import com.lorandszakacs.sg.http.PatienceConfig
-import com.lorandszakacs.sgd.repl.Repl
 import com.typesafe.scalalogging.StrictLogging
-import reactivemongo.api.{MongoConnection, MongoDriver, DefaultDB}
+import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
 
-import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext}
 import scala.language.postfixOps
 
 /**

@@ -3,9 +3,8 @@ package com.lorandszakacs.sg.crawler.impl
 import com.lorandszakacs.sg.crawler.{DidNotFindAnyPhotoLinksOnSetPageException, PhotoMediaLinksCrawler}
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.Photo
-import com.typesafe.scalalogging.StrictLogging
-
 import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.typesafe.scalalogging.StrictLogging
 
 import scala.util.Failure
 import scala.util.control.NonFatal

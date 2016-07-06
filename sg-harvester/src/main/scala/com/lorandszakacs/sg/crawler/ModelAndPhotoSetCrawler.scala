@@ -6,7 +6,6 @@ import com.lorandszakacs.sg.model._
 import org.joda.time.DateTime
 
 import scala.concurrent.Future
-import scala.concurrent.duration.FiniteDuration
 
 /**
   *

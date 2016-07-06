@@ -1,7 +1,7 @@
 package com.lorandszakacs.sg.crawler.impl
 
 import akka.http.scaladsl.model.Uri
-import com.lorandszakacs.sg.crawler.{ModelAndPhotoSetCrawler, FailedToRepeatedlyLoadPageException}
+import com.lorandszakacs.sg.crawler.{FailedToRepeatedlyLoadPageException, ModelAndPhotoSetCrawler}
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.Model.ModelFactory
 import com.lorandszakacs.sg.model._

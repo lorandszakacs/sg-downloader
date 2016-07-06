@@ -1,13 +1,11 @@
 package com.lorandszakacs.sg.crawler.impl
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.HttpRequest
 import com.lorandszakacs.sg.crawler.{ModelAndPhotoSetCrawler, PageCrawlerAssembly}
 import com.lorandszakacs.sg.http.SGClientAssembly
-import com.lorandszakacs.sg.model.Model.{SuicideGirlFactory, HopefulFactory}
+import com.lorandszakacs.sg.model.Model.{HopefulFactory, SuicideGirlFactory}
 import com.lorandszakacs.sg.model._
-import org.joda.time.{DateTime, LocalDate}
-import org.joda.time.format.DateTimeFormat
+import org.joda.time.LocalDate
 import org.scalatest.Outcome
 
 import scala.concurrent.ExecutionContext

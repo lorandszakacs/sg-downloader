@@ -15,9 +15,9 @@
   *
   */
 
-import sbt._
-import Keys._
 import com.lorandszakacs.sbt.commonbuild.plugin.CommonBuildPlugin._
+import sbt.Keys._
+import sbt._
 
 /**
   * @author Lorand Szakacs, lsz@lorandszakacs.com

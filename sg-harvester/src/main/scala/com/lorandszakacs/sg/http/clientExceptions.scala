@@ -4,8 +4,8 @@ import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
 
-import scala.concurrent.{ExecutionContext, Future, Await}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 import scala.util.Try
 
@@ -42,7 +42,7 @@ private[http] object ExceptionHelpers {
 
 }
 
-import ExceptionHelpers._
+import com.lorandszakacs.sg.http.ExceptionHelpers._
 
 final case class FailedToGetPageException(uri: Uri, req: HttpRequest, response: HttpResponse)(implicit mat: ActorMaterializer, ec: ExecutionContext) extends Exception(
   s"Failed to get page from `${uri.toString}`. Response: ${response.stringify}\nRequest Headers:\n${stringifyHeaders(req.headers)}"

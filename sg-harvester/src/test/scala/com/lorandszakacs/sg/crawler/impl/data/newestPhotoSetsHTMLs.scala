@@ -1,6 +1,5 @@
 package com.lorandszakacs.sg.crawler.impl.data
 
-import akka.http.scaladsl.model.Uri
 import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html.Html

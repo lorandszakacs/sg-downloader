@@ -38,7 +38,10 @@ object SGModelRepoBuild extends CommonBuild {
 
   override def runtimeDependencies: Seq[ModuleID] = Seq(
     dev.nScalaJodaTime,
-    dev.reactiveMongo
+    dev.reactiveMongo,
+
+    dev.logbackClassic,
+    dev.scalaLogging
   )
 
   override def otherDependencies: Seq[ModuleID] = Nil

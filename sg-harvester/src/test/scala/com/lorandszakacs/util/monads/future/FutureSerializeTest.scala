@@ -1,5 +1,5 @@
 package com.lorandszakacs.util.monads.future
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._

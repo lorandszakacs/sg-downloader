@@ -1,13 +1,13 @@
 package com.lorandszakacs.sg.harvester.impl
 
-import com.lorandszakacs.sg.crawler.{PhotoMediaLinksCrawler, ModelAndPhotoSetCrawler}
+import com.lorandszakacs.sg.crawler.{DidNotFindAnyPhotoLinksOnSetPageException, ModelAndPhotoSetCrawler, PhotoMediaLinksCrawler}
 import com.lorandszakacs.sg.harvester.SGHarvester
 import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model.Model.{HopefulFactory, ModelFactory, SuicideGirlFactory}
 import com.lorandszakacs.sg.model._
+import com.lorandszakacs.util.monads.future.FutureUtil._
 import com.typesafe.scalalogging.StrictLogging
 
-import com.lorandszakacs.util.monads.future.FutureUtil._
 import scala.language.postfixOps
 import scala.util._
 import scala.util.control.NonFatal
@@ -137,7 +137,11 @@ private[harvester] class SGHarvesterImpl(
       modelWithNoPhotos <- modelCrawler.gatherPhotoSetInformationForModel(mf)(modelName)
       fullPhotoSets: List[PhotoSet] <- Future.serialize(modelWithNoPhotos.photoSets) { ph: PhotoSet =>
         for {
-          photos <- photoCrawler.gatherAllPhotosFromSetPage(ph.url)
+          photos <- photoCrawler.gatherAllPhotosFromSetPage(ph.url) recoverWith {
+            case e: DidNotFindAnyPhotoLinksOnSetPageException =>
+              logger.error(s"${ph.url} has no photos. `${mf.name} ${modelName.name}`")
+              Future.successful(Nil)
+          }
         } yield {
           Thread.sleep(pc.throttle.toMillis)
           ph.copy(photos = photos)

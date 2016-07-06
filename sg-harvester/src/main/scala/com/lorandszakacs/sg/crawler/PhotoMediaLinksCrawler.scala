@@ -1,7 +1,7 @@
 package com.lorandszakacs.sg.crawler
 
 import com.lorandszakacs.sg.http.Authentication
-import com.lorandszakacs.sg.model.{Photo, ModelName}
+import com.lorandszakacs.sg.model.Photo
 
 import scala.concurrent.Future
 

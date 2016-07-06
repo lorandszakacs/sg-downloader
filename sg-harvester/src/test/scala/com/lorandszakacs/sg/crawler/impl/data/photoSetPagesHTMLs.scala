@@ -19,10 +19,9 @@ package com.lorandszakacs.sg.crawler.impl.data
 import akka.http.scaladsl.model.Uri
 import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.model.PhotoSetTitle
+import com.lorandszakacs.util.html._
 
 import scala.io.Source
-
-import com.lorandszakacs.util.html._
 
 /**
   * @author Lorand Szakacs, lsz@lorandszakacs.com

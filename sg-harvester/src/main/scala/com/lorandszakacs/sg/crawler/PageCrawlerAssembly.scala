@@ -1,7 +1,7 @@
 package com.lorandszakacs.sg.crawler
 
 import akka.actor.ActorSystem
-import com.lorandszakacs.sg.crawler.impl.{PhotoMediaLinksCrawlerImpl, ModelAndPhotoSetCrawlerImpl}
+import com.lorandszakacs.sg.crawler.impl.{ModelAndPhotoSetCrawlerImpl, PhotoMediaLinksCrawlerImpl}
 import com.lorandszakacs.sg.http.SGClientAssembly
 
 import scala.concurrent.ExecutionContext

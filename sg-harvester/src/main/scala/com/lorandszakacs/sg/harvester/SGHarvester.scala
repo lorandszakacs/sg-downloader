@@ -4,7 +4,6 @@ import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model._
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
 /**

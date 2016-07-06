@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.http
 
-import akka.http.scaladsl.model.headers.{Referer, HttpOrigin, Origin}
+import akka.http.scaladsl.model.headers.{HttpOrigin, Origin, Referer}
 import akka.http.scaladsl.model.{HttpHeader, HttpRequest, Uri}
 import com.lorandszakacs.util.html.Html
 

@@ -1,7 +1,6 @@
 package com.lorandszakacs.sg.http
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.HttpRequest
 import com.lorandszakacs.sg.http.impl.SGClientImpl
 
 import scala.concurrent.ExecutionContext

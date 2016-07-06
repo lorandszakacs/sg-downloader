@@ -1,6 +1,7 @@
 package com.lorandszakacs.sg.model.impl
 
 import com.lorandszakacs.sg.model._
+import com.typesafe.scalalogging.StrictLogging
 
 import scala.concurrent.{Future, ExecutionContext}
 
@@ -14,7 +15,7 @@ private[model] class SGModelRepositoryImpl(
   val indexDao: IndexDao,
   val suicideGirlsDao: SuicideGirlsDao,
   val hopefulsDao: HopefulsDao
-)(implicit val ec: ExecutionContext) extends SGModelRepository {
+)(implicit val ec: ExecutionContext) extends SGModelRepository with StrictLogging {
 
   override def reindexSGs(names: List[ModelName]): Future[Unit] = {
     indexDao.rewriteSGIndex(names)
@@ -72,14 +73,24 @@ private[model] class SGModelRepositoryImpl(
   override def createOrUpdateSG(sg: SuicideGirl): Future[Unit] = {
     for {
       _ <- suicideGirlsDao.createOrUpdate(sg)
-      _ <- indexDao.markSGAsIndexed(sg.name)
+      emptyPhotoSets = sg.photoSets.filter(_.photos.isEmpty)
+      _ <- if (emptyPhotoSets.isEmpty) {
+        indexDao.markSGAsIndexed(sg.name)
+      } else {
+        Future.successful(())
+      }
     } yield ()
   }
 
   override def createOrUpdateHopeful(hopeful: Hopeful): Future[Unit] = {
     for {
       _ <- hopefulsDao.createOrUpdate(hopeful)
-      _ <- indexDao.markHopefulAsIndexed(hopeful.name)
+      emptyPhotoSets = hopeful.photoSets.filter(_.photos.isEmpty)
+      _ <- if (emptyPhotoSets.isEmpty) {
+        indexDao.markHopefulAsIndexed(hopeful.name)
+      } else {
+        Future.successful(())
+      }
     } yield ()
   }
 

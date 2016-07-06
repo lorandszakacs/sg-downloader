@@ -4,8 +4,8 @@ import com.lorandszakacs.sg.harvester.{SGHarvester, SGHarvesterAssembly}
 import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model._
 
-import scala.concurrent.{ExecutionContext, Await}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext}
 import scala.io.StdIn
 import scala.language.postfixOps
 
