@@ -123,18 +123,6 @@ final private[model] class IndexDao(val db: DB)(implicit val ec: ExecutionContex
 
   def lastProcessedStatus: Future[Option[LastProcessedMarker]] = {
     val q: BSONDocument = BSONDocument(_id -> LastProcessedId)
-    val b = collection.find(q).one[BSONDocument]
-    val r: Future[Option[LastProcessedMarker]] = b map {
-      case None => None
-      case Some(bson) =>
-        bson.getAs[String]("className") match {
-          case None => throw new AssertionError("lastProcessedMarker.className field should exist")
-          case Some(x) => x match {
-            case "LastProcessedHopeful" => Option(lastProcessedHopefulBSON.read(bson))
-            case "LastProcessedSG" => Option(lastProcessedSuicideGirlBSON.read(bson))
-          }
-        }
-    }
-    r
+    collection.find(q).one[LastProcessedMarker]
   }
 }

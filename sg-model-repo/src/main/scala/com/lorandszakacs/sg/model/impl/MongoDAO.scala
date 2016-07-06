@@ -86,4 +86,20 @@ private[impl] trait MongoDAO {
 
   implicit val lastProcessedSuicideGirlBSON: BSONDocumentReader[LastProcessedSG] with BSONDocumentWriter[LastProcessedSG] with BSONHandler[BSONDocument, LastProcessedSG] =
     Macros.handlerOpts[LastProcessedSG, SaveSimpleName]
+
+  implicit val lastProcessedMarkerBSON: BSONDocumentReader[LastProcessedMarker] =
+    new BSONDocumentReader[LastProcessedMarker] {
+      override def read(bson: BSONDocument): LastProcessedMarker = {
+        bson.getAs[String]("className") match {
+          case None => throw new AssertionError("lastProcessedMarker.className field should exist")
+          case Some(x) => x match {
+            case "LastProcessedHopeful" => lastProcessedHopefulBSON.read(bson)
+            case "LastProcessedSG" => lastProcessedSuicideGirlBSON.read(bson)
+            case m => throw new RuntimeException(s"... Invalid className for LastProcessedMarker: $m")
+          }
+        }
+      }
+
+    }
+
 }
