@@ -315,7 +315,7 @@ private[impl] object SGContentParser extends SGURLBuilder {
 
   def parsePhotos(albumPage: Html): Try[List[Photo]] = {
     albumPage filter Class("image-section") && Tag("li") && Class("photo-container") && RetainFirst(HrefLink()) match {
-      case Nil => throw new Exception(s"Failed to extract any Photo from this document:${albumPage.document.toString}")
+      case Nil => Failure(new Exception(s"Failed to extract any Photo from this document:${albumPage.document.toString}"))
       case links => Try(links.zip(1 to links.length).map(pair => Photo(pair._1, pair._2)))
     }
   }

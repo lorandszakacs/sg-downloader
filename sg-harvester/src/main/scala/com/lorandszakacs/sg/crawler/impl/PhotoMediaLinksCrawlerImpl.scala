@@ -1,11 +1,14 @@
 package com.lorandszakacs.sg.crawler.impl
 
-import com.lorandszakacs.sg.crawler.PhotoMediaLinksCrawler
+import com.lorandszakacs.sg.crawler.{DidNotFindAnyPhotoLinksOnSetPageException, PhotoMediaLinksCrawler}
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.Photo
 import com.typesafe.scalalogging.StrictLogging
 
 import com.lorandszakacs.util.monads.future.FutureUtil._
+
+import scala.util.Failure
+import scala.util.control.NonFatal
 
 /**
   *
@@ -33,7 +36,11 @@ private[crawler] class PhotoMediaLinksCrawlerImpl(private var sGClient: SGClient
   override def gatherAllPhotosFromSetPage(photoSetPageUri: String): Future[List[Photo]] = {
     for {
       photoSetPageHTML <- sGClient.getPage(photoSetPageUri)
-      photos <- Future fromTry SGContentParser.parsePhotos(photoSetPageHTML)
+      photos <- Future fromTry {
+        SGContentParser.parsePhotos(photoSetPageHTML).recoverWith {
+          case NonFatal(e) => Failure(DidNotFindAnyPhotoLinksOnSetPageException(photoSetPageUri))
+        }
+      }
     } yield photos
   }
 

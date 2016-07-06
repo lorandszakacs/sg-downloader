@@ -32,7 +32,7 @@ private[http] object ExceptionHelpers {
 
   implicit class BuffedResponse(response: HttpResponse)(implicit mat: ActorMaterializer, ec: ExecutionContext) {
     def stringify: String =
-      s"Status: ${response._1}. \nHeaders:\n${stringifyHeaders(response.headers)}.\nEntity:\n${stringifyEntity(response._3).getOrElse("None")}"
+      s"Status: ${response._1}. \nHeaders:\n${stringifyHeaders(response.headers)}.\nEntity:\n${if (response.status != StatusCodes.NotFound) stringifyEntity(response._3).getOrElse("None") else "None"}"
   }
 
   implicit class BuffedRequest(req: HttpRequest)(implicit mat: ActorMaterializer, ec: ExecutionContext) {
