@@ -66,8 +66,8 @@ private[harvester] class SGHarvesterImpl(
 
       _: Unit <- if (newModels.nonEmpty) {
         val gatheredNewerPhotoSet = lastProcessedOpt.exists { lp =>
-          val newestPhotoset: PhotoSet = newModels.head.photoSets.headOption.getOrElse(throw new AssertionError("... should have at least one set"))
-          lp.lastPhotoSetID != newestPhotoset.id
+          val newestPhotoSet: PhotoSet = newModels.head.photoSets.headOption.getOrElse(throw new AssertionError("... should have at least one set"))
+          lp.lastPhotoSetID != newestPhotoSet.id
         }
         if (!gatheredNewerPhotoSet) {
           UnitFuture

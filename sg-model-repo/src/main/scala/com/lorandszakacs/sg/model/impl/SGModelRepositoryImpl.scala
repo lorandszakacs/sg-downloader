@@ -50,7 +50,9 @@ private[model] class SGModelRepositoryImpl(
       )
       _ <- indexDao.rewriteHopefulsIndex(newHopefulIndex)
       _ <- indexDao.rewriteSGIndex(newSGIndex)
-
+      _ <- Future.traverse(hopefulsThatBecameSGS) { hopefulName =>
+        hopefulsDao.delete(hopefulName)
+      }
     } yield ()
   }
 

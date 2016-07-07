@@ -20,6 +20,11 @@ private[model] class HopefulsDao(val db: DB)(implicit val ec: ExecutionContext) 
     collection.update(q, hopeful, upsert = true) map { _ => () }
   }
 
+  def delete(name: ModelName): Future[Unit] = {
+    val q = BSONDocument(_id -> name)
+    collection.remove(q) map { _ => () }
+  }
+
   def find(name: ModelName): Future[Option[Hopeful]] = {
     collection.find(BSONDocument(_id -> name)).one[Hopeful]
   }
