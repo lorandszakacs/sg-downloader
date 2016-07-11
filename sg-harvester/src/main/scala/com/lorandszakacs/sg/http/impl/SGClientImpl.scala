@@ -17,6 +17,8 @@ package com.lorandszakacs.sg.http.impl
   *
   */
 
+import java.net.URL
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl._
 import akka.http.scaladsl.model.HttpMethods._
@@ -47,8 +49,8 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
   private val http: HttpExt = Http()
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
 
-  override def getPage(uri: Uri)(implicit authentication: Authentication): Future[Html] = {
-    val req = get(uri)
+  override def getPage(url: URL)(implicit authentication: Authentication): Future[Html] = {
+    val req = get(url)
     val reqWithAuth = authentication(req)
 
     for {
@@ -56,7 +58,7 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
       body <- if (response.status == StatusCodes.OK || response.status == StatusCodes.NotModified) {
         response.entityAsString
       } else {
-        Future.failed(FailedToGetPageException(uri, req, response))
+        Future.failed(FailedToGetPageException(url, req, response))
       }
       html = Html(body)
     } yield html

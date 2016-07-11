@@ -1,5 +1,8 @@
 package com.lorandszakacs.sg.crawler.impl
 
+import java.net.URL
+
+import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.crawler.{DidNotFindAnyPhotoLinksOnSetPageException, PhotoMediaLinksCrawler}
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.Photo
@@ -32,7 +35,7 @@ private[crawler] class PhotoMediaLinksCrawlerImpl(private var sGClient: SGClient
     }
   }
 
-  override def gatherAllPhotosFromSetPage(photoSetPageUri: String): Future[List[Photo]] = {
+  override def gatherAllPhotosFromSetPage(photoSetPageUri: URL): Future[List[Photo]] = {
     for {
       photoSetPageHTML <- sGClient.getPage(photoSetPageUri)
       photos <- Future fromTry {

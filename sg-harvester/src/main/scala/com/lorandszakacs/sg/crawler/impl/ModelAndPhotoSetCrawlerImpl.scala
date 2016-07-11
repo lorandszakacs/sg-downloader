@@ -87,18 +87,18 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
-    val pageURI = photoSetsPageURL(modelName)
+    val pageURL = photoSetsPageURL(modelName)
 
     for {
       sets <- loadPageRepeatedly[PhotoSet](
-        uri = pageURI,
+        uri = pageURL,
         offsetStep = 9,
         parsingFunction = SGContentParser.gatherPhotoSetsForModel,
         isEndPage = isEndPage
       )
     } yield {
       logger.info(s"gathered all sets for ${mf.name} ${modelName.name}. #sets: ${sets.length}")
-      mf(photoSetURI = pageURI.toString, name = modelName, photoSets = sets)
+      mf(photoSetURL = pageURL, name = modelName, photoSets = sets)
     }
   }
 

@@ -42,34 +42,6 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
 
   //===============================================================================================
 
-  it should "return a PhotoSet object from a page with a full date" in {
-    val expected = PhotoSetPageFullDate
-    SGContentParser.parsePhotoSetPage(expected.html, expected.uri) match {
-      case Success(result) =>
-        result.photos should have length expected.numberOfPhotos
-        result.date should equal(expected.date)
-        result.title should equal(expected.title)
-      case Failure(e) =>
-        fail("did not return any photos", e)
-    }
-  }
-
-  //===============================================================================================
-
-  it should "return a PhotoSet object from a page with a partial date" in {
-    val expected = PhotoSetPagePartialDate
-    SGContentParser.parsePhotoSetPage(expected.html, expected.uri) match {
-      case Success(result) =>
-        result.photos should have length expected.numberOfPhotos
-        result.date should equal(expected.date)
-        result.title should equal(expected.title)
-      case Failure(e) =>
-        fail("did not return any photos", e)
-    }
-  }
-
-  //===============================================================================================
-
   it should "return all PhotoSets from a SG page" in {
     val expected = SGSetPageAllInPast
     SGContentParser.gatherPhotoSetsForModel(expected.html) match {
@@ -126,7 +98,7 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
     SGContentParser.gatherNewestPhotoSets(expected.html) match {
       case Success(result) =>
         result should have length expected.numberOfModels
-        result.head.photoSetURI should equal(expected.models.head.photoSetURI)
+        result.head.photoSetURL should equal(expected.models.head.photoSetURL)
         result.head.name should equal(expected.models.head.name)
         result.head.photoSets should equal(expected.models.head.photoSets)
 

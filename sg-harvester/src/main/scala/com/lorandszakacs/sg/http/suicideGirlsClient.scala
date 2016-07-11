@@ -1,5 +1,7 @@
 package com.lorandszakacs.sg.http
 
+import java.net.URL
+
 import akka.http.scaladsl.model.headers.{HttpOrigin, Origin, Referer}
 import akka.http.scaladsl.model.{HttpHeader, HttpRequest, Uri}
 import com.lorandszakacs.util.html.Html
@@ -21,7 +23,7 @@ trait SGClient {
     * on username, password authentication
     *
     */
-  def getPage(uri: Uri)(implicit authentication: Authentication): Future[Html]
+  def getPage(uri: URL)(implicit authentication: Authentication): Future[Html]
 
   def authenticate(username: String, plainTextPassword: String): Future[Authentication]
 

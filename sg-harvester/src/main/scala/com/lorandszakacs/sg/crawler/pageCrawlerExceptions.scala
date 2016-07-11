@@ -1,5 +1,6 @@
 package com.lorandszakacs.sg.crawler
 
+import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.util.html.Html
 
 /**
@@ -63,7 +64,7 @@ final case class DidNotFindAnyHopefulProfileLinksException() extends Exception(
   "Did not find any hopeful girls profile links"
 )
 
-final case class DidNotFindAnyPhotoLinksOnSetPageException(pageURL: String) extends Exception(
+final case class DidNotFindAnyPhotoLinksOnSetPageException(pageURL: Uri) extends Exception(
   s"Did not find any photos on page: $pageURL"
 )
 

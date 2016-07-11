@@ -16,6 +16,8 @@
   */
 package com.lorandszakacs.sg.crawler.impl
 
+import java.net.URL
+
 import akka.http.scaladsl.model.Uri
 import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.crawler._
@@ -83,7 +85,7 @@ private[impl] object SGContentParser extends SGURLBuilder {
       val title = titleRepr.headOption.getOrElse(throw SetRepresentationDidNotContainTitleException(html)).trim()
       val date = parseStringToDateTime(timeRepr.headOption.getOrElse(throw SetRepresentationDidNotContainTimeTagException(html)).trim())
       PhotoSet(
-        url = makeFullPathURI(url).toString,
+        url = makeFullPathURL(url),
         title = PhotoSetTitle(title),
         date = date.get,
         photos = Nil
@@ -244,26 +246,26 @@ private[impl] object SGContentParser extends SGURLBuilder {
     val models: List[Try[Model]] = elements map { el =>
       val html = Html(el)
       for {
-        setURL <- getPhotoSetLink(html) map makeFullPathURI
+        setURL <- getPhotoSetLink(html) map makeFullPathURL
         setDate <- getPhotoSetDate(html)
         setTitle <- getPhotoSetTitle(html)
         modelName <- getModelName(html)
 
         photoSet = PhotoSet(
-          url = setURL.toString,
+          url = setURL,
           title = setTitle,
           date = setDate
         )
       } yield {
         if (setURL.toString.contains("members")) {
           Hopeful(
-            photoSetURI = photoSetsPageURL(modelName).toString,
+            photoSetURL = photoSetsPageURL(modelName),
             name = modelName,
             photoSets = List(photoSet)
           )
         } else {
           SuicideGirl(
-            photoSetURI = photoSetsPageURL(modelName).toString,
+            photoSetURL = photoSetsPageURL(modelName),
             name = modelName,
             photoSets = List(photoSet)
           )
@@ -289,34 +291,10 @@ private[impl] object SGContentParser extends SGURLBuilder {
     }
   }
 
-  @scala.deprecated("will have to implement something fancier", "now")
-  def parsePhotoSetPage(html: Html, albumPageUri: Uri): Try[PhotoSet] = {
-    //article-feed album-view clearfix
-    val metaData: Html = html filter RetainFirst(Class("content-box")) match {
-      case Nil => throw new Exception(s"Could not find album meta-data.")
-      case l => Html(l.head)
-    }
-    val title: String = metaData filter Content(Class("title")) match {
-      case Nil => throw new Exception(s"Could not find the title of the album.")
-      case l => if (l.length == 1) l.head.trim() else throw new Exception(s"Found too many titles for album.")
-    }
-    val date: LocalDate = metaData filter Content(Tag("time")) match {
-      case Nil => throw new Exception(s"Could not find the date of the album.")
-      case l => if (l.length == 1) {
-        parseStringToDateTime(l.head).get
-      } else throw new Exception(s"Found too many dates for album.")
-    }
-    val photos = parsePhotos(html) match {
-      case Success(ps) => ps
-      case Failure(e) => throw new Exception(s"Failed to gather the links for page.", e)
-    }
-    Success(PhotoSet(url = albumPageUri.toString, title = title, date = date, photos = photos))
-  }
-
   def parsePhotos(albumPage: Html): Try[List[Photo]] = {
     albumPage filter Class("image-section") && Tag("li") && Class("photo-container") && RetainFirst(HrefLink()) match {
       case Nil => Failure(new Exception(s"Failed to extract any Photo from this document:${albumPage.document.toString}"))
-      case links => Try(links.zip(1 to links.length).map(pair => Photo(pair._1, pair._2)))
+      case links => Try(links.zip(1 to links.length).map(pair => Photo(new URL(pair._1), pair._2)))
     }
   }
 

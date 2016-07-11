@@ -16,6 +16,7 @@
   */
 package com.lorandszakacs.sg.crawler.impl.data
 
+import com.lorandszakacs.sg.URLConversions
 import com.lorandszakacs.sg.model.PhotoSet
 import com.lorandszakacs.util.html.Html
 import org.joda.time.LocalDate
@@ -32,7 +33,7 @@ import scala.io.Source
   * @since 16 Mar 2015
   *
   */
-object SGSetPageAllInPast {
+object SGSetPageAllInPast extends URLConversions {
   val photoSets: List[PhotoSet] = List(
     PhotoSet(
       url = "https://www.suicidegirls.com/girls/dwam/album/1239337/adieu-tristesse/",
@@ -102,7 +103,7 @@ object SGSetPageAllInPast {
   * @since 03 Jul 2016
   *
   */
-object SGSetPageSomeInPast {
+object SGSetPageSomeInPast extends URLConversions {
   val photoSets: List[PhotoSet] = List(
     PhotoSet(
       url = "https://www.suicidegirls.com/girls/moon/album/2696495/two-moons/",

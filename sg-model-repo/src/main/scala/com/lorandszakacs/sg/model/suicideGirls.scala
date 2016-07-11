@@ -1,5 +1,7 @@
 package com.lorandszakacs.sg.model
 
+import java.net.URL
+
 import com.github.nscala_time.time.Imports._
 
 import scala.language.postfixOps
@@ -12,21 +14,21 @@ import scala.language.postfixOps
 object Model {
 
   sealed trait ModelFactory[T <: Model] {
-    def apply(photoSetURI: String, name: ModelName, photoSets: List[PhotoSet]): T
+    def apply(photoSetURL: URL, name: ModelName, photoSets: List[PhotoSet]): T
 
     def name: String
   }
 
   object SuicideGirlFactory extends ModelFactory[SuicideGirl] {
-    override def apply(photoSetURI: String, name: ModelName, photoSets: List[PhotoSet]): SuicideGirl =
-      SuicideGirl(photoSetURI = photoSetURI, name = name, photoSets = photoSets)
+    override def apply(photoSetURL: URL, name: ModelName, photoSets: List[PhotoSet]): SuicideGirl =
+      SuicideGirl(photoSetURL = photoSetURL, name = name, photoSets = photoSets)
 
     override def name: String = "suicide girl"
   }
 
   object HopefulFactory extends ModelFactory[Hopeful] {
-    override def apply(photoSetURI: String, name: ModelName, photoSets: List[PhotoSet]): Hopeful = {
-      Hopeful(photoSetURI = photoSetURI, name = name, photoSets = photoSets)
+    override def apply(photoSetURL: URL, name: ModelName, photoSets: List[PhotoSet]): Hopeful = {
+      Hopeful(photoSetURL = photoSetURL, name = name, photoSets = photoSets)
     }
 
     override def name: String = "hopeful"
@@ -35,7 +37,7 @@ object Model {
 }
 
 sealed trait Model {
-  def photoSetURI: String
+  def photoSetURL: URL
 
   def name: ModelName
 
@@ -55,7 +57,7 @@ sealed trait Model {
 
   override def toString =
     s"""|---------${this.getClass.getSimpleName}: ${name.name} : ${photoSets.length}---------
-        |url=$photoSetURI
+        |url=${photoSetURL.toExternalForm}
         |${photoSets.mkString("", "\n", "")}
         |""".stripMargin
 }
@@ -141,7 +143,7 @@ final class PhotoSetTitle private(
 }
 
 final case class SuicideGirl(
-  photoSetURI: String,
+  photoSetURL: URL,
   name: ModelName,
   photoSets: List[PhotoSet]
 ) extends Model with ModelUpdater[SuicideGirl] {
@@ -158,7 +160,7 @@ final case class SuicideGirl(
 }
 
 final case class Hopeful(
-  photoSetURI: String,
+  photoSetURL: URL,
   name: ModelName,
   photoSets: List[PhotoSet]
 ) extends Model with ModelUpdater[Hopeful] {
@@ -175,26 +177,26 @@ final case class Hopeful(
 }
 
 final case class PhotoSet(
-  url: String,
+  url: URL,
   title: PhotoSetTitle,
   date: LocalDate,
   photos: List[Photo] = Nil
 ) {
 
-  def id: String = url
+  def id: String = url.toExternalForm
 
   override def toString =
     s"""
        |title = ${title.name}
        |date  = ${date.toString(Util.dateTimeFormat)}
-       |uri   = ${url.toString}
+       |url   = ${url.toExternalForm}
        |${photos.mkString("{\n\t", "\n\t", "\n}")}
        |${"_________________"}
       """.stripMargin
 }
 
 final case class Photo(
-  url: String,
+  url: URL,
   index: Int
 ) {
 

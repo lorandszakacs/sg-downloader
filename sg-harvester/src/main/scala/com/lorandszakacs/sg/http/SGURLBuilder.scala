@@ -1,5 +1,7 @@
 package com.lorandszakacs.sg.http
 
+import java.net.URL
+
 import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.model._
 
@@ -15,18 +17,18 @@ trait SGURLBuilder {
     *
     * It is prefixed with "girls" instead of "members" even for hopefuls
     */
-  def photoSetsPageURL(modelName: ModelName): Uri =
-    Uri(s"https://www.suicidegirls.com/girls/${modelName.name}/photos/view/photosets/")
+  def photoSetsPageURL(modelName: ModelName): URL =
+    new URL(s"https://www.suicidegirls.com/girls/${modelName.name}/photos/view/photosets/")
 
-  def makeFullPathURI(uri: String): Uri = {
+  def makeFullPathURL(uri: String): URL = {
     if (uri.startsWith("/")) {
-      Uri(s"https://www.suicidegirls.com$uri")
+      new URL(s"https://www.suicidegirls.com$uri")
     } else {
-      Uri(s"https://www.suicidegirls.com/$uri")
+      new URL(s"https://www.suicidegirls.com/$uri")
     }
   }
 
-  def makeFullPathURI(uri: Uri): Uri = {
-    makeFullPathURI(uri.toString)
+  def makeFullPathURL(uri: Uri): URL = {
+    makeFullPathURL(uri.toString)
   }
 }

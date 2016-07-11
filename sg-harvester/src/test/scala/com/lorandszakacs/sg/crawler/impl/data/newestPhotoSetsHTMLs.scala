@@ -1,6 +1,7 @@
 package com.lorandszakacs.sg.crawler.impl.data
 
 import com.github.nscala_time.time.Imports._
+import com.lorandszakacs.sg.URLConversions
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html.Html
 
@@ -30,10 +31,10 @@ trait NewestPhotosPage {
 /**
   * DoubleModel = Saria + Talena; i.e. two models in the same set
   */
-object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage {
+object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage with URLConversions {
   override def models: List[Model] = List(
     SuicideGirl(
-      photoSetURI = "https://www.suicidegirls.com/girls/saria/photos/view/photosets/",
+      photoSetURL = "https://www.suicidegirls.com/girls/saria/photos/view/photosets/",
       name = "Saria",
       photoSets = List(
         PhotoSet(
@@ -46,7 +47,7 @@ object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage {
     ),
 
     SuicideGirl(
-      photoSetURI = "https://www.suicidegirls.com/girls/valkyria/photos/view/photosets/",
+      photoSetURL = "https://www.suicidegirls.com/girls/valkyria/photos/view/photosets/",
       name = "valkyria",
       photoSets = List(
         PhotoSet(
@@ -59,7 +60,7 @@ object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage {
     ),
 
     Hopeful(
-      photoSetURI = "https://www.suicidegirls.com/girls/rias/photos/view/photosets/",
+      photoSetURL = "https://www.suicidegirls.com/girls/rias/photos/view/photosets/",
       name = "rias",
       photoSets = List(
         PhotoSet(
@@ -72,7 +73,7 @@ object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage {
     ),
 
     Hopeful(
-      photoSetURI = "https://www.suicidegirls.com/girls/insatiableindica/photos/view/photosets/",
+      photoSetURL = "https://www.suicidegirls.com/girls/insatiableindica/photos/view/photosets/",
       name = "insatiableindica",
       photoSets = List(
         PhotoSet(

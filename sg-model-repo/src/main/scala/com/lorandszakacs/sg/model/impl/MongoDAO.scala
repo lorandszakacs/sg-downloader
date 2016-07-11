@@ -1,5 +1,7 @@
 package com.lorandszakacs.sg.model.impl
 
+import java.net.URL
+
 import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.model._
 import org.joda.time.LocalDate
@@ -55,12 +57,18 @@ private[impl] trait MongoDAO {
     override def read(bson: BSONDateTime): DateTime = new DateTime(bson.value)
   }
 
+  protected implicit val urlBSON: BSONReader[BSONString, URL] with BSONWriter[URL, BSONString] with BSONHandler[BSONString, URL] =
+    new BSONReader[BSONString, URL] with BSONWriter[URL, BSONString] with BSONHandler[BSONString, URL] {
+      override def read(bson: BSONString): URL = new URL(bson.value)
+
+      override def write(t: URL): BSONString = BSONString(t.toExternalForm)
+    }
+
   protected implicit val photoBSON: BSONDocumentReader[Photo] with BSONDocumentWriter[Photo] with BSONHandler[BSONDocument, Photo] =
     Macros.handler[Photo]
 
   protected implicit val photoSetBSON: BSONDocumentReader[PhotoSet] with BSONDocumentWriter[PhotoSet] with BSONHandler[BSONDocument, PhotoSet] =
     Macros.handler[PhotoSet]
-
 
   protected implicit val suicideGirlBSON: BSONDocumentReader[SuicideGirl] with BSONDocumentWriter[SuicideGirl] with BSONHandler[BSONDocument, SuicideGirl] =
     new BSONDocumentReader[SuicideGirl] with BSONDocumentWriter[SuicideGirl] with BSONHandler[BSONDocument, SuicideGirl] {
