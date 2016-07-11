@@ -102,6 +102,8 @@ final class ModelName private(
 ) {
   override def toString: String = s"ModelName($name)"
 
+  def externalForm: String = s"${name.capitalize}"
+
   /**
     * Hopefuls lose prefix, or suffix underscores in names
     * when they become SGs, therefore this is useful to determine
@@ -132,6 +134,8 @@ final class PhotoSetTitle private(
   val name: String
 ) {
   override def toString: String = s"PhotoSetTitle($name)"
+
+  def externalForm: String = s"${name.toLowerCase.capitalize}"
 
   override def equals(other: Any): Boolean = other match {
     case that: PhotoSetTitle =>
