@@ -53,7 +53,11 @@ private[model] class SGModelRepositoryImpl(
       _ <- Future.traverse(hopefulsThatBecameSGS) { hopefulName =>
         hopefulsDao.delete(hopefulName)
       }
-    } yield ()
+    } yield {
+      logger.info(s"new SGs: ${newSGs.map(_.name).mkString(",")}")
+      logger.info(s"new Hopefuls: ${newHopefuls.map(_.name).mkString(",")}")
+      logger.info(s"hopefuls that became SGs:: ${hopefulsThatBecameSGS.map(_.name).mkString(",")}")
+    }
   }
 
   override def createOrUpdateLastProcessed(l: LastProcessedMarker): Future[Unit] = {
