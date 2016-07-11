@@ -1,11 +1,15 @@
 package com.lorandszakacs.sg.app.repl
 
+import com.lorandszakacs.sg.Favorites
+import com.lorandszakacs.sg.displayer.{FileWriter, HTMLDisplayer, ModelDisplay}
 import com.lorandszakacs.sg.harvester.{SGHarvester, SGHarvesterAssembly}
 import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model._
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.Await
+import com.lorandszakacs.util.monads.future.FutureUtil._
+
 import scala.io.StdIn
 import scala.language.postfixOps
 
@@ -85,7 +89,12 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
     "\nexit."
   )
 
-  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, HarvestNew, GatherSetInformation, CleanIndex, ShowModel).sortBy(_.id)
+  private val TestHtml = Command(
+    "test",
+    "\ntest"
+  )
+
+  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, HarvestNew, GatherSetInformation, CleanIndex, ShowModel, TestHtml).sortBy(_.id)
 
   private implicit val patienceConfig: PatienceConfig = PatienceConfig(200 millis)
   private implicit val ec: ExecutionContext = harvesterAssembly.executionContext
@@ -133,15 +142,38 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
               println {
                 sg.reverseSets.toString
               }
+              val display = HTMLDisplayer.modelToHTML(sg)
+              Await.result(FileWriter.writeFiles(display), 2 minutes)
 
             case Some(hopeful: Hopeful) =>
               println {
                 hopeful.reverseSets.toString
               }
+              val display = HTMLDisplayer.modelToHTML(hopeful)
+              Await.result(FileWriter.writeFiles(display), 2 minutes)
 
             case None =>
               println(s"could not find model ${modelName.name}")
           }
+
+        case TestHtml.id =>
+          val future = for {
+            models <- Future.serialize(Favorites.modelNames) { modelName =>
+              repo.find(modelName) map (_.map(HTMLDisplayer.modelToHTML))
+            }
+
+            htmls: List[ModelDisplay] = models.collect {
+              case Some(m) => m
+            }
+            _ <- Future.serialize(htmls) { display =>
+              FileWriter.writeFiles(display)
+            }
+            index = HTMLDisplayer.modelIndex("index.html")(htmls)
+            _ <- FileWriter.writeIndex(index)
+          } yield ()
+
+          Await.result(future, 2 minutes)
+          print(s"\ndone exporting: ${Favorites.modelNames.map(_.name).mkString(",")} to html")
 
         //----------------------------------------
 
@@ -150,7 +182,7 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
           Await.result(future, 2 hours)
           print {
             s"""|
-                |-------------- finished harvesting and queuing to reindex Suicide Girls --------------
+               |-------------- finished harvesting and queuing to reindex Suicide Girls --------------
                 |""".stripMargin
           }
 
@@ -232,4 +264,5 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
 
     }
   }
+
 }
