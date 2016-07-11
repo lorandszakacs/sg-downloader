@@ -18,15 +18,17 @@ package com.lorandszakacs.sg.app
 
 import java.util.concurrent.Executors
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, PoisonPill}
 import com.lorandszakacs.sg.app.repl.HarvesterRepl
 import com.lorandszakacs.sg.harvester.SGHarvesterAssembly
+import com.lorandszakacs.util.monads.future.FutureUtil._
 import com.typesafe.scalalogging.StrictLogging
 import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext}
 import scala.language.postfixOps
+import scala.util.Try
 
 /**
   * @author Lorand Szakacs, lsz@lorandszakacs.com
@@ -37,21 +39,57 @@ object Main extends App with StrictLogging {
 
   val repl = new HarvesterRepl(assembly)
   repl.start()
+  Await.result(assembly.shutdown(), 10 seconds)
+  println("... finished gracefully")
 
 }
 
-object assembly extends SGHarvesterAssembly {
-  override implicit def actorSystem: ActorSystem = ActorSystem("test-login-client")
+object assembly extends SGHarvesterAssembly with StrictLogging {
+  override implicit lazy val actorSystem: ActorSystem = ActorSystem("sg-harvester")
 
-  override implicit def executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
+  override implicit lazy val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
 
-  override def db: DefaultDB = try {
-    val mongoDriver = new MongoDriver()
-    val connection = mongoDriver.connection(MongoConnection.parseURI("""mongodb://localhost""").get)
-    //    Await.result(connection.database("suicide-girl-repo"), 1 minute)
-    Await.result(connection.database("suicide_girls_repo"), 1 minute)
-  } catch {
-    case e: Throwable =>
-      throw new IllegalStateException(s"Failed to initialize Mongo database. Because: ${e.getMessage}", e)
+  override lazy val db: DefaultDB = _dataBase.get
+
+  private lazy val _mongoDriver: MongoDriver = new MongoDriver()
+  private lazy val _dataBase: Try[DefaultDB] = {
+    val future = {
+      val _mongoConnection: MongoConnection = _mongoDriver.connection(MongoConnection.parseURI("""mongodb://localhost""").get)
+      _mongoConnection.database("suicide_girls_repo")
+    } recover {
+      case e: Throwable =>
+        throw new IllegalStateException(s"Failed to initialize Mongo database. Because: ${e.getMessage}", e)
+    }
+    Try(Await.result(future, 10 seconds))
   }
+
+  def shutdown(): Future[Unit] = {
+    logger.info(s"attempting to shut down: ${_mongoDriver.numConnections} connections")
+
+    for {
+      _ <- Future.traverse(_mongoDriver.connections) { connection =>
+        logger.info(s"asking: _mongoDriver.connection to close. ${connection.name}")
+        for {
+          _ <- connection.askClose()(2 seconds) map { _ =>
+            logger.info(s"terminated -- connection: ${connection.name}")
+          }
+          //propably doesn't do anything
+          _ = connection.actorSystem.actorSelection("*") ! PoisonPill
+        } yield ()
+
+      }
+
+      _ <- _mongoDriver.system.terminate() map { _ =>
+        logger.info("terminated -- _mongoDriver.system.terminate()")
+      }
+
+      _ <- actorSystem.terminate() map { _ =>
+        logger.info("terminated -- actorSystem.terminate()")
+      }
+
+    } yield {
+      logger.info("terminated -- completed assembly.shutdown()")
+    }
+  }
+
 }

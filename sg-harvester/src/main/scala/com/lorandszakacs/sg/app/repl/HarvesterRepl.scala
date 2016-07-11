@@ -96,7 +96,8 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
   def start(): Unit = {
     println("type help for instructions")
 
-    while (true) {
+    var exit = false
+    while (!exit) {
       print("> ")
       val input = StdIn.readLine().trim().toLowerCase
       input match {
@@ -104,9 +105,7 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
         //----------------------------------------
 
         case Exit.id =>
-          Await.ready(harvesterAssembly.shutdown(), 2 minutes)
-          System.exit(0)
-
+          exit = true
         //----------------------------------------
 
         case Help.id =>

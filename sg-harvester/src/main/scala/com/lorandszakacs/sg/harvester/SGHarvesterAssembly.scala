@@ -5,8 +5,12 @@ import com.lorandszakacs.sg.crawler.PageCrawlerAssembly
 import com.lorandszakacs.sg.harvester.impl.SGHarvesterImpl
 import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.model.SGModelAssembly
+import com.typesafe.scalalogging.StrictLogging
+import org.slf4j._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 /**
   *
@@ -15,6 +19,7 @@ import scala.concurrent.{ExecutionContext, Future}
   *
   */
 trait SGHarvesterAssembly extends PageCrawlerAssembly with SGClientAssembly with SGModelAssembly {
+  this: StrictLogging =>
 
   implicit def actorSystem: ActorSystem
 
@@ -28,9 +33,4 @@ trait SGHarvesterAssembly extends PageCrawlerAssembly with SGClientAssembly with
     sgModelRepository
   )
 
-  final def shutdown(): Future[Unit] = {
-    db.connection.close()
-    Thread.sleep(100)
-    actorSystem.terminate() map (_ => ())
-  }
 }
