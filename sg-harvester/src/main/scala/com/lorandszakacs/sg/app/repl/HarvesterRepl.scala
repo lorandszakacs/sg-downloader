@@ -65,6 +65,13 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
       |This requires authentication since it goes on the pages of each model.
     """.stripMargin
   )
+  private val CleanIndex = Command(
+    "6",
+    """
+      |clean all models from index that have zero sets on the website
+    """.stripMargin
+  )
+
 
   private val ShowModel = Command(
     "show",
@@ -78,7 +85,7 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
     "\nexit."
   )
 
-  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, HarvestNew, GatherSetInformation, ShowModel).sortBy(_.id)
+  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, HarvestNew, GatherSetInformation, CleanIndex, ShowModel).sortBy(_.id)
 
   private implicit val patienceConfig: PatienceConfig = PatienceConfig(200 millis)
   private implicit val ec: ExecutionContext = harvesterAssembly.executionContext
@@ -205,6 +212,20 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
                |Hopefuls: ${newHopefuls.length}
                |""".stripMargin
           }
+
+        //----------------------------------------
+        case CleanIndex.id =>
+
+          val future = harvester.cleanIndex()
+          val (cleanedSGHs: List[ModelName], cleanedHopefuls: List[ModelName]) = Await.result(future, 12 hour)
+          print {
+            s"""
+               |Cleaned up:
+               |Suicide Girls: ${cleanedSGHs.length}
+               |Hopefuls: ${cleanedHopefuls.length}
+               |""".stripMargin
+          }
+
 
         case unknown =>
           println(s"unknown command: $unknown. Please type help for more information.")

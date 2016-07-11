@@ -55,6 +55,14 @@ trait SGHarvester {
 
 
   /**
+    * Makes sure that every [[Model]] in the index has at least one [[PhotoSet]].
+    * If not, it removes the model from the appropriate index, and collection, and
+    * stores their name in the [[CleanedUpModelsIndex]]
+    */
+  def cleanIndex()(implicit pc: PatienceConfig): Future[(List[ModelName], List[ModelName])]
+
+
+  /**
     * If necessary, will attempt to authenticate with the given username and password.
     *
     * Will gather all [[PhotoSet]]s, with all the [[PhotoSet.photos]] for all the [[SuicideGirl]]s
@@ -65,4 +73,6 @@ trait SGHarvester {
     * @return
     */
   def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username: String, password: String)(implicit pc: PatienceConfig): Future[List[Model]]
+
+
 }

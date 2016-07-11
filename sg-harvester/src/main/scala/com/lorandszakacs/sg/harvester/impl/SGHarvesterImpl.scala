@@ -1,8 +1,9 @@
 package com.lorandszakacs.sg.harvester.impl
 
+import akka.http.scaladsl.model.StatusCodes
 import com.lorandszakacs.sg.crawler.{DidNotFindAnyPhotoLinksOnSetPageException, ModelAndPhotoSetCrawler, PhotoMediaLinksCrawler}
 import com.lorandszakacs.sg.harvester.SGHarvester
-import com.lorandszakacs.sg.http.PatienceConfig
+import com.lorandszakacs.sg.http.{FailedToGetPageException, PatienceConfig}
 import com.lorandszakacs.sg.model.Model.{HopefulFactory, ModelFactory, SuicideGirlFactory}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.monads.future.FutureUtil._
@@ -83,7 +84,6 @@ private[harvester] class SGHarvesterImpl(
     } yield newModels
   }
 
-
   override def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username: String, password: String)(implicit pc: PatienceConfig): Future[List[Model]] = {
     for {
       _ <- photoCrawler.authenticateIfNeeded(username, password)
@@ -107,6 +107,47 @@ private[harvester] class SGHarvesterImpl(
       }
       result: List[Model] = sgs.filter(_.isSuccess).map(_.get) ++ hopefuls.filter(_.isSuccess).map(_.get)
     } yield result
+  }
+
+  override def cleanIndex()(implicit pc: PatienceConfig): Future[(List[ModelName], List[ModelName])] = {
+    def notFoundModelName[T <: Model](m: T): PartialFunction[Throwable, Future[Option[ModelName]]] = {
+      case e: FailedToGetPageException if e.response.status == StatusCodes.NotFound =>
+        logger.error(s"${m.stringifyType} page @ ${m.photoSetURL.toExternalForm} was not found")
+        Future.successful(None)
+      case NonFatal(e) =>
+        logger.error(s"${m.stringifyType} page @ ${m.photoSetURL.toExternalForm} encountered unknown error: ${e.getMessage}", e)
+        Future.successful(None)
+
+    }
+    for {
+      (sgsThatMightNeedCleaning, hopefulsThatMightNeedCleaning) <- modelRepo.modelsWithZeroPhotoSets
+      _ = {
+        logger.info(s"Total SGs that might needs cleaning up: ${sgsThatMightNeedCleaning.length}: ${sgsThatMightNeedCleaning.map(_.name.name).mkString(",")}")
+        logger.info(s"Total Hopefuls that might needs cleaning up: ${hopefulsThatMightNeedCleaning.length}: ${hopefulsThatMightNeedCleaning.map(_.name.name).mkString(",")}")
+      }
+
+      sgs: List[ModelName] <- Future.serialize(sgsThatMightNeedCleaning) { sg =>
+        pc.throttleThread()
+        val eventualNameToRemove = for {
+          suicideGirl: SuicideGirl <- modelCrawler.gatherPhotoSetInformationForModel(SuicideGirlFactory)(sg.name)
+        } yield if (suicideGirl.photoSets.isEmpty) Option(suicideGirl.name) else None
+
+        eventualNameToRemove recoverWith notFoundModelName(sg)
+      } map (_.flatten.toList)
+
+
+      hopefuls: List[ModelName] <- Future.serialize(hopefulsThatMightNeedCleaning) { hopeful =>
+        pc.throttleThread()
+        val eventualNameToRemove = for {
+          hopeful: Hopeful <- modelCrawler.gatherPhotoSetInformationForModel(HopefulFactory)(hopeful.name)
+        } yield if (hopeful.photoSets.isEmpty) Option(hopeful.name) else None
+
+        eventualNameToRemove recoverWith notFoundModelName(hopeful)
+      } map (_.flatten.toList)
+
+      _ <- modelRepo.cleanUpModels(sgs = sgs, hopefuls = hopefuls)
+
+    } yield (sgs, hopefuls)
   }
 
   private def harvestSuicideGirlAndUpdateIndex(sgName: ModelName)(implicit pc: PatienceConfig): Future[SuicideGirl] = {

@@ -48,7 +48,8 @@ object assembly extends SGHarvesterAssembly {
   override def db: DefaultDB = try {
     val mongoDriver = new MongoDriver()
     val connection = mongoDriver.connection(MongoConnection.parseURI("""mongodb://localhost""").get)
-    Await.result(connection.database("suicide-girl-repo"), 1 minute)
+    //    Await.result(connection.database("suicide-girl-repo"), 1 minute)
+    Await.result(connection.database("suicide_girls_repo"), 1 minute)
   } catch {
     case e: Throwable =>
       throw new IllegalStateException(s"Failed to initialize Mongo database. Because: ${e.getMessage}", e)

@@ -13,6 +13,8 @@ import scala.concurrent.Future
   *
   */
 trait SGModelRepository {
+  def modelsWithZeroPhotoSets: Future[(List[SuicideGirl], List[Hopeful])]
+
   def reindexSGs(names: List[ModelName]): Future[Unit]
 
   def reindexHopefuls(names: List[ModelName]): Future[Unit]
@@ -20,6 +22,12 @@ trait SGModelRepository {
   def updateIndexes(newHopefuls: List[Hopeful], newSGs: List[SuicideGirl]): Future[Unit]
 
   def updateIndexesForNames(newHopefuls: List[ModelName], newSGs: List[ModelName]): Future[Unit]
+
+  /**
+    * Removes all specified [[ModelName]]s from the appropriate indexes, removes all [[Model]]
+    * entries. Updates the [[CleanedUpModelsIndex]] with the specified models.
+    */
+  def cleanUpModels(sgs: List[ModelName], hopefuls: List[ModelName]): Future[Unit]
 
   def createOrUpdateLastProcessed(l: LastProcessedMarker): Future[Unit]
 
@@ -55,6 +63,11 @@ final case class SuicideGirlIndex(
   names: List[ModelName],
   needsReindexing: List[ModelName],
   number: Int
+)
+
+final case class CleanedUpModelsIndex(
+  suicideGirls: List[ModelName],
+  hopefuls: List[ModelName]
 )
 
 sealed trait LastProcessedMarker {

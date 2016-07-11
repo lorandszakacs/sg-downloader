@@ -51,6 +51,8 @@ sealed trait Model {
 
   def asHopeful: Option[Hopeful]
 
+  def stringifyType: String
+
   final def numberOfSets: Int = photoSets.length
 
   final def numberOfPhotos: Int = photoSets.map(_.photos.length).sum
@@ -157,6 +159,8 @@ final case class SuicideGirl(
   override def asSuicideGirls: Option[SuicideGirl] = Option(this)
 
   override def asHopeful: Option[Hopeful] = None
+
+  override def stringifyType: String = "suicide girl"
 }
 
 final case class Hopeful(
@@ -174,6 +178,8 @@ final case class Hopeful(
   override def asSuicideGirls: Option[SuicideGirl] = None
 
   override def asHopeful: Option[Hopeful] = Option(this)
+
+  override def stringifyType: String = "hopeful"
 }
 
 final case class PhotoSet(

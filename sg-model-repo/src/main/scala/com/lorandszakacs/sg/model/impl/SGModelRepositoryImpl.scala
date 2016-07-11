@@ -17,6 +17,13 @@ private[model] class SGModelRepositoryImpl(
   val hopefulsDao: HopefulsDao
 )(implicit val ec: ExecutionContext) extends SGModelRepository with StrictLogging {
 
+  override def modelsWithZeroPhotoSets: Future[(List[SuicideGirl], List[Hopeful])] = {
+    for {
+      sgs <- suicideGirlsDao.findWithZeroSets
+      hopefuls <- hopefulsDao.findWithZeroSets
+    } yield (sgs, hopefuls)
+  }
+
   override def reindexSGs(names: List[ModelName]): Future[Unit] = {
     indexDao.rewriteSGIndex(names)
   }
@@ -58,6 +65,19 @@ private[model] class SGModelRepositoryImpl(
       logger.info(s"new Hopefuls: ${newHopefuls.map(_.name).mkString(",")}")
       logger.info(s"hopefuls that became SGs:: ${hopefulsThatBecameSGS.map(_.name).mkString(",")}")
     }
+  }
+
+  override def cleanUpModels(sgs: List[ModelName], hopefuls: List[ModelName]): Future[Unit] = {
+    for {
+      _ <- indexDao.cleanUp(sgs, hopefuls)
+      _ <- Future.traverse(sgs) { sg =>
+        suicideGirlsDao.delete(sg.name)
+      }
+
+      _ <- Future.traverse(hopefuls) { hopeful =>
+        hopefulsDao.delete(hopeful.name)
+      }
+    } yield ()
   }
 
   override def createOrUpdateLastProcessed(l: LastProcessedMarker): Future[Unit] = {

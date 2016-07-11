@@ -9,6 +9,8 @@ import scala.language.postfixOps
   * @since 04 Jul 2016
   *
   */
-case class PatienceConfig(
+final case class PatienceConfig(
   throttle: FiniteDuration = 200 millis
-)
+) {
+  def throttleThread(): Unit = Thread.sleep(throttle.toMillis)
+}

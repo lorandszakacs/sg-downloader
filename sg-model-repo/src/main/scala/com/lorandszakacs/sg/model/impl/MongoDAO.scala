@@ -19,6 +19,11 @@ import reactivemongo.bson._
 private[impl] trait MongoDAO {
   protected val _id = "_id"
 
+  protected val SuicideGirlsIndexId = "suicide-girls-index"
+  protected val HopefulIndexId = "hopefuls-index"
+  protected val LastProcessedId = "last-processed"
+  protected val CleanedUpIndexId = "cleaned-up-index"
+
   protected def db: DB
 
   protected def collectionName: String
@@ -32,10 +37,33 @@ private[impl] trait MongoDAO {
   }
 
   protected implicit val suicideGirlsIndexBSON: BSONDocumentReader[SuicideGirlIndex] with BSONDocumentWriter[SuicideGirlIndex] with BSONHandler[BSONDocument, SuicideGirlIndex] =
-    Macros.handler[SuicideGirlIndex]
+    new BSONDocumentReader[SuicideGirlIndex] with BSONDocumentWriter[SuicideGirlIndex] with BSONHandler[BSONDocument, SuicideGirlIndex] {
+      private val handler = Macros.handler[SuicideGirlIndex]
+
+      override def write(t: SuicideGirlIndex): BSONDocument = BSONDocument(_id -> SuicideGirlsIndexId) ++ handler.write(t)
+
+      override def read(bson: BSONDocument): SuicideGirlIndex = handler.read(bson)
+    }
+
 
   protected implicit val hopefulIndexBSON: BSONDocumentReader[HopefulIndex] with BSONDocumentWriter[HopefulIndex] with BSONHandler[BSONDocument, HopefulIndex] =
-    Macros.handler[HopefulIndex]
+    new BSONDocumentReader[HopefulIndex] with BSONDocumentWriter[HopefulIndex] with BSONHandler[BSONDocument, HopefulIndex] {
+      private val handler = Macros.handler[HopefulIndex]
+
+      override def write(t: HopefulIndex): BSONDocument = BSONDocument(_id -> HopefulIndexId) ++ handler.write(t)
+
+      override def read(bson: BSONDocument): HopefulIndex = handler.read(bson)
+    }
+
+  protected implicit val cleanedUpIndexBSON: BSONDocumentReader[CleanedUpModelsIndex] with BSONDocumentWriter[CleanedUpModelsIndex] with BSONHandler[BSONDocument, CleanedUpModelsIndex] =
+    new BSONDocumentReader[CleanedUpModelsIndex] with BSONDocumentWriter[CleanedUpModelsIndex] with BSONHandler[BSONDocument, CleanedUpModelsIndex]{
+      private val handler = Macros.handler[CleanedUpModelsIndex]
+
+      override def write(t: CleanedUpModelsIndex): BSONDocument = BSONDocument(_id -> CleanedUpIndexId) ++ handler.write(t)
+
+      override def read(bson: BSONDocument): CleanedUpModelsIndex = handler.read(bson)
+    }
+
 
   protected implicit val photoSetTitleBSON: BSONHandler[BSONString, PhotoSetTitle] = new BSONHandler[BSONString, PhotoSetTitle] {
     override def read(bson: BSONString): PhotoSetTitle = PhotoSetTitle(bson.value)
