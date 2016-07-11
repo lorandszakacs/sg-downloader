@@ -74,6 +74,7 @@ private[harvester] class SGHarvesterImpl(
           UnitFuture
         } else {
           val newIndex: LastProcessedMarker = modelCrawler.createLastProcessedIndex(newModels.head)
+          logger.info(s"last processed marker is for: ${newIndex.model} @ ${newIndex.lastPhotoSetID}")
           modelRepo.createOrUpdateLastProcessed(newIndex)
         }
       } else {
