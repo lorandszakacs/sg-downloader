@@ -81,7 +81,7 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
   )
 
   private val Exit = Command(
-    "0",
+    "exit",
     "\nexit."
   )
 
