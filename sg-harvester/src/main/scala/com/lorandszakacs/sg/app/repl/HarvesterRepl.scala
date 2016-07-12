@@ -86,15 +86,20 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
 
   private val Exit = Command(
     "exit",
-    "\nexit."
+    "\nexit.\n"
   )
 
   private val TestHtml = Command(
     "test",
-    "\ntest"
+    "\ntest\n"
   )
 
-  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, HarvestNew, GatherSetInformation, CleanIndex, ShowModel, TestHtml).sortBy(_.id)
+  private val DisplayFavorites = Command(
+    "favorites",
+    "\ndisplay favorites\n"
+  )
+
+  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, HarvestNew, GatherSetInformation, CleanIndex, ShowModel, TestHtml, DisplayFavorites).sortBy(_.id)
 
   private implicit val patienceConfig: PatienceConfig = PatienceConfig(200 millis)
   private implicit val ec: ExecutionContext = harvesterAssembly.executionContext
@@ -130,6 +135,18 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
 
         //----------------------------------------
 
+        case DisplayFavorites.id =>
+          print {
+            s"""
+               |favorites:
+               |
+              |${Favorites.codeFriendlyDisplay}
+            """.stripMargin
+          }
+
+
+        //----------------------------------------
+
         case ShowModel.id =>
           print("name (case insensitive): ")
           val name = StdIn.readLine()
@@ -156,6 +173,8 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
               println(s"could not find model ${modelName.name}")
           }
 
+        //----------------------------------------
+
         case TestHtml.id =>
           val future = for {
             models <- Future.serialize(Favorites.modelNames) { modelName =>
@@ -173,7 +192,7 @@ class HarvesterRepl(harvesterAssembly: SGHarvesterAssembly) {
           } yield ()
 
           Await.result(future, 2 minutes)
-          print(s"\ndone exporting: ${Favorites.modelNames.map(_.name).mkString(",")} to html")
+          print(s"\ndone exporting: ${Favorites.modelNames.map(_.name).mkString(", ")} to html")
 
         //----------------------------------------
 
