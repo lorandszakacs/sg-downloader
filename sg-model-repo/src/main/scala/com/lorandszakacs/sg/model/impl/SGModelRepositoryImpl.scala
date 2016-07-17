@@ -96,6 +96,21 @@ private[model] class SGModelRepositoryImpl(
     indexDao.hopefulIndex
   }
 
+  def completeModelIndex: Future[CompleteModelIndex] = {
+    for {
+      hs <- indexDao.hopefulIndex
+      gs <- indexDao.suicideGirlsIndex
+    } yield {
+      val normalizedNames = (hs.names ++ gs.names).distinct.sorted
+      val normalizedReindexing = (hs.needsReindexing ++ gs.needsReindexing).distinct.sorted
+      CompleteModelIndex(
+        names = normalizedNames,
+        needsReindexing = normalizedReindexing,
+        number = normalizedNames.length
+      )
+    }
+  }
+
   override def createOrUpdateSG(sg: SuicideGirl): Future[Unit] = {
     for {
       _ <- suicideGirlsDao.createOrUpdate(sg)

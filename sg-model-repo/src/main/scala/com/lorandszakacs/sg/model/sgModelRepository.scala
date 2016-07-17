@@ -37,6 +37,8 @@ trait SGModelRepository {
 
   def hopefulIndex: Future[HopefulIndex]
 
+  def completeModelIndex: Future[CompleteModelIndex]
+
   /**
     * Updates or creates [[SuicideGirl]], removes the name from [[SuicideGirlIndex.needsReindexing]]
     */
@@ -64,6 +66,15 @@ final case class HopefulIndex(
 )
 
 final case class SuicideGirlIndex(
+  names: List[ModelName],
+  needsReindexing: List[ModelName],
+  number: Int
+)
+
+/**
+  * Always the sum of [[HopefulIndex]], and [[SuicideGirlIndex]]
+  */
+final case class CompleteModelIndex(
   names: List[ModelName],
   needsReindexing: List[ModelName],
   number: Int
