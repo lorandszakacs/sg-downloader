@@ -55,7 +55,7 @@ private[html] class HTMLGeneratorImpl()(
     def photoSetIndexPage(m: Model)(ps: PhotoSet)(implicit settings: HtmlSettings): PhotoSetIndex = {
       def photoDiv(photo: Photo): String = {
         s"""|<div class="w3-col s3 w3-container">
-            |   <a class="w3-hover-opacity", target="_blank", href="${photo.url.toExternalForm}">
+            |   <a class="w3-hover-opacity", onclick="showImage('${photo.url}');">
             |     <img src="${photo.thumbnailURL.toExternalForm}" alt="${photo.index}" style="width:100%">
             |   </a>
             |</div>""".stripMargin
@@ -70,6 +70,7 @@ private[html] class HTMLGeneratorImpl()(
              |   <title>${m.name.externalForm}: ${ps.title.externalForm}</title>
              |   <meta name="viewport" content="width=device-width, initial-scale=1">
              |   <link rel="stylesheet" href="https://dl.dropboxusercontent.com/u/11532620/suicide-girls/css/w3.css">
+             |   <script type="text/javascript" src="https://dl.dropboxusercontent.com/u/11532620/suicide-girls/scripts/image_loading.js"></script>
              |   <style>
              |      .picture {display:none}
              |   </style>
@@ -82,6 +83,8 @@ private[html] class HTMLGeneratorImpl()(
            |      <div class="w3-row">
              |${ps.photos.map(phs => photoDiv(phs)).mkString("\n")}
              |      </div>
+             |    <div id="largeImgPanel" onclick="hideMe(this);">
+             |    <img id="largeImg" style="height: 100%; margin: 0; padding: 0;">
              |   </body>
              |</html>
     """.stripMargin
