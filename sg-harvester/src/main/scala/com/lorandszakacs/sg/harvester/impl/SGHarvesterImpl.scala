@@ -208,6 +208,9 @@ private[harvester] class SGHarvesterImpl(
             case e: DidNotFindAnyPhotoLinksOnSetPageException =>
               logger.error(s"${ph.url} has no photos. `${mf.name} ${modelName.name}`")
               Future.successful(Nil)
+            case e: Throwable =>
+              logger.error(s"${ph.url} failed to get parsed somehow. WTF?. `${mf.name} ${modelName.name}`")
+              Future.successful(Nil)
           }
         } yield {
           pc.halfThrottle()
