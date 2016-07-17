@@ -7,7 +7,7 @@ import com.lorandszakacs.sg.model._
 import org.joda.time.LocalDate
 import reactivemongo.api.DB
 import reactivemongo.api.collections.bson.BSONCollection
-import reactivemongo.bson.Macros.Options.{SaveSimpleName, SimpleAllImplementations}
+import reactivemongo.bson.Macros.Options.SaveSimpleName
 import reactivemongo.bson._
 
 /**

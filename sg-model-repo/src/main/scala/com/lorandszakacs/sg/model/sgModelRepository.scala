@@ -50,6 +50,10 @@ trait SGModelRepository {
 
   def find(modelName: ModelName): Future[Option[Model]]
 
+  def find(modelNames: Seq[ModelName]): Future[List[Model]]
+
+  def findAll: Future[List[Model]]
+
 }
 
 

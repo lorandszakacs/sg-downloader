@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.model
 
-import com.lorandszakacs.sg.model.impl.{HopefulsDao, SuicideGirlsDao, IndexDao, SGModelRepositoryImpl}
+import com.lorandszakacs.sg.model.impl.{HopefulsDao, IndexDao, SGModelRepositoryImpl, SuicideGirlsDao}
 import reactivemongo.api.DefaultDB
 
 import scala.concurrent.ExecutionContext

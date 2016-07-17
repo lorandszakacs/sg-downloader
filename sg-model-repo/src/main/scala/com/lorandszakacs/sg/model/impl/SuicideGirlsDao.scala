@@ -25,6 +25,23 @@ private[model] class SuicideGirlsDao(val db: DB)(implicit val ec: ExecutionConte
     collection.find(BSONDocument(_id -> name)).one[SuicideGirl]
   }
 
+  def find(names: Seq[ModelName]): Future[List[SuicideGirl]] = {
+    if (names.isEmpty) {
+      Future.successful(Nil)
+    } else {
+      val q = BSONDocument(
+        _id -> BSONDocument(
+          "$in" -> names
+        )
+      )
+      collection.find(q).cursor[SuicideGirl]().collect[List]()
+    }
+  }
+
+  def findAll: Future[List[SuicideGirl]] = {
+    collection.find(BSONDocument()).cursor[SuicideGirl]().collect[List]()
+  }
+
   def delete(name: ModelName): Future[Unit] = {
     collection.remove(BSONDocument(_id -> name)).map { _ => () }
   }

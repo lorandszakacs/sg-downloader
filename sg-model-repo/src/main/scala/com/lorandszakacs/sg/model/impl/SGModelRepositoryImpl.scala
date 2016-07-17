@@ -3,7 +3,7 @@ package com.lorandszakacs.sg.model.impl
 import com.lorandszakacs.sg.model._
 import com.typesafe.scalalogging.StrictLogging
 
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   *
@@ -125,6 +125,20 @@ private[model] class SGModelRepositoryImpl(
       sg: Option[SuicideGirl] <- suicideGirlsDao.find(modelName)
       hopeful: Option[Hopeful] <- hopefulsDao.find(modelName)
     } yield if (sg.isDefined) sg else hopeful
+  }
+
+  override def find(modelNames: Seq[ModelName]): Future[List[Model]] = {
+    for {
+      sgs <- suicideGirlsDao.find(modelNames)
+      hopefuls <- hopefulsDao.find(modelNames)
+    } yield (sgs ++ hopefuls).sortBy(_.name)
+  }
+
+  override def findAll: Future[List[Model]] = {
+    for {
+      sgs <- suicideGirlsDao.findAll
+      hopefuls <- hopefulsDao.findAll
+    } yield (sgs ++ hopefuls).sortBy(_.name)
   }
 
 }

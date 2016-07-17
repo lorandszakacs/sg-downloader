@@ -29,6 +29,23 @@ private[model] class HopefulsDao(val db: DB)(implicit val ec: ExecutionContext) 
     collection.find(BSONDocument(_id -> name)).one[Hopeful]
   }
 
+  def find(names: Seq[ModelName]): Future[List[Hopeful]] = {
+    if (names.isEmpty) {
+      Future.successful(Nil)
+    } else {
+      val q = BSONDocument(
+        _id -> BSONDocument(
+          "$in" -> names
+        )
+      )
+      collection.find(q).cursor[Hopeful]().collect[List]()
+    }
+  }
+
+  def findAll: Future[List[Hopeful]] = {
+    collection.find(BSONDocument()).cursor[Hopeful]().collect[List]()
+  }
+
   def findWithZeroSets: Future[List[Hopeful]] = {
     val q: BSONDocument = BSONDocument(
       "photoSets" -> BSONDocument("$size" -> 0)
