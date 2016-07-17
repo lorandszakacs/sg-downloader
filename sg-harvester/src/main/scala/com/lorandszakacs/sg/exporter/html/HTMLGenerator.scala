@@ -24,7 +24,7 @@ case class HtmlSettings(
 
 case class Html(
   relativePathAndName: String,
-  value: String
+  content: String
 )
 
 case class ModelsRootIndex(
@@ -34,7 +34,7 @@ case class ModelsRootIndex(
 
 case class ModelIndex(
   name: ModelName,
-  modelIndexHtml: Html,
+  html: Html,
   photoSets: List[PhotoSetIndex]
 )
 

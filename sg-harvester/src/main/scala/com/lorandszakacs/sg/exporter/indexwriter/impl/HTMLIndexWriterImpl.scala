@@ -24,7 +24,7 @@ private[indexwriter] class HTMLIndexWriterImpl()
 
   override def writeRootModelIndex(index: ModelsRootIndex)(implicit ws: WriterSettings): Future[Unit] = {
     for {
-      _ <- (if (ws.rewriteEverything) FileUtils.cleanFolder(ws.rootFolder) else UnitFuture) recover {
+      _ <- (if (ws.rewriteEverything) FileUtils.cleanFolderOrCreate(ws.rootFolder) else UnitFuture) recover {
         case NonFatal(e) =>
           logger.error(s"failed to clean root folder: ${e.getMessage}", e)
           throw e
@@ -36,7 +36,7 @@ private[indexwriter] class HTMLIndexWriterImpl()
 
   override def rewriteRootIndexFile(indexFile: Html)(implicit ws: WriterSettings): Future[Unit] = {
     val p = ws.rootFolder.resolve(indexFile.relativePathAndName).toAbsolutePath
-    FileUtils.overwriteFile(p, indexFile.value) map { _ =>
+    FileUtils.overwriteFile(p, indexFile.content) map { _ =>
       logger.info(s"rewrote root index file @ $p")
     }
   }
@@ -49,31 +49,32 @@ private[indexwriter] class HTMLIndexWriterImpl()
     for {
       _: List[Unit] <- Future.traverse(rootIndex.models) { m: ModelIndex => writeModelIndex(rootIndex)(m) }
       _ = logger.info(s"finished writing all #${rootIndex.models.length} models @ ${ws.rootFolder}")
-      _ <- FileUtils.writeFile(path, rootIndex.html.value)
+      _ <- FileUtils.writeFile(path, rootIndex.html.content)
     } yield ()
   }
 
   /**
     * It will create a folder ./[[ModelIndex.name]]/, and write everything inside that folder
-    * This writes:[[ModelIndex.modelIndexHtml]] to ``./[[ModelIndex.modelIndexHtml.relativePathAndName]]`` on the disk
+    * This writes:[[ModelIndex.html]] to ``./[[ModelIndex.html.relativePathAndName]]`` on the disk
     */
   private def writeModelIndex(rootIndex: ModelsRootIndex)(m: ModelIndex)(implicit ws: WriterSettings): Future[Unit] = {
-    def writeModelPhotoSetIndex(modelFolderPath: Path)(ps: PhotoSetIndex)(implicit ws: WriterSettings): Future[Unit] = {
-      val psPath = modelFolderPath.resolve(ps.html.relativePathAndName)
-      FileUtils.writeFile(psPath, ps.html.value) map { _ =>
+    def writeModelPhotoSetIndex(ps: PhotoSetIndex)(implicit ws: WriterSettings): Future[Unit] = {
+      val psPath = ws.rootFolder.resolve(ps.html.relativePathAndName)
+      logger.debug(s"attempting to write file: $psPath")
+      FileUtils.writeFile(psPath, ps.html.content) map { _ =>
         logger.debug(s"successfully wrote file: $psPath")
       }
     }
     val modelFolderPath = ws.rootFolder.resolve(m.name.name).toAbsolutePath
-    val indexPath = ws.rootFolder.resolve(m.modelIndexHtml.relativePathAndName).toAbsolutePath
+    val indexPath = ws.rootFolder.resolve(m.html.relativePathAndName).toAbsolutePath
     for {
       _ <- FileUtils.createFolders(modelFolderPath)
       _ <- Future.serialize(m.photoSets) { ps =>
-        writeModelPhotoSetIndex(modelFolderPath)(ps)
+        writeModelPhotoSetIndex(ps)
       }
-      _ <- FileUtils.writeFile(indexPath, m.modelIndexHtml.value)
+      _ <- FileUtils.writeFile(indexPath, m.html.content)
     } yield {
-      logger.info(s"wrote index for model: ${m.name.name} @ $modelFolderPath")
+      logger.info(s"wrote entire model entry @ $indexPath")
     }
   }
 

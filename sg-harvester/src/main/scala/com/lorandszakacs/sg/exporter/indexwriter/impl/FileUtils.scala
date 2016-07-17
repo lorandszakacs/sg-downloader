@@ -21,7 +21,8 @@ private[indexwriter] object FileUtils extends StrictLogging {
   /**
     * recursively deletes everything in the specified folder
     */
-  def cleanFolder(fd: Path)(implicit ec: ExecutionContext): Future[Unit] = Future {
+  def cleanFolderOrCreate(fd: Path)(implicit ec: ExecutionContext): Future[Unit] = Future {
+    fd.toAbsolutePath.toFile.mkdirs()
     Files.walkFileTree(
       fd,
       new FileVisitor[Path] {

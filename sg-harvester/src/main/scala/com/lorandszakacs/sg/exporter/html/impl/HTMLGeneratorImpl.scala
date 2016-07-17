@@ -1,5 +1,7 @@
 package com.lorandszakacs.sg.exporter.html.impl
 
+import java.nio.file.{Path, Paths}
+
 import com.lorandszakacs.sg.exporter.html._
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.monads.future.FutureUtil._
@@ -32,12 +34,12 @@ private[html] class HTMLGeneratorImpl()(
   private def modelIndex(m: Model)(implicit settings: HtmlSettings): ModelIndex = {
     def modelIndexHtmlPage(m: Model)(psi: List[PhotoSetIndex])(implicit settings: HtmlSettings): Html = {
       def photoSetLink(photoSet: PhotoSetIndex): String = {
-        s"""|<li><a href="${photoSet.html.relativePathAndName}">${photoSet.displayName}</a></li>
+        s"""|<li><a href="../${photoSet.html.relativePathAndName}">${photoSet.displayName}</a></li>
             |""".stripMargin
       }
       Html(
-        relativePathAndName = modelIndexPageForName(m.name),
-        value =
+        relativePathAndName = modelIndexPageRelativePathFromCurrentDirectory(m.name),
+        content =
           s"""
              |<!DOCTYPE html>
              |<html>
@@ -62,8 +64,8 @@ private[html] class HTMLGeneratorImpl()(
       }
 
       val html = Html(
-        relativePathAndName = s"${modelIndexPageForName(m.name)}/${m.name.externalForm}_${ps.date}_${ps.title.name}.html".replaceAll("[^a-zA-Z0-9.-]", "_"),
-        value =
+        relativePathAndName = photoSetPageRelativePathFromCurrentDirectory(m.name, ps),
+        content =
           s"""
              |<!DOCTYPE html>
              |<html>
@@ -76,7 +78,7 @@ private[html] class HTMLGeneratorImpl()(
              |   <body>
              |      <div class="w3-container">
              |         <h2>${m.name.externalForm}: ${ps.title.externalForm} - ${ps.date}</h2>
-             |         <h2><a href="../${modelIndexPageForName(m.name)}">BACK</a></h2>
+             |         <h2><a href="../${modelIndexPageRelativePathFromCurrentDirectory(m.name)}">BACK</a></h2>
              |      </div>
              |
            |      <div class="w3-row">
@@ -97,7 +99,7 @@ private[html] class HTMLGeneratorImpl()(
     val modelIndexHtml = modelIndexHtmlPage(m)(photoSets)
     ModelIndex(
       name = m.name,
-      modelIndexHtml = modelIndexHtml,
+      html = modelIndexHtml,
       photoSets = photoSets
     )
   }
@@ -106,7 +108,7 @@ private[html] class HTMLGeneratorImpl()(
     generateRootIndexPage(models)(
       title = settings.rootIndexTitle,
       linkAndItemNameGenerator = { m: ModelIndex =>
-        (m.modelIndexHtml.relativePathAndName, m.name.name)
+        (m.html.relativePathAndName, m.name.name)
       }
     )
   }
@@ -115,7 +117,7 @@ private[html] class HTMLGeneratorImpl()(
     generateRootIndexPage(modelNames)(
       title = settings.rootIndexTitle,
       linkAndItemNameGenerator = { m: ModelName =>
-        (modelIndexPageForName(m), m.name)
+        (modelIndexPageRelativePathFromCurrentDirectory(m), m.name)
       }
     )
   }
@@ -127,7 +129,7 @@ private[html] class HTMLGeneratorImpl()(
     }
     Html(
       relativePathAndName = settings.indexFileName,
-      value =
+      content =
         s"""
            |<!DOCTYPE html>
            |<html>
@@ -140,8 +142,14 @@ private[html] class HTMLGeneratorImpl()(
     )
   }
 
-  private def modelIndexPageForName(m: ModelName)(implicit settings: HtmlSettings): String = {
+  private def modelIndexPageRelativePathFromCurrentDirectory(m: ModelName)(implicit settings: HtmlSettings): String = {
     s"${m.name}/${settings.indexFileName}"
+  }
+
+  private def photoSetPageRelativePathFromCurrentDirectory(m: ModelName, ps: PhotoSet)(implicit settings: HtmlSettings): String = {
+    val setName = s"${m.name}_${ps.date}_${ps.title.name}.html".replaceAll("[^a-zA-Z0-9.-]", "_")
+    val modelName = s"${m.name}"
+    s"$modelName/$setName"
   }
 
 
