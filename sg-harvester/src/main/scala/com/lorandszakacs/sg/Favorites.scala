@@ -175,7 +175,6 @@ object Favorites {
       "tasha",
       "tchip",
       "tigh",
-      "titan_",
       "tristyn",
       "ultima",
       "vaniislima",

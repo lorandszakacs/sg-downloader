@@ -276,9 +276,8 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
             }
 
             _ <- exporter.exportDeltaHTMLIndex(allThatNeedUpdating.map(_.name))(deltaExporterSettings)
-            _ = {
-              logger.info("finished writing the delta HTML export.")
-            }
+            _ = logger.info("finished writing the delta HTML export.")
+
           } yield ()
 
           f.await(24 hours)
