@@ -18,7 +18,6 @@ package com.lorandszakacs.sg.crawler.impl
 
 import java.net.URL
 
-import akka.http.scaladsl.model.Uri
 import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.crawler._
 import com.lorandszakacs.sg.http.SGURLBuilder

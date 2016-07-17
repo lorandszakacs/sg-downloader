@@ -11,7 +11,8 @@ import com.lorandszakacs.sg.model.ModelName
 object Favorites {
 
   private lazy val _modelsNames =
-    List("aeterna",
+    List(
+      "aeterna",
       "ailiqueen",
       "aisline",
       "ajilee",
@@ -40,6 +41,7 @@ object Favorites {
       "chad",
       "charm",
       "cheri",
+      "chrisrayn",
       "circa",
       "clareon",
       "coralinne",

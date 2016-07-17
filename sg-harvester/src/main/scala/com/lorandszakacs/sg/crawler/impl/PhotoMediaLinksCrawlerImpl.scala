@@ -2,7 +2,6 @@ package com.lorandszakacs.sg.crawler.impl
 
 import java.net.URL
 
-import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.crawler.{DidNotFindAnyPhotoLinksOnSetPageException, PhotoMediaLinksCrawler}
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.Photo

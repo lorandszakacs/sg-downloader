@@ -5,11 +5,8 @@ import com.lorandszakacs.sg.crawler.PageCrawlerAssembly
 import com.lorandszakacs.sg.harvester.impl.SGHarvesterImpl
 import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.model.SGModelAssembly
-import com.typesafe.scalalogging.StrictLogging
-import org.slf4j._
+import com.lorandszakacs.util.monads.future.FutureUtil._
 
-import scala.concurrent._
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
 /**
@@ -18,8 +15,8 @@ import scala.language.postfixOps
   * @since 04 Jul 2016
   *
   */
-trait SGHarvesterAssembly extends PageCrawlerAssembly with SGClientAssembly with SGModelAssembly {
-  this: StrictLogging =>
+trait SGHarvesterAssembly extends PageCrawlerAssembly with SGClientAssembly {
+  this: SGModelAssembly =>
 
   implicit def actorSystem: ActorSystem
 
@@ -31,6 +28,6 @@ trait SGHarvesterAssembly extends PageCrawlerAssembly with SGClientAssembly with
     modelAndSetCrawler,
     photoMediaLinksCrawler,
     sgModelRepository
-  )
+  )(executionContext)
 
 }

@@ -3,7 +3,7 @@ package com.lorandszakacs.sg.http
 import java.net.URL
 
 import akka.http.scaladsl.model.headers.{HttpOrigin, Origin, Referer}
-import akka.http.scaladsl.model.{HttpHeader, HttpRequest, Uri}
+import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
 import com.lorandszakacs.util.html.Html
 
 import scala.concurrent.Future

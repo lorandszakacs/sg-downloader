@@ -20,7 +20,9 @@ import java.util.concurrent.Executors
 
 import akka.actor.{ActorSystem, PoisonPill}
 import com.lorandszakacs.sg.app.repl.HarvesterRepl
+import com.lorandszakacs.sg.exporter.ModelDisplayerAssembly
 import com.lorandszakacs.sg.harvester.SGHarvesterAssembly
+import com.lorandszakacs.sg.model.SGModelAssembly
 import com.lorandszakacs.util.monads.future.FutureUtil._
 import com.typesafe.scalalogging.StrictLogging
 import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
@@ -44,8 +46,8 @@ object Main extends App with StrictLogging {
 
 }
 
-object assembly extends SGHarvesterAssembly with StrictLogging {
-  override implicit lazy val actorSystem: ActorSystem = ActorSystem("sg-harvester")
+object assembly extends SGHarvesterAssembly with ModelDisplayerAssembly with SGModelAssembly with StrictLogging {
+  override implicit lazy val actorSystem: ActorSystem = ActorSystem("sg-app")
 
   override implicit lazy val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
 
