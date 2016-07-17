@@ -34,7 +34,7 @@ private[html] class HTMLGeneratorImpl()(
   private def modelIndex(m: Model)(implicit settings: HtmlSettings): ModelIndex = {
     def modelIndexHtmlPage(m: Model)(psi: List[PhotoSetIndex])(implicit settings: HtmlSettings): Html = {
       def photoSetLink(photoSet: PhotoSetIndex): String = {
-        s"""|<li><a href="../${photoSet.html.relativePathAndName}">${photoSet.displayName}</a></li>
+        s"""|<li><a href="../${photoSet.html.relativePathAndName}" target="_blank">${photoSet.displayName}</a></li>
             |""".stripMargin
       }
       Html(
@@ -57,7 +57,7 @@ private[html] class HTMLGeneratorImpl()(
     def photoSetIndexPage(m: Model)(ps: PhotoSet)(implicit settings: HtmlSettings): PhotoSetIndex = {
       def photoDiv(photo: Photo): String = {
         s"""|<div class="w3-col s3 w3-container">
-            |   <a class="w3-hover-opacity">
+            |   <a class="w3-hover-opacity", target="_blank", href="${photo.url.toExternalForm}">
             |     <img src="${photo.url.toExternalForm}" alt="${photo.index}" style="width:100%">
             |   </a>
             |</div>""".stripMargin
@@ -125,7 +125,7 @@ private[html] class HTMLGeneratorImpl()(
   private def generateRootIndexPage[T](els: List[T])(title: String, linkAndItemNameGenerator: T => (String, String))(implicit settings: HtmlSettings): Html = {
     def item(el: T) = {
       val (link, name) = linkAndItemNameGenerator(el)
-      s"""<li><a href="$link">$name</a></li>"""
+      s"""<li><a href="$link" target="_blank">$name</a></li>"""
     }
     Html(
       relativePathAndName = settings.indexFileName,
