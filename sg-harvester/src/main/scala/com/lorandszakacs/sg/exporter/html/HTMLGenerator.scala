@@ -1,5 +1,7 @@
 package com.lorandszakacs.sg.exporter.html
 
+import java.nio.file.Path
+
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.monads.future.FutureUtil._
 
@@ -11,6 +13,8 @@ import com.lorandszakacs.util.monads.future.FutureUtil._
   */
 private[exporter] trait HTMLGenerator {
   def createHTMLPageForModels(models: List[Model])(implicit settings: HtmlSettings): Future[ModelsRootIndex]
+
+  def createRootIndex(models: List[ModelName])(implicit settings: HtmlSettings): Future[Html]
 }
 
 case class HtmlSettings(
@@ -19,11 +23,11 @@ case class HtmlSettings(
 )
 
 case class Html(
+  relativePathAndName: String,
   value: String
 )
 
 case class ModelsRootIndex(
-  indexFileName: String,
   html: Html,
   models: List[ModelIndex]
 )
@@ -31,12 +35,10 @@ case class ModelsRootIndex(
 case class ModelIndex(
   name: ModelName,
   modelIndexHtml: Html,
-  modelIndexHtmlFileName: String,
   photoSets: List[PhotoSetIndex]
 )
 
 case class PhotoSetIndex(
   html: Html,
-  htmlFileName: String,
   displayName: String
 )

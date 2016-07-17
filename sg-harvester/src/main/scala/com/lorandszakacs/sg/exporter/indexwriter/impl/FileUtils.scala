@@ -89,4 +89,19 @@ private[indexwriter] object FileUtils extends StrictLogging {
         throw exception
     }
   }
+
+  def overwriteFile(fp: Path, content: String)(implicit ec: ExecutionContext): Future[Unit] = Future {
+    val file = fp.toAbsolutePath.toFile
+    if (file.exists()) {
+      file.delete()
+    }
+    val writer = new PrintWriter(fp.toAbsolutePath.toFile)
+    Try(writer.write(content)) match {
+      case Success(_) =>
+        writer.close()
+      case Failure(exception) =>
+        writer.close()
+        throw exception
+    }
+  }
 }
