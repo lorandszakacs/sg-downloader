@@ -13,4 +13,8 @@ final case class PatienceConfig(
   throttle: FiniteDuration = 200 millis
 ) {
   def throttleThread(): Unit = Thread.sleep(throttle.toMillis)
+
+  def halfThrottle(): Unit = Thread.sleep(throttle.toMillis / 2)
+
+  def quarterThrottle(): Unit = Thread.sleep(throttle.toMillis / 4)
 }

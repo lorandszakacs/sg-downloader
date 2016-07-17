@@ -85,6 +85,31 @@ private[harvester] class SGHarvesterImpl(
     } yield newModels
   }
 
+  override def gatherAllDataForSuicideGirlsAndHopefulsFromScratch(username: String, password: String)(implicit pc: PatienceConfig): Future[List[Model]] = {
+    for {
+      _ <- photoCrawler.authenticateIfNeeded(username, password)
+      sgIndex <- modelRepo.suicideGirlIndex
+      hopefulIndex <- modelRepo.hopefulIndex
+
+      sgs: List[Try[SuicideGirl]] <- Future.serialize(sgIndex.names) { sgName =>
+        harvestSuicideGirlAndUpdateIndex(sgName) map Success.apply recover {
+          case NonFatal(e) =>
+            logger.error(s"failed to harvest SG: ${sgName.name}", e)
+            Failure(e)
+        }
+      }
+
+      hopefuls: List[Try[Hopeful]] <- Future.serialize(hopefulIndex.names) { hopefulName =>
+        harvestHopefulAndUpdateIndex(hopefulName) map Success.apply recover {
+          case NonFatal(e) =>
+            logger.error(s"failed to harvest hopeful: ${hopefulName.name}", e)
+            Failure(e)
+        }
+      }
+      result: List[Model] = sgs.filter(_.isSuccess).map(_.get) ++ hopefuls.filter(_.isSuccess).map(_.get)
+    } yield result
+  }
+
   override def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username: String, password: String)(implicit pc: PatienceConfig): Future[List[Model]] = {
     for {
       _ <- photoCrawler.authenticateIfNeeded(username, password)
@@ -185,7 +210,7 @@ private[harvester] class SGHarvesterImpl(
               Future.successful(Nil)
           }
         } yield {
-          Thread.sleep(pc.throttle.toMillis)
+          pc.halfThrottle()
           ph.copy(photos = photos)
         }
       }

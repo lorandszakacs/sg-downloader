@@ -75,6 +75,13 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
     """.stripMargin
   )
 
+  private val GatherAndIndexAll = Command(
+    "update-and-reindex-all",
+    s"""
+       |Gather information about ALL existing suicidegirls and hopefuls, and reparses all their data from the website
+    """.stripMargin
+  )
+
   private val UpdateAndIndex = Command(
     "update",
     s"""
@@ -118,7 +125,7 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
     "\ndisplay favorites\n"
   )
 
-  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, GatherNew, IndexNew, CleanIndex, UpdateAndIndex, ShowModel, HtmlFavorites, HtmlAll, DisplayFavorites).sortBy(_.id)
+  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, GatherNew, IndexNew, CleanIndex, GatherAndIndexAll, UpdateAndIndex, ShowModel, HtmlFavorites, HtmlAll, DisplayFavorites).sortBy(_.id)
 
   private implicit val patienceConfig: PatienceConfig = PatienceConfig(25 millis)
   private implicit val ec: ExecutionContext = assembly.executionContext
@@ -243,6 +250,23 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
           }
           val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username, plainTextPassword)
           val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = future.await(12 hours).`SG|Hopeful`
+          logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
+          logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
+        }
+
+        //----------------------------------------
+
+        case GatherAndIndexAll.id => interpret {
+          val username: String = {
+            print("\nplease insert username: ")
+            StdIn.readLine().trim()
+          }
+          val plainTextPassword: String = {
+            print("\nplease insert password: ")
+            StdIn.readLine().trim()
+          }
+          val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsFromScratch(username, plainTextPassword)
+          val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = future.await(24 hours).`SG|Hopeful`
           logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
           logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
         }

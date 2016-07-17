@@ -2,6 +2,7 @@ package com.lorandszakacs.sg.harvester
 
 import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model._
+import com.lorandszakacs.util.monads.future.FutureUtil._
 
 import scala.concurrent.Future
 import scala.language.postfixOps
@@ -70,9 +71,12 @@ trait SGHarvester {
     * [[HopefulIndex.needsReindexing]] collections, respectively. Removes them from there if
     * the gathering of all information was successful.
     *
-    * @return
     */
   def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username: String, password: String)(implicit pc: PatienceConfig): Future[List[Model]]
 
-
+  /**
+    * same as [[gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing]], but it looks at all known [[Model]] in the
+    * system.
+    */
+  def gatherAllDataForSuicideGirlsAndHopefulsFromScratch(username: String, password: String)(implicit pc: PatienceConfig): Future[List[Model]]
 }
