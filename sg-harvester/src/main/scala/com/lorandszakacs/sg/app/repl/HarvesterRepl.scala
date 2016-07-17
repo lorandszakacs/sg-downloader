@@ -120,11 +120,11 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
 
   private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, GatherNew, IndexNew, CleanIndex, UpdateAndIndex, ShowModel, HtmlFavorites, HtmlAll, DisplayFavorites).sortBy(_.id)
 
-  private implicit val patienceConfig: PatienceConfig = PatienceConfig(200 millis)
+  private implicit val patienceConfig: PatienceConfig = PatienceConfig(25 millis)
   private implicit val ec: ExecutionContext = assembly.executionContext
 
   private val harvester: SGHarvester = assembly.sgHarvester
-  private val displayer: SGExporter = assembly.modelDisplayer
+  private val exporter: SGExporter = assembly.modelDisplayer
 
   private def interpret(thunk: => Unit): Unit = Try(thunk) match {
     case Success(_) => ()
@@ -133,6 +133,18 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
       ()
       println()
   }
+
+  private implicit val exporterSettings: ExporterSettings = ExporterSettings(
+    favoritesRootFolderPath = "~/suicide-girls/html/favorites",
+    allModelsRootFolderPath = "~/suicide-girls/html/all",
+    rewriteEverything = true
+  )
+
+  private implicit val deltaExporterSettings: ExporterSettings = ExporterSettings(
+    favoritesRootFolderPath = "~/suicide-girls/delta/favorites",
+    allModelsRootFolderPath = "~/suicide-girls/delta/all",
+    rewriteEverything = true
+  )
 
   def start(): Unit = {
     println("type help for instructions")
@@ -167,18 +179,14 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
         case ShowModel.id => interpret {
           print("name (case insensitive): ")
           val name = StdIn.readLine()
-          val toDisplay = displayer.prettyPrint(ModelName(name)).await()
+          val toDisplay = exporter.prettyPrint(ModelName(name)).await()
           print(s"\n$toDisplay\n")
         }
 
         //----------------------------------------
 
         case HtmlFavorites.id => interpret {
-          val settings = ExporterSettings(
-            rootFolderPath = "~/suicide-girls/html/favorites",
-            rewriteEverything = true
-          )
-          displayer.writeHTMLIndexOfFavorites(settings).map { _ =>
+          exporter.exportHTMLIndexOfFavorites(exporterSettings).map { _ =>
             logger.info(s"successfully wrote the FAVORITES models index")
           }.await(10 minutes)
         }
@@ -186,11 +194,7 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
         //----------------------------------------
 
         case HtmlAll.id => interpret {
-          val settings = ExporterSettings(
-            rootFolderPath = "~/suicide-girls/html/all",
-            rewriteEverything = true
-          )
-          displayer.writeHTMLIndexOfAllModels(settings).map { _ =>
+          exporter.exportHTMLIndexOfAllModels(exporterSettings).map { _ =>
             logger.info(s"successfully wrote ALL the models index")
           }.await(1 hour)
 
@@ -255,20 +259,25 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
             StdIn.readLine().trim()
           }
           val f = for {
-            allNew <- harvester.gatherNewestPhotosAndUpdateIndex(Int.MaxValue)
+            allNewHarvested <- harvester.gatherNewestPhotosAndUpdateIndex(Int.MaxValue)
             _ = {
-              val allNewSG = allNew.keepSuicideGirls
-              val allNewHopefuls = allNew.keepHopefuls
-              logger.info(s"finished harvesting and queuing to reindex all new entries, #${allNew.length}")
+              val allNewSG = allNewHarvested.keepSuicideGirls
+              val allNewHopefuls = allNewHarvested.keepHopefuls
+              logger.info(s"finished harvesting and queuing to reindex all new entries, #${allNewHarvested.length}")
               logger.info(s"# of new suicide girls: ${allNewSG.length}. Names: ${allNewSG.map(_.name.name).mkString(",")}")
               logger.info(s"# of new hopefuls     : ${allNewHopefuls.length}. Names: ${allNewHopefuls.map(_.name.name).mkString(",")}")
             }
 
-            all <- harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username, plainTextPassword)
+            allThatNeedUpdating <- harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username, plainTextPassword)
             _ = {
-              val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = all.`SG|Hopeful`
+              val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = allThatNeedUpdating.`SG|Hopeful`
               logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
               logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
+            }
+
+            _ <- exporter.exportDeltaHTMLIndex(allThatNeedUpdating.map(_.name))(deltaExporterSettings)
+            _ = {
+              logger.info("finished writing the delta HTML export.")
             }
           } yield ()
 
