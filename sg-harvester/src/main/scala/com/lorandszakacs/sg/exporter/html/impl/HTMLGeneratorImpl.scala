@@ -56,7 +56,7 @@ private[html] class HTMLGeneratorImpl()(
       def photoDiv(photo: Photo): String = {
         s"""|<div class="w3-col s3 w3-container">
             |   <a class="w3-hover-opacity", target="_blank", href="${photo.url.toExternalForm}">
-            |     <img src="${photo.url.toExternalForm}" alt="${photo.index}" style="width:100%">
+            |     <img src="${photo.thumbnailURL.toExternalForm}" alt="${photo.index}" style="width:100%">
             |   </a>
             |</div>""".stripMargin
       }
