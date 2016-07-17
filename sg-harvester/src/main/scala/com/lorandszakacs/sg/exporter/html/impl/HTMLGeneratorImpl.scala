@@ -1,7 +1,5 @@
 package com.lorandszakacs.sg.exporter.html.impl
 
-import java.nio.file.{Path, Paths}
-
 import com.lorandszakacs.sg.exporter.html._
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.monads.future.FutureUtil._

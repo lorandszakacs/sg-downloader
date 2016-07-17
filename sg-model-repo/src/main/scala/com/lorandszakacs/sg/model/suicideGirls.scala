@@ -207,10 +207,11 @@ final case class PhotoSet(
 
 final case class Photo(
   url: URL,
+  thumbnailURL: URL,
   index: Int
 ) {
 
-  override def toString = s"$url"
+  override def toString = s"$url :: $thumbnailURL"
 
   private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
 }

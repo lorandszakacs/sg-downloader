@@ -36,6 +36,10 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
     val expected = PhotoSetPageFullDate
     SGContentParser.parsePhotos(expected.html) match {
       case Success(result) => result should have length expected.numberOfPhotos
+        val last = result.last
+        assert(last.index == expected.numberOfPhotos - 1, "... index")
+        assert(last.url.toExternalForm == "https://d1a0n9gptf7ayu.cloudfront.net/photos/b55708001e9a594a5851758a86706659.jpg", "... url")
+        assert(last.thumbnailURL.toExternalForm == "https://d1a0n9gptf7ayu.cloudfront.net/cache/19/27/19275ec62786360c34dcc18731cb121d.jpg", "... thumbnail url")
       case Failure(e) => fail("did not return any photos", e)
     }
   }
