@@ -122,7 +122,7 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
   it should "... gather the first 48 Hopeful names by followers" in { crawler =>
     whenReady(crawler.gatherHopefulNames(48)) { names: List[ModelName] =>
 
-      println {
+      print {
         s"""
            |hopeful names:
            |${names.mkString("\n")}
