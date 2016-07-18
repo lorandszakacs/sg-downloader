@@ -44,9 +44,11 @@ private[html] class HTMLGeneratorImpl()(
              |<title>${m.name.externalForm}</title>
              |  <h2><a href="../${settings.indexFileName}">BACK</a></h2>
              |  <h2>${m.stringifyType.capitalize}: ${m.name.externalForm}</h2>
+             |  <h3>
              |  <ol type="1">
              |    ${psi.map(photoSetLink).mkString("\n")}
              |  </ol>
+             |  </h3>
              |</html>
     """.stripMargin
       )
@@ -134,7 +136,7 @@ private[html] class HTMLGeneratorImpl()(
         s"""
            |<!DOCTYPE html>
            |<html>
-           |  <title>$title</title>
+           |<title>$title</title>
            |  <h3><a href="../../${settings.indexFileName}">BACK</a></h3>
            |  <h3><ol type="1">
            |${els.map(item).mkString("\t\t", "\n\t\t", "\n")}
