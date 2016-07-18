@@ -145,6 +145,7 @@ object Favorites {
       "rawruh",
       "reed",
       "revenge",
+      "rhue",
       "riae",
       "ripley",
       "riversong",
