@@ -2,6 +2,7 @@ package com.lorandszakacs.sg.http
 
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 
 import scala.concurrent.duration._
@@ -20,21 +21,33 @@ private[http] object ExceptionHelpers {
     hs.map(h => s"${h.name()} : ${h.value()}").mkString("{", "\n", "}")
   }
 
+  /**
+    * See
+    * https://github.com/akka/akka/blob/master/akka-docs/rst/scala/http/client-side/request-level.rst#example
+    *
+    * It's a bug, not a feature.
+    */
+  def consumeEntity(e: ResponseEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
+    Try(Await.result(e.dataBytes.runWith(Sink.ignore), 1 minute)).toOption.map(_ => "ignored-content")
+  }
+
+  def consumeEntity(e: RequestEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
+    Try(Await.result(e.dataBytes.runWith(Sink.ignore), 1 minute)).toOption.map(_ => "ignored-content")
+  }
+
   def stringifyEntity(e: ResponseEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
-    //    val f: Future[String] = e.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))
-    //    Try(Await.result(f, 1 minute)).toOption
-    Some("...disabled")
+    val f: Future[String] = e.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))
+    Try(Await.result(f, 1 minute)).toOption
   }
 
   def stringifyEntity(e: RequestEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
-    //    val f: Future[String] = e.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))
-    //    Try(Await.result(f, 1 minute)).toOption
-    Some("...disabled")
+    val f: Future[String] = e.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))
+    Try(Await.result(f, 1 minute)).toOption
   }
 
   implicit class BuffedResponse(response: HttpResponse)(implicit mat: ActorMaterializer, ec: ExecutionContext) {
     def stringify: String =
-      s"Status: ${response._1}. \nHeaders:\n${stringifyHeaders(response.headers)}.\nEntity:\n${if (response.status != StatusCodes.NotFound) stringifyEntity(response._3).getOrElse("None") else "None"}"
+      s"Status: ${response._1}. \nHeaders:\n${stringifyHeaders(response.headers)}.\nEntity:\n${if (response.status != StatusCodes.NotFound) stringifyEntity(response._3) else consumeEntity(response._3)}"
   }
 
   implicit class BuffedRequest(req: HttpRequest)(implicit mat: ActorMaterializer, ec: ExecutionContext) {
