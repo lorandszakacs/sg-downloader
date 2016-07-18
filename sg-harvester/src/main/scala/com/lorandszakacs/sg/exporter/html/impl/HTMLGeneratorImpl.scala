@@ -136,9 +136,9 @@ private[html] class HTMLGeneratorImpl()(
            |<html>
            |  <title>$title</title>
            |  <h3><a href="../../${settings.indexFileName}">BACK</a></h3>
-           |  <ol type="1">
+           |  <h3><ol type="1">
            |${els.map(item).mkString("\t\t", "\n\t\t", "\n")}
-           |  </ol>
+           |  </ol></h3>
            |</html>
       """.stripMargin
     )
