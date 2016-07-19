@@ -14,6 +14,7 @@ object Favorites {
     List(
       "aeterna",
       "ailiqueen",
+      "alicesey",
       "aisline",
       "ajilee",
       "aleli",
@@ -65,6 +66,7 @@ object Favorites {
       "effy",
       "einiss",
       "eleena",
+      "ellie",
       "elliemouse",
       "elliott",
       "episkey",

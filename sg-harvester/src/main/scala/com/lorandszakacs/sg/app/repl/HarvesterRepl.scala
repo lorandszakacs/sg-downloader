@@ -97,6 +97,15 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
     """.stripMargin
   )
 
+  private val DetectDuplicateFiles = Command(
+    "detect-duplicate-files",
+    """
+      |if you keep applying delta upgrades to html. You can find a set that was not on FP, suddenly be on FP, in that case the
+      |date of the set changes. So you will wind up with two html files. This command will attempt to find such duplicates, and
+      |remove them manually. There are some known false alarms. They are filtered out manually
+      | """.stripMargin
+  )
+
 
   private val ShowModel = Command(
     "show",
@@ -125,7 +134,7 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
     "\ndisplay favorites\n"
   )
 
-  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, GatherNew, IndexNew, CleanIndex, GatherAndIndexAll, UpdateAndIndex, ShowModel, HtmlFavorites, HtmlAll, DisplayFavorites).sortBy(_.id)
+  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, GatherNew, IndexNew, CleanIndex, DetectDuplicateFiles, GatherAndIndexAll, UpdateAndIndex, ShowModel, HtmlFavorites, HtmlAll, DisplayFavorites).sortBy(_.id)
 
   private implicit val patienceConfig: PatienceConfig = PatienceConfig(25 millis)
   private implicit val ec: ExecutionContext = assembly.executionContext
@@ -316,6 +325,21 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
           logger.info(s"cleaned up hopefuls: ${cleanedHopefuls.length}")
         }
 
+        //----------------------------------------
+
+        case DetectDuplicateFiles.id => interpret {
+          val df = exporter.detectDuplicateFiles("~/Dropbox/Public/suicide-girls/models").await()
+          val repr = df.map { duplFilesInFolder =>
+            duplFilesInFolder.mkString("\n")
+          }
+          print {
+            s"""|potential duplicates:
+                |${repr.mkString("\n\n")}
+            """.stripMargin
+          }
+        }
+
+        //----------------------------------------
 
         case unknown =>
           println(s"unknown command: $unknown. Please type help for more information.")

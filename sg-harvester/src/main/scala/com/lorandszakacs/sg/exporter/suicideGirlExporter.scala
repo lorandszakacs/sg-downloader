@@ -40,10 +40,23 @@ trait SGExporter {
     * Create a navigable HTML webpage at [[ExporterSettings.allModelsRootFolderPath]]
     */
   def exportHTMLIndexOfAllModels(implicit ws: ExporterSettings): Future[Unit]
+
+  /**
+    * The two paths:
+    * ``~/suicide-girls/models/favorites/porcelinna/porcelinna_2016-06-11_PEACH_BLOSSOM.html``
+    * ``~/suicide-girls/models/favorites/porcelinna/porcelinna_2016-07-19_PEACH_BLOSSOM.html``
+    *
+    * Differ only in date, because if you keep using [[exportDeltaHTMLIndex]], you will eventually
+    * wind up in a situation that the same set was first published on 2016-06-11, and then on 2016-07-19
+    * it gets to the front page of the website, and its publishing date gets also changed.
+    * But since the file was in our system for almost a month, it's highly likely that the export
+    * contains the old file.
+    */
+  def detectDuplicateFiles(folderRootPath: String): Future[Set[Set[String]]]
 }
 
 object ExporterSettings {
-  private def normalizeHomePath(path: String): String = {
+  def normalizeHomePath(path: String): String = {
     path.replaceFirst("^~", System.getProperty("user.home"))
   }
 
