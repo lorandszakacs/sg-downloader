@@ -227,6 +227,7 @@ object Favorites {
       "vassilis",
       "veive",
       "venom",
+      "verde",
       "vice",
       "viking",
       "vivid",
