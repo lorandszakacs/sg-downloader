@@ -110,13 +110,27 @@ private[harvester] class SGHarvesterImpl(
     } yield result
   }
 
-  override def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username: String, password: String)(implicit pc: PatienceConfig): Future[List[Model]] = {
+  private val ModelsKnownToHaveAMissingSet = List[ModelName](
+    "aeta",
+    "casanova",
+    "casiopea",
+    "damsel",
+    "eliona",
+    "kit",
+    "kurupt",
+    "vice"
+  )
+
+  override def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username: String, password: String, includeProblematic: Boolean)(implicit pc: PatienceConfig): Future[List[Model]] = {
+    def adjust(names: List[ModelName]): List[ModelName] = {
+      if (includeProblematic) names else names diff ModelsKnownToHaveAMissingSet
+    }
     for {
       _ <- photoCrawler.authenticateIfNeeded(username, password)
       sgIndex <- modelRepo.suicideGirlIndex
       hopefulIndex <- modelRepo.hopefulIndex
 
-      sgs: List[Try[SuicideGirl]] <- Future.serialize(sgIndex.needsReindexing) { sgName =>
+      sgs: List[Try[SuicideGirl]] <- Future.serialize(adjust(sgIndex.needsReindexing)) { sgName =>
         harvestSuicideGirlAndUpdateIndex(sgName) map Success.apply recover {
           case NonFatal(e) =>
             logger.error(s"failed to harvest SG: ${sgName.name}", e)
@@ -124,7 +138,7 @@ private[harvester] class SGHarvesterImpl(
         }
       }
 
-      hopefuls: List[Try[Hopeful]] <- Future.serialize(hopefulIndex.needsReindexing) { hopefulName =>
+      hopefuls: List[Try[Hopeful]] <- Future.serialize(adjust(hopefulIndex.needsReindexing)) { hopefulName =>
         harvestHopefulAndUpdateIndex(hopefulName) map Success.apply recover {
           case NonFatal(e) =>
             logger.error(s"failed to harvest hopeful: ${hopefulName.name}", e)

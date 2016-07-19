@@ -248,7 +248,7 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
             print("\nplease insert password: ")
             StdIn.readLine().trim()
           }
-          val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username, plainTextPassword)
+          val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username, plainTextPassword, includeProblematic = true)
           val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = future.await(12 hours).`SG|Hopeful`
           logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
           logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
@@ -292,7 +292,7 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
               logger.info(s"# of new hopefuls     : ${allNewHopefuls.length}. Names: ${allNewHopefuls.map(_.name.name).mkString(",")}")
             }
 
-            allThatNeedUpdating <- harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username, plainTextPassword)
+            allThatNeedUpdating <- harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username, plainTextPassword, includeProblematic = false)
             _ = {
               val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = allThatNeedUpdating.`SG|Hopeful`
               logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
