@@ -328,7 +328,7 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
           print {
             s"""|potential duplicates:
                 |${repr.mkString("\n\n")}
-            """.stripMargin
+                |""".stripMargin
           }
         }
 
