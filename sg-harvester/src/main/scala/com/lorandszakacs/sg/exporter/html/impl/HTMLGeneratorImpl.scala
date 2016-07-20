@@ -30,6 +30,12 @@ private[html] class HTMLGeneratorImpl()(
   }
 
   private def modelIndex(m: Model)(implicit settings: HtmlSettings): ModelIndex = {
+    def iconForPhotoSet(ps: PhotoSet): String = {
+      ps.photos.headOption.map(_.thumbnailURL.toExternalForm).getOrElse("https://dl.dropboxusercontent.com/u/11532620/suicide-girls/icons/suicide_girls_favorites.ico")
+    }
+    def iconForModel(m: Model): String = {
+      m.photoSets.headOption.map(iconForPhotoSet).getOrElse("https://dl.dropboxusercontent.com/u/11532620/suicide-girls/icons/suicide_girls_favorites.ico")
+    }
     def modelIndexHtmlPage(m: Model)(psi: List[PhotoSetIndex])(implicit settings: HtmlSettings): Html = {
       def photoSetLink(photoSet: PhotoSetIndex): String = {
         s"""|<li><a href="../${photoSet.html.relativePathAndName}" target="_blank">${photoSet.displayName}</a></li>
@@ -42,6 +48,7 @@ private[html] class HTMLGeneratorImpl()(
              |<!DOCTYPE html>
              |<html>
              |<title>${m.name.externalForm}</title>
+             |  <head><link rel="icon" href="${iconForModel(m)}"></head>
              |  <h2><a href="../${settings.indexFileName}">BACK</a></h2>
              |  <h2>${m.stringifyType.capitalize}: ${m.name.externalForm}</h2>
              |  <h3>
@@ -70,6 +77,7 @@ private[html] class HTMLGeneratorImpl()(
              |<!DOCTYPE html>
              |<html>
              |   <title>${m.name.externalForm}: ${ps.title.externalForm}</title>
+             |   <head><link rel="icon" href="${iconForPhotoSet(ps)}"></head>
              |   <meta name="viewport" content="width=device-width, initial-scale=1">
              |   <link rel="stylesheet" href="https://dl.dropboxusercontent.com/u/11532620/suicide-girls/css/w3.css">
              |   <script type="text/javascript" src="https://dl.dropboxusercontent.com/u/11532620/suicide-girls/scripts/image_loading.js"></script>
@@ -137,6 +145,7 @@ private[html] class HTMLGeneratorImpl()(
            |<!DOCTYPE html>
            |<html>
            |<title>$title</title>
+           |<head><link rel="icon" href="https://dl.dropboxusercontent.com/u/11532620/suicide-girls/icons/suicide_girls_favorites.ico"></head>
            |  <h3><a href="../../${settings.indexFileName}">BACK</a></h3>
            |  <h3><ol type="1">
            |${els.map(item).mkString("\t\t", "\n\t\t", "\n")}
