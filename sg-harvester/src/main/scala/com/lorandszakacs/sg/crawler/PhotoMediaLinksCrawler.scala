@@ -24,7 +24,7 @@ trait PhotoMediaLinksCrawler {
     * will be false
     *
     */
-  def authenticateIfNeeded(username: String, plainTextPassword: String): Future[Authentication]
+  def authenticateIfNeeded(usernameAndPassword: () => (String, String)): Future[Authentication]
 
   def gatherAllPhotosFromSetPage(photoSetPageUri: URL): Future[List[Photo]]
 

@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.crawler.impl
 
 import java.net.URL
 
-import com.lorandszakacs.sg.crawler.{DidNotFindAnyPhotoLinksOnSetPageException, PhotoMediaLinksCrawler}
+import com.lorandszakacs.sg.crawler.{DidNotFindAnyPhotoLinksOnSetPageException, PhotoMediaLinksCrawler, SessionDao}
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.Photo
 import com.lorandszakacs.util.monads.future.FutureUtil._
@@ -17,14 +17,39 @@ import scala.util.control.NonFatal
   * @since 05 Jul 2016
   *
   */
-private[crawler] class PhotoMediaLinksCrawlerImpl(private var sGClient: SGClient)(implicit val ec: ExecutionContext) extends PhotoMediaLinksCrawler with SGURLBuilder with StrictLogging {
+private[crawler] class PhotoMediaLinksCrawlerImpl(
+  private val sGClient: SGClient,
+  private val sessionDao: SessionDao
+)(implicit val ec: ExecutionContext) extends PhotoMediaLinksCrawler with SGURLBuilder with StrictLogging {
 
   private[this] implicit var _authentication: Authentication = DefaultSGAuthentication
 
-  override def authenticateIfNeeded(username: String, plainTextPassword: String): Future[Authentication] = {
+  override def authenticateIfNeeded(usernameAndPassword: () => (String, String)): Future[Authentication] = {
     if (authentication.needsRefresh) {
+      logger.info("need to authenticate")
       for {
-        newAuthentication <- sGClient.authenticate(username, plainTextPassword)
+        possibleSession: Option[Session] <- sessionDao.find()
+        newAuthentication: Authentication <- possibleSession match {
+          case Some(session) =>
+            logger.info("attempting to recreate authentication from stored session")
+            val recreate = for {
+              auth <- sGClient.createAuthentication(session)
+            } yield auth
+
+            val result = recreate recoverWith {
+              case e: FailedToVerifyNewAuthenticationException =>
+                logger.error("failed to verify stored session, defaulting to using username and password", e)
+                autenticateWithUsernameAndPassword(usernameAndPassword)
+            }
+
+            result map { r: Authentication =>
+              logger.info("successfully restored authentication")
+              r
+            }
+
+          case None =>
+            autenticateWithUsernameAndPassword(usernameAndPassword)
+        }
       } yield {
         _authentication = newAuthentication
         newAuthentication
@@ -32,6 +57,14 @@ private[crawler] class PhotoMediaLinksCrawlerImpl(private var sGClient: SGClient
     } else {
       Future.successful(authentication)
     }
+  }
+
+  private def autenticateWithUsernameAndPassword(usernameAndPassword: () => (String, String)): Future[Authentication] = {
+    val (username, plainTextPassword) = usernameAndPassword()
+    for {
+      newAuthentication <- sGClient.authenticate(username, plainTextPassword)
+      _ <- sessionDao.create(newAuthentication.session)
+    } yield newAuthentication
   }
 
   override def gatherAllPhotosFromSetPage(photoSetPageUri: URL): Future[List[Photo]] = {

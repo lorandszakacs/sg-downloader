@@ -7,6 +7,7 @@ import com.lorandszakacs.sg.model.Model.{HopefulFactory, SuicideGirlFactory}
 import com.lorandszakacs.sg.model._
 import org.joda.time.LocalDate
 import org.scalatest.Outcome
+import reactivemongo.api.DefaultDB
 
 import scala.concurrent.ExecutionContext
 
@@ -232,6 +233,7 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
 
       override implicit def executionContext: ExecutionContext = ModelAndPhotoSetCrawlerTests.this.ec
 
+      override def db: DefaultDB = throw new NotImplementedError("... DB not needed in this test")
     }
 
     test.apply(assembly.modelAndSetCrawler)

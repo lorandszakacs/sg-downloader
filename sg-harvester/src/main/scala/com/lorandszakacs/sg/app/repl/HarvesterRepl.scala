@@ -162,6 +162,22 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
     rewriteEverything = true
   )
 
+  private val usernamePasswordConsoleInput: () => (String, String) = { () =>
+    val username: String = {
+      print("\nplease insert username: ")
+      StdIn.readLine().trim()
+    }
+    val plainTextPassword: String = {
+      print("\nplease insert password: ")
+      StdIn.readLine().trim()
+    }
+    (username, plainTextPassword)
+  }
+
+  private def usernamePasswordConstantInput(username: String, plainTextPassword: String): () => (String, String) = { () =>
+    (username, plainTextPassword)
+  }
+
   def start(): Unit = {
     println("type help for instructions")
 
@@ -249,15 +265,8 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
         //----------------------------------------
 
         case IndexNew.id => interpret {
-          val username: String = {
-            print("\nplease insert username: ")
-            StdIn.readLine().trim()
-          }
-          val plainTextPassword: String = {
-            print("\nplease insert password: ")
-            StdIn.readLine().trim()
-          }
-          val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username, plainTextPassword, includeProblematic = true)
+          val input = usernamePasswordConsoleInput
+          val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(input, includeProblematic = true)
           val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = future.await(12 hours).`SG|Hopeful`
           logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
           logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
@@ -266,15 +275,7 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
         //----------------------------------------
 
         case GatherAndIndexAll.id => interpret {
-          val username: String = {
-            print("\nplease insert username: ")
-            StdIn.readLine().trim()
-          }
-          val plainTextPassword: String = {
-            print("\nplease insert password: ")
-            StdIn.readLine().trim()
-          }
-          val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsFromScratch(username, plainTextPassword)
+          val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsFromScratch(usernamePasswordConsoleInput)
           val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = future.await(24 hours).`SG|Hopeful`
           logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
           logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
@@ -283,14 +284,6 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
         //----------------------------------------
 
         case UpdateAndIndex.id => interpret {
-          val username: String = {
-            print("\nplease insert username: ")
-            StdIn.readLine().trim()
-          }
-          val plainTextPassword: String = {
-            print("\nplease insert password: ")
-            StdIn.readLine().trim()
-          }
           val f = for {
             allNewHarvested <- harvester.gatherNewestPhotosAndUpdateIndex(Int.MaxValue)
             _ = {
@@ -301,7 +294,7 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
               logger.info(s"# of new hopefuls     : ${allNewHopefuls.length}. Names: ${allNewHopefuls.map(_.name.name).mkString(",")}")
             }
 
-            allThatNeedUpdating <- harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username, plainTextPassword, includeProblematic = false)
+            allThatNeedUpdating <- harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(usernamePasswordConsoleInput, includeProblematic = false)
             _ = {
               val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = allThatNeedUpdating.`SG|Hopeful`
               logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")

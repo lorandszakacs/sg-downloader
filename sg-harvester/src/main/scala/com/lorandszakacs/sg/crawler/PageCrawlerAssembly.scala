@@ -1,8 +1,9 @@
 package com.lorandszakacs.sg.crawler
 
 import akka.actor.ActorSystem
-import com.lorandszakacs.sg.crawler.impl.{ModelAndPhotoSetCrawlerImpl, PhotoMediaLinksCrawlerImpl}
+import com.lorandszakacs.sg.crawler.impl.{ModelAndPhotoSetCrawlerImpl, PhotoMediaLinksCrawlerImpl, SessionDaoImpl}
 import com.lorandszakacs.sg.http.SGClientAssembly
+import reactivemongo.api.DefaultDB
 
 import scala.concurrent.ExecutionContext
 
@@ -13,6 +14,8 @@ import scala.concurrent.ExecutionContext
   *
   */
 trait PageCrawlerAssembly extends SGClientAssembly {
+  def db: DefaultDB
+
   implicit def actorSystem: ActorSystem
 
   implicit def executionContext: ExecutionContext
@@ -21,8 +24,12 @@ trait PageCrawlerAssembly extends SGClientAssembly {
 
   def photoMediaLinksCrawler: PhotoMediaLinksCrawler = _photoCrawler
 
+  private[crawler] def sessionDao: SessionDao = _sessionDao
+
+  private[crawler] lazy val _sessionDao = new SessionDaoImpl(db)(executionContext)
+
   private[crawler] lazy val _modelAndSetCrawler = new ModelAndPhotoSetCrawlerImpl(suicideGirlsClient)
 
-  private[crawler] lazy val _photoCrawler = new PhotoMediaLinksCrawlerImpl(suicideGirlsClient)
+  private[crawler] lazy val _photoCrawler = new PhotoMediaLinksCrawlerImpl(suicideGirlsClient, sessionDao)
 
 }

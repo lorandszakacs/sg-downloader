@@ -22,7 +22,7 @@ trait SGHarvesterAssembly extends PageCrawlerAssembly with SGClientAssembly {
 
   implicit def executionContext: ExecutionContext
 
-  implicit def sgHarvester: SGHarvester = _sgHarvester
+  def sgHarvester: SGHarvester = _sgHarvester
 
   private[harvester] lazy val _sgHarvester = new SGHarvesterImpl(
     modelAndSetCrawler,

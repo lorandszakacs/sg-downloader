@@ -85,9 +85,9 @@ private[harvester] class SGHarvesterImpl(
     } yield newModels
   }
 
-  override def gatherAllDataForSuicideGirlsAndHopefulsFromScratch(username: String, password: String)(implicit pc: PatienceConfig): Future[List[Model]] = {
+  override def gatherAllDataForSuicideGirlsAndHopefulsFromScratch(usernameAndPassword: () => (String, String))(implicit pc: PatienceConfig): Future[List[Model]] = {
     for {
-      _ <- photoCrawler.authenticateIfNeeded(username, password)
+      _ <- photoCrawler.authenticateIfNeeded(usernameAndPassword)
       sgIndex <- modelRepo.suicideGirlIndex
       hopefulIndex <- modelRepo.hopefulIndex
 
@@ -121,12 +121,12 @@ private[harvester] class SGHarvesterImpl(
     "vice"
   )
 
-  override def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username: String, password: String, includeProblematic: Boolean)(implicit pc: PatienceConfig): Future[List[Model]] = {
+  override def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(usernameAndPassword: () => (String, String), includeProblematic: Boolean)(implicit pc: PatienceConfig): Future[List[Model]] = {
     def adjust(names: List[ModelName]): List[ModelName] = {
       if (includeProblematic) names else names diff ModelsKnownToHaveAMissingSet
     }
     for {
-      _ <- photoCrawler.authenticateIfNeeded(username, password)
+      _ <- photoCrawler.authenticateIfNeeded(usernameAndPassword)
       sgIndex <- modelRepo.suicideGirlIndex
       hopefulIndex <- modelRepo.hopefulIndex
 

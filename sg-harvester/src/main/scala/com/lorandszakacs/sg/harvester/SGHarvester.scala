@@ -72,11 +72,11 @@ trait SGHarvester {
     * the gathering of all information was successful.
     *
     */
-  def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(username: String, password: String, includeProblematic: Boolean)(implicit pc: PatienceConfig): Future[List[Model]]
+  def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(usernameAndPassword: () => (String, String), includeProblematic: Boolean)(implicit pc: PatienceConfig): Future[List[Model]]
 
   /**
     * same as [[gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing]], but it looks at all known [[Model]] in the
     * system.
     */
-  def gatherAllDataForSuicideGirlsAndHopefulsFromScratch(username: String, password: String)(implicit pc: PatienceConfig): Future[List[Model]]
+  def gatherAllDataForSuicideGirlsAndHopefulsFromScratch(usernameAndPassword: () => (String, String))(implicit pc: PatienceConfig): Future[List[Model]]
 }
