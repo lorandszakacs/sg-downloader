@@ -60,10 +60,13 @@ private[harvester] class SGHarvesterImpl(
   }
 
   override def gatherNewestPhotosAndUpdateIndex(maxNrOfModels: Int)(implicit pc: PatienceConfig): Future[List[Model]] = {
+    logger.info(s"gatherNewestPhotosAndUpdateIndex $maxNrOfModels")
     for {
       lastProcessedOpt: Option[LastProcessedMarker] <- modelRepo.lastProcessedIndex
+      _ = logger.info(s"the last processed set was: ${lastProcessedOpt.map(_.lastPhotoSetID)}")
 
       newModels: List[Model] <- modelCrawler.gatherNewestModelInformation(maxNrOfModels, lastProcessedOpt)
+      _ = logger.info(s"gathered: ${newModels.map(_.name.name).mkString(",")}")
 
       _: Unit <- if (newModels.nonEmpty) {
         val gatheredNewerPhotoSet = lastProcessedOpt.exists { lp =>

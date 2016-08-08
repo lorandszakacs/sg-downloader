@@ -283,31 +283,32 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
 
         //----------------------------------------
 
-        case UpdateAndIndex.id => interpret {
-          val f = for {
-            allNewHarvested <- harvester.gatherNewestPhotosAndUpdateIndex(Int.MaxValue)
-            _ = {
-              val allNewSG = allNewHarvested.keepSuicideGirls
-              val allNewHopefuls = allNewHarvested.keepHopefuls
-              logger.info(s"finished harvesting and queuing to reindex all new entries, #${allNewHarvested.length}")
-              logger.info(s"# of new suicide girls: ${allNewSG.length}. Names: ${allNewSG.map(_.name.name).mkString(",")}")
-              logger.info(s"# of new hopefuls     : ${allNewHopefuls.length}. Names: ${allNewHopefuls.map(_.name.name).mkString(",")}")
-            }
+        case UpdateAndIndex.id =>
+          interpret {
+            val f = for {
+              allNewHarvested <- harvester.gatherNewestPhotosAndUpdateIndex(Int.MaxValue)
+              _ = {
+                val allNewSG = allNewHarvested.keepSuicideGirls
+                val allNewHopefuls = allNewHarvested.keepHopefuls
+                logger.info(s"finished harvesting and queuing to reindex all new entries, #${allNewHarvested.length}")
+                logger.info(s"# of new suicide girls: ${allNewSG.length}. Names: ${allNewSG.map(_.name.name).mkString(",")}")
+                logger.info(s"# of new hopefuls     : ${allNewHopefuls.length}. Names: ${allNewHopefuls.map(_.name.name).mkString(",")}")
+              }
 
-            allThatNeedUpdating <- harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(usernamePasswordConsoleInput, includeProblematic = false)
-            _ = {
-              val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = allThatNeedUpdating.`SG|Hopeful`
-              logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
-              logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
-            }
+              allThatNeedUpdating <- harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(usernamePasswordConsoleInput, includeProblematic = false)
+              _ = {
+                val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = allThatNeedUpdating.`SG|Hopeful`
+                logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
+                logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
+              }
 
-            _ <- exporter.exportDeltaHTMLIndex(allThatNeedUpdating.map(_.name))(deltaExporterSettings)
-            _ = logger.info("finished writing the delta HTML export.")
+              _ <- exporter.exportDeltaHTMLIndex(allThatNeedUpdating.map(_.name))(deltaExporterSettings)
+              _ = logger.info("finished writing the delta HTML export.")
 
-          } yield ()
+            } yield ()
 
-          f.await(24 hours)
-        }
+            f.await(24 hours)
+          }
 
         //----------------------------------------
 
