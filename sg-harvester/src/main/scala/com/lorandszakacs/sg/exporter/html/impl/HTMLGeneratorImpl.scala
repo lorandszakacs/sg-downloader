@@ -14,6 +14,8 @@ private[html] class HTMLGeneratorImpl()(
   implicit val ec: ExecutionContext
 ) extends HTMLGenerator {
 
+  private val RootPath = "../../.."
+
   override def createHTMLPageForModels(models: List[Model])(implicit settings: HtmlSettings): Future[ModelsRootIndex] = {
     for {
       modelIndexes: List[ModelIndex] <- Future.traverse(models) { model => Future(modelIndex(model)) }
@@ -31,10 +33,10 @@ private[html] class HTMLGeneratorImpl()(
 
   private def modelIndex(m: Model)(implicit settings: HtmlSettings): ModelIndex = {
     def iconForPhotoSet(ps: PhotoSet): String = {
-      ps.photos.headOption.map(_.thumbnailURL.toExternalForm).getOrElse("https://dl.dropboxusercontent.com/u/11532620/suicide-girls/icons/suicide_girls_favorites.ico")
+      ps.photos.headOption.map(_.thumbnailURL.toExternalForm).getOrElse(s"$RootPath/icons/suicide_girls_favorites.ico")
     }
     def iconForModel(m: Model): String = {
-      m.photoSets.headOption.map(iconForPhotoSet).getOrElse("https://dl.dropboxusercontent.com/u/11532620/suicide-girls/icons/suicide_girls_favorites.ico")
+      m.photoSets.headOption.map(iconForPhotoSet).getOrElse(s"$RootPath/icons/suicide_girls_favorites.ico")
     }
     def modelIndexHtmlPage(m: Model)(psi: List[PhotoSetIndex])(implicit settings: HtmlSettings): Html = {
       def photoSetLink(photoSet: PhotoSetIndex): String = {
@@ -79,8 +81,8 @@ private[html] class HTMLGeneratorImpl()(
              |   <title>${m.name.externalForm}: ${ps.title.externalForm}</title>
              |   <head><link rel="icon" href="${iconForPhotoSet(ps)}"></head>
              |   <meta name="viewport" content="width=device-width, initial-scale=1">
-             |   <link rel="stylesheet" href="https://dl.dropboxusercontent.com/u/11532620/suicide-girls/css/w3.css">
-             |   <script type="text/javascript" src="https://dl.dropboxusercontent.com/u/11532620/suicide-girls/scripts/image_loading.js"></script>
+             |   <link rel="stylesheet" href="$RootPath/css/w3.css">
+             |   <script type="text/javascript" src="$RootPath/scripts/image_loading.js"></script>
              |   <style>
              |      .picture {display:none}
              |   </style>
@@ -145,7 +147,7 @@ private[html] class HTMLGeneratorImpl()(
            |<!DOCTYPE html>
            |<html>
            |<title>$title</title>
-           |<head><link rel="icon" href="https://dl.dropboxusercontent.com/u/11532620/suicide-girls/icons/suicide_girls_favorites.ico"></head>
+           |<head><link rel="icon" href="$RootPath/icons/suicide_girls_favorites.ico"></head>
            |  <h3><a href="../../${settings.indexFileName}">BACK</a></h3>
            |  <h3><ol type="1">
            |${els.map(item).mkString("\t\t", "\n\t\t", "\n")}
