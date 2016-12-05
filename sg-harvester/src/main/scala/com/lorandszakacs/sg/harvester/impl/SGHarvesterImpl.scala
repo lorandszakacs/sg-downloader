@@ -128,6 +128,7 @@ private[harvester] class SGHarvesterImpl(
     def adjust(names: List[ModelName]): List[ModelName] = {
       if (includeProblematic) names else names diff ModelsKnownToHaveAMissingSet
     }
+
     for {
       _ <- photoCrawler.authenticateIfNeeded(usernameAndPassword)
       sgIndex <- modelRepo.suicideGirlIndex
@@ -152,6 +153,16 @@ private[harvester] class SGHarvesterImpl(
     } yield result
   }
 
+  override def gatherDataAndUpdateModel(usernameAndPassword: () => (String, String), model: () => ModelName)(implicit pc: PatienceConfig): Future[Model] = {
+    val name = model()
+    for {
+      _ <- photoCrawler.authenticateIfNeeded(usernameAndPassword)
+      model: Model <- harvestSuicideGirlAndUpdateIndex(name) recoverWith {
+        case NonFatal(e) => harvestHopefulAndUpdateIndex(name)
+      }
+    } yield model
+  }
+
   override def cleanIndex()(implicit pc: PatienceConfig): Future[(List[ModelName], List[ModelName])] = {
     def notFoundModelName[T <: Model](m: T): PartialFunction[Throwable, Future[Option[ModelName]]] = {
       case e: FailedToGetPageException if e.response.status == StatusCodes.NotFound =>
@@ -162,6 +173,7 @@ private[harvester] class SGHarvesterImpl(
         Future.successful(None)
 
     }
+
     for {
       (sgsThatMightNeedCleaning, hopefulsThatMightNeedCleaning) <- modelRepo.modelsWithZeroPhotoSets
       _ = {

@@ -90,6 +90,14 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
     """.stripMargin
   )
 
+  private val UpdateSpecific = Command(
+    "update-specific",
+    s"""
+       |Fetches latest information from the website, and updates that which needs updating.
+       |Composite of gathering information about a specific model, and then index, and then exporting html
+    """.stripMargin
+  )
+
   private val CleanIndex = Command(
     "index-clean",
     """
@@ -134,7 +142,7 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
     "\ndisplay favorites\n"
   )
 
-  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, GatherNew, IndexNew, CleanIndex, DetectDuplicateFiles, GatherAndIndexAll, UpdateAndIndex, ShowModel, HtmlFavorites, HtmlAll, DisplayFavorites).sortBy(_.id)
+  private val all = List(Exit, ReindexHopefuls, ReindexSuicideGirls, ReindexAll, GatherNew, IndexNew, CleanIndex, DetectDuplicateFiles, GatherAndIndexAll, UpdateAndIndex, ShowModel, HtmlFavorites, HtmlAll, DisplayFavorites, UpdateSpecific).sortBy(_.id)
 
   private implicit val patienceConfig: PatienceConfig = PatienceConfig(25 millis)
   private implicit val ec: ExecutionContext = assembly.executionContext
@@ -172,6 +180,15 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
       StdIn.readLine().trim()
     }
     (username, plainTextPassword)
+  }
+
+  private val modelNameConsoleInput: () => ModelName = { () =>
+    val model: String = {
+      print("\nplease insert modelname: ")
+      StdIn.readLine().trim()
+    }
+
+    ModelName(model)
   }
 
   private def usernamePasswordConstantInput(username: String, plainTextPassword: String): () => (String, String) = { () =>
@@ -307,6 +324,21 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
 
             } yield ()
 
+            f.await(24 hours)
+          }
+        //----------------------------------------
+        case UpdateSpecific.id =>
+          interpret {
+            val f = for {
+              model <- harvester.gatherDataAndUpdateModel(usernamePasswordConsoleInput, modelNameConsoleInput)
+              _ = {
+                logger.info(s"finished harvesting ${model.name}")
+              }
+
+              _ <- exporter.exportDeltaHTMLIndex(List(model.name))(deltaExporterSettings)
+              _ = logger.info("finished writing the delta HTML export.")
+
+            } yield ()
             f.await(24 hours)
           }
 

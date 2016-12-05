@@ -4,7 +4,6 @@ import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.monads.future.FutureUtil._
 
-import scala.concurrent.Future
 import scala.language.postfixOps
 
 /**
@@ -73,6 +72,11 @@ trait SGHarvester {
     *
     */
   def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(usernameAndPassword: () => (String, String), includeProblematic: Boolean)(implicit pc: PatienceConfig): Future[List[Model]]
+
+  /**
+    * Same as [[gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing]], but for a specific model
+    */
+  def gatherDataAndUpdateModel(usernameAndPassword: () => (String, String), model: () => ModelName)(implicit pc: PatienceConfig): Future[Model]
 
   /**
     * same as [[gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing]], but it looks at all known [[Model]] in the
