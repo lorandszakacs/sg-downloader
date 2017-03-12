@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.model
 
-import org.joda.time.DateTime
+import org.joda.time.{DateTime, LocalDate}
 
 import scala.concurrent.Future
 
@@ -49,6 +49,11 @@ trait SGModelRepository {
     *
     */
   def createOrUpdateHopeful(hopeful: Hopeful): Future[Unit]
+
+  /**
+    * Returns the models which had a on any given day between the two dates given as parameters
+    */
+  def aggregateBetweenDays(start: LocalDate, end: LocalDate): Future[List[(LocalDate, List[Model])]]
 
   def find(modelName: ModelName): Future[Option[Model]]
 

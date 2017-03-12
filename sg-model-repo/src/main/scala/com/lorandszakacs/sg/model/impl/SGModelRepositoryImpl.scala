@@ -2,6 +2,7 @@ package com.lorandszakacs.sg.model.impl
 
 import com.lorandszakacs.sg.model._
 import com.typesafe.scalalogging.StrictLogging
+import org.joda.time.LocalDate
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -133,6 +134,17 @@ private[model] class SGModelRepositoryImpl(
         Future.successful(())
       }
     } yield ()
+  }
+
+  override def aggregateBetweenDays(start: LocalDate, end: LocalDate): Future[List[(LocalDate, List[Model])]] = {
+    for {
+      all <- findAll
+      days = RepoTimeUtil.daysBetween(start, end)
+      models = for {
+        day <- days
+        modelsForDay: Seq[Model] = all.filter(_.photoSets.exists(_.date == day))
+      } yield (day, modelsForDay.toList)
+    } yield models
   }
 
   override def find(modelName: ModelName): Future[Option[Model]] = {
