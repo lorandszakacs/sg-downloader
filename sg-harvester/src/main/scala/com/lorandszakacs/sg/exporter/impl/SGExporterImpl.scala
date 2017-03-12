@@ -2,6 +2,8 @@ package com.lorandszakacs.sg.exporter.impl
 
 import java.nio.file.Paths
 
+import com.github.nscala_time.time.Imports._
+
 import com.lorandszakacs.sg.Favorites
 import com.lorandszakacs.sg.exporter.html.{HTMLGenerator, HtmlSettings, ModelsRootIndex}
 import com.lorandszakacs.sg.exporter.indexwriter.impl.FileUtils
@@ -35,6 +37,11 @@ private[exporter] class SGExporterImpl(
 
   private def allWriterSettings(implicit es: ExporterSettings) = WriterSettings(
     rootFolder = es.allModelsRootFolderPath,
+    rewriteEverything = es.rewriteEverything
+  )
+
+  private def newestWriterSettings(implicit es: ExporterSettings) = WriterSettings(
+    rootFolder = es.newestRootFolderPath,
     rewriteEverything = es.rewriteEverything
   )
 
@@ -103,7 +110,14 @@ private[exporter] class SGExporterImpl(
   }
 
   override def exportLatestForDays(nrOfDays: Int)(implicit ws: ExporterSettings): Future[Unit] = {
-    ???
+    val today = LocalDate.today()
+    val twoWeeksAgo = today.minusDays(nrOfDays)
+    for {
+      models <- repo.aggregateBetweenDays(twoWeeksAgo, today)
+      sortedLatestToEarliest = models.sortBy(_._1).reverse
+      newestModelsPage <- html.createNewestPage(sortedLatestToEarliest)
+      _ <- fileWriter.rewriteNewestModelPage(newestModelsPage)(newestWriterSettings)
+    } yield ()
   }
 
   override def detectDuplicateFiles(folderRootPath: String): Future[Set[Set[String]]] = {

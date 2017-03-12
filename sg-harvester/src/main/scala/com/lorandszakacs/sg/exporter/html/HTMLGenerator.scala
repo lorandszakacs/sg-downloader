@@ -4,6 +4,7 @@ import java.nio.file.Path
 
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.monads.future.FutureUtil._
+import org.joda.time.LocalDate
 
 /**
   *
@@ -15,6 +16,8 @@ private[exporter] trait HTMLGenerator {
   def createHTMLPageForModels(models: List[Model])(implicit settings: HtmlSettings): Future[ModelsRootIndex]
 
   def createRootIndex(models: List[ModelName])(implicit settings: HtmlSettings): Future[Html]
+
+  def createNewestPage(models: List[(LocalDate, List[Model])]): Future[Html]
 }
 
 case class HtmlSettings(

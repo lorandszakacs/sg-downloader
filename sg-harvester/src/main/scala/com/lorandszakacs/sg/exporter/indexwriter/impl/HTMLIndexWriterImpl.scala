@@ -41,6 +41,13 @@ private[indexwriter] class HTMLIndexWriterImpl()
     }
   }
 
+  override def rewriteNewestModelPage(newestFile: Html)(implicit ws: WriterSettings): Future[Unit] = {
+    val p = ws.rootFolder.resolve(newestFile.relativePathAndName).toAbsolutePath
+    FileUtils.overwriteFile(p, newestFile.content) map { _ =>
+      logger.info(s"rewrote newest sets file @ $p")
+    }
+  }
+
   /**
     * This writes:[[ModelsRootIndex.html]] to ``./index.html`` on the disk
     */
@@ -65,6 +72,7 @@ private[indexwriter] class HTMLIndexWriterImpl()
         logger.debug(s"successfully wrote file: $psPath")
       }
     }
+
     val modelFolderPath = ws.rootFolder.resolve(m.name.name).toAbsolutePath
     val indexPath = ws.rootFolder.resolve(m.html.relativePathAndName).toAbsolutePath
     for {

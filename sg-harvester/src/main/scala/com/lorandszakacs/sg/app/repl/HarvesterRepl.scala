@@ -105,6 +105,13 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
     """.stripMargin
   )
 
+  private val GenerateNewest = Command(
+    "newest",
+    """
+      |generates html containing newest sg-s for the past two months
+    """.stripMargin
+  )
+
   private val DetectDuplicateFiles = Command(
     "detect-duplicate-files",
     """
@@ -161,14 +168,14 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
   private implicit val exporterSettings: ExporterSettings = ExporterSettings(
     favoritesRootFolderPath = "~/suicide-girls/local/models/favorites",
     allModelsRootFolderPath = "~/suicide-girls/local/models/all",
-    newestRootFolderPath = "~/suicide-girls/local/models/newest",
+    newestRootFolderPath = "~/suicide-girls/local/models",
     rewriteEverything = true
   )
 
   private implicit val deltaExporterSettings: ExporterSettings = ExporterSettings(
     favoritesRootFolderPath = "~/suicide-girls/delta/models/favorites",
     allModelsRootFolderPath = "~/suicide-girls/delta/models/all",
-    newestRootFolderPath = "~/suicide-girls/delta/models/newest",
+    newestRootFolderPath = "~/suicide-girls/delta/models",
     rewriteEverything = true
   )
 
@@ -323,6 +330,7 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
               }
 
               _ <- exporter.exportDeltaHTMLIndex(allThatNeedUpdating.map(_.name))(deltaExporterSettings)
+              _ <- exporter.exportLatestForDays(14)(deltaExporterSettings)
               _ = logger.info("finished writing the delta HTML export.")
 
             } yield ()
@@ -344,6 +352,15 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
             } yield ()
             f.await(24 hours)
           }
+
+        //----------------------------------------
+
+        case GenerateNewest.id => interpret {
+          val f = for {
+            _ <- exporter.exportLatestForDays(14)(exporterSettings)
+          } yield ()
+          f.await(1 hour)
+        }
 
         //----------------------------------------
 

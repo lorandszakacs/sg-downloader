@@ -3,6 +3,7 @@ package com.lorandszakacs.sg.exporter.html.impl
 import com.lorandszakacs.sg.exporter.html._
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.github.nscala_time.time.Imports._
 
 /**
   *
@@ -31,18 +32,57 @@ private[html] class HTMLGeneratorImpl()(
     Future.successful(rootIndexPageForModelNames(models))
   }
 
+  def createNewestPage(models: List[(LocalDate, List[Model])]): Future[Html] = {
+    def newestPageElementForDay(date: LocalDate, models: List[Model]): String = {
+      val elements = models.map { model =>
+        val latestSet = model.photoSets.maxBy(_.date)
+        s"""<li><a href="all/${photoSetPageRelativePathFromCurrentDirectory(model.name, latestSet)}" target="_blank">${model.name.name} - ${latestSet.title.externalForm}</a></li>"""
+
+      }
+      s"""
+         |<h3> ${date.toString("YYYY-MM-dd")} </h3>
+         |<h3><ol type="1">
+         |${elements.mkString("\n")}
+         |</ol></h3>
+    """.stripMargin
+
+    }
+
+    Future {
+      val eachDay = models.map { p =>
+        newestPageElementForDay(p._1, p._2)
+      }
+      val content =
+        s"""
+           |<!DOCTYPE html>
+           |<html>
+           |<title>Newest Sets</title>
+           |<head><link rel="icon" href="../../../icons/suicide_girls_favorites.ico"></head>
+           |  <h3><a href="../index.html">BACK</a></h3>
+           |${eachDay.mkString("\n")}
+           |</html>
+           |
+      """.stripMargin
+      Html(relativePathAndName = "newest.html", content = content)
+    }
+
+  }
+
   private def modelIndex(m: Model)(implicit settings: HtmlSettings): ModelIndex = {
     def iconForPhotoSet(ps: PhotoSet): String = {
       ps.photos.headOption.map(_.thumbnailURL.toExternalForm).getOrElse(s"$RootPath/icons/suicide_girls_favorites.ico")
     }
+
     def iconForModel(m: Model): String = {
       m.photoSets.headOption.map(iconForPhotoSet).getOrElse(s"$RootPath/icons/suicide_girls_favorites.ico")
     }
+
     def modelIndexHtmlPage(m: Model)(psi: List[PhotoSetIndex])(implicit settings: HtmlSettings): Html = {
       def photoSetLink(photoSet: PhotoSetIndex): String = {
         s"""|<li><a href="../${photoSet.html.relativePathAndName}" target="_blank">${photoSet.displayName}</a></li>
             |""".stripMargin
       }
+
       Html(
         relativePathAndName = modelIndexPageRelativePathFromCurrentDirectory(m.name),
         content =
@@ -140,6 +180,7 @@ private[html] class HTMLGeneratorImpl()(
       val (link, name) = linkAndItemNameGenerator(el)
       s"""<li><a href="$link" target="_blank">$name</a></li>"""
     }
+
     Html(
       relativePathAndName = settings.indexFileName,
       content =
@@ -161,7 +202,7 @@ private[html] class HTMLGeneratorImpl()(
     s"${m.name}/${settings.indexFileName}"
   }
 
-  private def photoSetPageRelativePathFromCurrentDirectory(m: ModelName, ps: PhotoSet)(implicit settings: HtmlSettings): String = {
+  private def photoSetPageRelativePathFromCurrentDirectory(m: ModelName, ps: PhotoSet): String = {
     val setName = s"${m.name}_${ps.date}_${ps.title.name}.html".replaceAll("[^a-zA-Z0-9.-]", "_")
     val modelName = s"${m.name}"
     s"$modelName/$setName"
