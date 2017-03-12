@@ -83,4 +83,6 @@ trait SGHarvester {
     * system.
     */
   def gatherAllDataForSuicideGirlsAndHopefulsFromScratch(usernameAndPassword: () => (String, String))(implicit pc: PatienceConfig): Future[List[Model]]
+
+  def authenticateIfNeeded(usernameAndPassword: () => (String, String)): Future[Unit]
 }

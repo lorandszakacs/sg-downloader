@@ -303,6 +303,7 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
         case UpdateAndIndex.id =>
           interpret {
             val f = for {
+              _ <- harvester.authenticateIfNeeded(usernamePasswordConsoleInput)
               allNewHarvested <- harvester.gatherNewestPhotosAndUpdateIndex(Int.MaxValue)
               _ = {
                 val allNewSG = allNewHarvested.keepSuicideGirls

@@ -113,6 +113,10 @@ private[harvester] class SGHarvesterImpl(
     } yield result
   }
 
+  override def authenticateIfNeeded(usernameAndPassword: () => (String, String)): Future[Unit] = {
+    photoCrawler.authenticateIfNeeded(usernameAndPassword).map(_ => ())
+  }
+
   private val ModelsKnownToHaveAMissingSet = List[ModelName](
     "aeta",
     "casanova",
