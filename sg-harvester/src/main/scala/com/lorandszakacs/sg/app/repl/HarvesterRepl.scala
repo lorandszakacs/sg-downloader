@@ -161,12 +161,14 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
   private implicit val exporterSettings: ExporterSettings = ExporterSettings(
     favoritesRootFolderPath = "~/suicide-girls/local/models/favorites",
     allModelsRootFolderPath = "~/suicide-girls/local/models/all",
+    newestRootFolderPath = "~/suicide-girls/local/models/newest",
     rewriteEverything = true
   )
 
   private implicit val deltaExporterSettings: ExporterSettings = ExporterSettings(
     favoritesRootFolderPath = "~/suicide-girls/delta/models/favorites",
     allModelsRootFolderPath = "~/suicide-girls/delta/models/all",
+    newestRootFolderPath = "~/suicide-girls/delta/models/newest",
     rewriteEverything = true
   )
 

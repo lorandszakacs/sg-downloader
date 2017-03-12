@@ -42,6 +42,12 @@ trait SGExporter {
   def exportHTMLIndexOfAllModels(implicit ws: ExporterSettings): Future[Unit]
 
   /**
+    * Creates and HTML webpage at [[ExporterSettings.newestRootFolderPath]] containing
+    * the newest sets, grouped per days, for the past ``nrOfDays``.
+    */
+  def exportLatestForDays(nrOfDays: Int)(implicit ws: ExporterSettings): Future[Unit]
+
+  /**
     * The two paths:
     * ``~/suicide-girls/models/favorites/porcelinna/porcelinna_2016-06-11_PEACH_BLOSSOM.html``
     * ``~/suicide-girls/models/favorites/porcelinna/porcelinna_2016-07-19_PEACH_BLOSSOM.html``
@@ -60,10 +66,11 @@ object ExporterSettings {
     path.replaceFirst("^~", System.getProperty("user.home"))
   }
 
-  def apply(favoritesRootFolderPath: String, allModelsRootFolderPath: String, rewriteEverything: Boolean): ExporterSettings = {
+  def apply(favoritesRootFolderPath: String, allModelsRootFolderPath: String, newestRootFolderPath: String, rewriteEverything: Boolean): ExporterSettings = {
     new ExporterSettings(
       favoritesRootFolderPath = Paths.get(normalizeHomePath(favoritesRootFolderPath)).toAbsolutePath,
       allModelsRootFolderPath = Paths.get(normalizeHomePath(allModelsRootFolderPath)).toAbsolutePath,
+      newestRootFolderPath = Paths.get(normalizeHomePath(newestRootFolderPath)).toAbsolutePath,
       rewriteEverything = rewriteEverything
     )
   }
@@ -81,5 +88,6 @@ object ExporterSettings {
 final class ExporterSettings private(
   val favoritesRootFolderPath: Path,
   val allModelsRootFolderPath: Path,
+  val newestRootFolderPath: Path,
   val rewriteEverything: Boolean
 )

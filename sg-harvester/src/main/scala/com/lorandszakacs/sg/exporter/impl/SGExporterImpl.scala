@@ -102,6 +102,10 @@ private[exporter] class SGExporterImpl(
     } yield ()
   }
 
+  override def exportLatestForDays(nrOfDays: Int)(implicit ws: ExporterSettings): Future[Unit] = {
+    ???
+  }
+
   override def detectDuplicateFiles(folderRootPath: String): Future[Set[Set[String]]] = {
     val path = Paths.get(ExporterSettings.normalizeHomePath(folderRootPath))
     for {
