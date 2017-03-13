@@ -37,7 +37,7 @@ private[html] class HTMLGeneratorImpl()(
       val elements = models.sortBy(_.name.name).map { model =>
         val latestSet = model.photoSets.maxBy(_.date)
         val link = photoSetPageRelativePathFromCurrentDirectory(model.name, latestSet)
-        val displayText = s"model.name.externalForm} - ${latestSet.title.externalForm}"
+        val displayText = s"${model.name.externalForm} - ${latestSet.title.externalForm}"
         s"""<li><a href="all/$link" target="_blank">$displayText</a></li>"""
       }
       s"""
