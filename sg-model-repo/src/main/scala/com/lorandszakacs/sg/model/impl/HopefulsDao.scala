@@ -1,6 +1,7 @@
 package com.lorandszakacs.sg.model.impl
 
 import com.lorandszakacs.sg.model._
+import org.joda.time.LocalDate
 import reactivemongo.api.DB
 import reactivemongo.bson.BSONDocument
 
@@ -49,6 +50,14 @@ private[model] class HopefulsDao(val db: DB)(implicit val ec: ExecutionContext) 
   def findWithZeroSets: Future[List[Hopeful]] = {
     val q: BSONDocument = BSONDocument(
       "photoSets" -> BSONDocument("$size" -> 0)
+    )
+    collection.find(q).cursor[Hopeful]().collect[List]()
+  }
+
+  def findBetweenDays(start: LocalDate, end: LocalDate): Future[List[Hopeful]] = {
+    val q = BSONDocument(
+      "photoSets.date" -> BSONDocument("$gte" -> start),
+      "photoSets.date" -> BSONDocument("$lte" -> end)
     )
     collection.find(q).cursor[Hopeful]().collect[List]()
   }

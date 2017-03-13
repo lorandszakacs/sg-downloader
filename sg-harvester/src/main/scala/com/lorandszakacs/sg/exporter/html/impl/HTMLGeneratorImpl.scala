@@ -34,9 +34,9 @@ private[html] class HTMLGeneratorImpl()(
 
   def createNewestPage(models: List[(LocalDate, List[Model])]): Future[Html] = {
     def newestPageElementForDay(date: LocalDate, models: List[Model]): String = {
-      val elements = models.map { model =>
+      val elements = models.sortBy(_.name.name).map { model =>
         val latestSet = model.photoSets.maxBy(_.date)
-        s"""<li><a href="all/${photoSetPageRelativePathFromCurrentDirectory(model.name, latestSet)}" target="_blank">${model.name.name} - ${latestSet.title.externalForm}</a></li>"""
+        s"""<li><a href="all/${photoSetPageRelativePathFromCurrentDirectory(model.name, latestSet)}" target="_blank">${model.name.externalForm}  --  ${latestSet.title.externalForm}</a></li>"""
 
       }
       s"""

@@ -1,8 +1,9 @@
 package com.lorandszakacs.sg.model.impl
 
 import com.lorandszakacs.sg.model._
+import org.joda.time.LocalDate
 import reactivemongo.api.DB
-import reactivemongo.bson._
+import reactivemongo.bson.{BSONDocument, _}
 
 import scala.concurrent._
 
@@ -49,6 +50,14 @@ private[model] class SuicideGirlsDao(val db: DB)(implicit val ec: ExecutionConte
   def findWithZeroSets: Future[List[SuicideGirl]] = {
     val q: BSONDocument = BSONDocument(
       "photoSets" -> BSONDocument("$size" -> 0)
+    )
+    collection.find(q).cursor[SuicideGirl]().collect[List]()
+  }
+
+  def findBetweenDays(start: LocalDate, end: LocalDate): Future[List[SuicideGirl]] = {
+    val q = BSONDocument(
+      "photoSets.date" -> BSONDocument("$gte" -> start),
+      "photoSets.date" -> BSONDocument("$lte" -> end)
     )
     collection.find(q).cursor[SuicideGirl]().collect[List]()
   }

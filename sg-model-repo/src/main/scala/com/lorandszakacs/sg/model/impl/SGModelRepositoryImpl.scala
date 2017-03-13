@@ -138,12 +138,15 @@ private[model] class SGModelRepositoryImpl(
 
   override def aggregateBetweenDays(start: LocalDate, end: LocalDate): Future[List[(LocalDate, List[Model])]] = {
     for {
-      all <- findAll
+      sgs <- suicideGirlsDao.findBetweenDays(start, end)
+      hopefuls <- hopefulsDao.findBetweenDays(start, end)
+
+      all: List[Model] = sgs ++ hopefuls
       days = RepoTimeUtil.daysBetween(start, end)
       models = for {
         day <- days
-        modelsForDay: Seq[Model] = all.filter(_.photoSets.exists(_.date == day))
-      } yield (day, modelsForDay.toList)
+        modelsForDay = all.filter(_.photoSets.exists(_.date == day))
+      } yield (day, modelsForDay)
     } yield models
   }
 
