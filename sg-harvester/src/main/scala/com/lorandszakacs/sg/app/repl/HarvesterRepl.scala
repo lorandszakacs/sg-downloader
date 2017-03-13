@@ -330,7 +330,7 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
               }
 
               _ <- exporter.exportDeltaHTMLIndex(allThatNeedUpdating.map(_.name))(deltaExporterSettings)
-              _ <- exporter.exportLatestForDays(14)(deltaExporterSettings)
+              _ <- exporter.exportLatestForDays(28)(deltaExporterSettings)
               _ = logger.info("finished writing the delta HTML export.")
 
             } yield ()
@@ -357,7 +357,7 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
 
         case GenerateNewest.id => interpret {
           val f = for {
-            _ <- exporter.exportLatestForDays(14)(exporterSettings)
+            _ <- exporter.exportLatestForDays(28)(exporterSettings)
           } yield ()
           f.await(1 hour)
         }
