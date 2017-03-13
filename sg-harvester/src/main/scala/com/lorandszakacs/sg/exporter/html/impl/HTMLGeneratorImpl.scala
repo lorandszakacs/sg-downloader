@@ -36,8 +36,9 @@ private[html] class HTMLGeneratorImpl()(
     def newestPageElementForDay(date: LocalDate, models: List[Model]): String = {
       val elements = models.sortBy(_.name.name).map { model =>
         val latestSet = model.photoSets.maxBy(_.date)
-        s"""<li><a href="all/${photoSetPageRelativePathFromCurrentDirectory(model.name, latestSet)}" target="_blank">${model.name.externalForm}  --  ${latestSet.title.externalForm}</a></li>"""
-
+        val link = photoSetPageRelativePathFromCurrentDirectory(model.name, latestSet)
+        val displayText = s"model.name.externalForm} - ${latestSet.title.externalForm}"
+        s"""<li><a href="all/$link" target="_blank">$displayText</a></li>"""
       }
       s"""
          |<h3> ${date.toString("YYYY-MM-dd")} </h3>
