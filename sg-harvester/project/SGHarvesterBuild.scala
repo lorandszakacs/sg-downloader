@@ -70,9 +70,10 @@ object SGHarvesterBuild extends CommonBuild {
   override def pluginSettings: Seq[Setting[_]] = Nil
 
   override def otherSettings: Seq[Setting[_]] = Seq(
+    //FIXME: run fails with NullPointerException from sbt with this flag :/
     //    fork in run := true,
     javaOptions in run ++= Seq(
-      "-Xms1G", "-Xmx4G", "-XX:+UseConcMarkSweepGC"
+      "-Xms1G", "-Xmx8G", "-XX:+UseConcMarkSweepGC"
     )
   )
 
