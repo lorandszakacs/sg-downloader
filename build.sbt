@@ -21,6 +21,8 @@ lazy val root = Project(
   common.buildSettings(projectInfo, common.defaults.lorandszakacsOrg, Option(publishInfo))
 ).aggregate(
   `sg-harvester`
+).dependsOn(
+  `sg-harvester`
 )
 
 lazy val `sg-harvester` = Project(
@@ -29,7 +31,7 @@ lazy val `sg-harvester` = Project(
 ).settings(
   common.buildSettings(projectInfo, common.defaults.lorandszakacsOrg, Option(publishInfo)) ++
   Seq(
-    mainClass := Some("com.lorandszakacs.sgd.app.Main"),
+    mainClass in (Compile, run) in ThisBuild := Some("com.lorandszakacs.sg.app.Main"),
     libraryDependencies ++= Seq(
       common.dev.akka.actor,
       common.dev.akka.http,
