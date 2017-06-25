@@ -42,7 +42,7 @@ lazy val `sg-harvester` = Project(
       common.dev.logbackClassic,
       common.dev.scalaLogging,
 
-      "com.lorandszakacs" %% "util-html" % "0.1.2" withSources(),
+      "com.lorandszakacs" %% "util-html" % "0.1.2-SNAPSHOT" withSources(),
 
       common.test.scalaTest
     )
