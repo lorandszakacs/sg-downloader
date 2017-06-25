@@ -131,12 +131,12 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
 
   private val HtmlFavorites = Command(
     "html-favorites",
-    "\nexports a navigable html page of all favorite models @ ~/suicide-girls/local/models/favorites\n"
+    "\nexports a navigable html page of all favorite models @ ~/sgs/local/models/favorites\n"
   )
 
   private val HtmlAll = Command(
     "html-all",
-    "\nexports a navigable html page of all models @ ~/suicide-girls/local/models/all\n"
+    "\nexports a navigable html page of all models @ ~/sgs/local/models/all\n"
   )
 
   private val Exit = Command(
@@ -166,16 +166,16 @@ class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) e
   }
 
   private implicit val exporterSettings: ExporterSettings = ExporterSettings(
-    favoritesRootFolderPath = "~/suicide-girls/local/models/favorites",
-    allModelsRootFolderPath = "~/suicide-girls/local/models/all",
-    newestRootFolderPath = "~/suicide-girls/local/models",
+    favoritesRootFolderPath = "~/sgs/local/models/favorites",
+    allModelsRootFolderPath = "~/sgs/local/models/all",
+    newestRootFolderPath = "~/sgs/local/models",
     rewriteEverything = true
   )
 
   private implicit val deltaExporterSettings: ExporterSettings = ExporterSettings(
-    favoritesRootFolderPath = "~/suicide-girls/delta/models/favorites",
-    allModelsRootFolderPath = "~/suicide-girls/delta/models/all",
-    newestRootFolderPath = "~/suicide-girls/delta/models",
+    favoritesRootFolderPath = "~/sgs/delta/models/favorites",
+    allModelsRootFolderPath = "~/sgs/delta/models/all",
+    newestRootFolderPath = "~/sgs/delta/models",
     rewriteEverything = true
   )
 

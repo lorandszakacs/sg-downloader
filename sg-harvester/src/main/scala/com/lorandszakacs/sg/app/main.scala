@@ -57,7 +57,7 @@ object assembly extends SGHarvesterAssembly with ModelDisplayerAssembly with SGM
   private lazy val _dataBase: Try[DefaultDB] = {
     val future = {
       val _mongoConnection: MongoConnection = _mongoDriver.connection(MongoConnection.parseURI("""mongodb://localhost""").get)
-      _mongoConnection.database("suicide_girls_repo")
+      _mongoConnection.database("sgs_repo")
     } recover {
       case e: Throwable =>
         throw new IllegalStateException(s"Failed to initialize Mongo database. Because: ${e.getMessage}", e)
