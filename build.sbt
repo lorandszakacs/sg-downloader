@@ -11,7 +11,7 @@ lazy val publishInfo = common.defaults.lorandszakacsPublishingInfo(
 )
 
 lazy val projectInfo = ProjectInfo(
-  version = "0.1.2"
+  version = "0.1.2-SNAPSHOT"
 )
 
 lazy val root = Project(
