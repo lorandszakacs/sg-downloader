@@ -25,10 +25,7 @@ lazy val root = Project(
   `sg-harvester`
 )
 
-lazy val `sg-harvester` = Project(
-  "sg-harvester",
-  base = file("./sg-harvester")
-).settings(
+lazy val `sg-harvester` = project.settings(
   common.buildSettings(projectInfo, common.defaults.lorandszakacsOrg, Option(publishInfo)) ++
   Seq(
     mainClass in (Compile, run) in ThisBuild := Some("com.lorandszakacs.sg.app.Main"),
@@ -53,10 +50,7 @@ lazy val `sg-harvester` = Project(
 `sg-model-repo`
 )
 
-lazy val `sg-model-repo` = Project(
-  "sg-model-repo",
-  base = file("./sg-model-repo")
-).settings(
+lazy val `sg-model-repo` = project.settings(
   common.buildSettings(projectInfo, common.defaults.lorandszakacsOrg, Option(publishInfo)) ++
   Seq(
     libraryDependencies ++= Seq(
@@ -68,4 +62,24 @@ lazy val `sg-model-repo` = Project(
       common.test.scalaTest
     )
   )
+)
+
+lazy val `util` = project.settings(
+  common.buildSettings(projectInfo, common.defaults.lorandszakacsOrg, Option(publishInfo)) ++
+    Seq(
+      libraryDependencies ++= Seq(
+        //required for package com.lorandszakacs.util.mongodb
+        common.dev.reactiveMongo,
+
+        //required for package com.lorandszakacs.util.time
+        common.dev.nScalaJodaTime,
+
+        //required for package com.lorandszakacs.util.logging
+        common.dev.logbackClassic,
+        common.dev.scalaLogging,
+
+
+        common.test.scalaTest
+      )
+    )
 )
