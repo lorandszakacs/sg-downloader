@@ -1,6 +1,6 @@
 package com.lorandszakacs.util.mongodb
 
-import MongoImports._
+import Imports._
 import com.lorandszakacs.util.future._
 
 /**
@@ -21,7 +21,7 @@ object MongoCollection {
   }
 }
 
-import MongoConstants._
+import MongoQueries._
 
 trait MongoCollection[T] {
   protected implicit def executionContext: ExecutionContext

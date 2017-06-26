@@ -6,9 +6,4 @@ package com.lorandszakacs.util.mongodb
   * @since 26 Jun 2017
   *
   */
-object MongoConstants extends MongoConstants
-
-trait MongoConstants {
-  val _id: String = "id"
-
-}
+object Imports extends MongoQueries with MongoDBTypes

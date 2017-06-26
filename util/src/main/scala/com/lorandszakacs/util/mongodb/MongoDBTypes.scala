@@ -9,10 +9,9 @@ import reactivemongo.bson.Macros
   * @since 26 Jun 2017
   *
   */
-object MongoImports extends MongoImports
+object MongoDBTypes extends MongoDBTypes
 
-trait MongoImports {
-  type Database = reactivemongo.api.DB
+trait MongoDBTypes {
   type Cursor[T] = reactivemongo.api.Cursor[T]
   val Cursor: api.Cursor.type = reactivemongo.api.Cursor
   type BSONCollection = reactivemongo.api.collections.bson.BSONCollection
