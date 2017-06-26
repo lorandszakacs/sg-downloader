@@ -16,7 +16,7 @@ trait FutureTypes {
   val ExecutionContext: concurrent.ExecutionContext.type = concurrent.ExecutionContext
   type ExecutionContext = concurrent.ExecutionContext
 
-  val UnitFunction: Any => Unit = { _ => () }
+  val `Any => Unit`: Any => Unit = { _ => () }
 
-  val FutureUnitFunction: Any => Future[Unit] = { _ => Future.unit }
+  val `Any => Future[Unit]`: Any => Future[Unit] = { _ => Future.unit }
 }
