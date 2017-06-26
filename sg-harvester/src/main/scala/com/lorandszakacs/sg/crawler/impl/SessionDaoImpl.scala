@@ -44,7 +44,7 @@ private[crawler] final class SessionDaoImpl(val db: DB)(implicit ec: ExecutionCo
     }
 
   override def create(session: Session): Future[Unit] = {
-    collection.update(idBSON, session, upsert = true) map UnitFunction
+    collection.update(idBSON, session, upsert = true) map `Any => Unit`
   }
 
   override def find(): Future[Option[Session]] = {
