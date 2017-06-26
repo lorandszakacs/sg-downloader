@@ -1,7 +1,5 @@
 package com.lorandszakacs.sg.exporter.html
 
-import java.nio.file.Path
-
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.monads.future.FutureUtil._
 import org.joda.time.LocalDate

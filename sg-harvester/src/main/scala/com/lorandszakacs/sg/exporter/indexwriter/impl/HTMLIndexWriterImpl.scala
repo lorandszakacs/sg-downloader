@@ -1,8 +1,6 @@
 package com.lorandszakacs.sg.exporter.indexwriter.impl
 
-import java.nio.file.Path
 
-import com.lorandszakacs.sg.exporter._
 import com.lorandszakacs.sg.exporter.html._
 import com.lorandszakacs.sg.exporter.indexwriter.{HTMLIndexWriter, WriterSettings}
 import com.lorandszakacs.util.monads.future.FutureUtil._
@@ -12,8 +10,9 @@ import scala.util.control.NonFatal
 
 /**
   *
-  * For simplicity's sake ``./`` denotes the path to either [[ExporterSettings.favoritesRootFolderPath]],
-  * or [[ExporterSettings.allModelsRootFolderPath]], depending on context
+  * For simplicity's sake ``./`` denotes the path to either
+  * [[com.lorandszakacs.sg.exporter.ExporterSettings.favoritesRootFolderPath]],
+  * or [[com.lorandszakacs.sg.exporter.ExporterSettings.allModelsRootFolderPath]], depending on context
   *
   * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
   * @since 17 Jul 2016

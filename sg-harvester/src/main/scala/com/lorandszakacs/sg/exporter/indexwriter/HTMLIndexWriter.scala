@@ -2,7 +2,6 @@ package com.lorandszakacs.sg.exporter.indexwriter
 
 import java.nio.file.Path
 
-import com.lorandszakacs.sg.exporter.ExporterSettings
 import com.lorandszakacs.sg.exporter.html._
 import com.lorandszakacs.util.monads.future.FutureUtil._
 

@@ -9,7 +9,6 @@ import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.monads.future.FutureUtil._
 import com.typesafe.scalalogging.StrictLogging
 
-import scala.language.postfixOps
 import scala.util._
 import scala.util.control.NonFatal
 

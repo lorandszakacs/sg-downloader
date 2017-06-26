@@ -7,8 +7,6 @@ import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.model.SGModelAssembly
 import com.lorandszakacs.util.monads.future.FutureUtil._
 
-import scala.language.postfixOps
-
 /**
   *
   * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com

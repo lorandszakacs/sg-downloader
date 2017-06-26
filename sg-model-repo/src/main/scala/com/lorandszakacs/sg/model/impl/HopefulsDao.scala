@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.model.impl
 
 import com.lorandszakacs.sg.model._
 import org.joda.time.LocalDate
-import reactivemongo.api.DB
+import reactivemongo.api.{Cursor, DB}
 import reactivemongo.bson.BSONDocument
 
 import scala.concurrent._
@@ -39,7 +39,8 @@ private[model] class HopefulsDao(val db: DB)(implicit val ec: ExecutionContext) 
           "$in" -> names
         )
       )
-      collection.find(q).cursor[Hopeful]().collect[List]()
+      val cursor: Cursor[Hopeful] = collection.find(q).cursor[Hopeful]()
+      cursor.collect[List](maxDocs = Int.MaxValue, err = Cursor.FailOnError[List[Hopeful]]())
     }
   }
 

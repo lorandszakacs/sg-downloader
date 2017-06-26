@@ -4,8 +4,6 @@ import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.monads.future.FutureUtil._
 
-import scala.language.postfixOps
-
 /**
   *
   * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com

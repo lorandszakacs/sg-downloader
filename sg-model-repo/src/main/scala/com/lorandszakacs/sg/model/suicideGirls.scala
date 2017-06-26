@@ -3,6 +3,7 @@ package com.lorandszakacs.sg.model
 import java.net.URL
 
 import com.github.nscala_time.time.Imports._
+import org.joda.time.format.DateTimeFormatter
 
 import scala.language.postfixOps
 
@@ -57,7 +58,7 @@ sealed trait Model {
 
   final def numberOfPhotos: Int = photoSets.map(_.photos.length).sum
 
-  override def toString =
+  override def toString: String =
     s"""|---------${this.getClass.getSimpleName}: ${name.name} : ${photoSets.length}---------
         |url=${photoSetURL.toExternalForm}
         |${photoSets.mkString("", "\n", "")}
@@ -195,7 +196,7 @@ final case class PhotoSet(
 
   def id: String = url.toExternalForm
 
-  override def toString =
+  override def toString: String =
     s"""
        |title = ${title.name}
        |date  = ${date.toString(Util.dateTimeFormat)}
@@ -211,11 +212,9 @@ final case class Photo(
   index: Int
 ) {
 
-  override def toString = s"$url :: $thumbnailURL"
-
-  private def digitFormat(n: Int) = if (n < 10) s"0$n" else "%2d".format(n)
+  override def toString: String = s"$url :: $thumbnailURL"
 }
 
 private[model] object Util {
-  final val dateTimeFormat = DateTimeFormat.forPattern("YYYY-MM-dd")
+  final val dateTimeFormat: DateTimeFormatter = DateTimeFormat.forPattern("YYYY-MM-dd")
 }

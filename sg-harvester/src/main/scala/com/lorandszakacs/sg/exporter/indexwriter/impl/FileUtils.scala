@@ -83,6 +83,7 @@ private[exporter] object FileUtils extends StrictLogging {
     def tailsMatch(s1: String, s2: String): Boolean = {
       fileMatchInEverythingButDate(s1, s2)
     }
+
     val acc = mutable.Set[Set[String]]()
     fd.toAbsolutePath.toFile.mkdirs()
     Files.walkFileTree(
@@ -130,11 +131,10 @@ private[exporter] object FileUtils extends StrictLogging {
 
   def createFolders(fd: Path)(implicit ec: ExecutionContext): Future[Unit] = {
     val f = fd.toAbsolutePath.toFile
-    if (f.mkdirs()) {
-      UnitFuture
-    } else {
-      Future.failed(FailedToCreateFolderException(f.getAbsolutePath))
-    }
+    for {
+      result <- Future(f.mkdirs())
+      _ <- when(!result) failWith FailedToCreateFolderException(f.getAbsolutePath)
+    } yield ()
   }
 
 
