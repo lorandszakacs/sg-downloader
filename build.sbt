@@ -25,7 +25,10 @@ lazy val root = Project(
   `sg-harvester`
 )
 
-lazy val `sg-harvester` = project.settings(
+lazy val `sg-harvester` = Project(
+  "sg-harvester",
+  base = file("./sg-harvester")
+).settings(
   common.buildSettings(projectInfo, common.defaults.lorandszakacsOrg, Option(publishInfo)) ++
   Seq(
     mainClass in (Compile, run) in ThisBuild := Some("com.lorandszakacs.sg.app.Main"),
@@ -50,7 +53,10 @@ lazy val `sg-harvester` = project.settings(
 `sg-model-repo`
 )
 
-lazy val `sg-model-repo` = project.settings(
+lazy val `sg-model-repo` = Project(
+  "sg-model-repo",
+  base = file("./sg-model-repo")
+).settings(
   common.buildSettings(projectInfo, common.defaults.lorandszakacsOrg, Option(publishInfo)) ++
   Seq(
     libraryDependencies ++= Seq(
@@ -68,7 +74,10 @@ lazy val `sg-model-repo` = project.settings(
   `util`
 )
 
-lazy val `util` = project.settings(
+lazy val `util` = Project(
+  "util",
+  base = file("./util")
+).settings(
   common.buildSettings(projectInfo, common.defaults.lorandszakacsOrg, Option(publishInfo)) ++
     Seq(
       libraryDependencies ++= Seq(
