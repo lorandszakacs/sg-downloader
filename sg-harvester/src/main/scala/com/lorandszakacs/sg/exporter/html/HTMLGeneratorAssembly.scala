@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.exporter.html
 
 import com.lorandszakacs.sg.exporter.html.impl.HTMLGeneratorImpl
 
-import scala.concurrent.ExecutionContext
+import com.lorandszakacs.util.future._
 
 /**
   *

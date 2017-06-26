@@ -5,7 +5,7 @@ import com.lorandszakacs.sg.exporter.impl.SGExporterImpl
 import com.lorandszakacs.sg.exporter.indexwriter.HTMLIndexWriterAssembly
 import com.lorandszakacs.sg.model.SGModelAssembly
 
-import scala.concurrent.ExecutionContext
+import com.lorandszakacs.util.future._
 
 /**
   *

@@ -9,8 +9,7 @@ import com.lorandszakacs.util.html.Html
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import com.lorandszakacs.util.future._
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
@@ -179,7 +178,7 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
 
       while (!stop) {
         Thread.sleep(pc.throttle.toMillis)
-        val newPage = Await.result(sGClient.getPage(offsetUri(uri, offset)), 1 minute)
+        val newPage = sGClient.getPage(offsetUri(uri, offset)).await()
         offset += offsetStep
         if (isEndPage(newPage) || offset > cutOffLimit) {
           stop = true

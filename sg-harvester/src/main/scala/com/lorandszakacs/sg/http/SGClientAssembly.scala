@@ -3,7 +3,7 @@ package com.lorandszakacs.sg.http
 import akka.actor.ActorSystem
 import com.lorandszakacs.sg.http.impl.SGClientImpl
 
-import scala.concurrent.ExecutionContext
+import com.lorandszakacs.util.future._
 
 /**
   *

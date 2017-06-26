@@ -9,7 +9,7 @@ import org.joda.time.LocalDate
 import org.scalatest.Outcome
 import reactivemongo.api.DefaultDB
 
-import scala.concurrent.ExecutionContext
+import com.lorandszakacs.util.future._
 
 /**
   *

@@ -5,7 +5,7 @@ import com.lorandszakacs.sg.model.Model.ModelFactory
 import com.lorandszakacs.sg.model._
 import org.joda.time.DateTime
 
-import scala.concurrent.Future
+import com.lorandszakacs.util.future._
 
 /**
   *

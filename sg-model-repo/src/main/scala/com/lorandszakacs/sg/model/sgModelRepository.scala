@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.model
 
 import org.joda.time.{DateTime, LocalDate}
 
-import scala.concurrent.Future
+import com.lorandszakacs.util.future._
 
 /**
   *

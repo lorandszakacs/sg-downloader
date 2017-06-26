@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.exporter.indexwriter
 
 import com.lorandszakacs.sg.exporter.indexwriter.impl.HTMLIndexWriterImpl
 
-import scala.concurrent.ExecutionContext
+import com.lorandszakacs.util.future._
 
 /**
   *

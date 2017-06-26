@@ -8,7 +8,6 @@ import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
-import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.io.StdIn
 import scala.language.postfixOps

@@ -28,7 +28,6 @@ import com.typesafe.scalalogging.StrictLogging
 import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext}
 import scala.language.postfixOps
 import scala.util.Try
 
@@ -41,7 +40,7 @@ object Main extends App with StrictLogging {
 
   val repl = new HarvesterRepl(assembly)
   repl.start()
-  Await.result(assembly.shutdown(), 10 seconds)
+  assembly.shutdown().await()
   println("... finished gracefully")
 
 }
@@ -62,7 +61,7 @@ object assembly extends SGHarvesterAssembly with ModelDisplayerAssembly with SGM
       case e: Throwable =>
         throw new IllegalStateException(s"Failed to initialize Mongo database. Because: ${e.getMessage}", e)
     }
-    Try(Await.result(future, 10 seconds))
+    Try(future.await())
   }
 
   def shutdown(): Future[Unit] = {

@@ -4,7 +4,7 @@ import com.lorandszakacs.sg.model._
 import reactivemongo.api.DB
 import reactivemongo.bson._
 
-import scala.concurrent.{ExecutionContext, Future}
+import com.lorandszakacs.util.future._
 
 /**
   *

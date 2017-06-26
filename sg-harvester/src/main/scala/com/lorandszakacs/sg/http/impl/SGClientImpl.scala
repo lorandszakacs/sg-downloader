@@ -32,7 +32,7 @@ import com.lorandszakacs.util.future._
 import org.joda.time.DateTimeZone
 
 import scala.collection.immutable.Seq
-import scala.concurrent.{ExecutionContext, Future}
+import com.lorandszakacs.util.future._
 import scala.util.Try
 
 /**

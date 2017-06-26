@@ -5,7 +5,7 @@ import java.net.URL
 import com.lorandszakacs.sg.http.Authentication
 import com.lorandszakacs.sg.model.Photo
 
-import scala.concurrent.Future
+import com.lorandszakacs.util.future._
 
 /**
   *

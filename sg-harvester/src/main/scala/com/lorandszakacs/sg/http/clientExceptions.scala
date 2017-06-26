@@ -5,8 +5,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import com.lorandszakacs.util.future._
 import scala.language.postfixOps
 import scala.util.Try
 
@@ -17,7 +16,7 @@ import scala.util.Try
   *
   */
 private[http] object ExceptionHelpers {
-  def stringifyHeaders(hs: Seq[HttpHeader]) = {
+  def stringifyHeaders(hs: Seq[HttpHeader]): String = {
     hs.map(h => s"${h.name()} : ${h.value()}").mkString("{", "\n", "}")
   }
 
@@ -28,21 +27,21 @@ private[http] object ExceptionHelpers {
     * It's a bug, not a feature.
     */
   def consumeEntity(e: ResponseEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
-    Try(Await.result(e.dataBytes.runWith(Sink.ignore), 1 minute)).toOption.map(_ => "ignored-content")
+    Try(e.dataBytes.runWith(Sink.ignore).await()).toOption.map(_ => "ignored-content")
   }
 
   def consumeEntity(e: RequestEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
-    Try(Await.result(e.dataBytes.runWith(Sink.ignore), 1 minute)).toOption.map(_ => "ignored-content")
+    Try(e.dataBytes.runWith(Sink.ignore).await()).toOption.map(_ => "ignored-content")
   }
 
   def stringifyEntity(e: ResponseEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
     val f: Future[String] = e.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))
-    Try(Await.result(f, 1 minute)).toOption
+    Try(f.await()).toOption
   }
 
   def stringifyEntity(e: RequestEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
     val f: Future[String] = e.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))
-    Try(Await.result(f, 1 minute)).toOption
+    Try(f.await()).toOption
   }
 
   implicit class BuffedResponse(response: HttpResponse)(implicit mat: ActorMaterializer, ec: ExecutionContext) {

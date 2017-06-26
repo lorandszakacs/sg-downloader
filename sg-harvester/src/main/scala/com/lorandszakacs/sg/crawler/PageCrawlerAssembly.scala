@@ -5,7 +5,7 @@ import com.lorandszakacs.sg.crawler.impl.{ModelAndPhotoSetCrawlerImpl, PhotoMedi
 import com.lorandszakacs.sg.http.SGClientAssembly
 import reactivemongo.api.DefaultDB
 
-import scala.concurrent.ExecutionContext
+import com.lorandszakacs.util.future._
 
 /**
   *

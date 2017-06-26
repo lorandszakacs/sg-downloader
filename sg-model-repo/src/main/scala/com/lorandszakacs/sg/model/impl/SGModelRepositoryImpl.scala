@@ -4,7 +4,7 @@ import com.lorandszakacs.sg.model._
 import com.typesafe.scalalogging.StrictLogging
 import org.joda.time.LocalDate
 
-import scala.concurrent.{ExecutionContext, Future}
+import com.lorandszakacs.util.future._
 
 /**
   *

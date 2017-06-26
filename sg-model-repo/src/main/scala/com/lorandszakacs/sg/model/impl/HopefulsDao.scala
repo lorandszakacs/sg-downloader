@@ -5,7 +5,7 @@ import org.joda.time.LocalDate
 import reactivemongo.api.{Cursor, DB}
 import reactivemongo.bson.BSONDocument
 
-import scala.concurrent._
+import com.lorandszakacs.util.future._
 
 /**
   *
