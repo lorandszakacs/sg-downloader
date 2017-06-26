@@ -63,7 +63,7 @@ private[exporter] class SGExporterImpl(
         }
       } else {
         logger.info("-- no delta for favorite models.")
-        UnitFuture
+        Future.unit
       }
     }
 
@@ -80,7 +80,7 @@ private[exporter] class SGExporterImpl(
         }
       } else {
         logger.info("-- no delta for normal models.")
-        UnitFuture
+        Future.unit
       }
     }
 

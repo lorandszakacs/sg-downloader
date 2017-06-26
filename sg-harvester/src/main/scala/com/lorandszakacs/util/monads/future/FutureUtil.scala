@@ -11,7 +11,6 @@ import scala.language.higherKinds
   *
   */
 object FutureUtil {
-
   /**
     * convenience aliases, so that you don't have to import [[FutureUtil]] and [[scala.concurrent.Future]]
     * at the same time
@@ -20,15 +19,9 @@ object FutureUtil {
   type Future[+T] = concurrent.Future[T]
   type ExecutionContext = concurrent.ExecutionContext
 
-  /**
-    * Unit future is commonly used, for efficiency purposes, and for the purpose of
-    * reducing boilerplate this is useful
-    */
-  val UnitFuture: Future[Unit] = Future.successful(())
-
   val UnitFunction: Any => Unit = { _ => () }
 
-  val FutureUnitFunction: Any => Future[Unit] = { _ => UnitFuture }
+  val FutureUnitFunction: Any => Future[Unit] = { _ => Future.unit }
 
   implicit class BuffedFutureObject(dontCare: Future.type) {
 
@@ -111,15 +104,14 @@ object FutureUtil {
   def when(boolExpr: Future[Boolean]): FailWithWordFuture = new FailWithWordFuture(boolExpr)
 
   final class FailWithWord private[FutureUtil](bool: Boolean) {
-    def failWith(exn: => Throwable): Future[Unit] = if (bool) Future.failed(exn) else UnitFuture
+    def failWith(exn: => Throwable): Future[Unit] = if (bool) Future.failed(exn) else Future.unit
   }
 
   final class FailWithWordFuture private[FutureUtil](val futureCondition: Future[Boolean]) {
     def failWith(exn: => Throwable)(implicit ec: ExecutionContext): Future[Unit] = {
       futureCondition flatMap { condition =>
-        if (condition) Future.failed(exn) else UnitFuture
+        if (condition) Future.failed(exn) else Future.unit
       }
     }
   }
-
 }

@@ -73,14 +73,14 @@ private[harvester] class SGHarvesterImpl(
           lp.lastPhotoSetID != newestPhotoSet.id
         }
         if (!gatheredNewerPhotoSet) {
-          UnitFuture
+          Future.unit
         } else {
           val newIndex: LastProcessedMarker = modelCrawler.createLastProcessedIndex(newModels.head)
           logger.info(s"last processed marker is for: ${newIndex.model} @ ${newIndex.lastPhotoSetID}")
           modelRepo.createOrUpdateLastProcessed(newIndex)
         }
       } else {
-        UnitFuture
+        Future.unit
       }
       (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = newModels.`SG|Hopeful`
       _ <- modelRepo.updateIndexes(newHopefuls = newHopefuls, newSGs = newSGS)

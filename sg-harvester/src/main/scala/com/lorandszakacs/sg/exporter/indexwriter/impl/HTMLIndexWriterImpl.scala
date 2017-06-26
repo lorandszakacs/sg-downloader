@@ -23,7 +23,7 @@ private[indexwriter] class HTMLIndexWriterImpl()
 
   override def writeRootModelIndex(index: ModelsRootIndex)(implicit ws: WriterSettings): Future[Unit] = {
     for {
-      _ <- (if (ws.rewriteEverything) FileUtils.cleanFolderOrCreate(ws.rootFolder) else UnitFuture) recover {
+      _ <- (if (ws.rewriteEverything) FileUtils.cleanFolderOrCreate(ws.rootFolder) else Future.unit) recover {
         case NonFatal(e) =>
           logger.error(s"failed to clean root folder: ${e.getMessage}", e)
           throw e
