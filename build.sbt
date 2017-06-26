@@ -62,6 +62,10 @@ lazy val `sg-model-repo` = project.settings(
       common.test.scalaTest
     )
   )
+).aggregate(
+  `util`
+).dependsOn(
+  `util`
 )
 
 lazy val `util` = project.settings(
