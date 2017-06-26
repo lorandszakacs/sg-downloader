@@ -28,7 +28,7 @@ import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.util.html._
-import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.lorandszakacs.util.future._
 import org.joda.time.DateTimeZone
 
 import scala.collection.immutable.Seq

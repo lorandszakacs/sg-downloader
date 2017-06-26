@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.crawler.impl
 
 import com.lorandszakacs.sg.crawler.SessionDao
 import com.lorandszakacs.sg.http.Session
-import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.lorandszakacs.util.future._
 import org.joda.time.{DateTime, DateTimeZone}
 import reactivemongo.api.DB
 import reactivemongo.api.collections.bson.BSONCollection

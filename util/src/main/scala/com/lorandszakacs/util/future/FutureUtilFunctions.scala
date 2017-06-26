@@ -2,10 +2,13 @@ package com.lorandszakacs.util.future
 
 import scala.collection.generic.CanBuildFrom
 import scala.collection.mutable
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 /**
   *
-  * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 26 Jun 2017
   *
   */
@@ -65,4 +68,11 @@ trait FutureUtilFunctions {
     }
   }
 
+  /**
+    * Convenience method for quick testing, or for writing trivial stuff
+    * like a REPL, should be used generally with care
+    */
+  implicit class FutureAwait[T](f: Future[T]) {
+    def await(duration: FiniteDuration = 2 minutes): T = Await.result(f, duration)
+  }
 }

@@ -3,7 +3,7 @@ package com.lorandszakacs.sg.exporter.indexwriter.impl
 
 import com.lorandszakacs.sg.exporter.html._
 import com.lorandszakacs.sg.exporter.indexwriter.{HTMLIndexWriter, WriterSettings}
-import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.util.control.NonFatal

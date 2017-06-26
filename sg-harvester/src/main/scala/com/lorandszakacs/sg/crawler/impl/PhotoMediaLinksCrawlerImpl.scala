@@ -5,7 +5,7 @@ import java.net.URL
 import com.lorandszakacs.sg.crawler.{DidNotFindAnyPhotoLinksOnSetPageException, PhotoMediaLinksCrawler, SessionDao}
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.Photo
-import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.util.Failure

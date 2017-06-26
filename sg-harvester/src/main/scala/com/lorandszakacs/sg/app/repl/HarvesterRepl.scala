@@ -5,7 +5,7 @@ import com.lorandszakacs.sg.exporter.{ExporterSettings, ModelDisplayerAssembly, 
 import com.lorandszakacs.sg.harvester.{SGHarvester, SGHarvesterAssembly}
 import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model._
-import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.concurrent.Await
@@ -16,16 +16,11 @@ import scala.util.{Failure, Success, Try}
 
 /**
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 04 Jul 2016
   *
   */
 class HarvesterRepl(assembly: SGHarvesterAssembly with ModelDisplayerAssembly) extends StrictLogging {
-
-  implicit class FutureAwait[T](f: Future[T]) {
-    def await(duration: FiniteDuration = 2 minutes) = Await.result(f, duration)
-  }
-
   case class Command(
     id: String,
     description: String

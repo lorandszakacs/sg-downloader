@@ -5,7 +5,7 @@ import java.nio.file._
 import java.nio.file.attribute.BasicFileAttributes
 
 import com.lorandszakacs.sg.exporter.indexwriter.{FailedToCreateFolderException, RootFolderCouldNotBeOpenedException, RootFolderFileCouldNotBeDeleted}
-import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.collection.mutable

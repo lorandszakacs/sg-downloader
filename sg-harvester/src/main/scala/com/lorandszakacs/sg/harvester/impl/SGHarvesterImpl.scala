@@ -6,7 +6,7 @@ import com.lorandszakacs.sg.harvester.SGHarvester
 import com.lorandszakacs.sg.http.{FailedToGetPageException, PatienceConfig}
 import com.lorandszakacs.sg.model.Model.{HopefulFactory, ModelFactory, SuicideGirlFactory}
 import com.lorandszakacs.sg.model._
-import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.util._

@@ -23,7 +23,7 @@ import com.lorandszakacs.sg.app.repl.HarvesterRepl
 import com.lorandszakacs.sg.exporter.ModelDisplayerAssembly
 import com.lorandszakacs.sg.harvester.SGHarvesterAssembly
 import com.lorandszakacs.sg.model.SGModelAssembly
-import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
 
