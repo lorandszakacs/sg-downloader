@@ -2,11 +2,11 @@ package com.lorandszakacs.sg.harvester
 
 import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model._
-import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.lorandszakacs.util.future._
 
 /**
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 04 Jul 2016
   *
   */

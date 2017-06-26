@@ -2,7 +2,7 @@ package com.lorandszakacs.util
 
 /**
   *
-  * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 26 Jun 2017
   *
   */

@@ -5,11 +5,11 @@ import com.lorandszakacs.sg.crawler.PageCrawlerAssembly
 import com.lorandszakacs.sg.harvester.impl.SGHarvesterImpl
 import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.model.SGModelAssembly
-import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.lorandszakacs.util.future._
 
 /**
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 04 Jul 2016
   *
   */

@@ -14,7 +14,7 @@ import scala.util.control.NonFatal
   * [[com.lorandszakacs.sg.exporter.ExporterSettings.favoritesRootFolderPath]],
   * or [[com.lorandszakacs.sg.exporter.ExporterSettings.allModelsRootFolderPath]], depending on context
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 17 Jul 2016
   *
   */

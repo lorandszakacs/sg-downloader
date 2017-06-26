@@ -10,12 +10,12 @@ import com.lorandszakacs.sg.exporter.indexwriter.impl.FileUtils
 import com.lorandszakacs.sg.exporter.indexwriter.{HTMLIndexWriter, WriterSettings}
 import com.lorandszakacs.sg.exporter.{ExporterSettings, ModelNotFoundException, SGExporter}
 import com.lorandszakacs.sg.model._
-import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
 /**
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 17 Jul 2016
   *
   */

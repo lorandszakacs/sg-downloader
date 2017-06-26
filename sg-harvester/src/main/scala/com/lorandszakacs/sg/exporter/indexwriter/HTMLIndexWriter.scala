@@ -3,11 +3,11 @@ package com.lorandszakacs.sg.exporter.indexwriter
 import java.nio.file.Path
 
 import com.lorandszakacs.sg.exporter.html._
-import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.lorandszakacs.util.future._
 
 /**
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 17 Jul 2016
   *
   */

@@ -10,7 +10,7 @@ import reactivemongo.bson.{BSONDateTime, BSONDocument, BSONDocumentReader, BSOND
 
 /**
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 20 Jul 2016
   *
   */

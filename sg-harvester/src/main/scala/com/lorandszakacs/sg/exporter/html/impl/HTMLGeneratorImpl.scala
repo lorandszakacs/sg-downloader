@@ -2,12 +2,12 @@ package com.lorandszakacs.sg.exporter.html.impl
 
 import com.lorandszakacs.sg.exporter.html._
 import com.lorandszakacs.sg.model._
-import com.lorandszakacs.util.monads.future.FutureUtil._
+import com.lorandszakacs.util.future._
 import com.github.nscala_time.time.Imports._
 
 /**
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 17 Jul 2016
   *
   */

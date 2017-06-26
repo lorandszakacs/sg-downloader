@@ -7,7 +7,7 @@ import scala.concurrent.ExecutionContext
 
 /**
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 04 Jul 2016
   *
   */

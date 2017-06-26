@@ -13,7 +13,7 @@ import scala.util.control.NonFatal
 
 /**
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 05 Jul 2016
   *
   */

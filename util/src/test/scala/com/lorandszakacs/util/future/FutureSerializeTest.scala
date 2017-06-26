@@ -9,7 +9,7 @@ import scala.language.postfixOps
 
 /**
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 11 Apr 2016
   *
   */

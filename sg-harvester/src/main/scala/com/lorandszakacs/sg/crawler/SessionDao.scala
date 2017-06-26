@@ -1,11 +1,11 @@
 package com.lorandszakacs.sg.crawler
 
 import com.lorandszakacs.sg.http.Session
-import com.lorandszakacs.util.monads.future.FutureUtil.Future
+import com.lorandszakacs.util.future._
 
 /**
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 20 Jul 2016
   *
   */

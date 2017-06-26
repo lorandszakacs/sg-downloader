@@ -5,7 +5,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 /**
   *
-  * @author Lorand Szakacs, lorand.szakacs@busymachines.com, lsz@lorandszakacs.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 12 Mar 2017
   *
   */
