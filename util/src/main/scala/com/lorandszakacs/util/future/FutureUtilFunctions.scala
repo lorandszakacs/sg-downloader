@@ -32,7 +32,7 @@ trait FutureUtilFunctions {
       * Usage:
       *
       * {{{
-      *   import FutureMonads._
+      *   import com.lorandszakacs.util.future._
       *   val changes: Seq[Change] = //...
       *
       *   //this ensures that no two changes will be applied in parallel.
@@ -70,7 +70,7 @@ trait FutureUtilFunctions {
 
   /**
     * Convenience method for quick testing, or for writing trivial stuff
-    * like a REPL, should be used generally with care
+    * like a REPL, should be used with care
     */
   implicit class FutureAwait[T](f: Future[T]) {
     def await(duration: FiniteDuration = 2 minutes): T = Await.result(f, duration)

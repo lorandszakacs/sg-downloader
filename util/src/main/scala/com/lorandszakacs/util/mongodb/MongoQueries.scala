@@ -10,5 +10,4 @@ object MongoQueries extends MongoQueries
 
 trait MongoQueries {
   val _id: String = "id"
-
 }
