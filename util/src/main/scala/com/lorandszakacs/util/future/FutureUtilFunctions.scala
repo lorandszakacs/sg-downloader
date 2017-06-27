@@ -46,7 +46,7 @@ trait FutureUtilFunctions {
       *
       *
       */
-    def serialize[A, B, M[X] <: TraversableOnce[X]](traversable: M[A])(fn: A => concurrent.Future[B])(implicit cbf: CanBuildFrom[M[A], B, M[B]], executor: ExecutionContext): Future[M[B]] = {
+    def serialize[A, B, M[X] <: TraversableOnce[X]](traversable: M[A])(fn: A => Future[B])(implicit cbf: CanBuildFrom[M[A], B, M[B]], executor: ExecutionContext): Future[M[B]] = {
       if (traversable.isEmpty) {
         Future.successful(cbf.apply().result())
       } else {
