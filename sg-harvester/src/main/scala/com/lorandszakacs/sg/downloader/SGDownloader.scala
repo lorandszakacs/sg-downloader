@@ -18,12 +18,12 @@ import scala.language.postfixOps
   * @since 01 Jul 2017
   *
   */
-class SGDownloader(private val harvester: SGHarvester, private val exporter: SGExporter)(implicit val executionContext: ExecutionContext) extends StrictLogging {
+class SGDownloader(protected val harvester: SGHarvester, protected val exporter: SGExporter)(implicit val executionContext: ExecutionContext) extends StrictLogging {
 
   /**
     * Used for commands that act on the entire repository
     */
-  private implicit val exporterSettings: ExporterSettings = ExporterSettings(
+  protected implicit val exporterSettings: ExporterSettings = ExporterSettings(
     favoritesRootFolderPath = "~/sgs/local/models/favorites",
     allModelsRootFolderPath = "~/sgs/local/models/all",
     newestRootFolderPath = "~/sgs/local/models",
@@ -33,14 +33,14 @@ class SGDownloader(private val harvester: SGHarvester, private val exporter: SGE
   /**
     * Used strictly for the delta export
     */
-  private implicit val deltaExporterSettings: ExporterSettings = ExporterSettings(
+  protected implicit val deltaExporterSettings: ExporterSettings = ExporterSettings(
     favoritesRootFolderPath = "~/sgs/delta/models/favorites",
     allModelsRootFolderPath = "~/sgs/delta/models/all",
     newestRootFolderPath = "~/sgs/delta/models",
     rewriteEverything = true
   )
 
-  private implicit val patienceConfig: PatienceConfig = PatienceConfig(200 millis)
+  protected implicit val patienceConfig: PatienceConfig = PatienceConfig(200 millis)
 
   object delta {
     /**
@@ -86,6 +86,16 @@ class SGDownloader(private val harvester: SGHarvester, private val exporter: SGE
     }
   }
 
+  object display {
+    def model(name: ModelName): Future[String] = {
+      exporter.prettyPrint(name)
+    }
+  }
+
+  object util {
+  }
+
 }
+
 
 

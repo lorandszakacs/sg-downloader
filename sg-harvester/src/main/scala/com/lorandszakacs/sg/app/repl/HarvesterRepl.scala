@@ -118,7 +118,7 @@ class HarvesterRepl(
         case ShowModel.id => interpret {
           print("name (case insensitive): ")
           val name = StdIn.readLine()
-          val toDisplay = exporter.prettyPrint(ModelName(name)).await()
+          val toDisplay = interpreter.display.model(ModelName(name)).await()
           print(s"\n$toDisplay\n")
         }
 

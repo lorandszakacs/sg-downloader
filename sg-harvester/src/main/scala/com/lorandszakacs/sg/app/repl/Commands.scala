@@ -26,6 +26,13 @@ object Commands {
     """.stripMargin
   )
 
+  lazy val ShowModel: Command = Command(
+    "show [model-name]",
+    """
+      |Shows all information about a model.
+    """.stripMargin
+  )
+
   lazy val Help: Command = Command(
     "help",
     "help"
@@ -119,13 +126,7 @@ object Commands {
       | """.stripMargin
   )
 
-  @scala.deprecated("needs to be renamed", "now")
-  lazy val ShowModel: Command = Command(
-    "show",
-    """
-      |Shows all information about a model.
-    """.stripMargin
-  )
+
 
   @scala.deprecated("needs to be renamed", "now")
   lazy val HtmlFavorites: Command = Command(
