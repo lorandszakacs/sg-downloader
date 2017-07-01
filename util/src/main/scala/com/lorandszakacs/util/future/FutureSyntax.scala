@@ -37,6 +37,8 @@ trait FutureSyntax {
 
   final class FailWithWord private[FutureSyntax](bool: Boolean) {
     def failWith(exn: => Throwable): Future[Unit] = if (bool) Future.failed(exn) else Future.unit
+
+    def execute(exn: => Future[Unit]): Future[Unit] = if (bool) exn else Future.unit
   }
 
   final class FailWithWordFuture private[FutureSyntax](val futureCondition: Future[Boolean]) {
@@ -45,6 +47,11 @@ trait FutureSyntax {
         if (condition) Future.failed(exn) else Future.unit
       }
     }
-  }
 
+    def execute(exn: => Future[Unit])(implicit ec: ExecutionContext): Future[Unit] = {
+      futureCondition flatMap { condition =>
+        if (condition) exn else Future.unit
+      }
+    }
+  }
 }
