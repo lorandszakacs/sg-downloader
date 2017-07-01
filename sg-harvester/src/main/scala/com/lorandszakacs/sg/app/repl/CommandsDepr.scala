@@ -7,7 +7,7 @@ package com.lorandszakacs.sg.app.repl
   *
   */
 @scala.deprecated("use the ones app.commands which are parsed", "now")
-object Commands {
+object CommandsDepr {
 
   case class Command(
     id: String,
