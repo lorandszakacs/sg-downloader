@@ -22,6 +22,22 @@ private[crawler] final class SessionDaoImpl(val db: DB)(implicit ec: ExecutionCo
 
   private val idBSON = BSONDocument(_id -> sessionId)
 
+  private def onInit(): Unit = {
+    for {
+      opt <- this.find()
+      _ <- when(opt.isEmpty) execute this.create {
+        Session(
+          username = "default",
+          sessionID = "default",
+          csrfToken = "default",
+          expiresAt = DateTime.now()
+        )
+      }
+    } yield ()
+  }
+
+  onInit()
+
   private implicit val dateTimeHandler: BSONReader[BSONDateTime, DateTime] with BSONWriter[DateTime, BSONDateTime] with BSONHandler[BSONDateTime, DateTime] =
     new BSONReader[BSONDateTime, DateTime] with BSONWriter[DateTime, BSONDateTime] with BSONHandler[BSONDateTime, DateTime] {
       override def read(bson: BSONDateTime): DateTime = {
