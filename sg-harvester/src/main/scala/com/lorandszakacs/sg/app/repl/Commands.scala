@@ -6,6 +6,7 @@ package com.lorandszakacs.sg.app.repl
   * @since 01 Jul 2017
   *
   */
+@scala.deprecated("use the ones app.commands which are parsed", "now")
 object Commands {
 
   case class Command(
