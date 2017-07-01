@@ -2,8 +2,7 @@ package com.lorandszakacs.sg.model.impl
 
 import com.lorandszakacs.sg.model._
 import org.joda.time.LocalDate
-import reactivemongo.api.{Cursor, DB}
-import reactivemongo.bson.BSONDocument
+import com.lorandszakacs.util.mongodb.Imports._
 
 import com.lorandszakacs.util.future._
 
@@ -13,7 +12,7 @@ import com.lorandszakacs.util.future._
   * @since 04 Jul 2016
   *
   */
-private[model] class HopefulsDao(val db: DB)(implicit val ec: ExecutionContext) extends MongoDAO {
+private[model] class HopefulsDao(val db: Database)(implicit val ec: ExecutionContext) extends MongoDAO {
   override protected val collectionName: String = "hopefuls"
 
   def createOrUpdate(hopeful: Hopeful): Future[Unit] = {

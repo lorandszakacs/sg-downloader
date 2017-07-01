@@ -1,10 +1,9 @@
 package com.lorandszakacs.sg.model.impl
 
 import com.lorandszakacs.sg.model._
-import reactivemongo.api.DB
-import reactivemongo.bson._
-
+import com.lorandszakacs.util.mongodb.Imports._
 import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.mongodb.MongoCollection
 
 /**
   *
@@ -12,7 +11,7 @@ import com.lorandszakacs.util.future._
   * @since 04 Jul 2016
   *
   */
-final private[model] class IndexDao(val db: DB)(implicit val ec: ExecutionContext) extends MongoDAO {
+final private[model] class IndexDao(val db: Database)(implicit val ec: ExecutionContext) extends MongoDAO {
   override protected val collectionName: String = "models_index"
 
   /**

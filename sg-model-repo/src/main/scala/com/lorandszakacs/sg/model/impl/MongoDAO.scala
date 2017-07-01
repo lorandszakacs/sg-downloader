@@ -5,30 +5,18 @@ import java.net.URL
 import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.model._
 import org.joda.time.LocalDate
-import reactivemongo.api.DB
-import reactivemongo.api.collections.bson.BSONCollection
-import reactivemongo.bson.Macros.Options.SaveSimpleName
-import reactivemongo.bson._
-
+import com.lorandszakacs.util.mongodb.Imports._
 /**
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 04 Jul 2016
   *
   */
-private[impl] trait MongoDAO {
-  protected val _id = "_id"
-
+private[impl] trait SGRepoBSON {
   protected val SuicideGirlsIndexId = "suicide-girls-index"
   protected val HopefulIndexId = "hopefuls-index"
   protected val LastProcessedId = "last-processed"
   protected val CleanedUpIndexId = "cleaned-up-index"
-
-  protected def db: DB
-
-  protected def collectionName: String
-
-  protected lazy val collection: BSONCollection = db(collectionName)
 
   protected implicit val modelNameBSON: BSONHandler[BSONString, ModelName] = new BSONHandler[BSONString, ModelName] {
     override def read(bson: BSONString): ModelName = ModelName(bson.value)
@@ -38,7 +26,7 @@ private[impl] trait MongoDAO {
 
   protected implicit val suicideGirlsIndexBSON: BSONDocumentReader[SuicideGirlIndex] with BSONDocumentWriter[SuicideGirlIndex] with BSONHandler[BSONDocument, SuicideGirlIndex] =
     new BSONDocumentReader[SuicideGirlIndex] with BSONDocumentWriter[SuicideGirlIndex] with BSONHandler[BSONDocument, SuicideGirlIndex] {
-      private val handler = Macros.handler[SuicideGirlIndex]
+      private val handler = BSONMacros.handler[SuicideGirlIndex]
 
       override def write(t: SuicideGirlIndex): BSONDocument = BSONDocument(_id -> SuicideGirlsIndexId) ++ handler.write(t)
 
@@ -48,7 +36,7 @@ private[impl] trait MongoDAO {
 
   protected implicit val hopefulIndexBSON: BSONDocumentReader[HopefulIndex] with BSONDocumentWriter[HopefulIndex] with BSONHandler[BSONDocument, HopefulIndex] =
     new BSONDocumentReader[HopefulIndex] with BSONDocumentWriter[HopefulIndex] with BSONHandler[BSONDocument, HopefulIndex] {
-      private val handler = Macros.handler[HopefulIndex]
+      private val handler = BSONMacros.handler[HopefulIndex]
 
       override def write(t: HopefulIndex): BSONDocument = BSONDocument(_id -> HopefulIndexId) ++ handler.write(t)
 
@@ -57,7 +45,7 @@ private[impl] trait MongoDAO {
 
   protected implicit val cleanedUpIndexBSON: BSONDocumentReader[CleanedUpModelsIndex] with BSONDocumentWriter[CleanedUpModelsIndex] with BSONHandler[BSONDocument, CleanedUpModelsIndex] =
     new BSONDocumentReader[CleanedUpModelsIndex] with BSONDocumentWriter[CleanedUpModelsIndex] with BSONHandler[BSONDocument, CleanedUpModelsIndex]{
-      private val handler = Macros.handler[CleanedUpModelsIndex]
+      private val handler = BSONMacros.handler[CleanedUpModelsIndex]
 
       override def write(t: CleanedUpModelsIndex): BSONDocument = BSONDocument(_id -> CleanedUpIndexId) ++ handler.write(t)
 
@@ -93,14 +81,14 @@ private[impl] trait MongoDAO {
     }
 
   protected implicit val photoBSON: BSONDocumentReader[Photo] with BSONDocumentWriter[Photo] with BSONHandler[BSONDocument, Photo] =
-    Macros.handler[Photo]
+    BSONMacros.handler[Photo]
 
   protected implicit val photoSetBSON: BSONDocumentReader[PhotoSet] with BSONDocumentWriter[PhotoSet] with BSONHandler[BSONDocument, PhotoSet] =
-    Macros.handler[PhotoSet]
+    BSONMacros.handler[PhotoSet]
 
   protected implicit val suicideGirlBSON: BSONDocumentReader[SuicideGirl] with BSONDocumentWriter[SuicideGirl] with BSONHandler[BSONDocument, SuicideGirl] =
     new BSONDocumentReader[SuicideGirl] with BSONDocumentWriter[SuicideGirl] with BSONHandler[BSONDocument, SuicideGirl] {
-      private val handler = Macros.handler[SuicideGirl]
+      private val handler = BSONMacros.handler[SuicideGirl]
 
       override def write(t: SuicideGirl): BSONDocument = handler.write(t) ++ (_id -> t.name)
 
@@ -109,7 +97,7 @@ private[impl] trait MongoDAO {
 
   protected implicit val hopefulBSON: BSONDocumentReader[Hopeful] with BSONDocumentWriter[Hopeful] with BSONHandler[BSONDocument, Hopeful] =
     new BSONDocumentReader[Hopeful] with BSONDocumentWriter[Hopeful] with BSONHandler[BSONDocument, Hopeful] {
-      private val handler: BSONDocumentReader[Hopeful] with BSONDocumentWriter[Hopeful] with BSONHandler[BSONDocument, Hopeful] = Macros.handler[Hopeful]
+      private val handler: BSONDocumentReader[Hopeful] with BSONDocumentWriter[Hopeful] with BSONHandler[BSONDocument, Hopeful] = BSONMacros.handler[Hopeful]
 
       override def write(t: Hopeful): BSONDocument = handler.write(t) ++ (_id -> t.name)
 
@@ -118,10 +106,10 @@ private[impl] trait MongoDAO {
 
 
   protected implicit val lastProcessedHopefulBSON: BSONDocumentReader[LastProcessedHopeful] with BSONDocumentWriter[LastProcessedHopeful] with BSONHandler[BSONDocument, LastProcessedHopeful] =
-    Macros.handlerOpts[LastProcessedHopeful, SaveSimpleName]
+    BSONMacros.handlerOpts[LastProcessedHopeful, BSONMacros.Options.SaveSimpleName]
 
   implicit val lastProcessedSuicideGirlBSON: BSONDocumentReader[LastProcessedSG] with BSONDocumentWriter[LastProcessedSG] with BSONHandler[BSONDocument, LastProcessedSG] =
-    Macros.handlerOpts[LastProcessedSG, SaveSimpleName]
+    BSONMacros.handlerOpts[LastProcessedSG, BSONMacros.Options.SaveSimpleName]
 
   implicit val lastProcessedMarkerBSON: BSONDocumentReader[LastProcessedMarker] =
     new BSONDocumentReader[LastProcessedMarker] {
@@ -137,5 +125,13 @@ private[impl] trait MongoDAO {
       }
 
     }
+}
+
+private[impl] trait MongoDAO extends SGRepoBSON {
+  protected def db: Database
+
+  protected def collectionName: String
+
+  protected lazy val collection: BSONCollection = db(collectionName)
 
 }
