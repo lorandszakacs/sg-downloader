@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.app.commands
 
-import com.lorandszakacs.sg.app.repl.Commands.{GatherNew, IndexNew}
+import com.lorandszakacs.sg.app.repl.CommandsDepr.{GatherNew, IndexNew}
 
 /**
   *

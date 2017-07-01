@@ -26,7 +26,7 @@ class HarvesterRepl(
     SGDownloaderAssembly
 ) extends StrictLogging {
 
-  import Commands._
+  import CommandsDepr._
 
   private implicit val patienceConfig: PatienceConfig = PatienceConfig(25 millis)
   private implicit val ec: ExecutionContext = assembly.executionContext
@@ -81,177 +81,171 @@ class HarvesterRepl(
     ModelName(model)
   }
 
+  private lazy val consoleEvaluator: HarvesterCommandLineEvaluator =
+    new HarvesterCommandLineEvaluator(assembly)
+
   private def usernamePasswordConstantInput(username: String, plainTextPassword: String): () => (String, String) = { () =>
     (username, plainTextPassword)
   }
 
+  private class ExitContainer(var should: Boolean = false)
+
   def start(): Unit = {
     println("type help for instructions")
 
-    var exit = false
-    while (!exit) {
+    val exit = new ExitContainer(should = false)
+    while (!exit.should) {
       print("> ")
-      val input = StdIn.readLine().trim().toLowerCase
-      input match {
+      val input = StdIn.readLine().trim()
 
-        //----------------------------------------
+      Try(consoleEvaluator.evaluate(input)) match {
+        case Success(_) =>
 
-        case Exit.id =>
-          exit = true
-        //----------------------------------------
+        case Failure(exception) =>
+          //GARBAGE!
+          input match {
 
-        case Help.id => interpret {
-          val string = all.map { c =>
-            s"${c.id}: ${c.description}"
-          } mkString "\n"
-          print(s"$string\n")
-        }
+            //----------------------------------------
 
-        //----------------------------------------
+            case Exit.id =>
+              exit.should = true
+            //----------------------------------------
 
-        case DisplayFavorites.id => interpret {
-          print(s"\n${Favorites.codeFriendlyDisplay}\n")
-        }
+            //----------------------------------------
 
-        //----------------------------------------
+            case DisplayFavorites.id => interpret {
+              print(s"\n${Favorites.codeFriendlyDisplay}\n")
+            }
 
-        case ShowModel.id => interpret {
-          print("name (case insensitive): ")
-          val name = StdIn.readLine()
-          val toDisplay = interpreter.display.model(ModelName(name)).await()
-          print(s"\n$toDisplay\n")
-        }
+            //----------------------------------------
 
-        //----------------------------------------
+            case ShowModel.id => interpret {
+              print("name (case insensitive): ")
+              val name = StdIn.readLine()
+              val toDisplay = interpreter.display.model(ModelName(name)).await()
+              print(s"\n$toDisplay\n")
+            }
 
-        case HtmlFavorites.id => interpret {
-          exporter.exportHTMLIndexOfFavorites(exporterSettings).map { _ =>
-            logger.info(s"successfully wrote the FAVORITES models index")
-          }.await(10 minutes)
-        }
+            //----------------------------------------
 
-        //----------------------------------------
+            case HtmlFavorites.id => interpret {
+              exporter.exportHTMLIndexOfFavorites(exporterSettings).map { _ =>
+                logger.info(s"successfully wrote the FAVORITES models index")
+              }.await(10 minutes)
+            }
 
-        case HtmlAll.id => interpret {
-          exporter.exportHTMLIndexOfAllModels(exporterSettings).map { _ =>
-            logger.info(s"successfully wrote ALL the models index")
-          }.await(1 hour)
+            //----------------------------------------
 
-        }
+            case HtmlAll.id => interpret {
+              exporter.exportHTMLIndexOfAllModels(exporterSettings).map { _ =>
+                logger.info(s"successfully wrote ALL the models index")
+              }.await(1 hour)
 
-        case ReindexSuicideGirls.id => interpret {
-          val allSuicideGirls = harvester.reindexSGNames(Int.MaxValue).await(2 hours)
-          logger.info(s"finished reindexing ALL suicide girls. Total number: ${allSuicideGirls.length}")
-        }
+            }
+
+            case ReindexSuicideGirls.id => interpret {
+              val allSuicideGirls = harvester.reindexSGNames(Int.MaxValue).await(2 hours)
+              logger.info(s"finished reindexing ALL suicide girls. Total number: ${allSuicideGirls.length}")
+            }
 
 
-        //----------------------------------------
+            //----------------------------------------
 
-        case ReindexHopefuls.id => interpret {
-          val allHopefuls = harvester.reindexHopefulsNames(Int.MaxValue).await(2 hours)
-          logger.info(s"finished reindexing ALL hopefuls. Total number: ${allHopefuls.length}")
-        }
-        //----------------------------------------
+            case ReindexHopefuls.id => interpret {
+              val allHopefuls = harvester.reindexHopefulsNames(Int.MaxValue).await(2 hours)
+              logger.info(s"finished reindexing ALL hopefuls. Total number: ${allHopefuls.length}")
+            }
+            //----------------------------------------
 
-        case ReindexAll.id => interpret {
-          val allModels = harvester.reindexAll(Int.MaxValue).await(4 hours)
-          logger.info(s"finished reindexing ALL models. Total number: ${allModels.length}")
-        }
+            case ReindexAll.id => interpret {
+              val allModels = harvester.reindexAll(Int.MaxValue).await(4 hours)
+              logger.info(s"finished reindexing ALL models. Total number: ${allModels.length}")
+            }
 
-        //----------------------------------------
+            //----------------------------------------
 
-        case GatherNew.id => interpret {
-          val allNew = harvester.gatherNewestPhotosAndUpdateIndex(Int.MaxValue).await(2 hours)
-          val allNewSG = allNew.keepSuicideGirls
-          val allNewHopefuls = allNew.keepHopefuls
-          logger.info(s"finished harvesting and queuing to reindex all new entries, #${allNew.length}")
-          logger.info(s"# of new suicide girls: ${allNewSG.length}. Names: ${allNewSG.map(_.name.name).mkString(",")}")
-          logger.info(s"# of new hopefuls     : ${allNewHopefuls.length}. Names: ${allNewHopefuls.map(_.name.name).mkString(",")}")
-        }
+            case GatherNew.id => interpret {
+              val allNew = harvester.gatherNewestPhotosAndUpdateIndex(Int.MaxValue).await(2 hours)
+              val allNewSG = allNew.keepSuicideGirls
+              val allNewHopefuls = allNew.keepHopefuls
+              logger.info(s"finished harvesting and queuing to reindex all new entries, #${allNew.length}")
+              logger.info(s"# of new suicide girls: ${allNewSG.length}. Names: ${allNewSG.map(_.name.name).mkString(",")}")
+              logger.info(s"# of new hopefuls     : ${allNewHopefuls.length}. Names: ${allNewHopefuls.map(_.name.name).mkString(",")}")
+            }
 
-        //----------------------------------------
+            //----------------------------------------
 
-        case IndexNew.id => interpret {
-          val input = usernamePasswordConsoleInput
-          val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(input, includeProblematic = true)
-          val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = future.await(12 hours).`SG|Hopeful`
-          logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
-          logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
-        }
+            case IndexNew.id => interpret {
+              val input = usernamePasswordConsoleInput
+              val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(input, includeProblematic = true)
+              val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = future.await(12 hours).`SG|Hopeful`
+              logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
+              logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
+            }
 
-        //----------------------------------------
+            //----------------------------------------
 
-        case GatherAndIndexAll.id => interpret {
-          val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsFromScratch(usernamePasswordConsoleInput)
-          val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = future.await(24 hours).`SG|Hopeful`
-          logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
-          logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
-        }
+            case GatherAndIndexAll.id => interpret {
+              val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsFromScratch(usernamePasswordConsoleInput)
+              val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = future.await(24 hours).`SG|Hopeful`
+              logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
+              logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
+            }
 
-        //----------------------------------------
+            //----------------------------------------
+            case UpdateSpecific.id =>
+              interpret {
+                val f = for {
+                  model <- harvester.gatherDataAndUpdateModel(usernamePasswordConsoleInput, modelNameConsoleInput)
+                  _ = {
+                    logger.info(s"finished harvesting ${model.name}")
+                  }
 
-        case DeltaUpdate.id =>
-          interpret {
-            val f = interpreter.delta.update(usernamePasswordConsoleInput)(
-              daysToExport = 120,
-              includeProblematic = true
-            )
+                  _ <- exporter.exportDeltaHTMLIndex(List(model.name))(deltaExporterSettings)
+                  _ = logger.info("finished writing the delta HTML export.")
 
-            f.await(24 hours)
-          }
-        //----------------------------------------
-        case UpdateSpecific.id =>
-          interpret {
-            val f = for {
-              model <- harvester.gatherDataAndUpdateModel(usernamePasswordConsoleInput, modelNameConsoleInput)
-              _ = {
-                logger.info(s"finished harvesting ${model.name}")
+                } yield ()
+                f.await(24 hours)
               }
 
-              _ <- exporter.exportDeltaHTMLIndex(List(model.name))(deltaExporterSettings)
-              _ = logger.info("finished writing the delta HTML export.")
+            //----------------------------------------
 
-            } yield ()
-            f.await(24 hours)
+            case GenerateNewest.id => interpret {
+              val f = for {
+                _ <- exporter.exportLatestForDays(28)(exporterSettings)
+              } yield ()
+              f.await(1 hour)
+            }
+
+            //----------------------------------------
+
+            case CleanIndex.id => interpret {
+              val (cleanedSGHs: List[ModelName], cleanedHopefuls: List[ModelName]) = harvester.cleanIndex().await(12 hours)
+              logger.info("finished cleaning up")
+              logger.info(s"cleaned up suicide girls: ${cleanedSGHs.length}")
+              logger.info(s"cleaned up hopefuls: ${cleanedHopefuls.length}")
+            }
+
+            //----------------------------------------
+
+            case DetectDuplicateFiles.id => interpret {
+              val df = exporter.detectDuplicateFiles("~/Dropbox/Public/suicide-girls/models").await()
+              val repr = df.map { duplFilesInFolder =>
+                duplFilesInFolder.mkString("\n")
+              }
+              print {
+                s"""|potential duplicates:
+                    |${repr.mkString("\n\n")}
+                    |""".stripMargin
+              }
+            }
+
+            //----------------------------------------
+
+            case unknown =>
+              println(s"unknown command: $unknown. Please type help for more information.")
           }
-
-        //----------------------------------------
-
-        case GenerateNewest.id => interpret {
-          val f = for {
-            _ <- exporter.exportLatestForDays(28)(exporterSettings)
-          } yield ()
-          f.await(1 hour)
-        }
-
-        //----------------------------------------
-
-        case CleanIndex.id => interpret {
-          val (cleanedSGHs: List[ModelName], cleanedHopefuls: List[ModelName]) = harvester.cleanIndex().await(12 hours)
-          logger.info("finished cleaning up")
-          logger.info(s"cleaned up suicide girls: ${cleanedSGHs.length}")
-          logger.info(s"cleaned up hopefuls: ${cleanedHopefuls.length}")
-        }
-
-        //----------------------------------------
-
-        case DetectDuplicateFiles.id => interpret {
-          val df = exporter.detectDuplicateFiles("~/Dropbox/Public/suicide-girls/models").await()
-          val repr = df.map { duplFilesInFolder =>
-            duplFilesInFolder.mkString("\n")
-          }
-          print {
-            s"""|potential duplicates:
-                |${repr.mkString("\n\n")}
-                |""".stripMargin
-          }
-        }
-
-        //----------------------------------------
-
-        case unknown =>
-          println(s"unknown command: $unknown. Please type help for more information.")
-      }
+      }// end try
 
     }
   }

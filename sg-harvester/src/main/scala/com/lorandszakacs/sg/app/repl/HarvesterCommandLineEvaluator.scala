@@ -1,5 +1,7 @@
 package com.lorandszakacs.sg.app.repl
 
+import com.lorandszakacs.sg.app.commands.Commands.{DeltaUpdate, Help}
+import com.lorandszakacs.sg.app.commands.{Command, CommandParser, Commands}
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
 import com.lorandszakacs.sg.exporter.ModelExporterAssembly
 import com.lorandszakacs.sg.harvester.SGHarvesterAssembly
@@ -26,47 +28,57 @@ class HarvesterCommandLineEvaluator(
   private implicit val executionContext: ExecutionContext = assembly.executionContext
 
   def evaluate(args: Array[String]): Unit = {
+    assert(args.nonEmpty, "why did you call the command line evaluator if you have no command line args?")
+    val stringArgs = args.mkString(" ")
+
+    this.evaluate(stringArgs)
+  }
+
+  def evaluate(args: String): Unit = {
     val ecx = eventualEvaluate(args) recover {
       case NonFatal(e) =>
-        logger.error(s"Failed to evaluate command: ${args.mkString(" ")}", e)
+        logger.error(s"Failed to evaluate command: $args", e)
     }
     ecx.await(24 hours)
   }
 
   private val downloader = assembly.sgDownloader
 
-  private def eventualEvaluate(args: Array[String]): Future[Unit] = {
-    assert(args.nonEmpty, "why did you call the command line evaluator if you have no command line args?")
-
-    def first = args(0)
+  private def eventualEvaluate(args: String): Future[Unit] = {
+    val triedCommand = CommandParser.parseCommand(args) recoverWith {
+      case NonFatal(e) =>
+        logger.error(s"failed to parse command: '$args'", e)
+        scala.util.Failure(e)
+    }
 
     for {
-      _ <- when(Commands.DeltaUpdate.sameId(first)) execute {
-        downloader.delta.update(usernamePasswordConsoleInput)(
-          daysToExport = 120,
-          includeProblematic = true
-        )
-      }
-
-      _ <- when(Commands.Help.sameId(first)) execute Future.successful {
-        val string = Commands.all.map { c =>
-          s"${c.id}: ${c.description}"
-        } mkString "\n"
-        print(s"$string\n")
-      }
+      command <- Future fromTry triedCommand
+      _ <- evaluateCommand(command)
     } yield ()
   }
 
-  private lazy val usernamePasswordConsoleInput: () => (String, String) = { () =>
-    val username: String = {
-      print("\nplease insert username: ")
-      StdIn.readLine().trim()
+  private def evaluateCommand(command: Command): Future[Unit] = {
+    command match {
+
+      case DeltaUpdate(days, usernameAndPassword) =>
+        downloader.delta.update(optionalConsoleInput(usernameAndPassword))(
+          daysToExport = days.getOrElse(120),
+          includeProblematic = true
+        )
+
+
+      case Help =>
+        Future.successful {
+          val string = CommandsDepr.all.map { c =>
+            s"${c.id}: ${c.description}"
+          } mkString "\n"
+          print(s"$string\n")
+        }
     }
-    val plainTextPassword: String = {
-      print("\nplease insert password: ")
-      StdIn.readLine().trim()
-    }
-    (username, plainTextPassword)
+  }
+
+  private def optionalConsoleInput(opt: Option[(String, String)]): () => (String, String) = { () =>
+    opt.getOrElse(throw new RuntimeException(".... in the end needed to use password, but none was provided"))
   }
 
 }
