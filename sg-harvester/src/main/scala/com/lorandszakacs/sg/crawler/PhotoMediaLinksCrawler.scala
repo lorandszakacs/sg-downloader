@@ -2,9 +2,8 @@ package com.lorandszakacs.sg.crawler
 
 import java.net.URL
 
-import com.lorandszakacs.sg.http.Authentication
+import com.lorandszakacs.sg.http.{Authentication, PasswordProvider}
 import com.lorandszakacs.sg.model.Photo
-
 import com.lorandszakacs.util.future._
 
 /**
@@ -24,7 +23,7 @@ trait PhotoMediaLinksCrawler {
     * will be false
     *
     */
-  def authenticateIfNeeded(usernameAndPassword: () => (String, String)): Future[Authentication]
+  def authenticateIfNeeded()(implicit passwordProvider: PasswordProvider): Future[Authentication]
 
   def gatherAllPhotosFromSetPage(photoSetPageUri: URL): Future[List[Photo]]
 

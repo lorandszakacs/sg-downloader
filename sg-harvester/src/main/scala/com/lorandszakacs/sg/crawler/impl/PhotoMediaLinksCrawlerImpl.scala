@@ -24,7 +24,7 @@ private[crawler] class PhotoMediaLinksCrawlerImpl(
 
   private[this] implicit var _authentication: Authentication = DefaultSGAuthentication
 
-  override def authenticateIfNeeded(usernameAndPassword: () => (String, String)): Future[Authentication] = {
+  override def authenticateIfNeeded()(implicit passwordProvider: PasswordProvider): Future[Authentication] = {
     if (authentication.needsRefresh) {
       logger.info("need to authenticate")
       for {
@@ -39,7 +39,7 @@ private[crawler] class PhotoMediaLinksCrawlerImpl(
             val result = recreate recoverWith {
               case e: FailedToVerifyNewAuthenticationException =>
                 logger.error("failed to verify stored session, defaulting to using username and password", e)
-                autenticateWithUsernameAndPassword(usernameAndPassword)
+                autenticateWithUsernameAndPassword(passwordProvider)
             }
 
             result map { r: Authentication =>
@@ -48,7 +48,7 @@ private[crawler] class PhotoMediaLinksCrawlerImpl(
             }
 
           case None =>
-            autenticateWithUsernameAndPassword(usernameAndPassword)
+            autenticateWithUsernameAndPassword(passwordProvider)
         }
       } yield {
         _authentication = newAuthentication
@@ -59,9 +59,9 @@ private[crawler] class PhotoMediaLinksCrawlerImpl(
     }
   }
 
-  private def autenticateWithUsernameAndPassword(usernameAndPassword: () => (String, String)): Future[Authentication] = {
-    val (username, plainTextPassword) = usernameAndPassword()
+  private def autenticateWithUsernameAndPassword(passwordProvider: PasswordProvider): Future[Authentication] = {
     for {
+      (username, plainTextPassword) <- passwordProvider.usernamePassword()
       newAuthentication <- sGClient.authenticate(username, plainTextPassword)
       _ <- sessionDao.create(newAuthentication.session)
     } yield newAuthentication

@@ -3,7 +3,7 @@ package com.lorandszakacs.sg.harvester.impl
 import akka.http.scaladsl.model.StatusCodes
 import com.lorandszakacs.sg.crawler.{DidNotFindAnyPhotoLinksOnSetPageException, ModelAndPhotoSetCrawler, PhotoMediaLinksCrawler}
 import com.lorandszakacs.sg.harvester.SGHarvester
-import com.lorandszakacs.sg.http.{FailedToGetPageException, PatienceConfig}
+import com.lorandszakacs.sg.http.{FailedToGetPageException, PasswordProvider, PatienceConfig}
 import com.lorandszakacs.sg.model.Model.{HopefulFactory, ModelFactory, SuicideGirlFactory}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.future._
@@ -87,9 +87,9 @@ private[harvester] class SGHarvesterImpl(
     } yield newModels
   }
 
-  override def gatherAllDataForSuicideGirlsAndHopefulsFromScratch(usernameAndPassword: () => (String, String))(implicit pc: PatienceConfig): Future[List[Model]] = {
+  override def gatherAllDataForSuicideGirlsAndHopefulsFromScratch()(implicit pc: PatienceConfig, passwordProvider: PasswordProvider): Future[List[Model]] = {
     for {
-      _ <- photoCrawler.authenticateIfNeeded(usernameAndPassword)
+      _ <- photoCrawler.authenticateIfNeeded()
       sgIndex <- modelRepo.suicideGirlIndex
       hopefulIndex <- modelRepo.hopefulIndex
 
@@ -112,8 +112,8 @@ private[harvester] class SGHarvesterImpl(
     } yield result
   }
 
-  override def authenticateIfNeeded(usernameAndPassword: () => (String, String)): Future[Unit] = {
-    photoCrawler.authenticateIfNeeded(usernameAndPassword).map(_ => ())
+  override def authenticateIfNeeded()(implicit passwordProvider: PasswordProvider): Future[Unit] = {
+    photoCrawler.authenticateIfNeeded().map(_ => ())
   }
 
   private val ModelsKnownToHaveAMissingSet = List[ModelName](
@@ -127,13 +127,13 @@ private[harvester] class SGHarvesterImpl(
     "vice"
   )
 
-  override def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(usernameAndPassword: () => (String, String), includeProblematic: Boolean)(implicit pc: PatienceConfig): Future[List[Model]] = {
+  override def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(includeProblematic: Boolean)(implicit pc: PatienceConfig, passwordProvider: PasswordProvider): Future[List[Model]] = {
     def adjust(names: List[ModelName]): List[ModelName] = {
       if (includeProblematic) names else names diff ModelsKnownToHaveAMissingSet
     }
 
     for {
-      _ <- photoCrawler.authenticateIfNeeded(usernameAndPassword)
+      _ <- photoCrawler.authenticateIfNeeded()
       sgIndex <- modelRepo.suicideGirlIndex
       hopefulIndex <- modelRepo.hopefulIndex
 
@@ -156,10 +156,9 @@ private[harvester] class SGHarvesterImpl(
     } yield result
   }
 
-  override def gatherDataAndUpdateModel(usernameAndPassword: () => (String, String), model: () => ModelName)(implicit pc: PatienceConfig): Future[Model] = {
-    val name = model()
+  override def gatherDataAndUpdateModel(name: ModelName)(implicit pc: PatienceConfig, passwordProvider: PasswordProvider): Future[Model] = {
     for {
-      _ <- photoCrawler.authenticateIfNeeded(usernameAndPassword)
+      _ <- photoCrawler.authenticateIfNeeded()
       model: Model <- harvestSuicideGirlAndUpdateIndex(name) recoverWith {
         case NonFatal(e) => harvestHopefulAndUpdateIndex(name)
       }

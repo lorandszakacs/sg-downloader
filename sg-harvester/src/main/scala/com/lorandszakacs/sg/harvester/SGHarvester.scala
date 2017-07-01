@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.harvester
 
-import com.lorandszakacs.sg.http.PatienceConfig
+import com.lorandszakacs.sg.http.{PasswordProvider, PatienceConfig}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.future._
 
@@ -69,18 +69,18 @@ trait SGHarvester {
     * the gathering of all information was successful.
     *
     */
-  def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(usernameAndPassword: () => (String, String), includeProblematic: Boolean)(implicit pc: PatienceConfig): Future[List[Model]]
+  def gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(includeProblematic: Boolean)(implicit pc: PatienceConfig, passwordProvider: PasswordProvider): Future[List[Model]]
 
   /**
     * Same as [[gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing]], but for a specific model
     */
-  def gatherDataAndUpdateModel(usernameAndPassword: () => (String, String), model: () => ModelName)(implicit pc: PatienceConfig): Future[Model]
+  def gatherDataAndUpdateModel(name: ModelName)(implicit pc: PatienceConfig, passwordProvider: PasswordProvider): Future[Model]
 
   /**
     * same as [[gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing]], but it looks at all known [[Model]] in the
     * system.
     */
-  def gatherAllDataForSuicideGirlsAndHopefulsFromScratch(usernameAndPassword: () => (String, String))(implicit pc: PatienceConfig): Future[List[Model]]
+  def gatherAllDataForSuicideGirlsAndHopefulsFromScratch()(implicit pc: PatienceConfig, passwordProvider: PasswordProvider): Future[List[Model]]
 
-  def authenticateIfNeeded(usernameAndPassword: () => (String, String)): Future[Unit]
+  def authenticateIfNeeded()(implicit passwordProvider: PasswordProvider): Future[Unit]
 }

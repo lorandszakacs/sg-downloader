@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.downloader
 
 import com.lorandszakacs.sg.exporter._
 import com.lorandszakacs.sg.harvester._
-import com.lorandszakacs.sg.http.PatienceConfig
+import com.lorandszakacs.sg.http.{PasswordProvider, PatienceConfig}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
@@ -55,10 +55,10 @@ class SGDownloader(protected val harvester: SGHarvester, protected val exporter:
       *
       *
       */
-    def update(usernameAndPassword: () => (String, String))(daysToExport: Int = 28, includeProblematic: Boolean = true): Future[Unit] = {
+    def update(daysToExport: Int = 28, includeProblematic: Boolean)(implicit passwordProvider: PasswordProvider): Future[Unit] = {
       logger.info(s"starting to do a delta update. Days to export: $daysToExport, includeProblematic: $includeProblematic")
       for {
-        _ <- harvester.authenticateIfNeeded(usernameAndPassword)
+        _ <- harvester.authenticateIfNeeded()
         allNewHarvested <- harvester.gatherNewestPhotosAndUpdateIndex(Int.MaxValue)
         _ = {
           val allNewSG = allNewHarvested.keepSuicideGirls
@@ -69,7 +69,6 @@ class SGDownloader(protected val harvester: SGHarvester, protected val exporter:
         }
 
         allThatNeedUpdating <- harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(
-          usernameAndPassword = usernameAndPassword,
           includeProblematic = includeProblematic
         )
         _ = {

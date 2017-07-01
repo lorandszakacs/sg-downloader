@@ -5,11 +5,11 @@ import com.lorandszakacs.sg.crawler.{FailedToRepeatedlyLoadPageException, ModelA
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.Model.ModelFactory
 import com.lorandszakacs.sg.model._
+import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.html.Html
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.collection.mutable.ListBuffer
-import com.lorandszakacs.util.future._
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 

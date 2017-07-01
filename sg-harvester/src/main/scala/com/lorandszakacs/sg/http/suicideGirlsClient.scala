@@ -31,6 +31,10 @@ trait SGClient {
   def createAuthentication(session: Session): Future[Authentication]
 }
 
+case class PasswordProvider(
+  usernamePassword: () => Future[(String, String)]
+)
+
 trait Authentication {
   def apply(req: HttpRequest): HttpRequest
 

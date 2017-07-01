@@ -4,7 +4,7 @@ import com.lorandszakacs.sg.Favorites
 import com.lorandszakacs.sg.downloader.{SGDownloader, SGDownloaderAssembly}
 import com.lorandszakacs.sg.exporter.{ExporterSettings, ModelExporterAssembly, SGExporter}
 import com.lorandszakacs.sg.harvester.{SGHarvester, SGHarvesterAssembly}
-import com.lorandszakacs.sg.http.PatienceConfig
+import com.lorandszakacs.sg.http.{PasswordProvider, PatienceConfig}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
@@ -60,16 +60,18 @@ class HarvesterRepl(
     rewriteEverything = true
   )
 
-  private val usernamePasswordConsoleInput: () => (String, String) = { () =>
-    val username: String = {
-      print("\nplease insert username: ")
-      StdIn.readLine().trim()
+  private implicit def passwordProviderFromConsole: PasswordProvider = PasswordProvider { () =>
+    Future {
+      val username: String = {
+        print("\nplease insert username: ")
+        StdIn.readLine().trim()
+      }
+      val plainTextPassword: String = {
+        print("\nplease insert password: ")
+        StdIn.readLine().trim()
+      }
+      (username, plainTextPassword)
     }
-    val plainTextPassword: String = {
-      print("\nplease insert password: ")
-      StdIn.readLine().trim()
-    }
-    (username, plainTextPassword)
   }
 
   private val modelNameConsoleInput: () => ModelName = { () =>
@@ -172,8 +174,7 @@ class HarvesterRepl(
             //----------------------------------------
 
             case IndexNew.id => interpret {
-              val input = usernamePasswordConsoleInput
-              val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(input, includeProblematic = true)
+              val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(includeProblematic = true)
               val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = future.await(12 hours).`SG|Hopeful`
               logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
               logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
@@ -182,7 +183,7 @@ class HarvesterRepl(
             //----------------------------------------
 
             case GatherAndIndexAll.id => interpret {
-              val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsFromScratch(usernamePasswordConsoleInput)
+              val future = harvester.gatherAllDataForSuicideGirlsAndHopefulsFromScratch()
               val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = future.await(24 hours).`SG|Hopeful`
               logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
               logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
@@ -191,8 +192,9 @@ class HarvesterRepl(
             //----------------------------------------
             case UpdateSpecific.id =>
               interpret {
+                val name = modelNameConsoleInput()
                 val f = for {
-                  model <- harvester.gatherDataAndUpdateModel(usernamePasswordConsoleInput, modelNameConsoleInput)
+                  model <- harvester.gatherDataAndUpdateModel(name)
                   _ = {
                     logger.info(s"finished harvesting ${model.name}")
                   }
@@ -241,7 +243,7 @@ class HarvesterRepl(
             case unknown =>
               println(s"unknown command: $unknown. Please type help for more information.")
           }
-      }// end try
+      } // end try
 
     }
   }

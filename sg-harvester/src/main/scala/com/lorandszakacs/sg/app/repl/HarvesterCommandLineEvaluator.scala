@@ -4,6 +4,7 @@ import com.lorandszakacs.sg.app.commands.{Command, CommandParser, Commands}
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
 import com.lorandszakacs.sg.exporter.ModelExporterAssembly
 import com.lorandszakacs.sg.harvester.SGHarvesterAssembly
+import com.lorandszakacs.sg.http.PasswordProvider
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
@@ -60,7 +61,8 @@ class HarvesterCommandLineEvaluator(
 
       //=======================================================================
       case Commands.DeltaUpdate(days, usernameAndPassword) =>
-        downloader.delta.update(optionalConsoleInput(usernameAndPassword))(
+        implicit val ppProvider = optionalPasswordParams(usernameAndPassword)
+        downloader.delta.update(
           daysToExport = days.getOrElse(120),
           includeProblematic = true
         )
@@ -77,8 +79,10 @@ class HarvesterCommandLineEvaluator(
     }
   }
 
-  private def optionalConsoleInput(opt: Option[(String, String)]): () => (String, String) = { () =>
-    opt.getOrElse(throw new RuntimeException(".... in the end needed to use password, but none was provided"))
+  private def optionalPasswordParams(opt: Option[(String, String)]): PasswordProvider = PasswordProvider { () =>
+    Future fromTry scala.util.Try {
+      opt.getOrElse(throw new RuntimeException(".... in the end needed to use password, but none was provided"))
+    }
   }
 
 }
