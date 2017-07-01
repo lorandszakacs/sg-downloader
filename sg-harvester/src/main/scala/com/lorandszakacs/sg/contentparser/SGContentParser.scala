@@ -87,7 +87,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
         url = makeFullPathURL(url),
         title = PhotoSetTitle(title),
         date = date.get,
-        photos = Nil
+        photos = List.empty
       )
     }
     photoSets

@@ -16,6 +16,7 @@
   */
 package com.lorandszakacs.sg.contentparser.data
 
+import com.github.nscala_time.time.Imports.DateTime
 import com.lorandszakacs.sg.URLConversions
 import com.lorandszakacs.sg.model.PhotoSet
 import com.lorandszakacs.util.html.Html
@@ -38,53 +39,63 @@ object SGSetPageAllInPast extends URLConversions {
     PhotoSet(
       url = "https://www.suicidegirls.com/girls/dwam/album/1239337/adieu-tristesse/",
       title = "ADIEU TRISTESSE",
-      date = new LocalDate("2016-01-18")
+      //because this set has a simplified date, it is important that in the test set this is always the current year
+      date = new LocalDate(s"${DateTime.now.getYear}-01-18"),
+      photos = List.empty
     ),
     PhotoSet(
       url = "https://www.suicidegirls.com/girls/dwam/album/977051/limportance-d-etre-ernest/",
       title = "LIMPORTANCE D ETRE ERNEST",
-      date = new LocalDate("2013-02-07")
+      date = new LocalDate("2013-02-07"),
+      photos = List.empty
     ),
     PhotoSet(
       url = "https://www.suicidegirls.com/girls/dwam/album/976671/midsummer-crown/",
       title = "MIDSUMMER CROWN",
-      date = new LocalDate("2012-08-01")
+      date = new LocalDate("2012-08-01"),
+      photos = List.empty
     ),
     PhotoSet(
       url = "https://www.suicidegirls.com/girls/dwam/album/976285/woad/",
       title = "WOAD",
-      date = new LocalDate("2012-02-09")
+      date = new LocalDate("2012-02-09"),
+      photos = List.empty
     ),
     PhotoSet(
       url = "https://www.suicidegirls.com/girls/charlie/album/976065/self-timer/",
       title = "SELF TIMER",
-      date = new LocalDate("2011-10-27")
+      date = new LocalDate("2011-10-27"),
+      photos = List.empty
     ),
     PhotoSet(
       url = "https://www.suicidegirls.com/girls/dwam/album/975723/parallelism/",
       title = "PARALLELISM",
-      date = new LocalDate("2011-05-19")
+      date = new LocalDate("2011-05-19"),
+      photos = List.empty
     ),
     PhotoSet(
       url = "https://www.suicidegirls.com/girls/nemesis/album/975237/zilf/",
       title = "ZILF",
-      date = new LocalDate("2010-10-30")
+      date = new LocalDate("2010-10-30"),
+      photos = List.empty
     ),
     PhotoSet(
       url = "https://www.suicidegirls.com/girls/dwam/album/975049/sun-with-a-moustache/",
       title = "SUN WITH A MOUSTACHE",
-      date = new LocalDate("2010-07-01")
+      date = new LocalDate("2010-07-01"),
+      photos = List.empty
     ),
     PhotoSet(
       url = "https://www.suicidegirls.com/girls/dwam/album/994298/boxe-francaise/",
       title = "BOXE FRANCAISE",
-      date = new LocalDate("2010-05-22")
+      date = new LocalDate("2010-05-22"),
+      photos = List.empty
     )
   )
 
-  val numberOfPhotoSets = photoSets.length
+  val numberOfPhotoSets: Int = photoSets.length
 
-  def html = {
+  def html: Html = {
     val resourceName = s"${getClass.getSimpleName.replace("$", "")}.txt"
     val URL = getClass.getResource(resourceName)
     val source = Source.fromURL(URL)
@@ -108,12 +119,12 @@ object SGSetPageSomeInPast extends URLConversions {
     PhotoSet(
       url = "https://www.suicidegirls.com/girls/moon/album/2696495/two-moons/",
       title = "TWO MOONS",
-      date = new LocalDate("2016-05-26")
+      date = new LocalDate(s"${DateTime.now.getYear}-05-26")
     ),
     PhotoSet(
       url = "https://www.suicidegirls.com/girls/moon/album/2480614/moonlight/",
       title = "MOONLIGHT",
-      date = new LocalDate("2016-02-05")
+      date = new LocalDate(s"${DateTime.now.getYear}-02-05")
     ),
     PhotoSet(
       url = "https://www.suicidegirls.com/girls/moon/album/2264858/ramble-on/",
