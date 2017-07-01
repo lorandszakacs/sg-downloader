@@ -1,15 +1,13 @@
 package com.lorandszakacs.sg.app.repl
 
-import com.lorandszakacs.sg.app.commands.Commands.{DeltaUpdate, Help}
 import com.lorandszakacs.sg.app.commands.{Command, CommandParser, Commands}
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
 import com.lorandszakacs.sg.exporter.ModelExporterAssembly
 import com.lorandszakacs.sg.harvester.SGHarvesterAssembly
-import com.typesafe.scalalogging.StrictLogging
 import com.lorandszakacs.util.future._
+import com.typesafe.scalalogging.StrictLogging
 
 import scala.concurrent.duration._
-import scala.io.StdIn
 import scala.language.postfixOps
 import scala.util.control.NonFatal
 
@@ -61,14 +59,14 @@ class HarvesterCommandLineEvaluator(
     command match {
 
       //=======================================================================
-      case DeltaUpdate(days, usernameAndPassword) =>
+      case Commands.DeltaUpdate(days, usernameAndPassword) =>
         downloader.delta.update(optionalConsoleInput(usernameAndPassword))(
           daysToExport = days.getOrElse(120),
           includeProblematic = true
         )
 
       //=======================================================================
-      case Help =>
+      case Commands.Help =>
         Future.successful {
           val string = Commands.descriptions.map { c =>
             c.fullDescription
