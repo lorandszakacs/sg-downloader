@@ -9,7 +9,7 @@ package com.lorandszakacs.util.mongodb
 object MongoQueries extends MongoQueries
 
 trait MongoQueries {
-  val _id: String = "id"
+  val _id: String = "_id"
 
   val $in: String = "$in"
   val $size: String = "$size"
