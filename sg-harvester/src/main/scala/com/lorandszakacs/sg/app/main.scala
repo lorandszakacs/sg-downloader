@@ -42,6 +42,6 @@ object Main extends App with StrictLogging {
 
   assembly.shutdown().await()
   println("... finished gracefully")
-  sys.exit(0)
+  System.exit(0)
 }
 
