@@ -1,11 +1,12 @@
 package com.lorandszakacs.sg.harvester.impl
 
 import akka.http.scaladsl.model.StatusCodes
-import com.lorandszakacs.sg.crawler.{DidNotFindAnyPhotoLinksOnSetPageException, ModelAndPhotoSetCrawler, PhotoMediaLinksCrawler}
+import com.lorandszakacs.sg.indexer.SGIndexer
 import com.lorandszakacs.sg.harvester.SGHarvester
 import com.lorandszakacs.sg.http.{FailedToGetPageException, PasswordProvider, PatienceConfig}
 import com.lorandszakacs.sg.model.Model.{HopefulFactory, ModelFactory, SuicideGirlFactory}
 import com.lorandszakacs.sg.model._
+import com.lorandszakacs.sg.reifier.{DidNotFindAnyPhotoLinksOnSetPageException, SGReifier}
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
@@ -19,8 +20,8 @@ import scala.util.control.NonFatal
   *
   */
 private[harvester] class SGHarvesterImpl(
-  val modelCrawler: ModelAndPhotoSetCrawler,
-  val photoCrawler: PhotoMediaLinksCrawler,
+  val modelCrawler: SGIndexer,
+  val photoCrawler: SGReifier,
   val modelRepo: SGModelRepository
 )(implicit
   val ec: ExecutionContext

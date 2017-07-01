@@ -1,7 +1,7 @@
-package com.lorandszakacs.sg.crawler.impl
+package com.lorandszakacs.sg.reifier.impl
 
-import com.lorandszakacs.sg.crawler.SessionDao
 import com.lorandszakacs.sg.http.Session
+import com.lorandszakacs.sg.reifier.SessionDao
 import com.lorandszakacs.util.future._
 import org.joda.time.{DateTime, DateTimeZone}
 import reactivemongo.api.DB
@@ -14,7 +14,7 @@ import reactivemongo.bson.{BSONDateTime, BSONDocument, BSONDocumentReader, BSOND
   * @since 20 Jul 2016
   *
   */
-private[crawler] final class SessionDaoImpl(val db: DB)(implicit ec: ExecutionContext) extends SessionDao {
+private[reifier] final class SessionDaoImpl(val db: DB)(implicit ec: ExecutionContext) extends SessionDao {
   protected lazy val collection: BSONCollection = db("sg_sessions")
 
   private val sessionId = "sg-session"

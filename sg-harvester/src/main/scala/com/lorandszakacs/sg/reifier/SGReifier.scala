@@ -1,4 +1,4 @@
-package com.lorandszakacs.sg.crawler
+package com.lorandszakacs.sg.reifier
 
 import java.net.URL
 
@@ -12,7 +12,7 @@ import com.lorandszakacs.util.future._
   * @since 05 Jul 2016
   *
   */
-trait PhotoMediaLinksCrawler {
+trait SGReifier {
 
   /**
     * Warning, this is a stateful method!

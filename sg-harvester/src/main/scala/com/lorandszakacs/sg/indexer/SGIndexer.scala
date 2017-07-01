@@ -1,4 +1,4 @@
-package com.lorandszakacs.sg.crawler
+package com.lorandszakacs.sg.indexer
 
 import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model.Model.ModelFactory
@@ -8,12 +8,16 @@ import org.joda.time.DateTime
 import com.lorandszakacs.util.future._
 
 /**
+  *  Represents the first stage of the pipeline of processing
+  *
+  * "indexing" can be done without authentication. It implies gathering all
+  * model names, and their associated photosets.
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 04 Jul 2016
   *
   */
-trait ModelAndPhotoSetCrawler {
+trait SGIndexer {
 
   /**
     * Gathers the names of all available [[SuicideGirl]]s

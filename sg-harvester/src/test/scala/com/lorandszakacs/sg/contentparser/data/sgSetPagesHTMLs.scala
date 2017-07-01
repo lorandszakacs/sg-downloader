@@ -14,7 +14,7 @@
   * limitations under the License.
   *
   */
-package com.lorandszakacs.sg.crawler.impl.data
+package com.lorandszakacs.sg.contentparser.data
 
 import com.lorandszakacs.sg.URLConversions
 import com.lorandszakacs.sg.model.PhotoSet
@@ -85,7 +85,7 @@ object SGSetPageAllInPast extends URLConversions {
   val numberOfPhotoSets = photoSets.length
 
   def html = {
-    val resourceName = s"${getClass.getSimpleName.replace("$", "")}.html"
+    val resourceName = s"${getClass.getSimpleName.replace("$", "")}.txt"
     val URL = getClass.getResource(resourceName)
     val source = Source.fromURL(URL)
     Html(source.getLines().mkString("\n"))
@@ -155,7 +155,7 @@ object SGSetPageSomeInPast extends URLConversions {
   val numberOfPhotoSets = photoSets.length
 
   def html = {
-    val resourceName = s"${getClass.getSimpleName.replace("$", "")}.html"
+    val resourceName = s"${getClass.getSimpleName.replace("$", "")}.txt"
     val URL = getClass.getResource(resourceName)
     val source = Source.fromURL(URL)
     Html(source.getLines().mkString("\n"))

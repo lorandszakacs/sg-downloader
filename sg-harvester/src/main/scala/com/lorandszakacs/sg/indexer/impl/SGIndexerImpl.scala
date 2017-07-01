@@ -1,7 +1,8 @@
-package com.lorandszakacs.sg.crawler.impl
+package com.lorandszakacs.sg.indexer.impl
 
 import akka.http.scaladsl.model.Uri
-import com.lorandszakacs.sg.crawler.{FailedToRepeatedlyLoadPageException, ModelAndPhotoSetCrawler}
+import com.lorandszakacs.sg.contentparser.SGContentParser
+import com.lorandszakacs.sg.indexer.{FailedToRepeatedlyLoadPageException, SGIndexer}
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.Model.ModelFactory
 import com.lorandszakacs.sg.model._
@@ -24,7 +25,7 @@ import scala.util.{Failure, Success, Try}
   * @since 03 Jul 2016
   *
   */
-final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec: ExecutionContext) extends ModelAndPhotoSetCrawler with SGURLBuilder with StrictLogging {
+private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val ec: ExecutionContext) extends SGIndexer with SGURLBuilder with StrictLogging {
 
   private[this] implicit val Authentication: Authentication = DefaultSGAuthentication
 
@@ -86,6 +87,7 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
+
     val pageURL = photoSetsPageURL(modelName)
 
     for {
@@ -115,6 +117,7 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
+
     def isEndInput(models: List[Model]): Boolean = {
       lastProcessedIndex match {
         case None => false
@@ -123,6 +126,7 @@ final class ModelAndPhotoSetCrawlerImpl(val sGClient: SGClient)(implicit val ec:
       }
 
     }
+
     loadPageRepeatedly[Model](
       uri = NewestSets,
       offsetStep = 24,

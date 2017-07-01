@@ -13,7 +13,7 @@
     <logger name="reactivemongo.core.actors.MonitorActor" level="ERROR"/>
     <logger name="akka://mongodb-akka" level="ERROR"/>
 
-    <logger name="com.lorandszakacs.sg.crawler.impl.ModelAndPhotoSetCrawlerImpl" level="INFO"/>
+    <logger name="com.lorandszakacs.sg.indexer.impl.SGIndexerImpl" level="INFO"/>
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>

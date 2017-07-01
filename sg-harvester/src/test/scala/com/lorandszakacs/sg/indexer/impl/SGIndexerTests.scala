@@ -1,15 +1,13 @@
-package com.lorandszakacs.sg.crawler.impl
+package com.lorandszakacs.sg.indexer.impl
 
 import akka.actor.ActorSystem
-import com.lorandszakacs.sg.crawler.{ModelAndPhotoSetCrawler, PageCrawlerAssembly}
 import com.lorandszakacs.sg.http.SGClientAssembly
+import com.lorandszakacs.sg.indexer.{IndexerAssembly, SGIndexer}
 import com.lorandszakacs.sg.model.Model.{HopefulFactory, SuicideGirlFactory}
 import com.lorandszakacs.sg.model._
+import com.lorandszakacs.util.future._
 import org.joda.time.LocalDate
 import org.scalatest.Outcome
-import reactivemongo.api.DefaultDB
-
-import com.lorandszakacs.util.future._
 
 /**
   *
@@ -20,7 +18,7 @@ import com.lorandszakacs.util.future._
   * @since 03 Jul 2016
   *
   */
-class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
+class SGIndexerTests extends IndexerTest {
 
   //===============================================================================================
   //===============================================================================================
@@ -106,6 +104,14 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
     whenReady(crawler.gatherSGNames(48)) { names: List[ModelName] =>
       withClue("... size") {
         names should have size 48
+      }
+
+      print {
+        s"""
+           |sg names:
+           |${names.mkString("\n")}
+           |
+        """.stripMargin
       }
 
       withClue("... content") {
@@ -225,17 +231,15 @@ class ModelAndPhotoSetCrawlerTests extends PageCrawlerTest {
   //===============================================================================================
   //===============================================================================================
 
-  override type FixtureParam = ModelAndPhotoSetCrawler
+  override type FixtureParam = SGIndexer
 
   override protected def withFixture(test: OneArgTest): Outcome = {
-    val assembly = new PageCrawlerAssembly with SGClientAssembly {
-      override implicit def actorSystem: ActorSystem = ModelAndPhotoSetCrawlerTests.this.actorSystem
+    val assembly = new IndexerAssembly with SGClientAssembly {
+      override implicit def actorSystem: ActorSystem = SGIndexerTests.this.actorSystem
 
-      override implicit def executionContext: ExecutionContext = ModelAndPhotoSetCrawlerTests.this.ec
-
-      override def db: DefaultDB = throw new NotImplementedError("... DB not needed in this test")
+      override implicit def executionContext: ExecutionContext = SGIndexerTests.this.ec
     }
 
-    test.apply(assembly.modelAndSetCrawler)
+    test.apply(assembly.sgIndexer)
   }
 }

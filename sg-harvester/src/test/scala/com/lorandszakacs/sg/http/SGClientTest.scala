@@ -1,11 +1,10 @@
 package com.lorandszakacs.sg.http
 
 import akka.actor.ActorSystem
-import com.lorandszakacs.sg.http.impl.SGClientImpl
-import com.lorandszakacs.util.future._
 import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.URLConversions
-import com.lorandszakacs.sg.crawler.impl.SGContentParser
+import com.lorandszakacs.sg.http.impl.SGClientImpl
+import com.lorandszakacs.util.future._
 import org.scalatest.FlatSpec
 
 /**

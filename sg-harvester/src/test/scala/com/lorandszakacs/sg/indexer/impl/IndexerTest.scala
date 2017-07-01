@@ -1,4 +1,4 @@
-package com.lorandszakacs.sg.crawler.impl
+package com.lorandszakacs.sg.indexer.impl
 
 import akka.actor.ActorSystem
 import com.lorandszakacs.sg.http
@@ -14,7 +14,7 @@ import com.lorandszakacs.util.future._
   * @since 03 Jul 2016
   *
   */
-trait PageCrawlerTest extends fixture.FlatSpec with ScalaFutures with Matchers {
+trait IndexerTest extends fixture.FlatSpec with ScalaFutures with Matchers {
   implicit val actorSystem: ActorSystem = ActorSystem(s"${super.getClass.getSimpleName}")
   implicit val ec: ExecutionContext = actorSystem.dispatcher
   implicit val crawlerPatienceConfig: http.PatienceConfig = http.PatienceConfig()

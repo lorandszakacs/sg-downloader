@@ -1,10 +1,11 @@
 package com.lorandszakacs.sg.harvester
 
 import akka.actor.ActorSystem
-import com.lorandszakacs.sg.crawler.PageCrawlerAssembly
 import com.lorandszakacs.sg.harvester.impl.SGHarvesterImpl
 import com.lorandszakacs.sg.http.SGClientAssembly
+import com.lorandszakacs.sg.indexer.IndexerAssembly
 import com.lorandszakacs.sg.model.SGModelAssembly
+import com.lorandszakacs.sg.reifier.ReifierAssembly
 import com.lorandszakacs.util.future._
 
 /**
@@ -13,7 +14,7 @@ import com.lorandszakacs.util.future._
   * @since 04 Jul 2016
   *
   */
-trait SGHarvesterAssembly extends PageCrawlerAssembly with SGClientAssembly {
+trait SGHarvesterAssembly extends ReifierAssembly with IndexerAssembly with SGClientAssembly {
   this: SGModelAssembly =>
 
   implicit def actorSystem: ActorSystem
@@ -23,8 +24,8 @@ trait SGHarvesterAssembly extends PageCrawlerAssembly with SGClientAssembly {
   def sgHarvester: SGHarvester = _sgHarvester
 
   private[harvester] lazy val _sgHarvester = new SGHarvesterImpl(
-    modelAndSetCrawler,
-    photoMediaLinksCrawler,
+    sgIndexer,
+    sgReifier,
     sgModelRepository
   )(executionContext)
 

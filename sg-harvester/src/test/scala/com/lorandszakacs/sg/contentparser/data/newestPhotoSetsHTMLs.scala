@@ -1,4 +1,4 @@
-package com.lorandszakacs.sg.crawler.impl.data
+package com.lorandszakacs.sg.contentparser.data
 
 import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.URLConversions
@@ -15,7 +15,7 @@ import scala.io.Source
   */
 trait NewestPhotosPage {
   def html: Html = {
-    val resourceName = s"${getClass.getSimpleName.replace("$", "")}.html"
+    val resourceName = s"${getClass.getSimpleName.replace("$", "")}.txt"
     val URL = getClass.getResource(resourceName)
     val source = Source.fromURL(URL)
     Html(source.getLines().mkString("\n"))

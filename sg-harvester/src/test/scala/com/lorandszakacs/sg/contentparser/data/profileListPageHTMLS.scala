@@ -14,7 +14,7 @@
   * limitations under the License.
   *
   */
-package com.lorandszakacs.sg.crawler.impl.data
+package com.lorandszakacs.sg.contentparser.data
 
 import com.lorandszakacs.sg.model.ModelName
 import com.lorandszakacs.util.html.Html
@@ -45,7 +45,7 @@ object SGProfileListPage {
   val numberOfSGs = names.length
 
   def html = {
-    val resourceName = s"${getClass.getSimpleName.replace("$", "")}.html"
+    val resourceName = s"${getClass.getSimpleName.replace("$", "")}.txt"
     val URL = getClass.getResource(resourceName)
     val source = Source.fromURL(URL)
     Html(source.getLines().mkString("\n"))
@@ -71,7 +71,7 @@ object HopefulProfileListPage {
   val numberOfSGs = names.length
 
   def html = {
-    val resourceName = s"${getClass.getSimpleName.replace("$", "")}.html"
+    val resourceName = s"${getClass.getSimpleName.replace("$", "")}.txt"
     val URL = getClass.getResource(resourceName)
     val source = Source.fromURL(URL)
     Html(source.getLines().mkString("\n"))

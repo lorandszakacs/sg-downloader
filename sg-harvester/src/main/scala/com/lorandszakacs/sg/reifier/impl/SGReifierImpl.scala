@@ -1,10 +1,11 @@
-package com.lorandszakacs.sg.crawler.impl
+package com.lorandszakacs.sg.reifier.impl
 
 import java.net.URL
 
-import com.lorandszakacs.sg.crawler.{DidNotFindAnyPhotoLinksOnSetPageException, PhotoMediaLinksCrawler, SessionDao}
+import com.lorandszakacs.sg.contentparser.SGContentParser
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.Photo
+import com.lorandszakacs.sg.reifier.{DidNotFindAnyPhotoLinksOnSetPageException, SGReifier, SessionDao}
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
@@ -17,10 +18,10 @@ import scala.util.control.NonFatal
   * @since 05 Jul 2016
   *
   */
-private[crawler] class PhotoMediaLinksCrawlerImpl(
+private[reifier] class SGReifierImpl(
   private val sGClient: SGClient,
   private val sessionDao: SessionDao
-)(implicit val ec: ExecutionContext) extends PhotoMediaLinksCrawler with SGURLBuilder with StrictLogging {
+)(implicit val ec: ExecutionContext) extends SGReifier with SGURLBuilder with StrictLogging {
 
   private[this] implicit var _authentication: Authentication = DefaultSGAuthentication
 

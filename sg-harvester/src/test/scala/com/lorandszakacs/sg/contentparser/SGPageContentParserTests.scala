@@ -14,9 +14,9 @@
   * limitations under the License.
   *
   */
-package com.lorandszakacs.sg.crawler.impl
+package com.lorandszakacs.sg.contentparser
 
-import com.lorandszakacs.sg.crawler.impl.data._
+import com.lorandszakacs.sg.contentparser.data._
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.{Failure, Success}

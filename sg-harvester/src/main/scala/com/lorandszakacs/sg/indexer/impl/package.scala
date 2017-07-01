@@ -1,4 +1,4 @@
-package com.lorandszakacs.sg.crawler
+package com.lorandszakacs.sg.indexer
 
 import com.lorandszakacs.sg.URLConversions
 
