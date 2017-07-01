@@ -84,10 +84,6 @@ class HarvesterRepl(
   private lazy val consoleEvaluator: HarvesterCommandLineEvaluator =
     new HarvesterCommandLineEvaluator(assembly)
 
-  private def usernamePasswordConstantInput(username: String, plainTextPassword: String): () => (String, String) = { () =>
-    (username, plainTextPassword)
-  }
-
   private class ExitContainer(var should: Boolean = false)
 
   def start(): Unit = {

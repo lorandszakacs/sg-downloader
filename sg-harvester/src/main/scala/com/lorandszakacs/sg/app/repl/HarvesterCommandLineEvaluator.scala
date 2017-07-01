@@ -60,20 +60,22 @@ class HarvesterCommandLineEvaluator(
   private def evaluateCommand(command: Command): Future[Unit] = {
     command match {
 
+      //=======================================================================
       case DeltaUpdate(days, usernameAndPassword) =>
         downloader.delta.update(optionalConsoleInput(usernameAndPassword))(
           daysToExport = days.getOrElse(120),
           includeProblematic = true
         )
 
-
+      //=======================================================================
       case Help =>
         Future.successful {
-          val string = CommandsDepr.all.map { c =>
-            s"${c.id}: ${c.description}"
-          } mkString "\n"
-          print(s"$string\n")
+          val string = Commands.descriptions.map { c =>
+            c.fullDescription
+          } mkString "\n----------------\n"
+          print(s"----------------\n$string\n")
         }
+      //=======================================================================
     }
   }
 

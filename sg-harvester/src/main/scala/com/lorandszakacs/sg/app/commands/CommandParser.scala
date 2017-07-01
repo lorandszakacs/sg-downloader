@@ -81,7 +81,7 @@ object CommandParser extends JavaTokenParsers {
     } yield maybe
 
     for {
-      _ <- literal(Commands.DeltaUpdateId)
+      _ <- literal(Commands.DeltaUpdate.id)
       maybe <- maybeDaysMaybeUserAndPass.?
     } yield Commands.DeltaUpdate(
       days = maybe.flatMap(_._1),
