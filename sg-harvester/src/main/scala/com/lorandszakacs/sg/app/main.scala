@@ -16,20 +16,9 @@
   */
 package com.lorandszakacs.sg.app
 
-import java.util.concurrent.Executors
-
-import akka.actor.{ActorSystem, PoisonPill}
-import com.lorandszakacs.sg.app.repl.HarvesterRepl
-import com.lorandszakacs.sg.exporter.ModelDisplayerAssembly
-import com.lorandszakacs.sg.harvester.SGHarvesterAssembly
-import com.lorandszakacs.sg.model.SGModelAssembly
+import com.lorandszakacs.sg.app.repl.{HarvesterCommandLineEvaluator, HarvesterRepl}
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
-import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
-
-import scala.concurrent.duration._
-import scala.language.postfixOps
-import scala.util.Try
 
 /**
   * @author Lorand Szakacs, lsz@lorandszakacs.com
@@ -37,60 +26,22 @@ import scala.util.Try
   *
   */
 object Main extends App with StrictLogging {
-
+  val assembly = new Assembly
   val repl = new HarvesterRepl(assembly)
-  repl.start()
+  val evaluate = new HarvesterCommandLineEvaluator(assembly)
+
+  logger.info(s"Received args: ${args.mkString(",")}")
+
+  if (args.nonEmpty) {
+    //we evaluate and exit if we receive any command line args
+    evaluate.evaluate(args)
+  } else {
+    //we go into repl
+    repl.start()
+  }
+
   assembly.shutdown().await()
   println("... finished gracefully")
-
+  sys.exit(0)
 }
 
-object assembly extends SGHarvesterAssembly with ModelDisplayerAssembly with SGModelAssembly with StrictLogging {
-  override implicit lazy val actorSystem: ActorSystem = ActorSystem("sg-app")
-
-  override implicit lazy val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
-
-  override lazy val db: DefaultDB = _dataBase.get
-
-  private lazy val _mongoDriver: MongoDriver = new MongoDriver()
-  private lazy val _dataBase: Try[DefaultDB] = {
-    val future = {
-      val _mongoConnection: MongoConnection = _mongoDriver.connection(MongoConnection.parseURI("""mongodb://localhost""").get)
-      _mongoConnection.database("sgs_repo")
-    } recover {
-      case e: Throwable =>
-        throw new IllegalStateException(s"Failed to initialize Mongo database. Because: ${e.getMessage}", e)
-    }
-    Try(future.await())
-  }
-
-  def shutdown(): Future[Unit] = {
-    logger.info(s"attempting to shut down: ${_mongoDriver.numConnections} connections")
-
-    for {
-      _ <- Future.traverse(_mongoDriver.connections) { connection =>
-        logger.info(s"asking: _mongoDriver.connection to close. ${connection.name}")
-        for {
-          _ <- connection.askClose()(2 seconds) map { _ =>
-            logger.info(s"terminated -- connection: ${connection.name}")
-          }
-          //propably doesn't do anything
-          _ = connection.actorSystem.actorSelection("*") ! PoisonPill
-        } yield ()
-
-      }
-
-      _ <- _mongoDriver.system.terminate() map { _ =>
-        logger.info("terminated -- _mongoDriver.system.terminate()")
-      }
-
-      _ <- actorSystem.terminate() map { _ =>
-        logger.info("terminated -- actorSystem.terminate()")
-      }
-
-    } yield {
-      logger.info("terminated -- completed assembly.shutdown()")
-    }
-  }
-
-}

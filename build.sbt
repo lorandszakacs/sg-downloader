@@ -30,27 +30,28 @@ lazy val `sg-harvester` = Project(
   base = file("./sg-harvester")
 ).settings(
   common.buildSettings(projectInfo, common.defaults.lorandszakacsOrg, Option(publishInfo)) ++
-  Seq(
-    mainClass in (Compile, run) in ThisBuild := Some("com.lorandszakacs.sg.app.Main"),
-    libraryDependencies ++= Seq(
-      common.dev.akka.actor,
-      common.dev.akka.http,
+    Seq(
+      mainClass in(Compile, run) in ThisBuild := Some("com.lorandszakacs.sg.app.Main"),
+      fork in run := true,
+      libraryDependencies ++= Seq(
+        common.dev.akka.actor,
+        common.dev.akka.http,
 
-      common.dev.nScalaJodaTime,
-      common.dev.scalaParserCombinators,
+        common.dev.nScalaJodaTime,
+        common.dev.scalaParserCombinators,
 
-      common.dev.logbackClassic,
-      common.dev.scalaLogging,
+        common.dev.logbackClassic,
+        common.dev.scalaLogging,
 
-      "com.lorandszakacs" %% "util-html" % "0.1.2-SNAPSHOT" withSources(),
+        "com.lorandszakacs" %% "util-html" % "0.1.2-SNAPSHOT" withSources(),
 
-      common.test.scalaTest
+        common.test.scalaTest
+      )
     )
-  )
 ).aggregate(
   `sg-model-repo`
 ).dependsOn(
-`sg-model-repo`
+  `sg-model-repo`
 )
 
 lazy val `sg-model-repo` = Project(
@@ -58,16 +59,16 @@ lazy val `sg-model-repo` = Project(
   base = file("./sg-model-repo")
 ).settings(
   common.buildSettings(projectInfo, common.defaults.lorandszakacsOrg, Option(publishInfo)) ++
-  Seq(
-    libraryDependencies ++= Seq(
-      common.dev.nScalaJodaTime,
-      common.dev.reactiveMongo,
+    Seq(
+      libraryDependencies ++= Seq(
+        common.dev.nScalaJodaTime,
+        common.dev.reactiveMongo,
 
-      common.dev.logbackClassic,
-      common.dev.scalaLogging,
-      common.test.scalaTest
+        common.dev.logbackClassic,
+        common.dev.scalaLogging,
+        common.test.scalaTest
+      )
     )
-  )
 ).aggregate(
   `util`
 ).dependsOn(
