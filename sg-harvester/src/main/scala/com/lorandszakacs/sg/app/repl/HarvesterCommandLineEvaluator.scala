@@ -3,7 +3,6 @@ package com.lorandszakacs.sg.app.repl
 import com.lorandszakacs.sg.app.commands.{Command, CommandParser, Commands}
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
 import com.lorandszakacs.sg.exporter.ModelExporterAssembly
-import com.lorandszakacs.sg.harvester.SGHarvesterAssembly
 import com.lorandszakacs.sg.http.PasswordProvider
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
@@ -19,8 +18,7 @@ import scala.util.control.NonFatal
   *
   */
 class HarvesterCommandLineEvaluator(
-  assembly: SGHarvesterAssembly with
-    ModelExporterAssembly with
+  assembly: ModelExporterAssembly with
     SGDownloaderAssembly
 ) extends StrictLogging {
 
@@ -62,10 +60,11 @@ class HarvesterCommandLineEvaluator(
       //=======================================================================
       case Commands.DeltaHarvest(days, usernameAndPassword) =>
         implicit val ppProvider = optionalPasswordParams(usernameAndPassword)
-        downloader.delta.update(
-          daysToExport = days.getOrElse(120),
-          includeProblematic = true
-        )
+        //        downloader.delta.update(
+        //          daysToExport = days.getOrElse(120),
+        //          includeProblematic = true
+        //        )
+        ???
 
       //=======================================================================
       case Commands.Help =>

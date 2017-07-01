@@ -19,6 +19,7 @@ import scala.util.control.NonFatal
   * @since 04 Jul 2016
   *
   */
+@scala.deprecated("replaced by non-redundant downloader", "now")
 private[harvester] class SGHarvesterImpl(
   val modelCrawler: SGIndexer,
   val photoCrawler: SGReifier,
@@ -36,7 +37,7 @@ private[harvester] class SGHarvesterImpl(
 
   override def reindexHopefulsNames(maxNrOfHopefuls: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
     for {
-      names <- modelCrawler.gatherHopefulNames(maxNrOfHopefuls)
+      names <- modelCrawler.gatherHFNames(maxNrOfHopefuls)
       _ <- modelRepo.reindexHopefuls(names)
     } yield names
   }

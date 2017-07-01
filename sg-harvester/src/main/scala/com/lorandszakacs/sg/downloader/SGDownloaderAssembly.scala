@@ -3,6 +3,9 @@ package com.lorandszakacs.sg.downloader
 import akka.actor.ActorSystem
 import com.lorandszakacs.sg.exporter.ModelExporterAssembly
 import com.lorandszakacs.sg.harvester.SGHarvesterAssembly
+import com.lorandszakacs.sg.indexer.IndexerAssembly
+import com.lorandszakacs.sg.model.SGModelAssembly
+import com.lorandszakacs.sg.reifier.ReifierAssembly
 import com.lorandszakacs.util.future._
 
 /**
@@ -12,7 +15,7 @@ import com.lorandszakacs.util.future._
   *
   */
 trait SGDownloaderAssembly {
-  this: SGHarvesterAssembly with ModelExporterAssembly =>
+  this: SGModelAssembly with IndexerAssembly with ReifierAssembly with ModelExporterAssembly =>
 
   implicit def actorSystem: ActorSystem
 
@@ -21,7 +24,9 @@ trait SGDownloaderAssembly {
   def sgDownloader: SGDownloader = _sgDownloader
 
   private[downloader] lazy val _sgDownloader = new SGDownloader(
-    harvester = sgHarvester,
+    repo = sgModelRepository,
+    indexer = sgIndexer,
+    reifier = sgReifier,
     exporter = sgExporter
   )(executionContext)
 

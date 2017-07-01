@@ -26,6 +26,7 @@ private[model] class SGModelRepositoryImpl(
   }
 
   override def reindexSGs(names: List[ModelName]): Future[Unit] = {
+    logger.info(s"reindexing all SGs, with ${names.length} new ones")
     indexDao.rewriteSGIndex(names)
   }
 

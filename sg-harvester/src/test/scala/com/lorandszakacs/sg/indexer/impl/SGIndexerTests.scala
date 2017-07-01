@@ -127,7 +127,7 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
 
   it should "... gather the first 48 Hopeful names by followers" in { crawler =>
-    whenReady(crawler.gatherHopefulNames(48)) { names: List[ModelName] =>
+    whenReady(crawler.gatherHFNames(48)) { names: List[ModelName] =>
 
       print {
         s"""

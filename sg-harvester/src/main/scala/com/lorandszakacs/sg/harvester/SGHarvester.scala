@@ -10,6 +10,7 @@ import com.lorandszakacs.util.future._
   * @since 04 Jul 2016
   *
   */
+@scala.deprecated("replaced by non-redundant downloader", "now")
 trait SGHarvester {
 
   /**

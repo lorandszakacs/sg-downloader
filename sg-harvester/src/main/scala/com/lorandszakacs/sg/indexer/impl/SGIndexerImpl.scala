@@ -55,7 +55,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
   /**
     * Gathers the names of all available [[Hopeful]]s
     */
-  override def gatherHopefulNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
+  override def gatherHFNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -187,7 +187,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
         if (isEndPage(newPage) || offset > cutOffLimit) {
           stop = true
         } else {
-          logger.debug(s"load repeatedly: currentOffset=$offset; step=$offsetStep")
+          logger.info(s"load repeatedly: currentOffset=$offset; step=$offsetStep")
           parsingFunction(newPage) match {
             case Success(s) =>
               result ++= s

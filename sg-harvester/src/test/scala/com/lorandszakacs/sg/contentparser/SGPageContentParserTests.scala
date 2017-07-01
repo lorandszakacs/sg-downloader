@@ -107,6 +107,11 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
         result.head.photoSets should equal(expected.models.head.photoSets)
 
         result.head should equal(expected.models.head)
+
+        println{
+          result.take(2)
+        }
+
         result.take(4).diff(expected.models) should equal(Nil)
 
       case Failure(e) => fail("did not return any Models", e)

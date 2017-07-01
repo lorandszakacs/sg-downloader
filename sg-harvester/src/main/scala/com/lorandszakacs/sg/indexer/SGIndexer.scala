@@ -27,7 +27,7 @@ trait SGIndexer {
   /**
     * Gathers the names of all available [[Hopeful]]s
     */
-  def gatherHopefulNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]]
+  def gatherHFNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]]
 
   /**
     *
