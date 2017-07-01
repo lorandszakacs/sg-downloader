@@ -3,6 +3,7 @@ package com.lorandszakacs.util.mongodb
 import Imports._
 import com.lorandszakacs.util.future._
 import reactivemongo.api.commands.WriteResult
+import reactivemongo.bson.BSONValue
 
 /**
   *
@@ -12,13 +13,19 @@ import reactivemongo.api.commands.WriteResult
   */
 
 object MongoCollection {
-  def apply[T](collName: String, database: Database)(implicit handler: BSONDocumentHandler[T], ec: ExecutionContext) = new MongoCollection[T] {
-    override protected implicit val executionContext: ExecutionContext = ec
-    override protected implicit val objectHandler: BSONDocumentHandler[T] = handler
+  def apply[Entity, IdType, BSONTargetType <: BSONValue](collName: String, database: Database)
+    (implicit entityHandlerImpl: BSONDocumentHandler[Entity],
+      idHandlerImpl: BSONHandler[BSONTargetType, IdType],
+      ec: ExecutionContext): MongoCollection[Entity, IdType, BSONTargetType] = {
+    new MongoCollection[Entity, IdType, BSONTargetType] {
+      override protected implicit val executionContext: ExecutionContext = ec
+      override protected implicit val objectHandler: BSONDocumentHandler[Entity] = entityHandlerImpl
+      override protected implicit val idHandler: BSONHandler[BSONTargetType, IdType] = idHandlerImpl
 
-    override val collectionName: String = collName
+      override val collectionName: String = collName
 
-    override protected val db: Database = database
+      override protected val db: Database = database
+    }
   }
 
   private def interpretWriteResult(wr: WriteResult): Future[Unit] = {
@@ -26,10 +33,12 @@ object MongoCollection {
   }
 }
 
-trait MongoCollection[T] {
+trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
   protected implicit def executionContext: ExecutionContext
 
-  protected implicit def objectHandler: BSONDocumentHandler[T]
+  protected implicit def objectHandler: BSONDocumentHandler[Entity]
+
+  protected implicit def idHandler: BSONHandler[BSONTargetType, IdType]
 
   protected def db: Database
 
@@ -37,31 +46,46 @@ trait MongoCollection[T] {
 
   lazy val collection: BSONCollection = db(collectionName)
 
-  def findOne(query: BSONDocument): Future[Option[T]] = {
-    collection.find(query).one[T]
+  def idQuery(id: IdType): BSONDocument = BSONDocument(_id -> id)
+
+  def findOne(query: BSONDocument): Future[Option[Entity]] = {
+    collection.find(query).one[Entity]
   }
 
-  def findMany(query: BSONDocument, maxDocs: Int = Int.MaxValue): Future[List[T]] = {
-    val cursor: Cursor[T] = collection.find(query).cursor[T]()
-    cursor.collect[List](maxDocs = Int.MaxValue, err = Cursor.FailOnError[List[T]]())
+  def findMany(query: BSONDocument, maxDocs: Int = Int.MaxValue): Future[List[Entity]] = {
+    val cursor: Cursor[Entity] = collection.find(query).cursor[Entity]()
+    cursor.collect[List](maxDocs = Int.MaxValue, err = Cursor.FailOnError[List[Entity]]())
   }
 
-  def findAll: Future[List[T]] = {
+  def findAll: Future[List[Entity]] = {
     this.findMany(BSONDocument.empty)
   }
 
-  def findById[TypeOfID, TargetType <: BSONValue](id: TypeOfID)(implicit handler: BSONWriter[TypeOfID, TargetType]): Future[Option[T]] = {
-    this.findOne(BSONDocument(_id -> id))
+  def findById(id: IdType): Future[Option[Entity]] = {
+    this.findOne(idQuery(id))
   }
 
-  def create(toCreate: T): Future[Unit] = {
+  def findManyById(ids: Seq[IdType]): Future[List[Entity]] = {
+    if (ids.isEmpty) {
+      Future.successful(Nil)
+    } else {
+      val q = BSONDocument(
+        _id -> BSONDocument(
+          `$in` -> ids
+        )
+      )
+      this.findMany(q)
+    }
+  }
+
+  def create(toCreate: Entity): Future[Unit] = {
     for {
       wr <- collection.insert(toCreate)
       _ <- MongoCollection.interpretWriteResult(wr)
     } yield ()
   }
 
-  def createOrUpdate(query: BSONDocument, toCreate: T): Future[Unit] = {
+  def createOrUpdate(query: BSONDocument, toCreate: Entity): Future[Unit] = {
     for {
       wr <- collection.update(query, toCreate, upsert = true)
       _ <- MongoCollection.interpretWriteResult(wr)
@@ -73,6 +97,7 @@ trait MongoCollection[T] {
       wr <- collection.remove(q, firstMatchOnly = firstMatchOnly)
       _ <- MongoCollection.interpretWriteResult(wr)
     } yield ()
+
   }
 
 }

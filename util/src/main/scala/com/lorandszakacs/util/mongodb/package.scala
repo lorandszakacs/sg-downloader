@@ -7,5 +7,5 @@ package com.lorandszakacs.util
   *
   */
 package object mongodb {
-  type Database = reactivemongo.api.DB
+
 }
