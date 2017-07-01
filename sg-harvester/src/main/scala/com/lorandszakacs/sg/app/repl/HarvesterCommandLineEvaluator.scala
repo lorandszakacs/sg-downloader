@@ -60,7 +60,7 @@ class HarvesterCommandLineEvaluator(
     command match {
 
       //=======================================================================
-      case Commands.DeltaUpdate(days, usernameAndPassword) =>
+      case Commands.DeltaHarvest(days, usernameAndPassword) =>
         implicit val ppProvider = optionalPasswordParams(usernameAndPassword)
         downloader.delta.update(
           daysToExport = days.getOrElse(120),

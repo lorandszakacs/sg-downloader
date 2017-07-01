@@ -61,7 +61,7 @@ object CommandParser extends JavaTokenParsers {
   //================================= DELTA ===================================
   //===========================================================================
 
-  private val deltaUpdateCommandParser: Parser[Commands.DeltaUpdate] = {
+  private val deltaHarvestCommandParser: Parser[Commands.DeltaHarvest] = {
     val days: Parser[Int] = for {
       _ <- literal("days=")
       v <- wholeNumber
@@ -81,9 +81,9 @@ object CommandParser extends JavaTokenParsers {
     } yield maybe
 
     for {
-      _ <- literal(Commands.DeltaUpdate.id)
+      _ <- literal(Commands.DeltaHarvest.id)
       maybe <- maybeDaysMaybeUserAndPass.?
-    } yield Commands.DeltaUpdate(
+    } yield Commands.DeltaHarvest(
       days = maybe.flatMap(_._1),
       usernameAndPassword = maybe.flatMap(_._2)
     )
@@ -102,7 +102,7 @@ object CommandParser extends JavaTokenParsers {
   //===========================================================================
 
   private val rootCommandParser: Parser[Command] =
-    deltaUpdateCommandParser |
+    deltaHarvestCommandParser |
       helpCommandParser
 
 }

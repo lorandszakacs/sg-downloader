@@ -26,11 +26,11 @@ sealed trait CommandDescription {
 
 object Commands {
 
-  object DeltaUpdate extends CommandDescription {
+  object DeltaHarvest extends CommandDescription {
     override val id: String = "delta"
 
     override val humanlyReadableDescription: String =
-      s"""|Fetches the newest sets (since last time this was run) from the website, updates the state of the database
+      s"""|Harvests the newest sets (since last time this was run) from the website, updates the state of the database
           |properly, and exports the delta as html.
         """.stripMargin.trim()
 
@@ -39,7 +39,7 @@ object Commands {
 
   }
 
-  case class DeltaUpdate(
+  case class DeltaHarvest(
     days: Option[Int],
     usernameAndPassword: Option[(String, String)]
   ) extends Command {
@@ -53,14 +53,20 @@ object Commands {
 
     override val humanlyReadableDescription: String =
       """
-        |Displays all available commands
+        |Displays all available commands. Useful domain terminology:
+        |
+        |index - gather only meta-data (model names, and photosets), and saves it --- does not require authentication
+        |reify - based on the previously indexed data (model names, photosets), it gathers the remaining photo links
+        |harvest - both indexes, and reifies in one single command.
+        |export - use integral harvested data to export (currently only HTML)
+        |=====
       """.stripMargin.trim()
 
     override val manDescription: String = "help"
   }
 
   lazy val descriptions: List[CommandDescription] = List(
-    DeltaUpdate, Help
+    DeltaHarvest, Help
   ).sortBy(_.id)
 }
 

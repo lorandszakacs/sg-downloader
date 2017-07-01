@@ -19,25 +19,25 @@ class AppCommandsParserTest extends FlatSpec {
   it should "... parse with no arguments" in {
     val input = "delta"
     val result = parse(input)
-    assert(result == Commands.DeltaUpdate(days = None, usernameAndPassword = None))
+    assert(result == Commands.DeltaHarvest(days = None, usernameAndPassword = None))
   }
 
   it should "... parse with only days" in {
     val input = "delta days=42"
     val result = parse(input)
-    assert(result == Commands.DeltaUpdate(days = Option(42), usernameAndPassword = None))
+    assert(result == Commands.DeltaHarvest(days = Option(42), usernameAndPassword = None))
   }
 
   it should "... parse with only username and password" in {
     val input ="""delta username=someUser password=!@#$sf123AC%^&*()\"/|"""
     val result = parse(input)
-    assert(result == Commands.DeltaUpdate(days = None, usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|"""))))
+    assert(result == Commands.DeltaHarvest(days = None, usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|"""))))
   }
 
   it should "... parse with all parameters -- days first" in {
     val input ="""delta days=42 username=someUser password=!@#$sf123AC%^&*()\"/|"""
     val result = parse(input)
-    assert(result == Commands.DeltaUpdate(days = Option(42), usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|"""))))
+    assert(result == Commands.DeltaHarvest(days = Option(42), usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|"""))))
   }
 
   //===========================================================================
