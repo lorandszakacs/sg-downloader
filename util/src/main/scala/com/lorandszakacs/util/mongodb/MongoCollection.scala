@@ -2,6 +2,7 @@ package com.lorandszakacs.util.mongodb
 
 import Imports._
 import com.lorandszakacs.util.future._
+import reactivemongo.api.commands.WriteResult
 
 /**
   *
@@ -19,9 +20,11 @@ object MongoCollection {
 
     override protected val db: Database = database
   }
-}
 
-import MongoQueries._
+  private def interpretWriteResult(wr: WriteResult): Future[Unit] = {
+    when(!wr.ok) failWith MongoDBException(code = wr.code.map(_.toString), msg = wr.writeErrors.headOption.map(_.toString))
+  }
+}
 
 trait MongoCollection[T] {
   protected implicit def executionContext: ExecutionContext
@@ -52,15 +55,24 @@ trait MongoCollection[T] {
   }
 
   def create(toCreate: T): Future[Unit] = {
-    collection.insert(toCreate) map `Any => Unit`
+    for {
+      wr <- collection.insert(toCreate)
+      _ <- MongoCollection.interpretWriteResult(wr)
+    } yield ()
   }
 
   def createOrUpdate(query: BSONDocument, toCreate: T): Future[Unit] = {
-    collection.update(query, toCreate, upsert = true) map `Any => Unit`
+    for {
+      wr <- collection.update(query, toCreate, upsert = true)
+      _ <- MongoCollection.interpretWriteResult(wr)
+    } yield ()
   }
 
   def remove(q: BSONDocument, firstMatchOnly: Boolean = false): Future[Unit] = {
-    collection.remove(q, firstMatchOnly = firstMatchOnly) map `Any => Unit`
+    for {
+      wr <- collection.remove(q, firstMatchOnly = firstMatchOnly)
+      _ <- MongoCollection.interpretWriteResult(wr)
+    } yield ()
   }
 
 }
