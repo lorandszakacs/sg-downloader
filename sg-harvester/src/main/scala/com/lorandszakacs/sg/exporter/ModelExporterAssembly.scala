@@ -13,12 +13,12 @@ import com.lorandszakacs.util.future._
   * @since 17 Jul 2016
   *
   */
-trait ModelDisplayerAssembly extends HTMLIndexWriterAssembly with HTMLGeneratorAssembly {
+trait ModelExporterAssembly extends HTMLIndexWriterAssembly with HTMLGeneratorAssembly {
   this: SGModelAssembly =>
 
   implicit def executionContext: ExecutionContext
 
-  def modelDisplayer: SGExporter = _displayer
+  def sgExporter: SGExporter = _displayer
 
   private lazy val _displayer = new SGExporterImpl(
     repo = sgModelRepository,
