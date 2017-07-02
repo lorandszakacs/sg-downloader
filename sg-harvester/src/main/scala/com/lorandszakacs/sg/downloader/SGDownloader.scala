@@ -23,10 +23,10 @@ import scala.util.control.NonFatal
   *
   */
 final class SGDownloader private[downloader](
-  protected val repo: SGModelRepository,
-  protected val indexer: SGIndexer,
-  protected val reifier: SGReifier,
-  protected val exporter: SGExporter
+  private[this] val repo: SGModelRepository,
+  private[this] val indexer: SGIndexer,
+  private[this] val reifier: SGReifier,
+  private[this] val exporter: SGExporter
 )(implicit val executionContext: ExecutionContext) extends StrictLogging {
 
   /**
@@ -121,7 +121,6 @@ final class SGDownloader private[downloader](
       * Everything is exported to the paths mentioned in [[deltaExporterSettings]]
       *
       * TODO: settings outght to be read from a config file
-      *
       *
       */
     def delta(daysToExport: Int = 28, includeProblematic: Boolean)(implicit passwordProvider: PasswordProvider): Future[Unit] = {

@@ -1,7 +1,6 @@
 package com.lorandszakacs.sg
 
 import scala.language.implicitConversions
-import shapeless._
 
 /**
   *
@@ -10,23 +9,6 @@ import shapeless._
   *
   */
 package object model {
-
-  /**
-    *
-    * @param all
-    * is a union of [[sgs]] and [[hfs]]
-    */
-  case class Models(
-    sgs: List[SuicideGirl],
-    hfs: List[Hopeful],
-    all: List[Model]
-  ) {
-    def newestModel: Option[Model] = all.headOption
-
-    def ml(name: ModelName): Option[Model] = all.find(_.name == name)
-    def sg(name: ModelName): Option[SuicideGirl] = sgs.find(_.name == name)
-    def hf(name: ModelName): Option[Hopeful] = hfs.find(_.name == name)
-  }
 
   implicit class StringBuffedWithModelName(str: String) {
     def toModelName: ModelName = ModelName(str)

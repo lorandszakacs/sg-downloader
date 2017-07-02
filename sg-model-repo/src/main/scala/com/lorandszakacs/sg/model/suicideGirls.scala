@@ -39,6 +39,23 @@ object Model {
 
 }
 
+/**
+  *
+  * @param all
+  * is a union of [[sgs]] and [[hfs]]
+  */
+case class Models(
+  sgs: List[SuicideGirl],
+  hfs: List[Hopeful],
+  all: List[Model]
+) {
+  def newestModel: Option[Model] = all.headOption
+
+  def ml(name: ModelName): Option[Model] = all.find(_.name == name)
+  def sg(name: ModelName): Option[SuicideGirl] = sgs.find(_.name == name)
+  def hf(name: ModelName): Option[Hopeful] = hfs.find(_.name == name)
+}
+
 sealed trait Model {
   def photoSetURL: URL
 
