@@ -1,6 +1,7 @@
 package com.lorandszakacs.sg
 
 import scala.language.implicitConversions
+import shapeless._
 
 /**
   *
@@ -9,6 +10,23 @@ import scala.language.implicitConversions
   *
   */
 package object model {
+
+  /**
+    *
+    * @param all
+    * is a union of [[sgs]] and [[hfs]]
+    */
+  case class Models(
+    sgs: List[SuicideGirl],
+    hfs: List[Hopeful],
+    all: List[Model]
+  ) {
+    def newestModel: Option[Model] = all.headOption
+
+    def ml(name: ModelName): Option[Model] = all.find(_.name == name)
+    def sg(name: ModelName): Option[SuicideGirl] = sgs.find(_.name == name)
+    def hf(name: ModelName): Option[Hopeful] = hfs.find(_.name == name)
+  }
 
   implicit class StringBuffedWithModelName(str: String) {
     def toModelName: ModelName = ModelName(str)
@@ -21,9 +39,29 @@ package object model {
 
     def keepHopefuls: List[Hopeful] = models.map(_.asHopeful) filter (_.isDefined) map (_.get)
 
+    @scala.deprecated("use group implementation instead", "now")
     def `SG|Hopeful`: (List[SuicideGirl], List[Hopeful]) = {
       val (sgs, hf) = models partition (_.isSuicideGirl)
       (sgs map (_.asSuicideGirls) map (_.get), hf map (_.asHopeful) map (_.get))
+    }
+
+    def group: Models = {
+      val (sgs, hf) = models partition (_.isSuicideGirl)
+      Models(
+        sgs = sgs map (_.asSuicideGirls) map (_.get),
+        hfs = hf map (_.asHopeful) map (_.get),
+        all = models
+      )
+    }
+  }
+
+  implicit class BuffedTuple(models: (List[SuicideGirl], List[Hopeful])) {
+    def group: Models = {
+      Models(
+        sgs = models._1,
+        hfs = models._2,
+        all = models._1 ++ models._2
+      )
     }
   }
 

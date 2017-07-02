@@ -8,6 +8,7 @@ import com.lorandszakacs.sg.model._
 import com.lorandszakacs.sg.reifier.SGReifier
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
+import shapeless._
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -77,21 +78,40 @@ final class SGDownloader private[downloader](
       } yield ()
     }
 
-//    private[SGDownloader]
-//
-//    def model(name: ModelName)(implicit patienceConfig: PatienceConfig = patienceConfig): Future[Unit] = {
-//      logger.info(s".... starting index.model(${name.name})")
-//      for {
-//        mode: Model <- indexer.gatherPhotoSetInformationForModel(Model.SuicideGirlFactory)(name) recoverWith {
-//          case NonFatal(e) =>
-//            indexer.gatherPhotoSetInformationForModel(Model.HopefulFactory)(name)
-//        }
-//      } yield ()
-//    }
-
+    def deltaPure(lastProcessedOpt: Option[LastProcessedMarker])(implicit patienceConfig: PatienceConfig): Future[Models] = {
+      logger.info(s"index.delta --> starting from ${lastProcessedOpt.map(_.lastPhotoSetID).getOrElse("")}")
+      for {
+        newModels: List[Model] <- indexer.gatherNewestModelInformation(Int.MaxValue, lastProcessedOpt)
+        models = newModels.group
+        _ = {
+          logger.info(s"finished indexing new entries. Total: #${models.all.length}")
+          logger.info(s"# of new suicide girls indexed: ${models.sgs.length}. Names: ${models.sgs.map(_.name.name).mkString(",")}")
+          logger.info(s"# of new hopefuls indexed     : ${models.hfs.length}. Names: ${models.hfs.map(_.name.name).mkString(",")}")
+        }
+      } yield models
+    }
   }
 
-  object delta {
+  object reify {
+    def deltaPure(indexedModels: Models)(implicit passwordProvider: PasswordProvider): Future[Models] = {
+      for {
+        reifiedSGs <- Future.traverse(indexedModels.sgs)(reifier.reifySuicideGirl)
+        reifiedHFs <- Future.traverse(indexedModels.hfs)(reifier.reifyHopeful)
+        reifiedModels = (reifiedSGs, reifiedHFs).group
+
+        _ = {
+          logger.info(s"finished reifying new entries. Total: #${reifiedModels.all.length}")
+          logger.info(s"# of new suicide girls reified: ${reifiedSGs.length}")
+          logger.info(s"# of new hopefuls reified     : ${reifiedHFs.length}")
+        }
+
+      } yield (reifiedSGs, reifiedHFs).group
+    }
+  }
+
+  object export {
+    private val This = SGDownloader.this
+
     /**
       * This is the most widly used method. It exports a "delta" of what is new since the [[LastProcessedMarker]].
       *
@@ -104,6 +124,56 @@ final class SGDownloader private[downloader](
       *
       *
       */
+    def delta(daysToExport: Int = 28, includeProblematic: Boolean)(implicit passwordProvider: PasswordProvider): Future[Unit] = {
+      logger.info(s"export.delta --> starting to do a delta update. Days to export: $daysToExport, includeProblematic: $includeProblematic")
+      for {
+        _ <- reifier.authenticateIfNeeded()
+        lastProcessedOpt: Option[LastProcessedMarker] <- repo.lastProcessedIndex
+        _ = logger.info(s"the last processed set was: ${lastProcessedOpt.map(_.lastPhotoSetID)}")
+
+        indexedModels <- This.index.deltaPure(lastProcessedOpt)
+        reifiedModels <- This.reify.deltaPure(indexedModels)
+
+        _ <- exporter.exportDeltaHTMLIndex(reifiedModels.all.map(_.name))(deltaExporterSettings)
+        _ = logger.info(s"export.delta --IMPURE--> finished exporting HTML to ${deltaExporterSettings.newestRootFolderPath}.")
+        _ <- exporter.exportLatestForDays(daysToExport)(deltaExporterSettings)
+        _ = logger.info(s"export.delta --IMPURE--> finished newest HTML to ${deltaExporterSettings.newestRootFolderPath}.")
+
+        _ <- repo.updateIndexes(indexedModels.hfs, indexedModels.sgs)
+        _ = logger.info(s"export.delta --IMPURE--> finished writing SG and HF indexes to repository")
+
+        _ <- repo.createOrUpdateSGs(reifiedModels.sgs)
+        _ = logger.info(s"export.delta --IMPURE--> finished writing reified SGs to repository")
+
+        _ <- repo.createOrUpdateHopefuls(reifiedModels.hfs)
+        _ = logger.info(s"export.delta --IMPURE--> finished writing reified HFs to repository")
+
+        _ <- updateLastestProcessedMarkerImpure(indexedModels, reifiedModels, lastProcessedOpt)
+        _ = logger.info(s"export.delta --IMPURE--> finished writing last processed market to repository")
+      } yield ()
+    }
+
+    private def updateLastestProcessedMarkerImpure(indexedModels: Models, reifiedModels: Models, lastProcessedMarker: Option[LastProcessedMarker]): Future[Unit] = {
+      logger.info(s"delta.UpdateLatestProcessedIndex: old='${lastProcessedMarker.map(_.lastPhotoSetID).mkString("")}'")
+      when(reifiedModels.all.nonEmpty) execute {
+
+        val optNewestModel: Option[Model] = for {
+          newestIndexed <- indexedModels.newestModel
+          newestReified <- reifiedModels.ml(newestIndexed.name)
+        } yield newestReified
+
+        for {
+          _ <- when(optNewestModel.isEmpty) failWith new IllegalArgumentException("... should have at least one newest gathered")
+          newestModel = optNewestModel.get
+          newMarker = indexer.createLastProcessedIndex(newestModel)
+          _ = logger.info(s"delta.UpdateLatestProcessedIndex: new='${newMarker.lastPhotoSetID}'")
+          _ <- repo.createOrUpdateLastProcessed(newMarker)
+        } yield ()
+
+        Future.unit
+      }
+    }
+
     //    def update(daysToExport: Int = 28, includeProblematic: Boolean)(implicit passwordProvider: PasswordProvider): Future[Unit] = {
     //      logger.info(s"starting to do a delta update. Days to export: $daysToExport, includeProblematic: $includeProblematic")
     //      for {

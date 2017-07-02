@@ -44,11 +44,15 @@ trait SGModelRepository {
     */
   def createOrUpdateSG(sg: SuicideGirl): Future[Unit]
 
+  def createOrUpdateSGs(sgs: List[SuicideGirl]): Future[Unit]
+
   /**
     * Updates or creates [[Hopeful]], removes the name from [[HopefulIndex.needsReindexing]]
     *
     */
   def createOrUpdateHopeful(hopeful: Hopeful): Future[Unit]
+
+  def createOrUpdateHopefuls(hopefuls: List[Hopeful]): Future[Unit]
 
   /**
     * Returns the models which had a on any given day between the two dates given as parameters
@@ -95,7 +99,7 @@ sealed trait LastProcessedMarker {
 
   def model: Model
 
-  final def lastPhotoSetID = {
+  final def lastPhotoSetID: String = {
     val ph: PhotoSet = model.photoSets.headOption.getOrElse(throw new AssertionError("... tried to get lastPhotoSet, of ProccessedIndex, but it did not exist"))
     ph.id
   }

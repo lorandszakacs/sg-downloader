@@ -4,7 +4,8 @@ import java.net.URL
 
 import com.lorandszakacs.sg.contentparser.SGContentParser
 import com.lorandszakacs.sg.http._
-import com.lorandszakacs.sg.model.Photo
+import com.lorandszakacs.sg.model.Model.{HopefulFactory, ModelFactory, SuicideGirlFactory}
+import com.lorandszakacs.sg.model.{Hopeful, Model, ModelName, ModelUpdater, Photo, SuicideGirl}
 import com.lorandszakacs.sg.reifier.{DidNotFindAnyPhotoLinksOnSetPageException, SGReifier, SessionDao}
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
@@ -68,15 +69,46 @@ private[reifier] class SGReifierImpl(
     } yield newAuthentication
   }
 
+  @scala.deprecated("will be made private", "now")
   override def gatherAllPhotosFromSetPage(photoSetPageUri: URL): Future[List[Photo]] = {
     for {
       photoSetPageHTML <- sGClient.getPage(photoSetPageUri)
       photos <- Future fromTry {
         SGContentParser.parsePhotos(photoSetPageHTML).recoverWith {
-          case NonFatal(e) => Failure(DidNotFindAnyPhotoLinksOnSetPageException(photoSetPageUri))
+          case NonFatal(_) => Failure(DidNotFindAnyPhotoLinksOnSetPageException(photoSetPageUri))
         }
       }
     } yield photos
+  }
+
+  override def reifySuicideGirl(sg: SuicideGirl): Future[SuicideGirl] = {
+    reifyModel(SuicideGirlFactory)(sg)
+  }
+
+  override def reifyHopeful(hf: Hopeful): Future[Hopeful] = {
+    reifyModel(HopefulFactory)(hf)
+  }
+
+  private def reifyModel[T <: Model](mf: ModelFactory[T])(model: T): Future[T] = {
+    logger.info(s"SGReifier --> reifying: ${mf.name} ${model.name}. Expecting ${model.photoSets.length} sets")
+    for {
+      reifiedPhotoSets <- Future.traverse(model.photoSets) { photoSet =>
+        for {
+          photos <- this.gatherAllPhotosFromSetPage(photoSet.url) recoverWith {
+            case e: DidNotFindAnyPhotoLinksOnSetPageException =>
+              logger.error(s"${photoSet.url} has no photos. `${mf.name} ${model.name}`")
+              Future.successful(Nil)
+            case e: Throwable =>
+              logger.error(s"${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${model.name}`", e)
+              Future.successful(Nil)
+          }
+        } yield photoSet.copy(photos = photos)
+      }
+    } yield mf.apply(
+      photoSetURL = model.photoSetURL,
+      name = model.name,
+      photoSets = reifiedPhotoSets
+    )
   }
 
   override def authentication: Authentication = _authentication

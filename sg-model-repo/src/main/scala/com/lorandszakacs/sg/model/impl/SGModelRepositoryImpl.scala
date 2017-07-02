@@ -120,9 +120,13 @@ private[model] class SGModelRepositoryImpl(
       _ <- if (emptyPhotoSets.isEmpty) {
         indexDao.markSGAsIndexed(sg.name)
       } else {
-        Future.successful(())
+        Future.unit
       }
     } yield ()
+  }
+
+  override def createOrUpdateSGs(sgs: List[SuicideGirl]): Future[Unit] = {
+    Future.traverse(sgs)(this.createOrUpdateSG) map `Any => Unit`
   }
 
   override def createOrUpdateHopeful(hopeful: Hopeful): Future[Unit] = {
@@ -132,9 +136,13 @@ private[model] class SGModelRepositoryImpl(
       _ <- if (emptyPhotoSets.isEmpty) {
         indexDao.markHopefulAsIndexed(hopeful.name)
       } else {
-        Future.successful(())
+        Future.unit
       }
     } yield ()
+  }
+
+  override def createOrUpdateHopefuls(hopefuls: List[Hopeful]): Future[Unit] = {
+    Future.traverse(hopefuls)(this.createOrUpdateHopeful) map `Any => Unit`
   }
 
   override def aggregateBetweenDays(start: LocalDate, end: LocalDate): Future[List[(LocalDate, List[Model])]] = {

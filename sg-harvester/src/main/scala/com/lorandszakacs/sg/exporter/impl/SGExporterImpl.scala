@@ -111,9 +111,9 @@ private[exporter] class SGExporterImpl(
 
   override def exportLatestForDays(nrOfDays: Int)(implicit ws: ExporterSettings): Future[Unit] = {
     val today = LocalDate.today()
-    val twoWeeksAgo = today.minusDays(nrOfDays)
+    val inThePast = today.minusDays(nrOfDays)
     for {
-      models <- repo.aggregateBetweenDays(twoWeeksAgo, today)
+      models <- repo.aggregateBetweenDays(inThePast, today)
       sortedLatestToEarliest = models.sortBy(_._1).reverse
       newestModelsPage <- html.createNewestPage(sortedLatestToEarliest)
       _ <- fileWriter.rewriteNewestModelPage(newestModelsPage)(newestWriterSettings)

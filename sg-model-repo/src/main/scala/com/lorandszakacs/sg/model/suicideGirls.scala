@@ -20,6 +20,7 @@ object Model {
     def name: String
   }
 
+  @scala.deprecated("will be made into a typeclass", "now")
   object SuicideGirlFactory extends ModelFactory[SuicideGirl] {
     override def apply(photoSetURL: URL, name: ModelName, photoSets: List[PhotoSet]): SuicideGirl =
       SuicideGirl(photoSetURL = photoSetURL, name = name, photoSets = photoSets)
@@ -27,6 +28,7 @@ object Model {
     override def name: String = "suicide girl"
   }
 
+  @scala.deprecated("will be made into a typeclass", "now")
   object HopefulFactory extends ModelFactory[Hopeful] {
     override def apply(photoSetURL: URL, name: ModelName, photoSets: List[PhotoSet]): Hopeful = {
       Hopeful(photoSetURL = photoSetURL, name = name, photoSets = photoSets)
