@@ -1,5 +1,7 @@
 package com.lorandszakacs.sg
 
+import com.lorandszakacs.util.math.Identity
+
 import scala.language.implicitConversions
 
 /**
@@ -9,6 +11,10 @@ import scala.language.implicitConversions
   *
   */
 package object model {
+
+  implicit val modelIdentity: Identity[Model] = Identity[Model] { (m1, m2) =>
+    m1.name == m2.name
+  }
 
   implicit class StringBuffedWithModelName(str: String) {
     def toModelName: ModelName = ModelName(str)
