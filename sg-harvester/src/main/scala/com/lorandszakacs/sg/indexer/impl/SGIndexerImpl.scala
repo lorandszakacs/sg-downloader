@@ -82,6 +82,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     * the [[PhotoSet]]s of the given model.
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]], and [[PhotoSet.url]] will be a full path URL.
     */
+  @scala.deprecated("will be made private", "now")
   override def gatherPhotoSetInformationForModel[T <: Model](mf: ModelFactory[T])(modelName: ModelName)(implicit pc: PatienceConfig): Future[T] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
@@ -114,6 +115,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     *
     * Returns a [[Model]] with only one [[Model.photoSets]], the one that shows up on the page.
     */
+  @scala.deprecated("will be made private", "now")
   override def gatherAllNewModelsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
@@ -147,16 +149,42 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     }
   }
 
+  /**
+    * A composite operation of [[gatherAllNewModelsAndOnlyTheirLatestSet]] and
+    * [[gatherPhotoSetInformationForModel]] gotten for that model.
+    *
+    */
+  override def gatherAllNewModelsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
+    for {
+      modelsWithOnlyOneSet <- gatherAllNewModelsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
+      sgHF = modelsWithOnlyOneSet.group
+      sgs <- Future.serialize(sgHF.sgs) { sg =>
+        pc.throttleAfter {
+          this.gatherPhotoSetInformationForModel(Model.SuicideGirlFactory)(sg.name)
+        }
+      }
+      hfs <- Future.serialize(sgHF.hfs) { hf =>
+        pc.throttleAfter {
+          this.gatherPhotoSetInformationForModel(Model.HopefulFactory)(hf.name)
+        }
+      }
+    } yield sgs ++ hfs
+  }
+
 
   /**
     *
+    * Basic function that repeatedly hits the "load more" button,
+    * or something equivalent. It is usually modeled with the URL
+    * parameters: ``partial=true&offset=10``, where we start with
+    * and offset of zero, and increment it until ``isEndPage``, or
+    * ``isEndInput`` are true, or when we hit the ``cutOffLimit``
+    *
     * @param uri
-    * Assumed to not have any ``offset`` HTTP parameter
-    * @param offsetStep
-    * @param parsingFunction
-    * @param isEndPage
-    * @param cutOffLimit
-    * @return
+    * Assumed to not have any ``offset`` HTTP parameters
+    * when passed to this function. i.e.
+    * it should be ``/photos`` not ``/photos?offset=x``.
+    *
     */
   private def loadPageRepeatedly[T](
     uri: Uri,

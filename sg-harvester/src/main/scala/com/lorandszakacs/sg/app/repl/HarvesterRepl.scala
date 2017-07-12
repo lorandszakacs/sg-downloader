@@ -199,7 +199,7 @@ class HarvesterRepl(
                     logger.info(s"finished harvesting ${model.name}")
                   }
 
-                  _ <- exporter.exportDeltaHTMLIndex(List(model.name))(deltaExporterSettings)
+                  _ <- exporter.exportHTMLOfOnlyGivenSubsetOfModels(List(model.name))(deltaExporterSettings)
                   _ = logger.info("finished writing the delta HTML export.")
 
                 } yield ()

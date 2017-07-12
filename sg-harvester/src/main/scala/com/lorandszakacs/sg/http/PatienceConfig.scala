@@ -1,5 +1,6 @@
 package com.lorandszakacs.sg.http
 
+import com.lorandszakacs.util.future._
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
@@ -17,4 +18,12 @@ final case class PatienceConfig(
   def halfThrottle(): Unit = Thread.sleep(throttle.toMillis / 2)
 
   def quarterThrottle(): Unit = Thread.sleep(throttle.toMillis / 4)
+
+  def throttleAfter[T](thunk: => Future[T])(implicit ec: ExecutionContext): Future[T] = {
+    val f = thunk
+    f.map { r =>
+      this.throttleThread()
+      r
+    }
+  }
 }

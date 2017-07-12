@@ -50,44 +50,52 @@ private[exporter] class SGExporterImpl(
     rootIndexTitle = "All Suicide Girls"
   )
 
-  override def exportDeltaHTMLIndex(ms: List[ModelName])(implicit ws: ExporterSettings): Future[Unit] = {
-    def updateFavorites(deltaFavorites: List[Model])(implicit ws: ExporterSettings): Future[Unit] = {
-      if (deltaFavorites.nonEmpty) {
-        for {
-          favoritesIndexDelta <- html.createHTMLPageForModels(deltaFavorites)(FavoritesHtmlSettings)
-          _ <- fileWriter.writeRootModelIndex(favoritesIndexDelta)(favoritesWriterSettings)
-          completeFavoriteRootIndex <- html.createRootIndex(Favorites.modelNames)(FavoritesHtmlSettings)
-          _ <- fileWriter.rewriteRootIndexFile(completeFavoriteRootIndex)(favoritesWriterSettings)
-        } yield {
-          logger.info(s"-- successfully updated DELTA favorites index ${deltaFavorites.length}: @ ${completeFavoriteRootIndex.relativePathAndName}")
-        }
-      } else {
-        logger.info("-- no delta for favorite models.")
-        Future.unit
+  private def updateFavorites(deltaFavorites: List[Model])(implicit ws: ExporterSettings): Future[Unit] = {
+    if (deltaFavorites.nonEmpty) {
+      for {
+        favoritesIndexDelta <- html.createHTMLPageForModels(deltaFavorites)(FavoritesHtmlSettings)
+        _ <- fileWriter.writeRootModelIndex(favoritesIndexDelta)(favoritesWriterSettings)
+        completeFavoriteRootIndex <- html.createRootIndex(Favorites.modelNames)(FavoritesHtmlSettings)
+        _ <- fileWriter.rewriteRootIndexFile(completeFavoriteRootIndex)(favoritesWriterSettings)
+      } yield {
+        logger.info(s"-- successfully updated DELTA favorites index ${deltaFavorites.length}: @ ${completeFavoriteRootIndex.relativePathAndName}")
       }
+    } else {
+      logger.info("-- no delta for favorite models.")
+      Future.unit
     }
+  }
 
-    def updateAll(delta: List[Model])(implicit ws: ExporterSettings) = {
-      if (delta.nonEmpty) {
-        for {
-          completeIndex: CompleteModelIndex <- repo.completeModelIndex
-          allIndexDelta <- html.createHTMLPageForModels(delta)(AllHtmlSettings)
-          _ <- fileWriter.writeRootModelIndex(allIndexDelta)(allWriterSettings)
-          allRootIndex <- html.createRootIndex(completeIndex.names)(AllHtmlSettings)
-          _ <- fileWriter.rewriteRootIndexFile(allRootIndex)(allWriterSettings)
-        } yield {
-          logger.info(s"--- successfully updated DELTA all model index of: ${delta.length}")
-        }
-      } else {
-        logger.info("-- no delta for normal models.")
-        Future.unit
+  private def updateAll(delta: List[Model])(implicit ws: ExporterSettings) = {
+    if (delta.nonEmpty) {
+      for {
+        completeIndex: CompleteModelIndex <- repo.completeModelIndex
+        allIndexDelta <- html.createHTMLPageForModels(delta)(AllHtmlSettings)
+        _ <- fileWriter.writeRootModelIndex(allIndexDelta)(allWriterSettings)
+        allRootIndex <- html.createRootIndex(completeIndex.names)(AllHtmlSettings)
+        _ <- fileWriter.rewriteRootIndexFile(allRootIndex)(allWriterSettings)
+      } yield {
+        logger.info(s"--- successfully updated DELTA all model index of: ${delta.length}")
       }
+    } else {
+      logger.info("-- no delta for normal models.")
+      Future.unit
     }
+  }
 
+  override def exportHTMLOfOnlyGivenSubsetOfModels(ms: List[ModelName])(implicit ws: ExporterSettings): Future[Unit] = {
     for {
       models <- repo.find(ms)
       favorites: List[Model] = models.filter(m => Favorites.modelNames.contains(m.name))
 
+      _ <- updateFavorites(favorites)
+      _ <- updateAll(models)
+    } yield ()
+  }
+
+  override def exportDeltaHTMLOfModels(models: List[Model])(implicit ws: ExporterSettings): Future[Unit] = {
+    val favorites: List[Model] = models.filter(m => Favorites.modelNames.contains(m.name))
+    for {
       _ <- updateFavorites(favorites)
       _ <- updateAll(models)
     } yield ()
@@ -106,6 +114,17 @@ private[exporter] class SGExporterImpl(
       models <- repo.findAll
       allModelsIndex: ModelsRootIndex <- html.createHTMLPageForModels(models)(AllHtmlSettings)
       _ <- fileWriter.writeRootModelIndex(allModelsIndex)(allWriterSettings)
+    } yield ()
+  }
+
+  override def exportLatestForDaysWithDelta(nrOfDays: Int, delta: List[Model])(implicit ws: ExporterSettings): Future[Unit] = {
+    val today = LocalDate.today()
+    val inThePast = today.minusDays(nrOfDays)
+    for {
+      models <- repo.aggregateBetweenDays(inThePast, today, delta)
+      sortedLatestToEarliest = models.sortBy(_._1).reverse
+      newestModelsPage <- html.createNewestPage(sortedLatestToEarliest)
+      _ <- fileWriter.rewriteNewestModelPage(newestModelsPage)(newestWriterSettings)
     } yield ()
   }
 

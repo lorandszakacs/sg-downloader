@@ -56,8 +56,12 @@ trait SGModelRepository {
 
   /**
     * Returns the models which had a on any given day between the two dates given as parameters
+    * Where the models which are given as a parameter have precedence over the already existing
+    * models.
+    *
+    * i.e. models parameter is a delta of sorts
     */
-  def aggregateBetweenDays(start: LocalDate, end: LocalDate): Future[List[(LocalDate, List[Model])]]
+  def aggregateBetweenDays(start: LocalDate, end: LocalDate, models: List[Model] = Nil): Future[List[(LocalDate, List[Model])]]
 
   def find(modelName: ModelName): Future[Option[Model]]
 

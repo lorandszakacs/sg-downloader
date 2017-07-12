@@ -5,6 +5,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.joda.time.LocalDate
 
 import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.list._
 
 /**
   *
@@ -145,18 +146,23 @@ private[model] class SGModelRepositoryImpl(
     Future.traverse(hopefuls)(this.createOrUpdateHopeful) map `Any => Unit`
   }
 
-  override def aggregateBetweenDays(start: LocalDate, end: LocalDate): Future[List[(LocalDate, List[Model])]] = {
+  private def groupModelsBetweenDays(start: LocalDate, end: LocalDate, models: List[Model]): List[(LocalDate, List[Model])] = {
+    val days = RepoTimeUtil.daysBetween(start, end)
+    for {
+      day <- days
+      modelsForDay = models.filter(_.photoSets.exists(_.date == day))
+    } yield (day, modelsForDay)
+  }
+
+  override def aggregateBetweenDays(start: LocalDate, end: LocalDate, models: List[Model]): Future[List[(LocalDate, List[Model])]] = {
     for {
       sgs <- suicideGirlsDao.findBetweenDays(start, end)
       hopefuls <- hopefulsDao.findBetweenDays(start, end)
+      allFromDB: List[Model] = sgs ++ hopefuls
+      all: List[Model] = allFromDB.addOrReplace(models)
 
-      all: List[Model] = sgs ++ hopefuls
-      days = RepoTimeUtil.daysBetween(start, end)
-      models = for {
-        day <- days
-        modelsForDay = all.filter(_.photoSets.exists(_.date == day))
-      } yield (day, modelsForDay)
-    } yield models
+      result = groupModelsBetweenDays(start, end, all)
+    } yield result
   }
 
   override def find(modelName: ModelName): Future[Option[Model]] = {

@@ -81,7 +81,7 @@ final class SGDownloader private[downloader](
     def deltaPure(lastProcessedOpt: Option[LastProcessedMarker])(implicit patienceConfig: PatienceConfig): Future[Models] = {
       logger.info(s"index.delta --> starting from ${lastProcessedOpt.map(_.lastPhotoSetID).getOrElse("")}")
       for {
-        newModels: List[Model] <- indexer.gatherAllNewModelsAndOnlyTheirLatestSet(Int.MaxValue, lastProcessedOpt)
+        newModels: List[Model] <- indexer.gatherAllNewModelsAndAllTheirPhotoSets(Int.MaxValue, lastProcessedOpt)
         models = newModels.group
         _ = {
           logger.info(s"finished indexing new entries. Total: #${models.all.length}")
@@ -110,68 +110,18 @@ final class SGDownloader private[downloader](
   }
 
   object export {
-    private val This = SGDownloader.this
 
-    /**
-      * This is the most widly used method. It exports a "delta" of what is new since the [[LastProcessedMarker]].
-      *
-      * It even generates html files accordingly, with new updated indexes, ready to be synced with the already existing
-      * export
-      *
-      * Everything is exported to the paths mentioned in [[deltaExporterSettings]]
-      *
-      * TODO: settings outght to be read from a config file
-      *
-      */
-    def delta(daysToExport: Int = 28, includeProblematic: Boolean)(implicit passwordProvider: PasswordProvider): Future[Unit] = {
-      logger.info(s"export.delta --> starting to do a delta update. Days to export: $daysToExport, includeProblematic: $includeProblematic")
+    def delta(daysToExport: Int = 28, delta: List[Model]): Future[Unit] = {
+      logger.info(s"-------------------------------------------------- export.delta --------------------------------------------------")
+      logger.info(s"export.delta --> export. Days to export: $daysToExport. #models: ${delta.length}")
       for {
-        _ <- reifier.authenticateIfNeeded()
-        lastProcessedOpt: Option[LastProcessedMarker] <- repo.lastProcessedIndex
-        _ = logger.info(s"the last processed set was: ${lastProcessedOpt.map(_.lastPhotoSetID)}")
-
-        indexedModels <- This.index.deltaPure(lastProcessedOpt)
-        reifiedModels <- This.reify.deltaPure(indexedModels)
-
-        _ <- exporter.exportDeltaHTMLIndex(reifiedModels.all.map(_.name))(deltaExporterSettings)
+        _ <- exporter.exportDeltaHTMLOfModels(delta)(deltaExporterSettings)
         _ = logger.info(s"export.delta --IMPURE--> finished exporting HTML to ${deltaExporterSettings.newestRootFolderPath}.")
-        _ <- exporter.exportLatestForDays(daysToExport)(deltaExporterSettings)
+        _ <- exporter.exportLatestForDaysWithDelta(daysToExport, delta)(deltaExporterSettings)
         _ = logger.info(s"export.delta --IMPURE--> finished newest HTML to ${deltaExporterSettings.newestRootFolderPath}.")
-
-      //        _ <- repo.updateIndexes(indexedModels.hfs, indexedModels.sgs)
-      //        _ = logger.info(s"export.delta --IMPURE--> finished writing SG and HF indexes to repository")
-      //
-      //        _ <- repo.createOrUpdateSGs(reifiedModels.sgs)
-      //        _ = logger.info(s"export.delta --IMPURE--> finished writing reified SGs to repository")
-      //
-      //        _ <- repo.createOrUpdateHopefuls(reifiedModels.hfs)
-      //        _ = logger.info(s"export.delta --IMPURE--> finished writing reified HFs to repository")
-
-      //        _ <- updateLastestProcessedMarkerImpure(indexedModels, reifiedModels, lastProcessedOpt)
-      //        _ = logger.info(s"export.delta --IMPURE--> finished writing last processed market to repository")
       } yield ()
     }
 
-    private def updateLastestProcessedMarkerImpure(indexedModels: Models, reifiedModels: Models, lastProcessedMarker: Option[LastProcessedMarker]): Future[Unit] = {
-      logger.info(s"delta.UpdateLatestProcessedIndex: old='${lastProcessedMarker.map(_.lastPhotoSetID).mkString("")}'")
-      when(reifiedModels.all.nonEmpty) execute {
-
-        val optNewestModel: Option[Model] = for {
-          newestIndexed <- indexedModels.newestModel
-          newestReified <- reifiedModels.ml(newestIndexed.name)
-        } yield newestReified
-
-        for {
-          _ <- when(optNewestModel.isEmpty) failWith new IllegalArgumentException("... should have at least one newest gathered")
-          newestModel = optNewestModel.get
-          newMarker = indexer.createLastProcessedIndex(newestModel)
-          _ = logger.info(s"delta.UpdateLatestProcessedIndex: new='${newMarker.lastPhotoSetID}'")
-          _ <- repo.createOrUpdateLastProcessed(newMarker)
-        } yield ()
-
-        Future.unit
-      }
-    }
 
     //    def update(daysToExport: Int = 28, includeProblematic: Boolean)(implicit passwordProvider: PasswordProvider): Future[Unit] = {
     //      logger.info(s"starting to do a delta update. Days to export: $daysToExport, includeProblematic: $includeProblematic")
@@ -201,6 +151,78 @@ final class SGDownloader private[downloader](
     //
     //      } yield ()
     //    }
+  }
+
+  object update {
+    def delta(indexedModels: Models, reifiedModels: Models, oldLastProcessedMarker: Option[LastProcessedMarker]): Future[Unit] = {
+      logger.info(s"-------------------------------------------------- update.delta --------------------------------------------------")
+      logger.info(s"update.delta --> writing state to DB. # of fully reified models: ${reifiedModels.all.length}")
+      for {
+        _ <- repo.updateIndexes(indexedModels.hfs, indexedModels.sgs)
+        _ = logger.info(s"update.delta --IMPURE--> finished writing SG and HF indexes to repository")
+
+        _ <- repo.createOrUpdateSGs(reifiedModels.sgs)
+        _ = logger.info(s"update.delta --IMPURE--> finished writing reified SGs to repository")
+
+        _ <- repo.createOrUpdateHopefuls(reifiedModels.hfs)
+        _ = logger.info(s"update.delta --IMPURE--> finished writing reified HFs to repository")
+
+        _ <- updateLatestProcessedMarker(indexedModels, reifiedModels, oldLastProcessedMarker)
+        _ = logger.info(s"update.delta --IMPURE--> finished writing last processed market to repository")
+      } yield ()
+    }
+
+    private def updateLatestProcessedMarker(indexedModels: Models, reifiedModels: Models, lastProcessedMarker: Option[LastProcessedMarker]): Future[Unit] = {
+      logger.info(s"delta.UpdateLatestProcessedIndex: old='${lastProcessedMarker.map(_.lastPhotoSetID).mkString("")}'")
+      when(reifiedModels.all.nonEmpty) execute {
+
+        val optNewestModel: Option[Model] = for {
+          newestIndexed <- indexedModels.newestModel
+          newestReified <- reifiedModels.ml(newestIndexed.name)
+        } yield newestReified
+
+        for {
+          _ <- when(optNewestModel.isEmpty) failWith new IllegalArgumentException("... should have at least one newest gathered")
+          newestModel = optNewestModel.get
+          newMarker = indexer.createLastProcessedIndex(newestModel)
+          _ = logger.info(s"delta.UpdateLatestProcessedIndex: new='${newMarker.lastPhotoSetID}'")
+          _ <- repo.createOrUpdateLastProcessed(newMarker)
+        } yield ()
+
+        Future.unit
+      }
+    }
+  }
+
+  object harvest {
+    private val This = SGDownloader.this
+
+    /**
+      * This is the most widly used method. It exports a "delta" of what is new since the [[LastProcessedMarker]].
+      *
+      * It even generates html files accordingly, with new updated indexes, ready to be synced with the already existing
+      * export
+      *
+      * Everything is exported to the paths mentioned in [[deltaExporterSettings]]
+      *
+      * TODO: settings outght to be read from a config file
+      *
+      */
+    def delta(daysToExport: Int = 28, includeProblematic: Boolean)(implicit passwordProvider: PasswordProvider): Future[Unit] = {
+      logger.info(s"-------------------------------------------------- download.delta --------------------------------------------------")
+      logger.info(s"download.delta --> IMPURE --> daysToExport: $daysToExport includeProblematic: $includeProblematic")
+      for {
+        _ <- reifier.authenticateIfNeeded()
+        lastProcessedOpt: Option[LastProcessedMarker] <- repo.lastProcessedIndex
+        _ = logger.info(s"the last processed set was: ${lastProcessedOpt.map(_.lastPhotoSetID)}")
+
+        indexedModels <- This.index.deltaPure(lastProcessedOpt)
+        reifiedModels <- This.reify.deltaPure(indexedModels)
+        _ <- This.export.delta(daysToExport, reifiedModels.all)
+
+//        _ <- This.update.delta(indexedModels = indexedModels, reifiedModels = reifiedModels, oldLastProcessedMarker = lastProcessedOpt)
+      } yield ()
+    }
   }
 
   object display {
