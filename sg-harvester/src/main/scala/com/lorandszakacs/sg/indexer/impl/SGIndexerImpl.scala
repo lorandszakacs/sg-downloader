@@ -111,8 +111,10 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     *
     * The amount of crawling is limited by the absolute limit, or by the set identified by [[LastProcessedMarker.lastPhotoSetID]]
     * This last set is not included in the results.
+    *
+    * Returns a [[Model]] with only one [[Model.photoSets]], the one that shows up on the page.
     */
-  override def gatherNewestModelInformation(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
+  override def gatherAllNewModelsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)

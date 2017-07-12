@@ -104,11 +104,14 @@ private[reifier] class SGReifierImpl(
           }
         } yield photoSet.copy(photos = photos)
       }
-    } yield mf.apply(
-      photoSetURL = model.photoSetURL,
-      name = model.name,
-      photoSets = reifiedPhotoSets
-    )
+    } yield {
+      logger.info(s"reified ${mf.name} ${model.name.name}. Found ${reifiedPhotoSets.length} photo sets.")
+      mf.apply(
+        photoSetURL = model.photoSetURL,
+        name = model.name,
+        photoSets = reifiedPhotoSets
+      )
+    }
   }
 
   override def authentication: Authentication = _authentication

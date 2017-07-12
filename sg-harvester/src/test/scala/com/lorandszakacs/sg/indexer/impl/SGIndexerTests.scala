@@ -152,7 +152,7 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
 
   it should "... gather the first 48 new sets" in { crawler =>
-    whenReady(crawler.gatherNewestModelInformation(48, None)) { models: List[Model] =>
+    whenReady(crawler.gatherAllNewModelsAndOnlyTheirLatestSet(48, None)) { models: List[Model] =>
 
       withClue("... size") {
         models should have size 48
@@ -168,7 +168,7 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
 
   it should "... gather the first 48 new sets, then use one in the middle as the latest processed, and return only the ones before it" in { crawler =>
-    val previousModels = whenReady(crawler.gatherNewestModelInformation(48, None)) { models: List[Model] =>
+    val previousModels = whenReady(crawler.gatherAllNewModelsAndOnlyTheirLatestSet(48, None)) { models: List[Model] =>
       withClue("... size") {
         models should have size 48
       }
@@ -183,7 +183,7 @@ class SGIndexerTests extends IndexerTest {
     val lastProcessed: LastProcessedMarker = crawler.createLastProcessedIndex(latest)
 
     withClue("... now gathering only a part of the processed sets") {
-      whenReady(crawler.gatherNewestModelInformation(48, Option(lastProcessed))) { models: List[Model] =>
+      whenReady(crawler.gatherAllNewModelsAndOnlyTheirLatestSet(48, Option(lastProcessed))) { models: List[Model] =>
         withClue("... size") {
           models should have size index
         }
@@ -201,7 +201,7 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
 
   it should "... gather the first 48 new sets, then use first one as latest. No subsequent models should be returned" in { crawler =>
-    val previousModels = whenReady(crawler.gatherNewestModelInformation(48, None)) { models: List[Model] =>
+    val previousModels = whenReady(crawler.gatherAllNewModelsAndOnlyTheirLatestSet(48, None)) { models: List[Model] =>
       withClue("... size") {
         models should have size 48
       }
@@ -216,7 +216,7 @@ class SGIndexerTests extends IndexerTest {
     val lastProcessed: LastProcessedMarker = crawler.createLastProcessedIndex(latest)
 
     withClue("... now gathering only a part of the processed sets") {
-      whenReady(crawler.gatherNewestModelInformation(48, Option(lastProcessed))) { models: List[Model] =>
+      whenReady(crawler.gatherAllNewModelsAndOnlyTheirLatestSet(48, Option(lastProcessed))) { models: List[Model] =>
         withClue("... size") {
           models should have size index
         }

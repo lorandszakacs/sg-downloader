@@ -44,7 +44,7 @@ private[harvester] class SGHarvesterImpl(
 
   override def reindexAll(maxNrOfReindexing: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
     for {
-      newModels: List[Model] <- modelCrawler.gatherNewestModelInformation(1, None)
+      newModels: List[Model] <- modelCrawler.gatherAllNewModelsAndOnlyTheirLatestSet(1, None)
       newStatusMarker = modelCrawler.createLastProcessedIndex(newModels.head)
       _ <- modelRepo.createOrUpdateLastProcessed(newStatusMarker)
 
@@ -66,7 +66,7 @@ private[harvester] class SGHarvesterImpl(
       lastProcessedOpt: Option[LastProcessedMarker] <- modelRepo.lastProcessedIndex
       _ = logger.info(s"the last processed set was: ${lastProcessedOpt.map(_.lastPhotoSetID)}")
 
-      newModels: List[Model] <- modelCrawler.gatherNewestModelInformation(maxNrOfModels, lastProcessedOpt)
+      newModels: List[Model] <- modelCrawler.gatherAllNewModelsAndOnlyTheirLatestSet(maxNrOfModels, lastProcessedOpt)
       _ = logger.info(s"gathered: ${newModels.map(_.name.name).mkString(",")}")
 
       _: Unit <- if (newModels.nonEmpty) {

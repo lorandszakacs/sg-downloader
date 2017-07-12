@@ -50,7 +50,7 @@ trait SGIndexer {
     * The amount of crawling is limited by the absolute limit, or by the set identified by [[LastProcessedMarker.lastPhotoSetID]]
     * This last set is not included in the results.
     */
-  def gatherNewestModelInformation(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]]
+  def gatherAllNewModelsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]]
 
   final def createLastProcessedIndex(lastModel: Model): LastProcessedMarker = lastModel match {
     case h: Hopeful =>

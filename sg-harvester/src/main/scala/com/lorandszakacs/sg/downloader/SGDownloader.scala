@@ -81,7 +81,7 @@ final class SGDownloader private[downloader](
     def deltaPure(lastProcessedOpt: Option[LastProcessedMarker])(implicit patienceConfig: PatienceConfig): Future[Models] = {
       logger.info(s"index.delta --> starting from ${lastProcessedOpt.map(_.lastPhotoSetID).getOrElse("")}")
       for {
-        newModels: List[Model] <- indexer.gatherNewestModelInformation(Int.MaxValue, lastProcessedOpt)
+        newModels: List[Model] <- indexer.gatherAllNewModelsAndOnlyTheirLatestSet(Int.MaxValue, lastProcessedOpt)
         models = newModels.group
         _ = {
           logger.info(s"finished indexing new entries. Total: #${models.all.length}")
@@ -138,17 +138,17 @@ final class SGDownloader private[downloader](
         _ <- exporter.exportLatestForDays(daysToExport)(deltaExporterSettings)
         _ = logger.info(s"export.delta --IMPURE--> finished newest HTML to ${deltaExporterSettings.newestRootFolderPath}.")
 
-        _ <- repo.updateIndexes(indexedModels.hfs, indexedModels.sgs)
-        _ = logger.info(s"export.delta --IMPURE--> finished writing SG and HF indexes to repository")
+      //        _ <- repo.updateIndexes(indexedModels.hfs, indexedModels.sgs)
+      //        _ = logger.info(s"export.delta --IMPURE--> finished writing SG and HF indexes to repository")
+      //
+      //        _ <- repo.createOrUpdateSGs(reifiedModels.sgs)
+      //        _ = logger.info(s"export.delta --IMPURE--> finished writing reified SGs to repository")
+      //
+      //        _ <- repo.createOrUpdateHopefuls(reifiedModels.hfs)
+      //        _ = logger.info(s"export.delta --IMPURE--> finished writing reified HFs to repository")
 
-        _ <- repo.createOrUpdateSGs(reifiedModels.sgs)
-        _ = logger.info(s"export.delta --IMPURE--> finished writing reified SGs to repository")
-
-        _ <- repo.createOrUpdateHopefuls(reifiedModels.hfs)
-        _ = logger.info(s"export.delta --IMPURE--> finished writing reified HFs to repository")
-
-        _ <- updateLastestProcessedMarkerImpure(indexedModels, reifiedModels, lastProcessedOpt)
-        _ = logger.info(s"export.delta --IMPURE--> finished writing last processed market to repository")
+      //        _ <- updateLastestProcessedMarkerImpure(indexedModels, reifiedModels, lastProcessedOpt)
+      //        _ = logger.info(s"export.delta --IMPURE--> finished writing last processed market to repository")
       } yield ()
     }
 
