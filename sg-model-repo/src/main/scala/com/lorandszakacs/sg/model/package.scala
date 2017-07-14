@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg
 
-import com.lorandszakacs.util.math.Identity
+import com.lorandszakacs.util.math.{Identifier, Identity}
 
 import scala.language.implicitConversions
 
@@ -15,6 +15,9 @@ package object model {
   implicit val modelIdentity: Identity[Model] = Identity[Model] { (m1, m2) =>
     m1.name == m2.name
   }
+
+  implicit val suicideGirlIdentifier: Identifier[SuicideGirl, ModelName] = Identifier[SuicideGirl, ModelName] { m: SuicideGirl => m.name }
+  implicit val hopefulIdentifier: Identifier[Hopeful, ModelName] = Identifier[Hopeful, ModelName] { m: Hopeful => m.name }
 
   implicit class StringBuffedWithModelName(str: String) {
     def toModelName: ModelName = ModelName(str)
@@ -43,7 +46,7 @@ package object model {
     }
   }
 
-  implicit class BuffedModelNames(models: List[ModelName]){
+  implicit class BuffedModelNames(models: List[ModelName]) {
     def stringify: String = models.map(_.name).mkString(",")
   }
 
