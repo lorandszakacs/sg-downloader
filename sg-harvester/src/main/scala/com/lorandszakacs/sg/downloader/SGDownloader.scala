@@ -124,6 +124,12 @@ final class SGDownloader private[downloader](
   }
 
   object write {
+    /**
+      *
+      * @param indexedModels
+      * assumes that indexedModels are in the order that they were gathered in initially
+      * @return
+      */
     def delta(indexedModels: Models, reifiedModels: Models, oldLastProcessedMarker: Option[LastProcessedMarker]): Future[Unit] = {
       logger.info(s"update.delta --> writing state to DB. # of fully reified models: ${reifiedModels.all.length}")
       for {
