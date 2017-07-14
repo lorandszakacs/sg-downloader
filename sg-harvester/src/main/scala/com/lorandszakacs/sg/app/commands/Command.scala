@@ -57,9 +57,10 @@ object Commands {
         |
         |index - gather only meta-data (model names, and photosets), and saves it --- does not require authentication
         |reify - based on the previously indexed data (model names, photosets), it gathers the remaining photo links
+        |harvest - index + reify
         |export - use integral harvested data to export (currently only HTML)
         |write - SIDE EFFECTUL in DB, this effectively writes to database.
-        |harvest - indexes, reifies, exports, and writes.
+        |download - harvests (index + reify), exports, and writes.
         |=====
       """.stripMargin.trim()
 

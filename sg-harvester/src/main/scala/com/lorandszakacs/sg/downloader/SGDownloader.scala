@@ -163,7 +163,7 @@ final class SGDownloader private[downloader](
     }
   }
 
-  object harvest {
+  object download {
     private val This = SGDownloader.this
 
     /**
@@ -178,8 +178,8 @@ final class SGDownloader private[downloader](
       *
       */
     def delta(daysToExport: Int = 28, includeProblematic: Boolean)(implicit passwordProvider: PasswordProvider): Future[Unit] = {
-      logger.info("---------------------------------------------- starting harvest.delta --------------------------------------------")
-      logger.info(s"harvest.delta --> IMPURE --> daysToExport: $daysToExport includeProblematic: $includeProblematic")
+      logger.info("---------------------------------------------- starting download.delta --------------------------------------------")
+      logger.info(s"download.delta --> IMPURE --> daysToExport: $daysToExport includeProblematic: $includeProblematic")
       for {
         _ <- reifier.authenticateIfNeeded()
         lastProcessedOpt: Option[LastProcessedMarker] <- repo.lastProcessedIndex
@@ -191,8 +191,9 @@ final class SGDownloader private[downloader](
         reifiedModels <- This.reify.deltaPure(indexedModels)
         _ = logger.info("---------------------------------------------- starting delta.export ----------------------------------------------")
         _ <- This.export.delta(daysToExport, reifiedModels.all)
-        _ = logger.info("---------------------------------------------- starting delta.update in DB -----------------------------------------")
-      //        _ <- This.write.delta(indexedModels, reifiedModels, lastProcessedOpt)
+        _ = logger.info("---------------------------------------------- starting delta.write in DB -----------------------------------------")
+        _ <- This.write.delta(indexedModels, reifiedModels, lastProcessedOpt)
+        _ = logger.info("---------------------------------------------- finished download.delta -----------------------------------------")
       } yield ()
     }
   }
