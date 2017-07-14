@@ -4,7 +4,7 @@ import java.net.URL
 
 import com.github.nscala_time.time.Imports._
 import org.joda.time.format.DateTimeFormatter
-import com.lorandszakacs.util.mongodb.BSONMacros
+import com.lorandszakacs.util.mongodb.Annotations
 
 /**
   * @author Lorand Szakacs, lsz@lorandszakacs.com
@@ -167,7 +167,7 @@ final class PhotoSetTitle private(
 
 final case class SuicideGirl(
   photoSetURL: URL,
-  @BSONMacros.Annotations.Key("_id") name: ModelName,
+  @Annotations.Key("_id") name: ModelName,
   photoSets: List[PhotoSet]
 ) extends Model with ModelUpdater[SuicideGirl] {
 
@@ -190,7 +190,7 @@ final case class SuicideGirl(
 
 final case class Hopeful(
   photoSetURL: URL,
-  @BSONMacros.Annotations.Key("_id") name: ModelName,
+  @Annotations.Key("_id") name: ModelName,
   photoSets: List[PhotoSet]
 ) extends Model with ModelUpdater[Hopeful] {
 
@@ -217,7 +217,7 @@ final case class PhotoSet(
   title: PhotoSetTitle,
   date: LocalDate,
   photos: List[Photo] = Nil,
-  @BSONMacros.Annotations.Ignore() isHopefulSet: Option[Boolean] = None
+  @Annotations.Ignore() isHopefulSet: Option[Boolean] = None
 ) {
 
   def id: String = url.toExternalForm

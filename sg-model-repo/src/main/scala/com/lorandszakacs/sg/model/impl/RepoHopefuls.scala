@@ -10,13 +10,13 @@ import com.lorandszakacs.util.future._
   * @since 14 Jul 2017
   *
   */
-class RepoHopefuls
+private[impl] class RepoHopefuls
 (override protected val db: Database)(
   implicit override val executionContext: ExecutionContext
-) extends MongoCollection[Hopeful, ModelName, BSONString] with ModelBSON {
+) extends ModelRepo[Hopeful] with ModelBSON {
 
   override val collectionName: String = "hopefuls"
-  override protected implicit val objectHandler: BSONDocumentHandler[Hopeful] = BSONMacros.handler[Hopeful]
-  override protected implicit val idHandler: BSONHandler[BSONString, ModelName] = modelNameBSON
+  override protected implicit val objectHandler: BSONDocumentHandler[Hopeful] =
+    BSONMacros.handler[Hopeful]
 
 }

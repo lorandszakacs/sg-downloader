@@ -13,10 +13,8 @@ import com.lorandszakacs.util.future._
 class RepoSuicideGirls
 (override protected val db: Database)(
   implicit override val executionContext: ExecutionContext
-) extends MongoCollection[Hopeful, ModelName, BSONString] with ModelBSON {
+) extends ModelRepo[SuicideGirl] with ModelBSON {
 
   override val collectionName: String = "suicide_girls"
-  override protected implicit val objectHandler: BSONDocumentHandler[Hopeful] = BSONMacros.handler[Hopeful]
-  override protected implicit val idHandler: BSONHandler[BSONString, ModelName] = modelNameBSON
-
+  override protected implicit val objectHandler: BSONDocumentHandler[SuicideGirl] = BSONMacros.handler[SuicideGirl]
 }
