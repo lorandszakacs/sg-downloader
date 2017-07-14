@@ -10,7 +10,7 @@ import com.lorandszakacs.util.mongodb._
   * @since 14 Jul 2017
   *
   */
-class RepoSuicideGirlIndex(override protected val db: Database)(
+private[impl] class RepoSuicideGirlIndex(override protected val db: Database)(
   implicit override val executionContext: ExecutionContext
 ) extends IndexSingleDocRepo[SuicideGirlIndex] with ModelBSON {
 

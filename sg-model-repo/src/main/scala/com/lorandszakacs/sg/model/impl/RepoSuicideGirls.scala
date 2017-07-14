@@ -10,7 +10,7 @@ import com.lorandszakacs.util.future._
   * @since 14 Jul 2017
   *
   */
-class RepoSuicideGirls
+private[impl] class RepoSuicideGirls
 (override protected val db: Database)(
   implicit override val executionContext: ExecutionContext
 ) extends ModelRepo[SuicideGirl](suicideGirlIdentifier) with ModelBSON {

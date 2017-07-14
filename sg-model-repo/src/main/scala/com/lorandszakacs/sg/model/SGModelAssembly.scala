@@ -1,9 +1,8 @@
 package com.lorandszakacs.sg.model
 
-import com.lorandszakacs.sg.model.impl.{HopefulsDao, IndexDao, SGModelRepositoryImpl, SuicideGirlsDao}
-import com.lorandszakacs.util.mongodb.Database
-
+import com.lorandszakacs.sg.model.impl.SGModelRepositoryImpl
 import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.mongodb.Database
 
 /**
   *
