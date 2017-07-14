@@ -250,7 +250,7 @@ final class SGDownloader private[downloader](
         _ = logger.info("---------------------------------------------- starting specific.export ----------------------------------------------")
         _ <- This.export.specific(daysToExport, reifiedModels.all)
         _ = logger.info("---------------------------------------------- starting specific.write in DB -----------------------------------------")
-        //        _ <- This.write.specific(indexedModels, reifiedModels)
+        _ <- This.write.specific(indexedModels, reifiedModels)
         _ = logger.info("---------------------------------------------- finished download.specific -----------------------------------------")
       } yield ()
     }
