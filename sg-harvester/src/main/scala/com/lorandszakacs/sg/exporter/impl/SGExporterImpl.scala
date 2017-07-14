@@ -153,8 +153,8 @@ private[exporter] class SGExporterImpl(
     for {
       model <- repo.find(modelName) map (_.getOrElse(throw ModelNotFoundException(modelName)))
     } yield model match {
-      case sg: SuicideGirl => sg.reverseSets.toString
-      case h: Hopeful => h.reverseSets.toString
+      case sg: SuicideGirl => sg.setsByNewestFirst.toString
+      case h: Hopeful => h.setsByNewestFirst.toString
     }
   }
 

@@ -50,7 +50,9 @@ case class Models(
   def newestModel: Option[Model] = all.headOption
 
   def ml(name: ModelName): Option[Model] = all.find(_.name == name)
+
   def sg(name: ModelName): Option[SuicideGirl] = sgs.find(_.name == name)
+
   def hf(name: ModelName): Option[Hopeful] = hfs.find(_.name == name)
 }
 
@@ -86,27 +88,9 @@ sealed trait ModelUpdater[T <: Model] {
   this: Model =>
   def updatePhotoSets(newPhotoSets: List[PhotoSet]): T
 
-  final def reverseSets: T = updatePhotoSets(this.photoSets.reverse)
+  final def setsByNewestFirst: T = updatePhotoSets(this.photoSets.sortBy(_.date).reverse)
 
-  final def addPhotoSet(ph: PhotoSet): T = {
-    if (photoSets.exists(_.id == ph.id)) {
-      throw PhotoSetAlreadyExistsException(name, ph)
-    } else {
-      updatePhotoSets(ph :: this.photoSets)
-    }
-  }
-
-  final def updatePhotoSet(ph: PhotoSet): T = {
-    if (!photoSets.exists(_.id == ph.id)) {
-      throw PhotoSetDoesNotExistException(name, ph)
-    } else {
-      val newPHS = photoSets map { oldPH =>
-        if (oldPH == ph) ph else oldPH
-      }
-      updatePhotoSets(newPHS)
-    }
-  }
-
+  final def setsByOldestFirst: T = updatePhotoSets(this.photoSets.sortBy(_.date))
 }
 
 object ModelName {
