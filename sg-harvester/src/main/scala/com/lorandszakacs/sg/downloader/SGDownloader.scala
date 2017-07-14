@@ -94,6 +94,7 @@ final class SGDownloader private[downloader](
 
   object reify {
     def deltaPure(indexedModels: Models)(implicit passwordProvider: PasswordProvider): Future[Models] = {
+      logger.info(s"reify.delta --> reifying indexed models # ${indexedModels.all.size}: ${indexedModels.all.map(_.name.name).mkString(",")}")
       for {
         reifiedSGs <- Future.serialize(indexedModels.sgs)(reifier.reifySuicideGirl)
         reifiedHFs <- Future.serialize(indexedModels.hfs)(reifier.reifyHopeful)
@@ -112,7 +113,6 @@ final class SGDownloader private[downloader](
   object export {
 
     def delta(daysToExport: Int = 28, delta: List[Model]): Future[Unit] = {
-      logger.info(s"-------------------------------------------------- export.delta --------------------------------------------------")
       logger.info(s"export.delta --> export. Days to export: $daysToExport. #models: ${delta.length}")
       for {
         _ <- exporter.exportDeltaHTMLOfModels(delta)(deltaExporterSettings)
@@ -121,41 +121,10 @@ final class SGDownloader private[downloader](
         _ = logger.info(s"export.delta --IMPURE--> finished newest HTML to ${deltaExporterSettings.newestRootFolderPath}.")
       } yield ()
     }
-
-
-    //    def update(daysToExport: Int = 28, includeProblematic: Boolean)(implicit passwordProvider: PasswordProvider): Future[Unit] = {
-    //      logger.info(s"starting to do a delta update. Days to export: $daysToExport, includeProblematic: $includeProblematic")
-    //      for {
-    //        _ <- harvester.authenticateIfNeeded()
-    //        allNewHarvested <- harvester.gatherNewestPhotosAndUpdateIndex(Int.MaxValue)
-    //        _ = {
-    //          val allNewSG = allNewHarvested.keepSuicideGirls
-    //          val allNewHopefuls = allNewHarvested.keepHopefuls
-    //          logger.info(s"finished harvesting and queuing to reindex all new entries, #${allNewHarvested.length}")
-    //          logger.info(s"# of new suicide girls: ${allNewSG.length}. Names: ${allNewSG.map(_.name.name).mkString(",")}")
-    //          logger.info(s"# of new hopefuls     : ${allNewHopefuls.length}. Names: ${allNewHopefuls.map(_.name.name).mkString(",")}")
-    //        }
-    //
-    //        allThatNeedUpdating <- harvester.gatherAllDataForSuicideGirlsAndHopefulsThatNeedIndexing(
-    //          includeProblematic = includeProblematic
-    //        )
-    //        _ = {
-    //          val (newSGS: List[SuicideGirl], newHopefuls: List[Hopeful]) = allThatNeedUpdating.`SG|Hopeful`
-    //          logger.info(s"# of gathered Suicide Girls: ${newSGS.length}")
-    //          logger.info(s"# of gathered Hopefuls: ${newHopefuls.length}")
-    //        }
-    //
-    //        _ <- exporter.exportDeltaHTMLIndex(allThatNeedUpdating.map(_.name))(deltaExporterSettings)
-    //        _ <- exporter.exportLatestForDays(daysToExport)(deltaExporterSettings)
-    //        _ = logger.info("finished writing the delta HTML export.")
-    //
-    //      } yield ()
-    //    }
   }
 
-  object update {
+  object write {
     def delta(indexedModels: Models, reifiedModels: Models, oldLastProcessedMarker: Option[LastProcessedMarker]): Future[Unit] = {
-      logger.info(s"-------------------------------------------------- update.delta --------------------------------------------------")
       logger.info(s"update.delta --> writing state to DB. # of fully reified models: ${reifiedModels.all.length}")
       for {
         _ <- repo.updateIndexes(indexedModels.hfs, indexedModels.sgs)
@@ -209,18 +178,21 @@ final class SGDownloader private[downloader](
       *
       */
     def delta(daysToExport: Int = 28, includeProblematic: Boolean)(implicit passwordProvider: PasswordProvider): Future[Unit] = {
-      logger.info(s"-------------------------------------------------- download.delta --------------------------------------------------")
-      logger.info(s"download.delta --> IMPURE --> daysToExport: $daysToExport includeProblematic: $includeProblematic")
+      logger.info("---------------------------------------------- starting harvest.delta --------------------------------------------")
+      logger.info(s"harvest.delta --> IMPURE --> daysToExport: $daysToExport includeProblematic: $includeProblematic")
       for {
         _ <- reifier.authenticateIfNeeded()
         lastProcessedOpt: Option[LastProcessedMarker] <- repo.lastProcessedIndex
         _ = logger.info(s"the last processed set was: ${lastProcessedOpt.map(_.lastPhotoSetID)}")
 
+        _ = logger.info("---------------------------------------------- starting delta.indexing --------------------------------------------")
         indexedModels <- This.index.deltaPure(lastProcessedOpt)
+        _ = logger.info("---------------------------------------------- starting delta.reifying --------------------------------------------")
         reifiedModels <- This.reify.deltaPure(indexedModels)
+        _ = logger.info("---------------------------------------------- starting delta.export ----------------------------------------------")
         _ <- This.export.delta(daysToExport, reifiedModels.all)
-
-//        _ <- This.update.delta(indexedModels = indexedModels, reifiedModels = reifiedModels, oldLastProcessedMarker = lastProcessedOpt)
+        _ = logger.info("---------------------------------------------- starting delta.update in DB -----------------------------------------")
+      //        _ <- This.write.delta(indexedModels, reifiedModels, lastProcessedOpt)
       } yield ()
     }
   }
