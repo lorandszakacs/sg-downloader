@@ -65,6 +65,13 @@ class DownloaderCommandLineInterpreter(
           daysToExport = days.getOrElse(120),
           includeProblematic = true
         )
+      //=======================================================================
+      case Commands.DownloadSpecific(models, usernameAndPassword) =>
+        implicit val ppProvider = optionalPasswordParams(usernameAndPassword)
+        downloader.download.specific(
+          modelNames = models,
+          daysToExport = 120 //TODO: read from commandline
+        )
 
       //=======================================================================
       case Commands.Help =>
