@@ -5,7 +5,7 @@ import java.net.URL
 import com.lorandszakacs.sg.contentparser.SGContentParser
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.Model.{HopefulFactory, ModelFactory, SuicideGirlFactory}
-import com.lorandszakacs.sg.model.{Hopeful, Model, ModelName, ModelUpdater, Photo, SuicideGirl}
+import com.lorandszakacs.sg.model.{Hopeful, Model, Photo, SuicideGirl}
 import com.lorandszakacs.sg.reifier.{DidNotFindAnyPhotoLinksOnSetPageException, SGReifier}
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging

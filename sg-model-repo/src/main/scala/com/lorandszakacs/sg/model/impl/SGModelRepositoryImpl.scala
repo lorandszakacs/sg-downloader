@@ -64,7 +64,7 @@ private[model] class SGModelRepositoryImpl(
           //we remove all the hopefuls that became SGs from the index
           newHopefulIndex = oldHopefuls.copy(
             names = (oldHopefuls.names ++ newHopefuls).filterNot(n => hopefulsThatBecameSGS.contains(n.stripUnderscore)),
-            needsReindexing = (oldHopefuls.needsReindexing ++ newHopefuls).filterNot(n => hopefulsThatBecameSGS.contains(n.stripUnderscore))
+            needsReindexing = oldHopefuls.needsReindexing.diff(newHopefuls).filterNot(n => hopefulsThatBecameSGS.contains(n.stripUnderscore))
           )
           _ <- hfiRepo.createOrUpdate(newHopefulIndex)
           _ <- Future.traverse(hopefulsThatBecameSGS) { hopefulName =>
@@ -82,7 +82,7 @@ private[model] class SGModelRepositoryImpl(
           oldSGs <- sgiRepo.get
           newSGIndex = oldSGs.copy(
             names = oldSGs.names ++ newSGs,
-            needsReindexing = oldSGs.needsReindexing ++ newSGs
+            needsReindexing = oldSGs.needsReindexing.diff(newSGs)
           )
           _ <- sgiRepo.createOrUpdate(newSGIndex)
         } yield ()
