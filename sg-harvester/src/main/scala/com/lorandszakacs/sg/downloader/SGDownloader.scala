@@ -95,8 +95,8 @@ final class SGDownloader private[downloader](
   object reify {
     def deltaPure(indexedModels: Models)(implicit passwordProvider: PasswordProvider): Future[Models] = {
       for {
-        reifiedSGs <- Future.traverse(indexedModels.sgs)(reifier.reifySuicideGirl)
-        reifiedHFs <- Future.traverse(indexedModels.hfs)(reifier.reifyHopeful)
+        reifiedSGs <- Future.serialize(indexedModels.sgs)(reifier.reifySuicideGirl)
+        reifiedHFs <- Future.serialize(indexedModels.hfs)(reifier.reifyHopeful)
         reifiedModels = (reifiedSGs, reifiedHFs).group
 
         _ = {
