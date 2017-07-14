@@ -30,6 +30,13 @@ final case class Database(
   }
   private lazy val _db = _dataBase.get
 
+  def drop(): Future[Unit] = {
+    logger.info(s"attempting to drop database: ${_db.name}")
+    _db.drop() map { _ =>
+      logger.info(s"dropped database: ${_db.name}")
+    }
+  }
+
   def shutdown(): Future[Unit] = {
     for {
       _ <- Future fromTry Try {
@@ -53,5 +60,14 @@ object Database {
         throw new IllegalStateException(s"Failed to initialize Mongo database. Because: ${e.getMessage}", e)
     }
     future
+  }
+
+  /**
+    * Convenience method used in testing. You should
+    * pass it the text of the scala test. And ensure that
+    * the text starts with a 3 digit string, e.g. 001
+    */
+  def testName(className: String, testText: String): String = {
+    s"${className}_${testText.replace("should", "").replace(" ", "").take(3)}".trim()
   }
 }

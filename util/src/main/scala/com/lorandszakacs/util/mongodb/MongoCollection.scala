@@ -2,7 +2,9 @@ package com.lorandszakacs.util.mongodb
 
 import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.math.Identifier
-import reactivemongo.api.commands.{MultiBulkWriteResult, WriteResult}
+import reactivemongo.api.commands.{LastError, MultiBulkWriteResult, WriteResult}
+
+import scala.util.control.NonFatal
 
 /**
   *
@@ -30,12 +32,16 @@ object MongoCollection {
     }
   }
 
-  private def interpretWriteResult(wr: WriteResult): Future[Unit] = {
+  private def interpretWriteResult(wr: WriteResult)(implicit ec: ExecutionContext): Future[Unit] = {
     when(!wr.ok) failWith MongoDBException(code = wr.code.map(_.toString), msg = wr.writeErrors.headOption.map(_.toString))
   }
 
-  private def interpretWriteResult(wr: MultiBulkWriteResult): Future[Unit] = {
-    when(!wr.ok) failWith MongoDBException(code = wr.code.map(_.toString), msg = wr.writeErrors.headOption.map(_.toString))
+  private def interpretWriteResult(wr: MultiBulkWriteResult)(implicit ec: ExecutionContext): Future[Unit] = {
+    for {
+      _ <- when(!wr.ok) failWith MongoDBException(code = wr.code.map(_.toString), msg = wr.writeErrors.headOption.map(_.toString))
+      _ <- when(wr.writeErrors.nonEmpty) failWith MongoDBException(code = wr.code.map(_.toString), msg = wr.writeErrors.headOption.map(_.toString))
+    } yield ()
+
   }
 }
 
@@ -90,8 +96,13 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def create(toCreate: Entity): Future[Unit] = {
     for {
-      wr <- collection.insert(toCreate)
-      _ <- MongoCollection.interpretWriteResult(wr)
+      _ <- collection.insert(toCreate) recoverWith {
+        case e: LastError =>
+          MongoCollection.interpretWriteResult(e)
+
+        case NonFatal(e) =>
+          Future.failed(e)
+      }
     } yield ()
   }
 
@@ -106,15 +117,25 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def createOrUpdate(query: BSONDocument, toCreate: Entity): Future[Unit] = {
     for {
-      wr <- collection.update(query, toCreate, upsert = true)
-      _ <- MongoCollection.interpretWriteResult(wr)
+      _ <- collection.update(query, toCreate, upsert = true) recoverWith {
+        case e: LastError =>
+          MongoCollection.interpretWriteResult(e)
+
+        case NonFatal(e) =>
+          Future.failed(e)
+      }
     } yield ()
   }
 
   def createOrUpdate(toCreate: Entity): Future[Unit] = {
     for {
-      wr <- collection.update(idQueryByEntity(toCreate), toCreate, upsert = true)
-      _ <- MongoCollection.interpretWriteResult(wr)
+      _ <- collection.update(idQueryByEntity(toCreate), toCreate, upsert = true) recoverWith {
+        case e: LastError =>
+          MongoCollection.interpretWriteResult(e)
+
+        case NonFatal(e) =>
+          Future.failed(e)
+      }
     } yield ()
   }
 
@@ -128,8 +149,13 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def remove(q: BSONDocument, firstMatchOnly: Boolean = false): Future[Unit] = {
     for {
-      wr <- collection.remove(q, firstMatchOnly = firstMatchOnly)
-      _ <- MongoCollection.interpretWriteResult(wr)
+      _ <- collection.remove(q, firstMatchOnly = firstMatchOnly) recoverWith {
+        case e: LastError =>
+          MongoCollection.interpretWriteResult(e)
+
+        case NonFatal(e) =>
+          Future.failed(e)
+      }
     } yield ()
   }
 
