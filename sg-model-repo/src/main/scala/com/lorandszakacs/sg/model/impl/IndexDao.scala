@@ -3,7 +3,6 @@ package com.lorandszakacs.sg.model.impl
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.mongodb.Imports._
 import com.lorandszakacs.util.future._
-import com.lorandszakacs.util.mongodb.MongoCollection
 
 /**
   *

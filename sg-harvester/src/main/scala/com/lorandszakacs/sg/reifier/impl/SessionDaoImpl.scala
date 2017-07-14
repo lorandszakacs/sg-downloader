@@ -5,9 +5,7 @@ import com.lorandszakacs.sg.reifier.SessionDao
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 import org.joda.time.{DateTime, DateTimeZone}
-import reactivemongo.api.DB
-import reactivemongo.api.collections.bson.BSONCollection
-import reactivemongo.bson.{BSONDateTime, BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONHandler, BSONReader, BSONWriter, Macros}
+import com.lorandszakacs.util.mongodb.Imports._
 
 /**
   *
@@ -15,7 +13,7 @@ import reactivemongo.bson.{BSONDateTime, BSONDocument, BSONDocumentReader, BSOND
   * @since 20 Jul 2016
   *
   */
-private[reifier] final class SessionDaoImpl(val db: DB)(implicit ec: ExecutionContext) extends SessionDao with StrictLogging {
+private[reifier] final class SessionDaoImpl(val db: Database)(implicit ec: ExecutionContext) extends SessionDao with StrictLogging {
   protected lazy val collection: BSONCollection = db("sg_sessions")
 
   private val sessionId = "sg-session"
@@ -51,7 +49,7 @@ private[reifier] final class SessionDaoImpl(val db: DB)(implicit ec: ExecutionCo
 
   private implicit val sessionHandler: BSONDocumentReader[Session] with BSONDocumentWriter[Session] with BSONHandler[BSONDocument, Session] =
     new BSONDocumentReader[Session] with BSONDocumentWriter[Session] with BSONHandler[BSONDocument, Session] {
-      val handler: BSONDocumentReader[Session] with BSONDocumentWriter[Session] with BSONHandler[BSONDocument, Session] = Macros.handler[Session]
+      val handler: BSONDocumentReader[Session] with BSONDocumentWriter[Session] with BSONHandler[BSONDocument, Session] = BSONMacros.handler[Session]
 
       override def read(bson: BSONDocument): Session = handler.read(bson)
 

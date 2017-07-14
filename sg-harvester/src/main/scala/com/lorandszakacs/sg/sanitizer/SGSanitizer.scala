@@ -13,7 +13,7 @@ import com.typesafe.scalalogging.StrictLogging
   * @since 14 Jul 2017
   *
   */
-private[sanitizer] final class SGSanitizer(
+final class SGSanitizer(
   private[this] val repo: SGModelRepository
 )(implicit val executionContext: ExecutionContext) extends StrictLogging {
 

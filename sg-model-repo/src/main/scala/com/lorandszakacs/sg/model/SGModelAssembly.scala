@@ -1,7 +1,7 @@
 package com.lorandszakacs.sg.model
 
 import com.lorandszakacs.sg.model.impl.{HopefulsDao, IndexDao, SGModelRepositoryImpl, SuicideGirlsDao}
-import reactivemongo.api.DefaultDB
+import com.lorandszakacs.util.mongodb.Imports._
 
 import com.lorandszakacs.util.future._
 
@@ -13,7 +13,7 @@ import com.lorandszakacs.util.future._
   */
 trait SGModelAssembly {
 
-  def db: DefaultDB
+  def db: Database
 
   implicit def executionContext: ExecutionContext
 
