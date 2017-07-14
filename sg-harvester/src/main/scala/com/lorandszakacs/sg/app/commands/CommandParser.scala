@@ -27,8 +27,6 @@ object CommandParser extends JavaTokenParsers {
     }
   }
 
-  private val space: Parser[String] = literal(" ")
-
   private val `space+`: Parser[String] = whiteSpace
 
   private val `space*`: Parser[String] = regex("[ ]*".r)

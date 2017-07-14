@@ -6,7 +6,7 @@ import com.lorandszakacs.sg.contentparser.SGContentParser
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.Model.{HopefulFactory, ModelFactory, SuicideGirlFactory}
 import com.lorandszakacs.sg.model.{Hopeful, Model, ModelName, ModelUpdater, Photo, SuicideGirl}
-import com.lorandszakacs.sg.reifier.{DidNotFindAnyPhotoLinksOnSetPageException, SGReifier, SessionDao}
+import com.lorandszakacs.sg.reifier.{DidNotFindAnyPhotoLinksOnSetPageException, SGReifier}
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
@@ -21,7 +21,7 @@ import scala.util.control.NonFatal
   */
 private[reifier] class SGReifierImpl(
   private val sGClient: SGClient,
-  private val sessionDao: SessionDao
+  private val sessionDao: SessionDaoImpl
 )(implicit val ec: ExecutionContext) extends SGReifier with SGURLBuilder with StrictLogging {
 
   private[this] implicit var _authentication: Authentication = DefaultSGAuthentication
@@ -30,7 +30,7 @@ private[reifier] class SGReifierImpl(
     if (authentication.needsRefresh) {
       logger.info("need to authenticate")
       for {
-        possibleSession: Option[Session] <- sessionDao.find()
+        possibleSession: Option[Session] <- sessionDao.find
         newAuthentication: Authentication <- possibleSession match {
           case Some(session) =>
             logger.info("attempting to recreate authentication from stored session")

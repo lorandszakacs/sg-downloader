@@ -21,10 +21,8 @@ trait ReifierAssembly extends SGClientAssembly {
 
   def sgReifier: SGReifier = _sgReifierImpl
 
-  private[reifier] def sessionDao: SessionDao = _sessionDao
-
   private[reifier] lazy val _sessionDao = new SessionDaoImpl(db)(executionContext)
 
-  private[reifier] lazy val _sgReifierImpl = new SGReifierImpl(suicideGirlsClient, sessionDao)
+  private[reifier] lazy val _sgReifierImpl = new SGReifierImpl(suicideGirlsClient, _sessionDao)
 }
 

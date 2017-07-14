@@ -107,7 +107,7 @@ final class SGDownloader private[downloader](
   }
 
   object reify {
-    def deltaPure(indexedModels: Models)(implicit passwordProvider: PasswordProvider): Future[Models] = {
+    def deltaPure(indexedModels: Models): Future[Models] = {
       logger.info(s"reify.delta --> reifying indexed models # ${indexedModels.all.size}: ${indexedModels.allNames.stringify}")
       for {
         reifiedSGs <- Future.serialize(indexedModels.sgs)(reifier.reifySuicideGirl)
@@ -123,7 +123,7 @@ final class SGDownloader private[downloader](
       } yield (reifiedSGs, reifiedHFs).group
     }
 
-    def specificPure(indexedModels: Models)(implicit passwordProvider: PasswordProvider): Future[Models] = {
+    def specificPure(indexedModels: Models): Future[Models] = {
       logger.info(s"reify.specific --> delagating to reify.delta")
       this.deltaPure(indexedModels)
     }

@@ -6,7 +6,6 @@ import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 
 import com.lorandszakacs.util.future._
-import scala.language.postfixOps
 import scala.util.Try
 
 /**
@@ -26,11 +25,11 @@ private[http] object ExceptionHelpers {
     *
     * It's a bug, not a feature.
     */
-  def consumeEntity(e: ResponseEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
+  def consumeEntity(e: ResponseEntity)(implicit mat: ActorMaterializer): Option[String] = {
     Try(e.dataBytes.runWith(Sink.ignore).await()).toOption.map(_ => "ignored-content")
   }
 
-  def consumeEntity(e: RequestEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
+  def consumeEntity(e: RequestEntity)(implicit mat: ActorMaterializer): Option[String] = {
     Try(e.dataBytes.runWith(Sink.ignore).await()).toOption.map(_ => "ignored-content")
   }
 
