@@ -3,6 +3,7 @@ package com.lorandszakacs.sg.reifier.impl
 import com.lorandszakacs.sg.http.Session
 import com.lorandszakacs.sg.reifier.SessionDao
 import com.lorandszakacs.util.future._
+import com.typesafe.scalalogging.StrictLogging
 import org.joda.time.{DateTime, DateTimeZone}
 import reactivemongo.api.DB
 import reactivemongo.api.collections.bson.BSONCollection
@@ -14,7 +15,7 @@ import reactivemongo.bson.{BSONDateTime, BSONDocument, BSONDocumentReader, BSOND
   * @since 20 Jul 2016
   *
   */
-private[reifier] final class SessionDaoImpl(val db: DB)(implicit ec: ExecutionContext) extends SessionDao {
+private[reifier] final class SessionDaoImpl(val db: DB)(implicit ec: ExecutionContext) extends SessionDao with StrictLogging {
   protected lazy val collection: BSONCollection = db("sg_sessions")
 
   private val sessionId = "sg-session"
@@ -26,11 +27,12 @@ private[reifier] final class SessionDaoImpl(val db: DB)(implicit ec: ExecutionCo
     for {
       opt <- this.find()
       _ <- when(opt.isEmpty) execute this.create {
+        logger.info("creating default session info")
         Session(
           username = "default",
           sessionID = "default",
           csrfToken = "default",
-          expiresAt = DateTime.now()
+          expiresAt = DateTime.now().plusDays(128)
         )
       }
     } yield ()
