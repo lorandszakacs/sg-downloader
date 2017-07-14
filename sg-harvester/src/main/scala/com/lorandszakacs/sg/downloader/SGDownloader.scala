@@ -169,7 +169,7 @@ final class SGDownloader private[downloader](
     def specific(indexedModels: Models, reifiedModels: Models): Future[Unit] = {
       logger.info(s"write.specific --> writing state to DB. # of fully reified models: ${reifiedModels.all.length}")
       for {
-        _ <- repo.updateIndexes(indexedModels.hfs, indexedModels.sgs)
+        _ <- repo.markAsIndexed(indexedModels.hfs, indexedModels.sgs)
         _ = logger.info(s"write.specific --IMPURE--> finished writing SG and HF indexes to repository")
 
         _ <- repo.createOrUpdateSGs(reifiedModels.sgs)
