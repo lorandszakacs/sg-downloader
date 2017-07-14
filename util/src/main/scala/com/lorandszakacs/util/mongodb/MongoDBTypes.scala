@@ -12,7 +12,6 @@ import reactivemongo.bson.Macros
 object MongoDBTypes extends MongoDBTypes
 
 trait MongoDBTypes {
-  type Database = reactivemongo.api.DB
   type Cursor[T] = reactivemongo.api.Cursor[T]
 
   val Cursor: api.Cursor.type = reactivemongo.api.Cursor

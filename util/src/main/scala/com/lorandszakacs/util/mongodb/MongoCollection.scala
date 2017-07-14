@@ -1,9 +1,7 @@
 package com.lorandszakacs.util.mongodb
 
-import Imports._
 import com.lorandszakacs.util.future._
 import reactivemongo.api.commands.WriteResult
-import reactivemongo.bson.BSONValue
 
 /**
   *

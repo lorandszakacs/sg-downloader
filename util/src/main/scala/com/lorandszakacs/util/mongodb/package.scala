@@ -6,6 +6,6 @@ package com.lorandszakacs.util
   * @since 26 Jun 2017
   *
   */
-package object mongodb {
+package object mongodb extends MongoQueries with MongoDBTypes {
 
 }
