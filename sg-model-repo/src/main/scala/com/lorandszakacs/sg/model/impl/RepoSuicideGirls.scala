@@ -13,7 +13,7 @@ import com.lorandszakacs.util.future._
 class RepoSuicideGirls
 (override protected val db: Database)(
   implicit override val executionContext: ExecutionContext
-) extends ModelRepo[SuicideGirl] with ModelBSON {
+) extends ModelRepo[SuicideGirl](suicideGirlIdentifier) with ModelBSON {
 
   override val collectionName: String = "suicide_girls"
   override protected implicit val objectHandler: BSONDocumentHandler[SuicideGirl] = BSONMacros.handler[SuicideGirl]

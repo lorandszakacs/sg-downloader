@@ -13,7 +13,7 @@ import com.lorandszakacs.util.future._
 private[impl] class RepoHopefuls
 (override protected val db: Database)(
   implicit override val executionContext: ExecutionContext
-) extends ModelRepo[Hopeful] with ModelBSON {
+) extends ModelRepo[Hopeful](hopefulIdentifier) with ModelBSON {
 
   override val collectionName: String = "hopefuls"
   override protected implicit val objectHandler: BSONDocumentHandler[Hopeful] =
