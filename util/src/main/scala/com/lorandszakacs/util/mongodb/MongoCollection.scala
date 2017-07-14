@@ -32,7 +32,7 @@ object MongoCollection {
     }
   }
 
-  private def interpretWriteResult(wr: WriteResult)(implicit ec: ExecutionContext): Future[Unit] = {
+  private def interpretWriteResult(wr: WriteResult): Future[Unit] = {
     when(!wr.ok) failWith MongoDBException(code = wr.code.map(_.toString), msg = wr.writeErrors.headOption.map(_.toString))
   }
 

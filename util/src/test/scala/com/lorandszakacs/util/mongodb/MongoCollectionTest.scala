@@ -1,11 +1,8 @@
 package com.lorandszakacs.util.mongodb
 
+import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.math.Identifier
 import org.scalatest.{Matchers, OneInstancePerTest, Outcome, fixture}
-import org.scalatest.concurrent.ScalaFutures
-import com.lorandszakacs.util.future._
-
-import scala.util.Try
 
 /**
   *
