@@ -4,12 +4,11 @@ import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.contentparser.SGContentParser
 import com.lorandszakacs.sg.indexer.{FailedToRepeatedlyLoadPageException, SGIndexer}
 import com.lorandszakacs.sg.http._
-import com.lorandszakacs.sg.model.Model.ModelFactory
+import com.lorandszakacs.sg.model.Model.{HopefulFactory, ModelFactory, SuicideGirlFactory}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.list._
 import com.lorandszakacs.util.html.Html
-
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.collection.mutable.ListBuffer
@@ -72,6 +71,11 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     )
   }
 
+  private def isEndPageForModelIndexing(html: Html): Boolean = {
+    val PartialPageLoadingEndMarker = "No photos available."
+    html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
+  }
+
   /**
     *
     * At the time of writing, there are at most 9 sets displayed per such a page.
@@ -85,20 +89,31 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]], and [[PhotoSet.url]] will be a full path URL.
     */
   override def gatherPhotoSetInformationForModel[T <: Model](mf: ModelFactory[T])(modelName: ModelName)(implicit pc: PatienceConfig): Future[T] = {
-    def isEndPage(html: Html) = {
-      val PartialPageLoadingEndMarker = "No photos available."
-      html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
-    }
-
     val pageURL = photoSetsPageURL(modelName)
-
     for {
       sets <- loadPageRepeatedly[PhotoSet](
         uri = pageURL,
         offsetStep = 9,
         parsingFunction = SGContentParser.gatherPhotoSetsForModel,
-        isEndPage = isEndPage
+        isEndPage = isEndPageForModelIndexing
       )
+    } yield {
+      logger.info(s"gathered all sets for ${mf.name} ${modelName.name}. #sets: ${sets.length}")
+      mf(photoSetURL = pageURL, name = modelName, photoSets = sets)
+    }
+  }
+
+  override def gatherPhotoSetInformationForModel(modelName: ModelName)(implicit pc: PatienceConfig): Future[Model] = {
+    val pageURL = photoSetsPageURL(modelName)
+    for {
+      sets <- loadPageRepeatedly[PhotoSet](
+        uri = pageURL,
+        offsetStep = 9,
+        parsingFunction = SGContentParser.gatherPhotoSetsForModel,
+        isEndPage = isEndPageForModelIndexing
+      )
+      isHopeful = sets.exists(_.isHopefulSet.contains(true))
+      mf = if (isHopeful) HopefulFactory else SuicideGirlFactory
     } yield {
       logger.info(s"gathered all sets for ${mf.name} ${modelName.name}. #sets: ${sets.length}")
       mf(photoSetURL = pageURL, name = modelName, photoSets = sets)

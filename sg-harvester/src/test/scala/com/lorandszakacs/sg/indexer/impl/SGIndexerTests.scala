@@ -55,6 +55,29 @@ class SGIndexerTests extends IndexerTest {
     }
   }
 
+  it should "... fetch URIs for a page that does not need a subsequent query -- odina -- generic" in { indexer =>
+    whenReady(indexer.gatherPhotoSetInformationForModel(ModelName("odina"))) { h: Model =>
+      h shouldBe a[Hopeful]
+      val sets: List[PhotoSet] = h.photoSets
+
+      withClue("size") {
+        sets should have size 1
+      }
+
+      withClue("content") {
+        sets should contain {
+          PhotoSet(
+            url = "https://www.suicidegirls.com/members/odina/album/2745718/do-i-wanna-know/",
+            title = "DO I WANNA KNOW",
+            date = LocalDate.parse("2016-07-03"),
+            isHopefulSet = Some(true)
+          )
+        }
+      }
+
+    }
+  }
+
   //===============================================================================================
   //===============================================================================================
 
@@ -65,6 +88,41 @@ class SGIndexerTests extends IndexerTest {
     */
   it should "... fetch URIs for a page that needs several queries -- zoli" in { indexer =>
     whenReady(indexer.gatherPhotoSetInformationForModel(SuicideGirlFactory)(ModelName("zoli"))) { sg: SuicideGirl =>
+      val sets: List[PhotoSet] = sg.photoSets
+
+      withClue("... size") {
+        sets should have size 22
+      }
+
+      withClue("... content") {
+        sets should contain {
+          PhotoSet(
+            url = "https://www.suicidegirls.com/girls/zoli/album/996153/lounge-act/",
+            title = "lounge act",
+            date = LocalDate.parse("2012-10-17")
+          )
+        }
+
+        sets should contain {
+          PhotoSet(
+            url = "https://www.suicidegirls.com/girls/zoli/album/969351/the-beat/",
+            title = "THE BEAT",
+            date = LocalDate.parse("2006-05-03")
+          )
+        }
+      }
+
+    }
+  }
+
+  /**
+    * at the time of writing of this test:
+    * https://www.suicidegirls.com/girls/zoli/photos/
+    * had 22 sets. And has not published a new set in ages.
+    */
+  it should "... fetch URIs for a page that needs several queries -- zoli -- generic" in { indexer =>
+    whenReady(indexer.gatherPhotoSetInformationForModel(ModelName("zoli"))) { sg: Model =>
+      sg shouldBe a[SuicideGirl]
       val sets: List[PhotoSet] = sg.photoSets
 
       withClue("... size") {

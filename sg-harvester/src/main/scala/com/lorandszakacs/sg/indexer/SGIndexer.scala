@@ -44,6 +44,11 @@ trait SGIndexer {
   def gatherPhotoSetInformationForModel[T <: Model](mf: ModelFactory[T])(modelName: ModelName)(implicit pc: PatienceConfig): Future[T]
 
   /**
+    * Similar to [[gatherPhotoSetInformationForModel]], but with more potential for failure
+    */
+  def gatherPhotoSetInformationForModel(modelName: ModelName)(implicit pc: PatienceConfig): Future[Model]
+
+  /**
     *
     *
     */
