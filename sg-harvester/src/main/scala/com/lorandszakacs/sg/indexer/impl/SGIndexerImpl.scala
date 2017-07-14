@@ -12,7 +12,6 @@ import com.lorandszakacs.util.html.Html
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.collection.mutable.ListBuffer
-import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -236,13 +235,14 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
       }
 
       while (!stop) {
-        Thread.sleep(pc.throttle.toMillis)
-        val newPage = sGClient.getPage(offsetUri(uri, offset)).await()
+        pc.throttleThread()
+        val newURI = offsetUri(uri, offset)
+        val newPage = sGClient.getPage(newURI).await()
         offset += offsetStep
         if (isEndPage(newPage) || offset > cutOffLimit) {
           stop = true
         } else {
-          logger.info(s"load repeatedly: currentOffset=$offset; step=$offsetStep")
+          logger.info(s"load repeatedly: step=$offsetStep [$newURI]")
           parsingFunction(newPage) match {
             case Success(s) =>
               result ++= s

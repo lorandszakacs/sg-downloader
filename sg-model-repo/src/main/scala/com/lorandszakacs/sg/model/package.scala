@@ -23,20 +23,10 @@ package object model {
   }
 
   implicit class BuffedModels(models: List[Model]) {
-    def keepSuicideGirls: List[SuicideGirl] = models.map(_.asSuicideGirls) filter (_.isDefined) map (_.get)
-
-    def keepHopefuls: List[Hopeful] = models.map(_.asHopeful) filter (_.isDefined) map (_.get)
-
-    @scala.deprecated("use group implementation instead", "now")
-    def `SG|Hopeful`: (List[SuicideGirl], List[Hopeful]) = {
-      val (sgs, hf) = models partition (_.isSuicideGirl)
-      (sgs map (_.asSuicideGirls) map (_.get), hf map (_.asHopeful) map (_.get))
-    }
-
     def group: Models = {
       val (sgs, hf) = models partition (_.isSuicideGirl)
       Models(
-        sgs = sgs map (_.asSuicideGirls) map (_.get),
+        sgs = sgs map (_.asSuicideGirl) map (_.get),
         hfs = hf map (_.asHopeful) map (_.get),
         all = models
       )

@@ -77,6 +77,14 @@ private[reifier] class SGReifierImpl(
     reifyModel(HopefulFactory)(hf)
   }
 
+  override def reify(m: Model)(implicit pc: PatienceConfig): Future[Model] = {
+    m match {
+      case sg: SuicideGirl => reifyModel(SuicideGirlFactory)(sg)
+      case hf: Hopeful => reifyModel(HopefulFactory)(hf)
+    }
+
+  }
+
   private def gatherAllPhotosFromSetPage(photoSetPageUri: URL): Future[List[Photo]] = {
     for {
       photoSetPageHTML <- sGClient.getPage(photoSetPageUri)

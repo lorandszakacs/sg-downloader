@@ -74,9 +74,13 @@ sealed trait Model {
 
   def isSuicideGirl: Boolean
 
-  def asSuicideGirls: Option[SuicideGirl]
+  def asSuicideGirl: Option[SuicideGirl]
+
+  def makeSuicideGirl: SuicideGirl
 
   def asHopeful: Option[Hopeful]
+
+  def makeHopeful: Hopeful
 
   def stringifyType: String
 
@@ -175,9 +179,13 @@ final case class SuicideGirl(
 
   override def isSuicideGirl: Boolean = true
 
-  override def asSuicideGirls: Option[SuicideGirl] = Option(this)
+  override def asSuicideGirl: Option[SuicideGirl] = Option(this)
+
+  override def makeSuicideGirl: SuicideGirl = this
 
   override def asHopeful: Option[Hopeful] = None
+
+  override def makeHopeful: Hopeful = throw new AssertionError("attempted to cast a SuicideGirl to a Hopeful")
 
   override def stringifyType: String = "suicide girl"
 }
@@ -194,11 +202,16 @@ final case class Hopeful(
 
   override def isSuicideGirl: Boolean = false
 
-  override def asSuicideGirls: Option[SuicideGirl] = None
+  override def asSuicideGirl: Option[SuicideGirl] = None
+
+  override def makeSuicideGirl: SuicideGirl = throw new AssertionError("attempted to cast Hopeful as SuicideGirl")
 
   override def asHopeful: Option[Hopeful] = Option(this)
 
+  override def makeHopeful: Hopeful = this
+
   override def stringifyType: String = "hopeful"
+
 }
 
 final case class PhotoSet(

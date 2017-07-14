@@ -3,7 +3,7 @@ package com.lorandszakacs.sg.reifier
 import java.net.URL
 
 import com.lorandszakacs.sg.http.{Authentication, PasswordProvider, PatienceConfig}
-import com.lorandszakacs.sg.model.{Hopeful, Photo, SuicideGirl}
+import com.lorandszakacs.sg.model.{Hopeful, Model, Photo, SuicideGirl}
 import com.lorandszakacs.util.future._
 
 /**
@@ -28,6 +28,8 @@ trait SGReifier {
   def reifySuicideGirl(sg: SuicideGirl)(implicit pc: PatienceConfig): Future[SuicideGirl]
 
   def reifyHopeful(hf: Hopeful)(implicit pc: PatienceConfig): Future[Hopeful]
+
+  def reify(m: Model)(implicit pc: PatienceConfig): Future[Model]
 
   def authentication: Authentication
 }
