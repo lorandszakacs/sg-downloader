@@ -90,16 +90,16 @@ private[reifier] class SGReifierImpl(
   }
 
   private def reifyModel[T <: Model](mf: ModelFactory[T])(model: T): Future[T] = {
-    logger.info(s"SGReifier --> reifying: ${mf.name} ${model.name}. Expecting ${model.photoSets.length} sets")
+    logger.info(s"SGReifier --> reifying: ${mf.name} ${model.name.name}. Expecting ${model.photoSets.length} sets")
     for {
       reifiedPhotoSets <- Future.traverse(model.photoSets) { photoSet =>
         for {
           photos <- this.gatherAllPhotosFromSetPage(photoSet.url) recoverWith {
             case e: DidNotFindAnyPhotoLinksOnSetPageException =>
-              logger.error(s"${photoSet.url} has no photos. `${mf.name} ${model.name}`")
+              logger.error(s"${photoSet.url} has no photos. `${mf.name} ${model.name.name}`")
               Future.successful(Nil)
             case e: Throwable =>
-              logger.error(s"${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${model.name}`", e)
+              logger.error(s"${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${model.name.name}`", e)
               Future.successful(Nil)
           }
         } yield photoSet.copy(photos = photos)
