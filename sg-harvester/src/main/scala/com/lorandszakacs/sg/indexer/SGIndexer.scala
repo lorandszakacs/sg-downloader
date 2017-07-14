@@ -8,7 +8,7 @@ import org.joda.time.DateTime
 import com.lorandszakacs.util.future._
 
 /**
-  *  Represents the first stage of the pipeline of processing
+  * Represents the first stage of the pipeline of processing
   *
   * "indexing" can be done without authentication. It implies gathering all
   * model names, and their associated photosets.
@@ -54,16 +54,12 @@ trait SGIndexer {
     */
   def gatherAllNewModelsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]]
 
-  final def createLastProcessedIndex(lastModel: Model): LastProcessedMarker = lastModel match {
-    case h: Hopeful =>
-      LastProcessedHopeful(
-        timestamp = DateTime.now(),
-        hopeful = h
-      )
-    case sg: SuicideGirl =>
-      LastProcessedSG(
-        timestamp = DateTime.now(),
-        suicidegirl = sg
-      )
+  final def createLastProcessedIndex(lastModel: Model): LastProcessedMarker = {
+    LastProcessedMarker(
+      timestamp = DateTime.now(),
+      photoSet = lastModel.photoSetsNewestFirst
+        .headOption.getOrElse(throw new AssertionError(s"... tried to create last processed index from model ${lastModel.name.name}, but they had no sets")).copy(photos = Nil)
+    )
   }
+
 }

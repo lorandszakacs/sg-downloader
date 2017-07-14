@@ -104,27 +104,7 @@ private[impl] trait SGRepoBSON {
       override def read(bson: BSONDocument): Hopeful = handler.read(bson)
     }
 
-
-  protected implicit val lastProcessedHopefulBSON: BSONDocumentReader[LastProcessedHopeful] with BSONDocumentWriter[LastProcessedHopeful] with BSONHandler[BSONDocument, LastProcessedHopeful] =
-    BSONMacros.handlerOpts[LastProcessedHopeful, BSONMacros.Options.SaveSimpleName]
-
-  implicit val lastProcessedSuicideGirlBSON: BSONDocumentReader[LastProcessedSG] with BSONDocumentWriter[LastProcessedSG] with BSONHandler[BSONDocument, LastProcessedSG] =
-    BSONMacros.handlerOpts[LastProcessedSG, BSONMacros.Options.SaveSimpleName]
-
-  implicit val lastProcessedMarkerBSON: BSONDocumentReader[LastProcessedMarker] =
-    new BSONDocumentReader[LastProcessedMarker] {
-      override def read(bson: BSONDocument): LastProcessedMarker = {
-        bson.getAs[String]("className") match {
-          case None => throw new AssertionError("lastProcessedMarker.className field should exist")
-          case Some(x) => x match {
-            case "LastProcessedHopeful" => lastProcessedHopefulBSON.read(bson)
-            case "LastProcessedSG" => lastProcessedSuicideGirlBSON.read(bson)
-            case m => throw new RuntimeException(s"... Invalid className for LastProcessedMarker: $m")
-          }
-        }
-      }
-
-    }
+  implicit val lastProcessedMarkerBSON: BSONDocumentHandler[LastProcessedMarker] = BSONMacros.handler[LastProcessedMarker]
 }
 
 private[impl] trait MongoDAO extends SGRepoBSON {

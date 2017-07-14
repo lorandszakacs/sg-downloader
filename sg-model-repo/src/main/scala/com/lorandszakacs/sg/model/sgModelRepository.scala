@@ -98,27 +98,9 @@ final case class CleanedUpModelsIndex(
   hopefuls: List[ModelName]
 )
 
-sealed trait LastProcessedMarker {
-  def timestamp: DateTime
-
-  def model: Model
-
-  final def lastPhotoSetID: String = {
-    val ph: PhotoSet = model.photoSets.headOption.getOrElse(throw new AssertionError("... tried to get lastPhotoSet, of ProccessedIndex, but it did not exist"))
-    ph.id
-  }
-}
-
-case class LastProcessedSG(
+case class LastProcessedMarker(
   timestamp: DateTime,
-  suicidegirl: SuicideGirl
-) extends LastProcessedMarker {
-  override def model: Model = suicidegirl
-}
-
-case class LastProcessedHopeful(
-  timestamp: DateTime,
-  hopeful: Hopeful
-) extends LastProcessedMarker {
-  override def model: Model = hopeful
+  photoSet: PhotoSet
+) {
+  final def lastPhotoSetID: String = photoSet.id
 }

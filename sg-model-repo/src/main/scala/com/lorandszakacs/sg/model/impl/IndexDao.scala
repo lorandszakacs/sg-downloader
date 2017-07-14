@@ -14,13 +14,6 @@ import com.lorandszakacs.util.mongodb.MongoCollection
 final private[model] class IndexDao(val db: Database)(implicit val ec: ExecutionContext) extends MongoDAO {
   override protected val collectionName: String = "models_index"
 
-  /**
-    * final case class CleanedUpModelsIndex(
-    * suicideGirls: List[ModelName],
-    * hopefuls: List[ModelName],
-    * lastCleaning: DateTime
-    */
-
   private val Names = "names"
   private val Number = "number"
   private val NeedsReindexing = "needsReindexing"
@@ -152,12 +145,8 @@ final private[model] class IndexDao(val db: Database)(implicit val ec: Execution
 
 
   def createOrUpdateLastProcessedStatus(status: LastProcessedMarker): Future[Unit] = {
-    val temp: BSONDocument = status match {
-      case h: LastProcessedHopeful => lastProcessedHopefulBSON.write(h)
-      case sg: LastProcessedSG => lastProcessedSuicideGirlBSON.write(sg)
-    }
+    val temp: BSONDocument = lastProcessedMarkerBSON.write(status)
     val d = temp ++ (_id -> LastProcessedId)
-
     val s: BSONDocument = BSONDocument(_id -> LastProcessedId)
 
     collection.update(selector = s, update = d, upsert = true) map { _ => () }
