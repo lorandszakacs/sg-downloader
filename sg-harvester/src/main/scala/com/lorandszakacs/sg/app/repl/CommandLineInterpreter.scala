@@ -17,7 +17,7 @@ import scala.util.control.NonFatal
   * @since 01 Jul 2017
   *
   */
-class DownloaderCommandLineInterpreter(
+class CommandLineInterpreter(
   assembly: ModelExporterAssembly with
     SGDownloaderAssembly
 ) extends StrictLogging {

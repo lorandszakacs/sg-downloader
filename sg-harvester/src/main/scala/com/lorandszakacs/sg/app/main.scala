@@ -16,7 +16,7 @@
   */
 package com.lorandszakacs.sg.app
 
-import com.lorandszakacs.sg.app.repl.{DownloaderCommandLineInterpreter, DownloaderRepl}
+import com.lorandszakacs.sg.app.repl.{CommandLineInterpreter, REPL}
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
@@ -27,8 +27,8 @@ import com.typesafe.scalalogging.StrictLogging
   */
 object Main extends App with StrictLogging {
   val assembly = new Assembly
-  val interpreter = new DownloaderCommandLineInterpreter(assembly)
-  val repl = new DownloaderRepl(interpreter)(assembly.executionContext)
+  val interpreter = new CommandLineInterpreter(assembly)
+  val repl = new REPL(interpreter)
 
   if (args.nonEmpty) {
     logger.info(s"Received args: ${args.mkString(",")}    --> executing command")
