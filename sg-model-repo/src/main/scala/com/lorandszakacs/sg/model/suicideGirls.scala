@@ -4,6 +4,7 @@ import java.net.URL
 
 import com.github.nscala_time.time.Imports._
 import org.joda.time.format.DateTimeFormatter
+import reactivemongo.bson.Macros.Annotations.Ignore
 
 import scala.language.postfixOps
 
@@ -205,7 +206,7 @@ final case class PhotoSet(
   title: PhotoSetTitle,
   date: LocalDate,
   photos: List[Photo] = Nil,
-  isHopefulSet: Option[Boolean] = None
+  @Ignore() isHopefulSet: Option[Boolean] = None
 ) {
 
   def id: String = url.toExternalForm
