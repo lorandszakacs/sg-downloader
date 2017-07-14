@@ -3,9 +3,9 @@ package com.lorandszakacs.sg.model.impl
 import com.lorandszakacs.sg.model._
 import com.typesafe.scalalogging.StrictLogging
 import org.joda.time.LocalDate
-
 import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.list._
+import com.lorandszakacs.util.mongodb.Database
 import com.lorandszakacs.util.time._
 
 /**
@@ -15,95 +15,103 @@ import com.lorandszakacs.util.time._
   *
   */
 private[model] class SGModelRepositoryImpl(
-  val indexDao: IndexDao,
-  val suicideGirlsDao: SuicideGirlsDao,
-  val hopefulsDao: HopefulsDao
+  val db: Database
 )(implicit val ec: ExecutionContext) extends SGModelRepository with StrictLogging {
 
-  override def modelsWithZeroPhotoSets: Future[(List[SuicideGirl], List[Hopeful])] = {
+  private val sgsRepo = new RepoSuicideGirls(db)
+  private val sgiRepo = new RepoSuicideGirlIndex(db)
+  private val hfsRepo = new RepoHopefuls(db)
+  private val hfiRepo = new RepoHopefulIndex(db)
+  private val lpmRepo = new RepoLastProcessedMarker(db)
+
+  override def modelsWithZeroPhotoSets: Future[Models] = {
     for {
-      sgs <- suicideGirlsDao.findWithZeroSets
-      hopefuls <- hopefulsDao.findWithZeroSets
-    } yield (sgs, hopefuls)
+      sgs <- sgsRepo.findWithZeroSets
+      hopefuls <- hfsRepo.findWithZeroSets
+    } yield (sgs, hopefuls).group
   }
 
   override def reindexSGs(names: List[ModelName]): Future[Unit] = {
-    logger.info(s"reindexing all SGs, with ${names.length} new ones")
-    indexDao.rewriteSGIndex(names)
+    sgiRepo.rewriteIndex(names)
   }
 
   override def reindexHopefuls(names: List[ModelName]): Future[Unit] = {
-    indexDao.rewriteHopefulsIndex(names)
+    hfiRepo.rewriteIndex(names)
   }
 
-  override def updateIndexes(newHopefuls: List[Hopeful], newSGs: List[SuicideGirl]): Future[Unit] = {
-    updateIndexesForNames(
+  override def markAsIndexed(newHopefuls: List[Hopeful], newSGs: List[SuicideGirl]): Future[Unit] = {
+    markAsIndexedForNames(
       newHopefuls = newHopefuls.map(_.name),
       newSGs = newSGs.map(_.name)
     )
   }
 
-  override def updateIndexesForNames(newHopefuls: List[ModelName], newSGs: List[ModelName]): Future[Unit] = {
+  override def markAsIndexedForNames(newHopefuls: List[ModelName], newSGs: List[ModelName]): Future[Unit] = {
+    /**
+      *
+      * @return
+      * hopefuls that became SGS
+      */
+    def updateHopeful(newHopefuls: List[ModelName]): Future[List[ModelName]] = {
+      if (newHopefuls.isEmpty) {
+        Future.successful(Nil)
+      } else {
+        for {
+          oldHopefuls <- hfiRepo.get
+          hopefulsThatBecameSGS: List[ModelName] = oldHopefuls.names.filter { ohn =>
+            newSGs.contains(ohn.stripUnderscore)
+          }
+          //we remove all the hopefuls that became SGs from the index
+          newHopefulIndex = oldHopefuls.copy(
+            names = (oldHopefuls.names ++ newHopefuls).filterNot(n => hopefulsThatBecameSGS.contains(n.stripUnderscore)),
+            needsReindexing = (oldHopefuls.needsReindexing ++ newHopefuls).filterNot(n => hopefulsThatBecameSGS.contains(n.stripUnderscore))
+          )
+          _ <- hfiRepo.createOrUpdate(newHopefulIndex)
+          _ <- Future.traverse(hopefulsThatBecameSGS) { hopefulName =>
+            hfsRepo.remove(hopefulName)
+          }
+        } yield hopefulsThatBecameSGS
+      }
+    }
+
+    def updateSGs(newSGs: List[ModelName]): Future[Unit] = {
+      if (newSGs.isEmpty) {
+        Future.unit
+      } else {
+        for {
+          oldSGs <- sgiRepo.get
+          newSGIndex = oldSGs.copy(
+            names = oldSGs.names ++ newSGs,
+            needsReindexing = oldSGs.needsReindexing ++ newSGs
+          )
+          _ <- sgiRepo.createOrUpdate(newSGIndex)
+        } yield ()
+      }
+
+    }
+
     for {
-      oldHopefuls <- indexDao.hopefulIndex
-      oldSGs <- indexDao.suicideGirlsIndex
-      hopefulsThatBecameSGS: List[ModelName] = oldHopefuls.names.filter { ohn =>
-        newSGs.contains(ohn.stripUnderscore)
-      }
-      newSGIndex = oldSGs.copy(
-        names = oldSGs.names ++ newSGs,
-        needsReindexing = oldSGs.needsReindexing ++ newSGs
-      )
-      //we remove all the hopefuls that became SGs from the index
-      newHopefulIndex = oldHopefuls.copy(
-        names = (oldHopefuls.names ++ newHopefuls).filterNot(n => hopefulsThatBecameSGS.contains(n.stripUnderscore)),
-        needsReindexing = (oldHopefuls.needsReindexing ++ newHopefuls).filterNot(n => hopefulsThatBecameSGS.contains(n.stripUnderscore))
-      )
-      _ <- indexDao.rewriteHopefulsIndex(newHopefulIndex)
-      _ <- indexDao.rewriteSGIndex(newSGIndex)
-      _ <- Future.traverse(hopefulsThatBecameSGS) { hopefulName =>
-        hopefulsDao.delete(hopefulName)
-      }
+      hopefulsThatBecameSGs <- updateHopeful(newHopefuls)
+      _ <- updateSGs(newSGs)
     } yield {
-      logger.info(s"new SGs: ${newSGs.map(_.name).mkString(",")}")
-      logger.info(s"new Hopefuls: ${newHopefuls.map(_.name).mkString(",")}")
-      logger.info(s"hopefuls that became SGs:: ${hopefulsThatBecameSGS.map(_.name).mkString(",")}")
+      logger.info(s"new SGs: ${newSGs.stringify}")
+      logger.info(s"new Hopefuls: ${newHopefuls.stringify}")
+      logger.info(s"hopefuls that became SGs: ${hopefulsThatBecameSGs.stringify}")
     }
   }
 
-  override def cleanUpModels(sgs: List[ModelName], hopefuls: List[ModelName]): Future[Unit] = {
-    for {
-      _ <- indexDao.cleanUp(sgs, hopefuls)
-      _ <- Future.traverse(sgs) { sg =>
-        suicideGirlsDao.delete(sg.name)
-      }
-
-      _ <- Future.traverse(hopefuls) { hopeful =>
-        hopefulsDao.delete(hopeful.name)
-      }
-    } yield ()
-  }
-
   override def createOrUpdateLastProcessed(l: LastProcessedMarker): Future[Unit] = {
-    indexDao.createOrUpdateLastProcessedStatus(l)
+    lpmRepo.createOrUpdate(l)
   }
 
   override def lastProcessedIndex: Future[Option[LastProcessedMarker]] = {
-    indexDao.lastProcessedStatus
-  }
-
-  override def suicideGirlIndex: Future[SuicideGirlIndex] = {
-    indexDao.suicideGirlsIndex
-  }
-
-  override def hopefulIndex: Future[HopefulIndex] = {
-    indexDao.hopefulIndex
+    lpmRepo.find
   }
 
   def completeModelIndex: Future[CompleteModelIndex] = {
     for {
-      hs <- indexDao.hopefulIndex
-      gs <- indexDao.suicideGirlsIndex
+      hs: HopefulIndex <- hfiRepo.get
+      gs: SuicideGirlIndex <- sgiRepo.get
     } yield {
       val normalizedNames = (hs.names ++ gs.names).distinct.sorted
       val normalizedReindexing = (hs.needsReindexing ++ gs.needsReindexing).distinct.sorted
@@ -115,36 +123,18 @@ private[model] class SGModelRepositoryImpl(
     }
   }
 
-  override def createOrUpdateSG(sg: SuicideGirl): Future[Unit] = {
-    for {
-      _ <- suicideGirlsDao.createOrUpdate(sg)
-      emptyPhotoSets = sg.photoSets.filter(_.photos.isEmpty)
-      _ <- if (emptyPhotoSets.isEmpty) {
-        indexDao.markSGAsIndexed(sg.name)
-      } else {
-        Future.unit
-      }
-    } yield ()
-  }
-
   override def createOrUpdateSGs(sgs: List[SuicideGirl]): Future[Unit] = {
-    Future.traverse(sgs)(this.createOrUpdateSG) map `Any => Unit`
-  }
-
-  override def createOrUpdateHopeful(hopeful: Hopeful): Future[Unit] = {
     for {
-      _ <- hopefulsDao.createOrUpdate(hopeful)
-      emptyPhotoSets = hopeful.photoSets.filter(_.photos.isEmpty)
-      _ <- if (emptyPhotoSets.isEmpty) {
-        indexDao.markHopefulAsIndexed(hopeful.name)
-      } else {
-        Future.unit
-      }
+      _ <- sgsRepo.createOrUpdate(sgs)
+      _ <- this.markAsIndexed(newHopefuls = Nil, newSGs = sgs)
     } yield ()
   }
 
   override def createOrUpdateHopefuls(hopefuls: List[Hopeful]): Future[Unit] = {
-    Future.traverse(hopefuls)(this.createOrUpdateHopeful) map `Any => Unit`
+    for {
+      _ <- hfsRepo.createOrUpdate(hopefuls)
+      _ <- this.markAsIndexed(newHopefuls = hopefuls, newSGs = Nil)
+    } yield ()
   }
 
   private def groupModelsBetweenDays(start: LocalDate, end: LocalDate, models: List[Model]): List[(LocalDate, List[Model])] = {
@@ -157,8 +147,8 @@ private[model] class SGModelRepositoryImpl(
 
   override def aggregateBetweenDays(start: LocalDate, end: LocalDate, models: List[Model]): Future[List[(LocalDate, List[Model])]] = {
     for {
-      sgs <- suicideGirlsDao.findBetweenDays(start, end)
-      hopefuls <- hopefulsDao.findBetweenDays(start, end)
+      sgs <- sgsRepo.findBetweenDays(start, end)
+      hopefuls <- hfsRepo.findBetweenDays(start, end)
       allFromDB: List[Model] = sgs ++ hopefuls
       all: List[Model] = allFromDB.addOrReplace(models)
 
@@ -168,22 +158,22 @@ private[model] class SGModelRepositoryImpl(
 
   override def find(modelName: ModelName): Future[Option[Model]] = {
     for {
-      sg: Option[SuicideGirl] <- suicideGirlsDao.find(modelName)
-      hopeful: Option[Hopeful] <- hopefulsDao.find(modelName)
+      sg: Option[SuicideGirl] <- sgsRepo.find(modelName)
+      hopeful: Option[Hopeful] <- hfsRepo.find(modelName)
     } yield if (sg.isDefined) sg else hopeful
   }
 
   override def find(modelNames: Seq[ModelName]): Future[List[Model]] = {
     for {
-      sgs <- suicideGirlsDao.find(modelNames)
-      hopefuls <- hopefulsDao.find(modelNames)
+      sgs <- sgsRepo.findManyById(modelNames)
+      hopefuls <- hfsRepo.findManyById(modelNames)
     } yield (sgs ++ hopefuls).sortBy(_.name)
   }
 
   override def findAll: Future[List[Model]] = {
     for {
-      sgs <- suicideGirlsDao.findAll
-      hopefuls <- hopefulsDao.findAll
+      sgs <- sgsRepo.findAll
+      hopefuls <- hfsRepo.findAll
     } yield (sgs ++ hopefuls).sortBy(_.name)
   }
 
