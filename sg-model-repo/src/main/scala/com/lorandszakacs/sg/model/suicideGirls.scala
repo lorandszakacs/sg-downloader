@@ -83,10 +83,16 @@ sealed trait Model {
 
   final def numberOfPhotos: Int = photoSets.map(_.photos.length).sum
 
+  final def photoSetsOldestFirst: List[PhotoSet] =
+    this.photoSets.sortBy(_.date)
+
+  final def photoSetsNewestFirst: List[PhotoSet] =
+    this.photoSetsOldestFirst.reverse
+
   override def toString: String =
     s"""|---------${this.getClass.getSimpleName}: ${name.name} : ${photoSets.length}---------
         |url=${photoSetURL.toExternalForm}
-        |${photoSets.mkString("", "\n", "")}
+        |${photoSetsNewestFirst.mkString("", "\n", "")}
         |""".stripMargin
 }
 
