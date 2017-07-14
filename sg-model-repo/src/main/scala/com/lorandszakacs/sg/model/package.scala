@@ -53,6 +53,10 @@ package object model {
     }
   }
 
+  implicit class BuffedModelNames(models: List[ModelName]){
+    def stringify: String = models.map(_.name).mkString(",")
+  }
+
   implicit def stringToModelName(str: String): ModelName = ModelName(str)
 
   implicit def stringToPhotoSetTitleName(str: String): PhotoSetTitle = PhotoSetTitle(str)

@@ -54,6 +54,12 @@ case class Models(
   def sg(name: ModelName): Option[SuicideGirl] = sgs.find(_.name == name)
 
   def hf(name: ModelName): Option[Hopeful] = hfs.find(_.name == name)
+
+  def sgNames: List[ModelName] = sgs.map(_.name)
+
+  def hfNames: List[ModelName] = hfs.map(_.name)
+
+  def allNames: List[ModelName] = all.map(_.name)
 }
 
 sealed trait Model {
