@@ -51,7 +51,7 @@ trait SingleDocumentMongoCollection[Entity, IdType, BSONTargetType <: BSONValue]
     repo.create(e)
 
   def createOrUpdate(e: Entity): Future[Unit] =
-    repo.create(e)
+    repo.createOrUpdate(e)
 
   def remove(): Future[Unit] =
     repo.remove(idQuery)
