@@ -41,22 +41,10 @@ trait SGIndexer {
     * the [[PhotoSet]]s of the given model.
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]], and [[PhotoSet.url]] will be a full path URL.
     */
-  @scala.deprecated("will be made private", "now")
   def gatherPhotoSetInformationForModel[T <: Model](mf: ModelFactory[T])(modelName: ModelName)(implicit pc: PatienceConfig): Future[T]
 
   /**
-    * Gathers information about the latest published sets from:
-    * https://www.suicidegirls.com/photos/all/recent/all/
     *
-    * The amount of crawling is limited by the absolute limit, or by the set identified by [[LastProcessedMarker.lastPhotoSetID]]
-    * This last set is not included in the results.
-    */
-  @scala.deprecated("will be made private", "now")
-  def gatherAllNewModelsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]]
-
-  /**
-    * A composite operation of [[gatherAllNewModelsAndOnlyTheirLatestSet]] and
-    * [[gatherPhotoSetInformationForModel]] gotten for that model.
     *
     */
   def gatherAllNewModelsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]]

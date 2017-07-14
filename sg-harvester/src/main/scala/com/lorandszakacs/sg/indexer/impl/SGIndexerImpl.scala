@@ -84,7 +84,6 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     * the [[PhotoSet]]s of the given model.
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]], and [[PhotoSet.url]] will be a full path URL.
     */
-  @scala.deprecated("will be made private", "now")
   override def gatherPhotoSetInformationForModel[T <: Model](mf: ModelFactory[T])(modelName: ModelName)(implicit pc: PatienceConfig): Future[T] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
@@ -117,8 +116,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     *
     * Returns a [[Model]] with only one [[Model.photoSets]], the one that shows up on the page.
     */
-  @scala.deprecated("will be made private", "now")
-  override def gatherAllNewModelsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
+  private def gatherAllNewModelsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -152,12 +150,19 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
   }
 
   /**
+    *
+    * Reindexes the models that have a set on the page:
+    * https://www.suicidegirls.com/photos/all/recent/all/
+    *
+    *
+    * The amount of crawling is limited by the absolute limit, or by the set identified by [[LastProcessedMarker.lastPhotoSetID]]
+    * This last set is not included in the results.
+    *
     * Eliminates duplicate [[Model]], sometimes it happens that a model has two sets on the newest page, especially
     * if we wait a lot of time between updates.
     *
-    * A composite operation of [[gatherAllNewModelsAndOnlyTheirLatestSet]] and
-    * [[gatherPhotoSetInformationForModel]] gotten for that model.
-    *
+    * @return
+    * All models that have been gathered with fully indexed information, i.e. all their photosets, but no photo information
     */
   override def gatherAllNewModelsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
     for {
