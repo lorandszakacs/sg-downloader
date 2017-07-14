@@ -92,7 +92,7 @@ private[reifier] class SGReifierImpl(
     logger.info(s"SGReifier --> reifying: ${mf.name} ${model.name.name}. Expecting ${model.photoSets.length} sets")
     for {
       reifiedPhotoSets <- Future.serialize(model.photoSets) { photoSet =>
-        pc.throttleAfter {
+        pc.throttleQuarterAfter {
           for {
             photos <- this.gatherAllPhotosFromSetPage(photoSet.url) recoverWith {
               case e: DidNotFindAnyPhotoLinksOnSetPageException =>
