@@ -192,7 +192,8 @@ final case class PhotoSet(
   url: URL,
   title: PhotoSetTitle,
   date: LocalDate,
-  photos: List[Photo] = Nil
+  photos: List[Photo] = Nil,
+  isHopefulSet: Option[Boolean] = None
 ) {
 
   def id: String = url.toExternalForm
@@ -202,6 +203,7 @@ final case class PhotoSet(
        |title = ${title.name}
        |date  = ${date.toString(Util.dateTimeFormat)}
        |url   = ${url.toExternalForm}
+       |${isHopefulSet.map(b => s"isHF  = $b").getOrElse("")}
        |${photos.mkString("{\n\t", "\n\t", "\n}")}
        |${"_________________"}
       """.stripMargin

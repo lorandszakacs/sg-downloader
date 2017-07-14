@@ -46,7 +46,8 @@ class SGIndexerTests extends IndexerTest {
           PhotoSet(
             url = "https://www.suicidegirls.com/members/odina/album/2745718/do-i-wanna-know/",
             title = "DO I WANNA KNOW",
-            date = LocalDate.parse("2016-07-03")
+            date = LocalDate.parse("2016-07-03"),
+            isHopefulSet = Some(true)
           )
         }
       }
