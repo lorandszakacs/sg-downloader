@@ -42,8 +42,7 @@ class DownloaderRepl(
 
         case Failure(exception) =>
           logger.error(s"failed to interpret: $input", exception)
-          ()
-          println()
+          print("\n")
       } // end try
 
     }
