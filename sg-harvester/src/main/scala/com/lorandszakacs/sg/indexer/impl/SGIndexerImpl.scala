@@ -116,7 +116,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     *
     * Returns a [[Model]] with only one [[Model.photoSets]], the one that shows up on the page.
     */
-  private def gatherAllNewModelsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
+  private[impl] def gatherAllNewModelsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)

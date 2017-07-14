@@ -5,8 +5,9 @@ import java.util.concurrent.Executors
 import akka.actor.ActorSystem
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
 import com.lorandszakacs.sg.exporter.ModelExporterAssembly
-import com.lorandszakacs.sg.harvester.SGHarvesterAssembly
+import com.lorandszakacs.sg.indexer.IndexerAssembly
 import com.lorandszakacs.sg.model.SGModelAssembly
+import com.lorandszakacs.sg.reifier.ReifierAssembly
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
@@ -21,7 +22,7 @@ import scala.util.Try
   * @since 01 Jul 2017
   *
   */
-class Assembly extends SGHarvesterAssembly with ModelExporterAssembly with SGModelAssembly with SGDownloaderAssembly with StrictLogging {
+class Assembly extends ModelExporterAssembly with SGModelAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly with StrictLogging {
   override implicit lazy val actorSystem: ActorSystem = ActorSystem("sg-app")
 
   override implicit lazy val executionContext: ExecutionContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())

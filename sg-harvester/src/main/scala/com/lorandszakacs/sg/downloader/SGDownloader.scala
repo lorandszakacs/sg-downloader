@@ -1,7 +1,6 @@
 package com.lorandszakacs.sg.downloader
 
 import com.lorandszakacs.sg.exporter._
-import com.lorandszakacs.sg.harvester._
 import com.lorandszakacs.sg.http.{PasswordProvider, PatienceConfig}
 import com.lorandszakacs.sg.indexer.SGIndexer
 import com.lorandszakacs.sg.model._

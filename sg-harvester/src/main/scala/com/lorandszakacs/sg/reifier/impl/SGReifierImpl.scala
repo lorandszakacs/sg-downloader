@@ -41,7 +41,7 @@ private[reifier] class SGReifierImpl(
             val result = recreate recoverWith {
               case e: FailedToVerifyNewAuthenticationException =>
                 logger.error("failed to verify stored session, defaulting to using username and password", e)
-                autenticateWithUsernameAndPassword(passwordProvider)
+                authenticateWithUsernameAndPassword(passwordProvider)
             }
 
             result map { r: Authentication =>
@@ -50,7 +50,7 @@ private[reifier] class SGReifierImpl(
             }
 
           case None =>
-            autenticateWithUsernameAndPassword(passwordProvider)
+            authenticateWithUsernameAndPassword(passwordProvider)
         }
       } yield {
         _authentication = newAuthentication
@@ -61,7 +61,7 @@ private[reifier] class SGReifierImpl(
     }
   }
 
-  private def autenticateWithUsernameAndPassword(passwordProvider: PasswordProvider): Future[Authentication] = {
+  private def authenticateWithUsernameAndPassword(passwordProvider: PasswordProvider): Future[Authentication] = {
     for {
       (username, plainTextPassword) <- passwordProvider.usernamePassword()
       newAuthentication <- sGClient.authenticate(username, plainTextPassword)
@@ -69,8 +69,15 @@ private[reifier] class SGReifierImpl(
     } yield newAuthentication
   }
 
-  @scala.deprecated("will be made private", "now")
-  override def gatherAllPhotosFromSetPage(photoSetPageUri: URL): Future[List[Photo]] = {
+  override def reifySuicideGirl(sg: SuicideGirl)(implicit pc: PatienceConfig): Future[SuicideGirl] = {
+    reifyModel(SuicideGirlFactory)(sg)
+  }
+
+  override def reifyHopeful(hf: Hopeful)(implicit pc: PatienceConfig): Future[Hopeful] = {
+    reifyModel(HopefulFactory)(hf)
+  }
+
+  private def gatherAllPhotosFromSetPage(photoSetPageUri: URL): Future[List[Photo]] = {
     for {
       photoSetPageHTML <- sGClient.getPage(photoSetPageUri)
       photos <- Future fromTry {
@@ -81,28 +88,22 @@ private[reifier] class SGReifierImpl(
     } yield photos
   }
 
-  override def reifySuicideGirl(sg: SuicideGirl): Future[SuicideGirl] = {
-    reifyModel(SuicideGirlFactory)(sg)
-  }
-
-  override def reifyHopeful(hf: Hopeful): Future[Hopeful] = {
-    reifyModel(HopefulFactory)(hf)
-  }
-
-  private def reifyModel[T <: Model](mf: ModelFactory[T])(model: T): Future[T] = {
+  private def reifyModel[T <: Model](mf: ModelFactory[T])(model: T)(implicit pc: PatienceConfig): Future[T] = {
     logger.info(s"SGReifier --> reifying: ${mf.name} ${model.name.name}. Expecting ${model.photoSets.length} sets")
     for {
-      reifiedPhotoSets <- Future.traverse(model.photoSets) { photoSet =>
-        for {
-          photos <- this.gatherAllPhotosFromSetPage(photoSet.url) recoverWith {
-            case e: DidNotFindAnyPhotoLinksOnSetPageException =>
-              logger.error(s"${photoSet.url} has no photos. `${mf.name} ${model.name.name}`")
-              Future.successful(Nil)
-            case e: Throwable =>
-              logger.error(s"${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${model.name.name}`", e)
-              Future.successful(Nil)
-          }
-        } yield photoSet.copy(photos = photos)
+      reifiedPhotoSets <- Future.serialize(model.photoSets) { photoSet =>
+        pc.throttleAfter {
+          for {
+            photos <- this.gatherAllPhotosFromSetPage(photoSet.url) recoverWith {
+              case e: DidNotFindAnyPhotoLinksOnSetPageException =>
+                logger.error(s"${photoSet.url} has no photos. `${mf.name} ${model.name.name}`")
+                Future.successful(Nil)
+              case e: Throwable =>
+                logger.error(s"${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${model.name.name}`", e)
+                Future.successful(Nil)
+            }
+          } yield photoSet.copy(photos = photos)
+        }
       }
     } yield {
       logger.info(s"reified ${mf.name} ${model.name.name}. Found ${reifiedPhotoSets.length} photo sets.")

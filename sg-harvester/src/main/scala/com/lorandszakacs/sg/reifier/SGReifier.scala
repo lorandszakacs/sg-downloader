@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.reifier
 
 import java.net.URL
 
-import com.lorandszakacs.sg.http.{Authentication, PasswordProvider}
+import com.lorandszakacs.sg.http.{Authentication, PasswordProvider, PatienceConfig}
 import com.lorandszakacs.sg.model.{Hopeful, Photo, SuicideGirl}
 import com.lorandszakacs.util.future._
 
@@ -25,12 +25,9 @@ trait SGReifier {
     */
   def authenticateIfNeeded()(implicit passwordProvider: PasswordProvider): Future[Authentication]
 
-  @scala.deprecated("will be made private", "now")
-  def gatherAllPhotosFromSetPage(photoSetPageUri: URL): Future[List[Photo]]
+  def reifySuicideGirl(sg: SuicideGirl)(implicit pc: PatienceConfig): Future[SuicideGirl]
 
-  def reifySuicideGirl(sg: SuicideGirl): Future[SuicideGirl]
-
-  def reifyHopeful(hf: Hopeful): Future[Hopeful]
+  def reifyHopeful(hf: Hopeful)(implicit pc: PatienceConfig): Future[Hopeful]
 
   def authentication: Authentication
 }

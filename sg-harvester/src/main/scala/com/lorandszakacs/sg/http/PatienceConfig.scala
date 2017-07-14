@@ -26,4 +26,5 @@ final case class PatienceConfig(
       r
     }
   }
+
 }

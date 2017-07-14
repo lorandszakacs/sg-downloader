@@ -16,7 +16,7 @@
   */
 package com.lorandszakacs.sg.app
 
-import com.lorandszakacs.sg.app.repl.{HarvesterCommandLineEvaluator, HarvesterRepl}
+import com.lorandszakacs.sg.app.repl.{DownloaderCommandLineInterpreter, DownloaderRepl}
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
@@ -27,17 +27,15 @@ import com.typesafe.scalalogging.StrictLogging
   */
 object Main extends App with StrictLogging {
   val assembly = new Assembly
-  val repl = new HarvesterRepl(assembly)
-  val evaluate = new HarvesterCommandLineEvaluator(assembly)
-
-  logger.info(s"Received args: ${args.mkString(",")}")
+  val interpreter = new DownloaderCommandLineInterpreter(assembly)
+  val repl = new DownloaderRepl(interpreter)(assembly.executionContext)
 
   if (args.nonEmpty) {
-    //we evaluate and exit if we receive any command line args
-    evaluate.evaluate(args)
+    logger.info(s"Received args: ${args.mkString(",")}    --> executing command")
+    interpreter.interpret(args)
   } else {
-    //we go into repl
-    repl.start()
+    logger.info(s"Did not receive any arguments, going into REPL mode")
+    repl.run()
   }
 
   assembly.shutdown().await()
