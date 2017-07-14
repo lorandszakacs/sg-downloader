@@ -1,9 +1,8 @@
 package com.lorandszakacs.sg.reifier
 
-import java.net.URL
 
 import com.lorandszakacs.sg.http.{Authentication, PasswordProvider, PatienceConfig}
-import com.lorandszakacs.sg.model.{Hopeful, Model, Photo, SuicideGirl}
+import com.lorandszakacs.sg.model.{Hopeful, Model, SuicideGirl}
 import com.lorandszakacs.util.future._
 
 /**

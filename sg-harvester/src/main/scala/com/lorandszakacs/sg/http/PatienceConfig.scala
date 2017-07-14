@@ -12,8 +12,12 @@ import scala.language.postfixOps
   * @since 04 Jul 2016
   *
   */
+object PatienceConfig {
+  val defaultDuration: FiniteDuration = 200 millis
+}
+
 final case class PatienceConfig(
-  throttle: FiniteDuration = 200 millis
+  throttle: FiniteDuration = PatienceConfig.defaultDuration
 ) extends StrictLogging {
 
   def throttleThread(): Unit = throttleAmount(throttle)
