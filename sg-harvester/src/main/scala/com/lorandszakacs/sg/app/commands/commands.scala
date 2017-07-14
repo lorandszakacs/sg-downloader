@@ -70,6 +70,24 @@ object Commands {
 
   //====================================================================================
 
+  object Show extends CommandDescription {
+    override val id: String = "show"
+
+    override val humanlyReadableDescription: String =
+      s"""|Displays set information for a given model
+        """.stripMargin.trim()
+
+    override val manDescription: String =
+      """show $MODEL_NAME"""
+
+  }
+
+  case class Show(
+    modelName: ModelName
+  ) extends Command
+
+  //====================================================================================
+
   case object Help extends Command with CommandDescription {
     override val id: String = "help"
 
@@ -102,7 +120,7 @@ object Commands {
   //====================================================================================
 
   lazy val descriptions: List[CommandDescription] = List(
-    DownloadSpecific, DeltaDownload, Help, Exit
+    DownloadSpecific, DeltaDownload, Show, Help, Exit
   ).sortBy(_.id)
 }
 

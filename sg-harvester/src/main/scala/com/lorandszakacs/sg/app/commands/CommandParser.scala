@@ -71,7 +71,7 @@ object CommandParser extends JavaTokenParsers {
     } yield (username, password)
   }
 
-  private val modelNameParser: Parser[ModelName] = {
+  private val modelName: Parser[ModelName] = {
     regex(s"[^, ]+".r).map(ModelName.apply)
   }
 
@@ -107,7 +107,7 @@ object CommandParser extends JavaTokenParsers {
   private val downloadSpecificCommandParser: Parser[Commands.DownloadSpecific] = {
     val modelsParser: Parser[List[ModelName]] = for {
       _ <- literal("models=")
-      models <- repsep(modelNameParser, literal(","))
+      models <- repsep(modelName, literal(","))
     } yield models
 
     for {
@@ -120,6 +120,19 @@ object CommandParser extends JavaTokenParsers {
       models = models,
       usernameAndPassword = optUsrPwd
     )
+  }
+
+  //===========================================================================
+  //================================= SHOW ===================================
+  //===========================================================================
+
+  private val showCommandParser: Parser[Commands.Show] = {
+    for {
+      _ <- literal("show")
+      _ <- `space+`
+      name <- modelName
+    } yield Commands.Show(name)
+
   }
 
   //===========================================================================
@@ -145,7 +158,9 @@ object CommandParser extends JavaTokenParsers {
   private val rootCommandParser: Parser[Command] =
     deltaHarvestCommandParser |
       downloadSpecificCommandParser |
+      showCommandParser |
       helpCommandParser |
       exitCommandParser
+
 
 }

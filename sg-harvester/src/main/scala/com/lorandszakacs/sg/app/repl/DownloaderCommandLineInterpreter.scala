@@ -72,13 +72,15 @@ class DownloaderCommandLineInterpreter(
           modelNames = models,
           daysToExport = 120 //TODO: read from commandline
         )
-
+      //=======================================================================
+      case Commands.Show(model) =>
+        downloader.show(model).map(s => println(s))
       //=======================================================================
       case Commands.Help =>
         Future.successful {
           val string = Commands.descriptions.map { c =>
             c.fullDescription
-          } mkString "\n----------------\n"
+          } mkString "\n\n----------------\n\n"
           print(s"----------------\n$string\n")
         }
       //=======================================================================

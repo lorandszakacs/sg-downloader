@@ -256,8 +256,8 @@ final class SGDownloader private[downloader](
     }
   }
 
-  object display {
-    def model(name: ModelName): Future[String] = {
+  object show {
+    def apply(name: ModelName): Future[String] = {
       exporter.prettyPrint(name)
     }
   }
