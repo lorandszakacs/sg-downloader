@@ -96,13 +96,16 @@ private[reifier] class SGReifierImpl(
           for {
             photos <- this.gatherAllPhotosFromSetPage(photoSet.url) recoverWith {
               case e: DidNotFindAnyPhotoLinksOnSetPageException =>
-                logger.error(s"${photoSet.url} has no photos. `${mf.name} ${model.name.name}`")
+                logger.error(s"SGReifier --> reifying: ${photoSet.url} has no photos. `${mf.name} ${model.name.name}`")
                 Future.successful(Nil)
               case e: Throwable =>
-                logger.error(s"${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${model.name.name}`", e)
+                logger.error(s"SGReifier --> reifying: ${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${model.name.name}`", e)
                 Future.successful(Nil)
             }
-          } yield photoSet.copy(photos = photos)
+          } yield {
+            logger.info(s"SGReifier --> reified: ${mf.name} ${model.name.name} photoset: ${photoSet.url}")
+            photoSet.copy(photos = photos)
+          }
         }
       }
     } yield {
