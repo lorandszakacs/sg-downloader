@@ -7,7 +7,9 @@ import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.Model.ModelFactory
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.list._
 import com.lorandszakacs.util.html.Html
+
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.collection.mutable.ListBuffer
@@ -150,14 +152,17 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
   }
 
   /**
+    * Eliminates duplicate [[Model]], sometimes it happens that a model has two sets on the newest page, especially
+    * if we wait a lot of time between updates.
+    *
     * A composite operation of [[gatherAllNewModelsAndOnlyTheirLatestSet]] and
     * [[gatherPhotoSetInformationForModel]] gotten for that model.
     *
     */
   override def gatherAllNewModelsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
     for {
-      modelsWithOnlyOneSet <- gatherAllNewModelsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
-      sgHF = modelsWithOnlyOneSet.group
+      modelsWithOnlyOneSet: List[Model] <- gatherAllNewModelsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
+      sgHF = modelsWithOnlyOneSet.distinctById.group
       sgs <- Future.serialize(sgHF.sgs) { sg =>
         pc.throttleAfter {
           this.gatherPhotoSetInformationForModel(Model.SuicideGirlFactory)(sg.name)

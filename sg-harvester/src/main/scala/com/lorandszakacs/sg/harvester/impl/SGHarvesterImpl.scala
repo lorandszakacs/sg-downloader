@@ -235,7 +235,7 @@ private[harvester] class SGHarvesterImpl(
   private def harvestModel[T <: Model with ModelUpdater[T]](mf: ModelFactory[T], modelName: ModelName)(implicit pc: PatienceConfig): Future[T] = {
     for {
       modelWithNoPhotos <- modelCrawler.gatherPhotoSetInformationForModel(mf)(modelName)
-      fullPhotoSets: List[PhotoSet] <- Future.traverse(modelWithNoPhotos.photoSets) { ph: PhotoSet =>
+      fullPhotoSets: List[PhotoSet] <- Future.serialize(modelWithNoPhotos.photoSets) { ph: PhotoSet =>
         for {
           photos <- photoCrawler.gatherAllPhotosFromSetPage(ph.url) recoverWith {
             case e: DidNotFindAnyPhotoLinksOnSetPageException =>
