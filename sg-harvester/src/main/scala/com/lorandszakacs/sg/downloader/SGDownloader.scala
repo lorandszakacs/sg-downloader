@@ -7,11 +7,9 @@ import com.lorandszakacs.sg.model._
 import com.lorandszakacs.sg.reifier.SGReifier
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
-import shapeless._
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.control.NonFatal
 
 /**
   *
