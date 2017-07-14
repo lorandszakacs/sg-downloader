@@ -1,5 +1,7 @@
 package com.lorandszakacs.sg.app.commands
 
+import com.lorandszakacs.sg.model.ModelName
+
 /**
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
@@ -24,6 +26,26 @@ sealed trait CommandDescription {
 
 object Commands {
 
+  object DownloadSpecific extends CommandDescription {
+    override def id: String = "download"
+
+    override def humanlyReadableDescription: String =
+      s"""|Downloads the specified models only, updates state to database, and exports them as html
+        """.stripMargin.trim()
+
+    override def manDescription: String =
+      """download models=X[,Y]* [username=Y password=Z]"""
+  }
+
+  case class DownloadSpecific(
+    models: List[ModelName],
+    usernameAndPassword: Option[(String, String)]
+  ) extends Command {
+    require(models.nonEmpty, "DownloadSpecific models cannot be empty")
+  }
+
+  //====================================================================================
+
   object DeltaDownload extends CommandDescription {
     override val id: String = "delta"
 
@@ -46,6 +68,8 @@ object Commands {
     def password: Option[String] = usernameAndPassword.map(_._2)
   }
 
+  //====================================================================================
+
   case object Help extends Command with CommandDescription {
     override val id: String = "help"
 
@@ -65,6 +89,8 @@ object Commands {
     override val manDescription: String = "help"
   }
 
+  //====================================================================================
+
   case object Exit extends Command with CommandDescription {
     override def id: String = "exit"
 
@@ -73,8 +99,10 @@ object Commands {
     override def manDescription: String = "exit"
   }
 
+  //====================================================================================
+
   lazy val descriptions: List[CommandDescription] = List(
-    DeltaDownload, Help, Exit
+    DownloadSpecific, DeltaDownload, Help, Exit
   ).sortBy(_.id)
 }
 

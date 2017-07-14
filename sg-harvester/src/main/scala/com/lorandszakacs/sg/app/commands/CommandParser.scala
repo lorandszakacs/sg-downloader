@@ -1,5 +1,7 @@
 package com.lorandszakacs.sg.app.commands
 
+import com.lorandszakacs.sg.model.ModelName
+
 import scala.util.parsing.combinator._
 
 /**
@@ -27,20 +29,22 @@ object CommandParser extends JavaTokenParsers {
 
   private val space: Parser[String] = literal(" ")
 
-  private val spaces: Parser[String] = whiteSpace
+  private val `space+`: Parser[String] = whiteSpace
+
+  private val `space*`: Parser[String] = regex("[ ]*".r)
 
   private val everythingUntilSpaceOrEnd: Parser[String] = regex(s"[^ ]+".r)
 
   private def anyCombinationOptional[P1, P2](p1: Parser[P1], p2: Parser[P2]): Parser[(Option[P1], Option[P2])] = {
     val both: Parser[(Option[P1], Option[P2])] = for {
       v1 <- p1
-      _ <- spaces
+      _ <- `space+`
       v2 <- p2
     } yield (Option(v1), Option(v2))
 
     val bothReverse: Parser[(Option[P1], Option[P2])] = for {
       v2 <- p2
-      _ <- spaces
+      _ <- `space+`
       v1 <- p1
     } yield (Option(v1), Option(v2))
 
@@ -57,6 +61,21 @@ object CommandParser extends JavaTokenParsers {
     } yield all
   }
 
+  private val usernameAndPassword: Parser[(String, String)] = {
+    for {
+      _ <- literal("username=")
+      username <- everythingUntilSpaceOrEnd
+      _ <- `space+`
+      _ <- literal("password=")
+      password <- everythingUntilSpaceOrEnd
+    } yield (username, password)
+  }
+
+  private val modelNameParser: Parser[ModelName] = {
+    regex(s"[^, ]+".r).map(ModelName.apply)
+  }
+
+
   //===========================================================================
   //================================= DELTA ===================================
   //===========================================================================
@@ -67,16 +86,8 @@ object CommandParser extends JavaTokenParsers {
       v <- wholeNumber
     } yield v.toInt
 
-    val usernameAndPassword = for {
-      _ <- literal("username=")
-      username <- everythingUntilSpaceOrEnd
-      _ <- spaces
-      _ <- literal("password=")
-      password <- everythingUntilSpaceOrEnd
-    } yield (username, password)
-
     val maybeDaysMaybeUserAndPass = for {
-      _ <- spaces
+      _ <- `space+`
       maybe <- anyCombinationOptional(days, usernameAndPassword)
     } yield maybe
 
@@ -86,6 +97,28 @@ object CommandParser extends JavaTokenParsers {
     } yield Commands.DeltaDownload(
       days = maybe.flatMap(_._1),
       usernameAndPassword = maybe.flatMap(_._2)
+    )
+  }
+
+  //===========================================================================
+  //================================ DOWNLOAD =================================
+  //===========================================================================
+
+  private val downloadSpecificCommandParser: Parser[Commands.DownloadSpecific] = {
+    val modelsParser: Parser[List[ModelName]] = for {
+      _ <- literal("models=")
+      models <- repsep(modelNameParser, literal(","))
+    } yield models
+
+    for {
+      _ <- literal(Commands.DownloadSpecific.id)
+      _ <- `space+`
+      models <- modelsParser
+      _ <- `space*`
+      optUsrPwd <- usernameAndPassword.?
+    } yield Commands.DownloadSpecific(
+      models = models,
+      usernameAndPassword = optUsrPwd
     )
   }
 
@@ -111,6 +144,7 @@ object CommandParser extends JavaTokenParsers {
 
   private val rootCommandParser: Parser[Command] =
     deltaHarvestCommandParser |
+      downloadSpecificCommandParser |
       helpCommandParser |
       exitCommandParser
 
