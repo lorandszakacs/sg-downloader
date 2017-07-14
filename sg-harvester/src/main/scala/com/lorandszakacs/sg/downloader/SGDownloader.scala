@@ -1,5 +1,6 @@
 package com.lorandszakacs.sg.downloader
 
+import com.lorandszakacs.sg.Favorites
 import com.lorandszakacs.sg.exporter._
 import com.lorandszakacs.sg.http.{PasswordProvider, PatienceConfig}
 import com.lorandszakacs.sg.indexer.SGIndexer
@@ -257,6 +258,10 @@ final class SGDownloader private[downloader](
   object show {
     def apply(name: ModelName): Future[String] = {
       exporter.prettyPrint(name)
+    }
+
+    def favorites: Future[String] = {
+      Future.successful(Favorites.codeFriendlyDisplay)
     }
   }
 

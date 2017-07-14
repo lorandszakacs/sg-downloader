@@ -88,6 +88,16 @@ object Commands {
 
   //====================================================================================
 
+  case object Favorites extends Command with CommandDescription {
+    override def id: String = "favorites"
+
+    override def humanlyReadableDescription: String = "Displays the favorites"
+
+    override def manDescription: String = "favorites"
+  }
+
+  //====================================================================================
+
   case object Help extends Command with CommandDescription {
     override val id: String = "help"
 
@@ -120,7 +130,7 @@ object Commands {
   //====================================================================================
 
   lazy val descriptions: List[CommandDescription] = List(
-    DownloadSpecific, DeltaDownload, Show, Help, Exit
+    DownloadSpecific, DeltaDownload, Show, Favorites, Help, Exit
   ).sortBy(_.id)
 }
 

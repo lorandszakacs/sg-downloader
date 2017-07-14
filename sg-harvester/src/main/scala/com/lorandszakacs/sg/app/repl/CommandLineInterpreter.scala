@@ -74,7 +74,13 @@ class CommandLineInterpreter(
         )
       //=======================================================================
       case Commands.Show(model) =>
+        print("\n***************\n")
+
         downloader.show(model).map(s => println(s))
+      //=======================================================================
+      case Commands.Favorites =>
+        print("\n***************\n")
+        downloader.show.favorites.map(s => println(s))
       //=======================================================================
       case Commands.Help =>
         Future.successful {

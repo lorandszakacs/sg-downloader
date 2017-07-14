@@ -121,12 +121,20 @@ object CommandParser extends JavaTokenParsers {
   }
 
   //===========================================================================
+  //============================= FAVORITES ===================================
+  //===========================================================================
+
+  private val favoritesCommandParser: Parser[Commands.Favorites.type] = {
+    literal(Commands.Favorites.id) ^^ { _ => Commands.Favorites }
+  }
+
+  //===========================================================================
   //================================= SHOW ===================================
   //===========================================================================
 
   private val showCommandParser: Parser[Commands.Show] = {
     for {
-      _ <- literal("show")
+      _ <- literal(Commands.Show.id)
       _ <- `space+`
       name <- modelName
     } yield Commands.Show(name)
@@ -138,7 +146,7 @@ object CommandParser extends JavaTokenParsers {
   //===========================================================================
 
   private val helpCommandParser: Parser[Commands.Help.type] = {
-    literal("help") ^^ { _ => Commands.Help }
+    literal(Commands.Help.id) ^^ { _ => Commands.Help }
   }
 
   //===========================================================================
@@ -146,7 +154,7 @@ object CommandParser extends JavaTokenParsers {
   //===========================================================================
 
   private val exitCommandParser: Parser[Commands.Exit.type] = {
-    literal("exit") ^^ { _ => Commands.Exit }
+    literal(Commands.Exit.id) ^^ { _ => Commands.Exit }
   }
 
   //===========================================================================
@@ -157,6 +165,7 @@ object CommandParser extends JavaTokenParsers {
     deltaHarvestCommandParser |
       downloadSpecificCommandParser |
       showCommandParser |
+      favoritesCommandParser |
       helpCommandParser |
       exitCommandParser
 
