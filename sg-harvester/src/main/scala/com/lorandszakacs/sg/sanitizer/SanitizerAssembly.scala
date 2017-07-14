@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.sanitizer
 
 import akka.actor.ActorSystem
 import com.lorandszakacs.sg.model.SGModelAssembly
-import com.lorandszakacs.util.mongodb.Imports._
+import com.lorandszakacs.util.mongodb.Database
 
 import com.lorandszakacs.util.future._
 

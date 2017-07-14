@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.model.impl
 
 import com.lorandszakacs.sg.model._
 import org.joda.time.LocalDate
-import com.lorandszakacs.util.mongodb.Imports._
+import com.lorandszakacs.util.mongodb._
 
 import com.lorandszakacs.util.future._
 

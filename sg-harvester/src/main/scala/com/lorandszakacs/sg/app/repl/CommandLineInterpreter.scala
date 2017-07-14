@@ -2,8 +2,8 @@ package com.lorandszakacs.sg.app.repl
 
 import com.lorandszakacs.sg.app.commands.{Command, CommandParser, Commands}
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
-import com.lorandszakacs.sg.exporter.ModelExporterAssembly
 import com.lorandszakacs.sg.http.PasswordProvider
+import com.lorandszakacs.sg.sanitizer.SanitizerAssembly
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
@@ -18,7 +18,7 @@ import scala.util.control.NonFatal
   *
   */
 class CommandLineInterpreter(
-  assembly: ModelExporterAssembly with
+  assembly: SanitizerAssembly with
     SGDownloaderAssembly
 ) extends StrictLogging {
 

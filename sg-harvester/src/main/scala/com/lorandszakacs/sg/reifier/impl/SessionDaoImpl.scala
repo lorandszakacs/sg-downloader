@@ -5,7 +5,7 @@ import com.lorandszakacs.sg.reifier.SessionDao
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 import org.joda.time.{DateTime, DateTimeZone}
-import com.lorandszakacs.util.mongodb.Imports._
+import com.lorandszakacs.util.mongodb._
 
 /**
   *

@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.reifier.impl.{SGReifierImpl, SessionDaoImpl}
 import com.lorandszakacs.util.future.ExecutionContext
-import reactivemongo.api.DefaultDB
+import com.lorandszakacs.util.mongodb.Database
 
 /**
   *
@@ -13,7 +13,7 @@ import reactivemongo.api.DefaultDB
   *
   */
 trait ReifierAssembly extends SGClientAssembly {
-  def db: DefaultDB
+  def db: Database
 
   implicit def actorSystem: ActorSystem
 

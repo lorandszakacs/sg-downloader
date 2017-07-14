@@ -4,9 +4,7 @@ import java.net.URL
 
 import com.github.nscala_time.time.Imports._
 import org.joda.time.format.DateTimeFormatter
-import reactivemongo.bson.Macros.Annotations.Ignore
-
-import scala.language.postfixOps
+import com.lorandszakacs.util.mongodb.BSONMacros
 
 /**
   * @author Lorand Szakacs, lsz@lorandszakacs.com
@@ -219,7 +217,7 @@ final case class PhotoSet(
   title: PhotoSetTitle,
   date: LocalDate,
   photos: List[Photo] = Nil,
-  @Ignore() isHopefulSet: Option[Boolean] = None
+  @BSONMacros.Annotations.Ignore() isHopefulSet: Option[Boolean] = None
 ) {
 
   def id: String = url.toExternalForm
