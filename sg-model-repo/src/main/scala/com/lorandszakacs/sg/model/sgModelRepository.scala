@@ -1,8 +1,9 @@
 package com.lorandszakacs.sg.model
 
-import org.joda.time.{DateTime, LocalDate}
 
 import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.time._
+
 
 /**
   *
