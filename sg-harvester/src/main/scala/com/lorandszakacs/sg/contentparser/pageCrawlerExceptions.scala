@@ -1,6 +1,5 @@
 package com.lorandszakacs.sg.contentparser
 
-import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.util.html.Html
 
 

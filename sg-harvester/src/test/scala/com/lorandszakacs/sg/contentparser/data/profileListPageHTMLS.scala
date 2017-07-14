@@ -42,9 +42,9 @@ object SGProfileListPage {
     "Rambo"
   )
 
-  val numberOfSGs = names.length
+  val numberOfSGs: Int = names.length
 
-  def html = {
+  def html: Html = {
     val resourceName = s"${getClass.getSimpleName.replace("$", "")}.txt"
     val URL = getClass.getResource(resourceName)
     val source = Source.fromURL(URL)
@@ -68,9 +68,9 @@ object HopefulProfileListPage {
     "Foxynova"
   )
 
-  val numberOfSGs = names.length
+  val numberOfSGs: Int = names.length
 
-  def html = {
+  def html: Html = {
     val resourceName = s"${getClass.getSimpleName.replace("$", "")}.txt"
     val URL = getClass.getResource(resourceName)
     val source = Source.fromURL(URL)

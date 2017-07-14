@@ -11,6 +11,59 @@ import org.scalatest.FlatSpec
 class AppCommandsParserTest extends FlatSpec {
 
   //===========================================================================
+  //================================ DOWNLOAD =================================
+  //===========================================================================
+  behavior of "CommandParser download"
+
+  it should "... parse with only one model" in {
+    val input = """download models=nameOne"""
+    val result = parse(input)
+    assert(result == Commands.DownloadSpecific(
+      models = List("nameOne"),
+      usernameAndPassword = None)
+    )
+  }
+
+  it should "... parse with multiple models" in {
+    val input = """download models=nameOne,nameTwo,nameThree"""
+    val result = parse(input)
+    assert(result == Commands.DownloadSpecific(
+      models = List("nameOne", "nameTwo", "nameThree"),
+      usernameAndPassword = None)
+    )
+  }
+
+  it should "... parse with only one model + username, password" in {
+    val input = """download models=nameOne username=someUser password=!@#$sf123AC%^&*()\"/|"""
+    val result = parse(input)
+    assert(
+      result == Commands.DownloadSpecific(
+        models = List("nameOne"),
+        usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|""")))
+    )
+  }
+
+  it should "... fail when we have trailing comma" in {
+    val input = """download models=nameOne,"""
+    expectFailure(input)
+  }
+
+  it should "... parse with multiple models + username, password" in {
+    val input = """download models=nameOne,nameTwo,nameThree username=someUser password=!@#$sf123AC%^&*()\"/|"""
+    val result = parse(input)
+    assert(
+      result == Commands.DownloadSpecific(
+        models = List("nameOne", "nameTwo", "nameThree"),
+        usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|""")))
+    )
+  }
+
+  it should "... fail when we have trailing comma and opt username password" in {
+    val input = """download models=nameOne,  username=someUser password=!@#$sf123AC%^&*()\"/|"""
+    expectFailure(input)
+  }
+
+  //===========================================================================
   //================================= DELTA ===================================
   //===========================================================================
 
@@ -19,25 +72,25 @@ class AppCommandsParserTest extends FlatSpec {
   it should "... parse with no arguments" in {
     val input = "delta"
     val result = parse(input)
-    assert(result == Commands.DeltaHarvest(days = None, usernameAndPassword = None))
+    assert(result == Commands.DeltaDownload(days = None, usernameAndPassword = None))
   }
 
   it should "... parse with only days" in {
     val input = "delta days=42"
     val result = parse(input)
-    assert(result == Commands.DeltaHarvest(days = Option(42), usernameAndPassword = None))
+    assert(result == Commands.DeltaDownload(days = Option(42), usernameAndPassword = None))
   }
 
   it should "... parse with only username and password" in {
     val input ="""delta username=someUser password=!@#$sf123AC%^&*()\"/|"""
     val result = parse(input)
-    assert(result == Commands.DeltaHarvest(days = None, usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|"""))))
+    assert(result == Commands.DeltaDownload(days = None, usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|"""))))
   }
 
   it should "... parse with all parameters -- days first" in {
     val input ="""delta days=42 username=someUser password=!@#$sf123AC%^&*()\"/|"""
     val result = parse(input)
-    assert(result == Commands.DeltaHarvest(days = Option(42), usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|"""))))
+    assert(result == Commands.DeltaDownload(days = Option(42), usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|"""))))
   }
 
   //===========================================================================
@@ -59,4 +112,13 @@ class AppCommandsParserTest extends FlatSpec {
 
   def parse(input: String): Command =
     CommandParser.parseCommand(input).get
+
+  def expectFailure(input: String): Unit =
+    CommandParser.parseCommand(input) match {
+      case scala.util.Success(_) =>
+        fail(s"... expected $input to fail to parse")
+
+      case scala.util.Failure(_) =>
+        ()
+    }
 }

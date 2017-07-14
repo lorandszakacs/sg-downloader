@@ -4,8 +4,7 @@ import java.net.URL
 
 import com.github.nscala_time.time.Imports._
 import org.joda.time.format.DateTimeFormatter
-
-import scala.language.postfixOps
+import com.lorandszakacs.util.mongodb.Annotations
 
 /**
   * @author Lorand Szakacs, lsz@lorandszakacs.com
@@ -22,19 +21,44 @@ object Model {
 
   object SuicideGirlFactory extends ModelFactory[SuicideGirl] {
     override def apply(photoSetURL: URL, name: ModelName, photoSets: List[PhotoSet]): SuicideGirl =
-      SuicideGirl(photoSetURL = photoSetURL, name = name, photoSets = photoSets)
+      SuicideGirl(photoSetURL = photoSetURL, name = name, photoSets = photoSets.sortBy(_.date))
 
     override def name: String = "suicide girl"
   }
 
   object HopefulFactory extends ModelFactory[Hopeful] {
     override def apply(photoSetURL: URL, name: ModelName, photoSets: List[PhotoSet]): Hopeful = {
-      Hopeful(photoSetURL = photoSetURL, name = name, photoSets = photoSets)
+      Hopeful(photoSetURL = photoSetURL, name = name, photoSets = photoSets.sortBy(_.date))
     }
 
     override def name: String = "hopeful"
   }
 
+}
+
+/**
+  *
+  * @param all
+  * is a union of [[sgs]] and [[hfs]]
+  */
+case class Models(
+  sgs: List[SuicideGirl],
+  hfs: List[Hopeful],
+  all: List[Model]
+) {
+  def newestModel: Option[Model] = all.headOption
+
+  def ml(name: ModelName): Option[Model] = all.find(_.name == name)
+
+  def sg(name: ModelName): Option[SuicideGirl] = sgs.find(_.name == name)
+
+  def hf(name: ModelName): Option[Hopeful] = hfs.find(_.name == name)
+
+  def sgNames: List[ModelName] = sgs.map(_.name)
+
+  def hfNames: List[ModelName] = hfs.map(_.name)
+
+  def allNames: List[ModelName] = all.map(_.name)
 }
 
 sealed trait Model {
@@ -48,9 +72,13 @@ sealed trait Model {
 
   def isSuicideGirl: Boolean
 
-  def asSuicideGirls: Option[SuicideGirl]
+  def asSuicideGirl: Option[SuicideGirl]
+
+  def makeSuicideGirl: SuicideGirl
 
   def asHopeful: Option[Hopeful]
+
+  def makeHopeful: Hopeful
 
   def stringifyType: String
 
@@ -58,10 +86,16 @@ sealed trait Model {
 
   final def numberOfPhotos: Int = photoSets.map(_.photos.length).sum
 
+  final def photoSetsOldestFirst: List[PhotoSet] =
+    this.photoSets.sortBy(_.date)
+
+  final def photoSetsNewestFirst: List[PhotoSet] =
+    this.photoSetsOldestFirst.reverse
+
   override def toString: String =
     s"""|---------${this.getClass.getSimpleName}: ${name.name} : ${photoSets.length}---------
         |url=${photoSetURL.toExternalForm}
-        |${photoSets.mkString("", "\n", "")}
+        |${photoSetsNewestFirst.mkString("", "\n", "")}
         |""".stripMargin
 }
 
@@ -69,27 +103,9 @@ sealed trait ModelUpdater[T <: Model] {
   this: Model =>
   def updatePhotoSets(newPhotoSets: List[PhotoSet]): T
 
-  final def reverseSets: T = updatePhotoSets(this.photoSets.reverse)
+  final def setsByNewestFirst: T = updatePhotoSets(this.photoSets.sortBy(_.date).reverse)
 
-  final def addPhotoSet(ph: PhotoSet): T = {
-    if (photoSets.exists(_.id == ph.id)) {
-      throw PhotoSetAlreadyExistsException(name, ph)
-    } else {
-      updatePhotoSets(ph :: this.photoSets)
-    }
-  }
-
-  final def updatePhotoSet(ph: PhotoSet): T = {
-    if (!photoSets.exists(_.id == ph.id)) {
-      throw PhotoSetDoesNotExistException(name, ph)
-    } else {
-      val newPHS = photoSets map { oldPH =>
-        if (oldPH == ph) ph else oldPH
-      }
-      updatePhotoSets(newPHS)
-    }
-  }
-
+  final def setsByOldestFirst: T = updatePhotoSets(this.photoSets.sortBy(_.date))
 }
 
 object ModelName {
@@ -151,7 +167,7 @@ final class PhotoSetTitle private(
 
 final case class SuicideGirl(
   photoSetURL: URL,
-  name: ModelName,
+  @Annotations.Key("_id") name: ModelName,
   photoSets: List[PhotoSet]
 ) extends Model with ModelUpdater[SuicideGirl] {
 
@@ -161,16 +177,20 @@ final case class SuicideGirl(
 
   override def isSuicideGirl: Boolean = true
 
-  override def asSuicideGirls: Option[SuicideGirl] = Option(this)
+  override def asSuicideGirl: Option[SuicideGirl] = Option(this)
+
+  override def makeSuicideGirl: SuicideGirl = this
 
   override def asHopeful: Option[Hopeful] = None
+
+  override def makeHopeful: Hopeful = throw new AssertionError("attempted to cast a SuicideGirl to a Hopeful")
 
   override def stringifyType: String = "suicide girl"
 }
 
 final case class Hopeful(
   photoSetURL: URL,
-  name: ModelName,
+  @Annotations.Key("_id") name: ModelName,
   photoSets: List[PhotoSet]
 ) extends Model with ModelUpdater[Hopeful] {
 
@@ -180,18 +200,24 @@ final case class Hopeful(
 
   override def isSuicideGirl: Boolean = false
 
-  override def asSuicideGirls: Option[SuicideGirl] = None
+  override def asSuicideGirl: Option[SuicideGirl] = None
+
+  override def makeSuicideGirl: SuicideGirl = throw new AssertionError("attempted to cast Hopeful as SuicideGirl")
 
   override def asHopeful: Option[Hopeful] = Option(this)
 
+  override def makeHopeful: Hopeful = this
+
   override def stringifyType: String = "hopeful"
+
 }
 
 final case class PhotoSet(
   url: URL,
   title: PhotoSetTitle,
   date: LocalDate,
-  photos: List[Photo] = Nil
+  photos: List[Photo] = Nil,
+  @Annotations.Ignore() isHopefulSet: Option[Boolean] = None
 ) {
 
   def id: String = url.toExternalForm
@@ -201,6 +227,7 @@ final case class PhotoSet(
        |title = ${title.name}
        |date  = ${date.toString(Util.dateTimeFormat)}
        |url   = ${url.toExternalForm}
+       |${isHopefulSet.map(b => s"isHF  = $b").getOrElse("")}
        |${photos.mkString("{\n\t", "\n\t", "\n}")}
        |${"_________________"}
       """.stripMargin

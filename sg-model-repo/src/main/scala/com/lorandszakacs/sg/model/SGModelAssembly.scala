@@ -1,9 +1,8 @@
 package com.lorandszakacs.sg.model
 
-import com.lorandszakacs.sg.model.impl.{HopefulsDao, IndexDao, SGModelRepositoryImpl, SuicideGirlsDao}
-import reactivemongo.api.DefaultDB
-
+import com.lorandszakacs.sg.model.impl.SGModelRepositoryImpl
 import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.mongodb.Database
 
 /**
   *
@@ -13,22 +12,14 @@ import com.lorandszakacs.util.future._
   */
 trait SGModelAssembly {
 
-  def db: DefaultDB
+  def db: Database
 
   implicit def executionContext: ExecutionContext
 
   def sgModelRepository: SGModelRepository = _sgModelRepository
 
-  private[model] def nameIndexDao: IndexDao = new IndexDao(db)
-
-  private[model] def suicideGirlsDao: SuicideGirlsDao = new SuicideGirlsDao(db)
-
-  private[model] def hopefulsDao: HopefulsDao = new HopefulsDao(db)
-
   private[model] lazy val _sgModelRepository = new SGModelRepositoryImpl(
-    indexDao = nameIndexDao,
-    suicideGirlsDao = suicideGirlsDao,
-    hopefulsDao = hopefulsDao
+    db
   )
 
 }

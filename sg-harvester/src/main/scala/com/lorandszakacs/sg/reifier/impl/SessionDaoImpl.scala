@@ -1,12 +1,11 @@
 package com.lorandszakacs.sg.reifier.impl
 
 import com.lorandszakacs.sg.http.Session
-import com.lorandszakacs.sg.reifier.SessionDao
+
+import com.typesafe.scalalogging.StrictLogging
 import com.lorandszakacs.util.future._
-import org.joda.time.{DateTime, DateTimeZone}
-import reactivemongo.api.DB
-import reactivemongo.api.collections.bson.BSONCollection
-import reactivemongo.bson.{BSONDateTime, BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONHandler, BSONReader, BSONWriter, Macros}
+import com.lorandszakacs.util.mongodb._
+import com.lorandszakacs.util.time._
 
 /**
   *
@@ -14,29 +13,11 @@ import reactivemongo.bson.{BSONDateTime, BSONDocument, BSONDocumentReader, BSOND
   * @since 20 Jul 2016
   *
   */
-private[reifier] final class SessionDaoImpl(val db: DB)(implicit ec: ExecutionContext) extends SessionDao {
-  protected lazy val collection: BSONCollection = db("sg_sessions")
-
-  private val sessionId = "sg-session"
-  private val _id = "_id"
-
-  private val idBSON = BSONDocument(_id -> sessionId)
-
-  private def onInit(): Unit = {
-    for {
-      opt <- this.find()
-      _ <- when(opt.isEmpty) execute this.create {
-        Session(
-          username = "default",
-          sessionID = "default",
-          csrfToken = "default",
-          expiresAt = DateTime.now()
-        )
-      }
-    } yield ()
-  }
-
-  onInit()
+private[reifier] final class SessionDaoImpl(
+  override protected val db: Database
+)(implicit override val executionContext: ExecutionContext) extends
+  SingleDocumentMongoCollection[Session, String, BSONString]
+  with StrictLogging {
 
   private implicit val dateTimeHandler: BSONReader[BSONDateTime, DateTime] with BSONWriter[DateTime, BSONDateTime] with BSONHandler[BSONDateTime, DateTime] =
     new BSONReader[BSONDateTime, DateTime] with BSONWriter[DateTime, BSONDateTime] with BSONHandler[BSONDateTime, DateTime] {
@@ -47,24 +28,30 @@ private[reifier] final class SessionDaoImpl(val db: DB)(implicit ec: ExecutionCo
       override def write(t: DateTime): BSONDateTime = BSONDateTime(t.getMillis)
     }
 
-  private implicit val sessionHandler: BSONDocumentReader[Session] with BSONDocumentWriter[Session] with BSONHandler[BSONDocument, Session] =
-    new BSONDocumentReader[Session] with BSONDocumentWriter[Session] with BSONHandler[BSONDocument, Session] {
-      val handler: BSONDocumentReader[Session] with BSONDocumentWriter[Session] with BSONHandler[BSONDocument, Session] = Macros.handler[Session]
+  override protected val objectHandler: BSONDocumentHandler[Session] = BSONMacros.handler[Session]
 
-      override def read(bson: BSONDocument): Session = handler.read(bson)
+  override protected implicit val idHandler: BSONHandler[BSONString, String] = BSONStringHandler
 
-      override def write(t: Session): BSONDocument = {
-        val b = handler.write(t)
-        b ++ idBSON
+  override protected val uniqueDocumentId: String = "sg-session"
+
+  override protected def defaultEntity: Session = Session(
+    username = "temp",
+    sessionID = "123",
+    csrfToken = "456",
+    expiresAt = DateTime.now()
+  )
+
+  override def collectionName: String = "sg_sessions"
+
+  private def onInit(): Unit = {
+    for {
+      opt <- this.find
+      _ <- when(opt.isEmpty) execute this.create {
+        logger.info("creating default session info")
+        this.defaultEntity
       }
-    }
-
-  override def create(session: Session): Future[Unit] = {
-    collection.update(idBSON, session, upsert = true) map `Any => Unit`
+    } yield ()
   }
 
-  override def find(): Future[Option[Session]] = {
-    collection.find(idBSON).one[Session]
-  }
-
+  onInit()
 }

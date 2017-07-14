@@ -314,7 +314,7 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
     }
   }
 
-  private def post(uri: Uri, headers: Seq[HttpHeader] = Nil, entity: RequestEntity): HttpRequest = {
+  private def post(uri: Uri, headers: Seq[HttpHeader], entity: RequestEntity): HttpRequest = {
     DefaultSGAuthentication {
       HttpRequest(
         method = POST,

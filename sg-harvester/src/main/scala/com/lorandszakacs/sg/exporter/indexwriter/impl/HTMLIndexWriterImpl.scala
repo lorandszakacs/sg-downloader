@@ -3,6 +3,7 @@ package com.lorandszakacs.sg.exporter.indexwriter.impl
 
 import com.lorandszakacs.sg.exporter.html._
 import com.lorandszakacs.sg.exporter.indexwriter.{HTMLIndexWriter, WriterSettings}
+import com.lorandszakacs.util.files.FileUtils
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 

@@ -149,7 +149,7 @@ private[html] class HTMLGeneratorImpl()(
       )
     }
 
-    val photoSets: List[PhotoSetIndex] = m.photoSets map photoSetIndexPage(m)
+    val photoSets: List[PhotoSetIndex] = m.photoSetsNewestFirst map photoSetIndexPage(m)
     val modelIndexHtml = modelIndexHtmlPage(m)(photoSets)
     ModelIndex(
       name = m.name,

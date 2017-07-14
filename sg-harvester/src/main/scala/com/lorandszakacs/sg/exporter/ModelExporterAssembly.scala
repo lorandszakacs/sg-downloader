@@ -18,9 +18,9 @@ trait ModelExporterAssembly extends HTMLIndexWriterAssembly with HTMLGeneratorAs
 
   implicit def executionContext: ExecutionContext
 
-  def sgExporter: SGExporter = _displayer
+  def sgExporter: SGExporter = _exporter
 
-  private lazy val _displayer = new SGExporterImpl(
+  private lazy val _exporter = new SGExporterImpl(
     repo = sgModelRepository,
     html = htmlGenerator,
     fileWriter = htmlIndexWriter

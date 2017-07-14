@@ -8,7 +8,7 @@ import org.joda.time.DateTime
 import com.lorandszakacs.util.future._
 
 /**
-  *  Represents the first stage of the pipeline of processing
+  * Represents the first stage of the pipeline of processing
   *
   * "indexing" can be done without authentication. It implies gathering all
   * model names, and their associated photosets.
@@ -27,7 +27,7 @@ trait SGIndexer {
   /**
     * Gathers the names of all available [[Hopeful]]s
     */
-  def gatherHopefulNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]]
+  def gatherHFNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]]
 
   /**
     *
@@ -44,24 +44,22 @@ trait SGIndexer {
   def gatherPhotoSetInformationForModel[T <: Model](mf: ModelFactory[T])(modelName: ModelName)(implicit pc: PatienceConfig): Future[T]
 
   /**
-    * Gathers information about the latest published sets from:
-    * https://www.suicidegirls.com/photos/all/recent/all/
-    *
-    * The amount of crawling is limited by the absolute limit, or by the set identified by [[LastProcessedMarker.lastPhotoSetID]]
-    * This last set is not included in the results.
+    * Similar to [[gatherPhotoSetInformationForModel]], but with more potential for failure
     */
-  def gatherNewestModelInformation(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]]
+  def gatherPhotoSetInformationForModel(modelName: ModelName)(implicit pc: PatienceConfig): Future[Model]
 
-  final def createLastProcessedIndex(lastModel: Model): LastProcessedMarker = lastModel match {
-    case h: Hopeful =>
-      LastProcessedHopeful(
-        timestamp = DateTime.now(),
-        hopeful = h
-      )
-    case sg: SuicideGirl =>
-      LastProcessedSG(
-        timestamp = DateTime.now(),
-        suicidegirl = sg
-      )
+  /**
+    *
+    *
+    */
+  def gatherAllNewModelsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]]
+
+  final def createLastProcessedIndex(lastModel: Model): LastProcessedMarker = {
+    LastProcessedMarker(
+      timestamp = DateTime.now(),
+      photoSet = lastModel.photoSetsNewestFirst
+        .headOption.getOrElse(throw new AssertionError(s"... tried to create last processed index from model ${lastModel.name.name}, but they had no sets")).copy(photos = Nil)
+    )
   }
+
 }

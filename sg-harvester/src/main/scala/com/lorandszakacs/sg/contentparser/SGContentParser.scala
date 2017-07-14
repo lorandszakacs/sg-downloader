@@ -87,7 +87,8 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
         url = makeFullPathURL(url),
         title = PhotoSetTitle(title),
         date = date.get,
-        photos = List.empty
+        photos = List.empty,
+        isHopefulSet = if (ae.contains("Hopeful Set")) Option(true) else None
       )
     }
     photoSets

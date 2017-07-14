@@ -4,14 +4,14 @@ import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.contentparser.SGContentParser
 import com.lorandszakacs.sg.indexer.{FailedToRepeatedlyLoadPageException, SGIndexer}
 import com.lorandszakacs.sg.http._
-import com.lorandszakacs.sg.model.Model.ModelFactory
+import com.lorandszakacs.sg.model.Model.{HopefulFactory, ModelFactory, SuicideGirlFactory}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.list._
 import com.lorandszakacs.util.html.Html
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.collection.mutable.ListBuffer
-import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -55,7 +55,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
   /**
     * Gathers the names of all available [[Hopeful]]s
     */
-  override def gatherHopefulNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
+  override def gatherHFNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -68,6 +68,11 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
       isEndPage = isEndPage,
       cutOffLimit = limit
     )
+  }
+
+  private def isEndPageForModelIndexing(html: Html): Boolean = {
+    val PartialPageLoadingEndMarker = "No photos available."
+    html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
   }
 
   /**
@@ -83,20 +88,31 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]], and [[PhotoSet.url]] will be a full path URL.
     */
   override def gatherPhotoSetInformationForModel[T <: Model](mf: ModelFactory[T])(modelName: ModelName)(implicit pc: PatienceConfig): Future[T] = {
-    def isEndPage(html: Html) = {
-      val PartialPageLoadingEndMarker = "No photos available."
-      html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
-    }
-
     val pageURL = photoSetsPageURL(modelName)
-
     for {
       sets <- loadPageRepeatedly[PhotoSet](
         uri = pageURL,
         offsetStep = 9,
         parsingFunction = SGContentParser.gatherPhotoSetsForModel,
-        isEndPage = isEndPage
+        isEndPage = isEndPageForModelIndexing
       )
+    } yield {
+      logger.info(s"gathered all sets for ${mf.name} ${modelName.name}. #sets: ${sets.length}")
+      mf(photoSetURL = pageURL, name = modelName, photoSets = sets)
+    }
+  }
+
+  override def gatherPhotoSetInformationForModel(modelName: ModelName)(implicit pc: PatienceConfig): Future[Model] = {
+    val pageURL = photoSetsPageURL(modelName)
+    for {
+      sets <- loadPageRepeatedly[PhotoSet](
+        uri = pageURL,
+        offsetStep = 9,
+        parsingFunction = SGContentParser.gatherPhotoSetsForModel,
+        isEndPage = isEndPageForModelIndexing
+      )
+      isHopeful = sets.exists(_.isHopefulSet.contains(true))
+      mf = if (isHopeful) HopefulFactory else SuicideGirlFactory
     } yield {
       logger.info(s"gathered all sets for ${mf.name} ${modelName.name}. #sets: ${sets.length}")
       mf(photoSetURL = pageURL, name = modelName, photoSets = sets)
@@ -111,8 +127,10 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     *
     * The amount of crawling is limited by the absolute limit, or by the set identified by [[LastProcessedMarker.lastPhotoSetID]]
     * This last set is not included in the results.
+    *
+    * Returns a [[Model]] with only one [[Model.photoSets]], the one that shows up on the page.
     */
-  override def gatherNewestModelInformation(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
+  private[impl] def gatherAllNewModelsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -145,16 +163,52 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     }
   }
 
+  /**
+    *
+    * Reindexes the models that have a set on the page:
+    * https://www.suicidegirls.com/photos/all/recent/all/
+    *
+    *
+    * The amount of crawling is limited by the absolute limit, or by the set identified by [[LastProcessedMarker.lastPhotoSetID]]
+    * This last set is not included in the results.
+    *
+    * Eliminates duplicate [[Model]], sometimes it happens that a model has two sets on the newest page, especially
+    * if we wait a lot of time between updates.
+    *
+    * @return
+    * All models that have been gathered with fully indexed information, i.e. all their photosets, but no photo information
+    */
+  override def gatherAllNewModelsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
+    for {
+      modelsWithOnlyOneSet: List[Model] <- gatherAllNewModelsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
+      sgHF = modelsWithOnlyOneSet.distinctById.group
+      sgs <- Future.serialize(sgHF.sgs) { sg =>
+        pc.throttleAfter {
+          this.gatherPhotoSetInformationForModel(Model.SuicideGirlFactory)(sg.name)
+        }
+      }
+      hfs <- Future.serialize(sgHF.hfs) { hf =>
+        pc.throttleAfter {
+          this.gatherPhotoSetInformationForModel(Model.HopefulFactory)(hf.name)
+        }
+      }
+    } yield sgs ++ hfs
+  }
+
 
   /**
     *
+    * Basic function that repeatedly hits the "load more" button,
+    * or something equivalent. It is usually modeled with the URL
+    * parameters: ``partial=true&offset=10``, where we start with
+    * and offset of zero, and increment it until ``isEndPage``, or
+    * ``isEndInput`` are true, or when we hit the ``cutOffLimit``
+    *
     * @param uri
-    * Assumed to not have any ``offset`` HTTP parameter
-    * @param offsetStep
-    * @param parsingFunction
-    * @param isEndPage
-    * @param cutOffLimit
-    * @return
+    * Assumed to not have any ``offset`` HTTP parameters
+    * when passed to this function. i.e.
+    * it should be ``/photos`` not ``/photos?offset=x``.
+    *
     */
   private def loadPageRepeatedly[T](
     uri: Uri,
@@ -181,13 +235,14 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
       }
 
       while (!stop) {
-        Thread.sleep(pc.throttle.toMillis)
-        val newPage = sGClient.getPage(offsetUri(uri, offset)).await()
+        pc.throttleThread()
+        val newURI = offsetUri(uri, offset)
+        val newPage = sGClient.getPage(newURI).await()
         offset += offsetStep
         if (isEndPage(newPage) || offset > cutOffLimit) {
           stop = true
         } else {
-          logger.debug(s"load repeatedly: currentOffset=$offset; step=$offsetStep")
+          logger.info(s"load repeatedly: step=$offsetStep [$newURI]")
           parsingFunction(newPage) match {
             case Success(s) =>
               result ++= s
