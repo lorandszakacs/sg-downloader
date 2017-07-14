@@ -13,45 +13,36 @@ import com.lorandszakacs.util.future._
   *
   */
 private[model] class HopefulsDao(val db: Database)(implicit val ec: ExecutionContext) extends MongoDAO {
+
   override protected val collectionName: String = "hopefuls"
 
+  private val repo = MongoCollection.apply[Hopeful, ModelName, BSONString](collectionName, db)
+
   def createOrUpdate(hopeful: Hopeful): Future[Unit] = {
-    val q = BSONDocument(_id -> hopeful.name)
-    collection.update(q, hopeful, upsert = true) map { _ => () }
+    repo.createOrUpdate(repo.idQuery(hopeful.name), hopeful)
   }
 
   def delete(name: ModelName): Future[Unit] = {
-    val q = BSONDocument(_id -> name)
-    collection.remove(q) map { _ => () }
+    repo.remove(repo.idQuery(name))
   }
 
   def find(name: ModelName): Future[Option[Hopeful]] = {
-    collection.find(BSONDocument(_id -> name)).one[Hopeful]
+    repo.findOne(repo.idQuery(name))
   }
 
   def find(names: Seq[ModelName]): Future[List[Hopeful]] = {
-    if (names.isEmpty) {
-      Future.successful(Nil)
-    } else {
-      val q = BSONDocument(
-        _id -> BSONDocument(
-          "$in" -> names
-        )
-      )
-      val cursor: Cursor[Hopeful] = collection.find(q).cursor[Hopeful]()
-      cursor.collect[List](maxDocs = Int.MaxValue, err = Cursor.FailOnError[List[Hopeful]]())
-    }
+    repo.findManyById(names)
   }
 
   def findAll: Future[List[Hopeful]] = {
-    collection.find(BSONDocument()).cursor[Hopeful]().collect[List]()
+    repo.findAll
   }
 
   def findWithZeroSets: Future[List[Hopeful]] = {
     val q: BSONDocument = BSONDocument(
       "photoSets" -> BSONDocument("$size" -> 0)
     )
-    collection.find(q).cursor[Hopeful]().collect[List]()
+    repo.findMany(q)
   }
 
   def findBetweenDays(start: LocalDate, end: LocalDate): Future[List[Hopeful]] = {
@@ -59,7 +50,7 @@ private[model] class HopefulsDao(val db: Database)(implicit val ec: ExecutionCon
       "photoSets.date" -> BSONDocument("$gte" -> start),
       "photoSets.date" -> BSONDocument("$lte" -> end)
     )
-    collection.find(q).cursor[Hopeful]().collect[List]()
+    repo.findMany(q)
   }
 
 }

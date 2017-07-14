@@ -19,46 +19,29 @@ private[model] class SuicideGirlsDao(val db: Database)(implicit val ec: Executio
   private val repo = MongoCollection.apply[SuicideGirl, ModelName, BSONString](collectionName, db)
 
   def createOrUpdate(sg: SuicideGirl): Future[Unit] = {
-    //    val q = BSONDocument(_id -> sg.name)
-    //    collection.update(q, sg, upsert = true) map { _ => () }
     repo.createOrUpdate(repo.idQuery(sg.name), sg)
   }
 
   def find(name: ModelName): Future[Option[SuicideGirl]] = {
-    //    collection.find(BSONDocument(_id -> name)).one[SuicideGirl]
     repo.findOne(repo.idQuery(name))
   }
 
   def find(names: Seq[ModelName]): Future[List[SuicideGirl]] = {
-    //    if (names.isEmpty) {
-    //      Future.successful(Nil)
-    //    } else {
-    //      val q = BSONDocument(
-    //        _id -> BSONDocument(
-    //          "$in" -> names
-    //        )
-    //      )
-    //      collection.find(q).cursor[SuicideGirl]().collect[List]()
-    //    }
     repo.findManyById(names)
   }
 
   def findAll: Future[List[SuicideGirl]] = {
     repo.findAll
-    //    collection.find(BSONDocument()).cursor[SuicideGirl]().collect[List]()
   }
 
   def delete(name: ModelName): Future[Unit] = {
     repo.remove(repo.idQuery(name))
-    //    collection.remove(BSONDocument(_id -> name)).map { _ => () }
   }
 
   def findWithZeroSets: Future[List[SuicideGirl]] = {
     val q: BSONDocument = BSONDocument(
       "photoSets" -> BSONDocument($size -> 0)
     )
-
-    //    collection.find(q).cursor[SuicideGirl]().collect[List]()
     repo.findMany(q)
 
   }
@@ -68,7 +51,6 @@ private[model] class SuicideGirlsDao(val db: Database)(implicit val ec: Executio
       "photoSets.date" -> BSONDocument($gte -> start),
       "photoSets.date" -> BSONDocument($lte -> end)
     )
-    //    collection.find(q).cursor[SuicideGirl]().collect[List]()
     repo.findMany(q)
 
   }
