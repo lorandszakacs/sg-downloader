@@ -1,7 +1,8 @@
 package com.lorandszakacs.util.mongodb
 
 import com.lorandszakacs.util.future._
-import reactivemongo.api.commands.WriteResult
+import com.lorandszakacs.util.math.Identifier
+import reactivemongo.api.commands.{MultiBulkWriteResult, WriteResult}
 
 /**
   *
@@ -14,11 +15,14 @@ object MongoCollection {
   def apply[Entity, IdType, BSONTargetType <: BSONValue](collName: String, database: Database)
     (implicit entityHandlerImpl: BSONDocumentHandler[Entity],
       idHandlerImpl: BSONHandler[BSONTargetType, IdType],
-      ec: ExecutionContext): MongoCollection[Entity, IdType, BSONTargetType] = {
+      ec: ExecutionContext,
+      identifierImpl: Identifier[Entity, IdType]
+    ): MongoCollection[Entity, IdType, BSONTargetType] = {
     new MongoCollection[Entity, IdType, BSONTargetType] {
       override protected implicit val executionContext: ExecutionContext = ec
       override protected implicit val objectHandler: BSONDocumentHandler[Entity] = entityHandlerImpl
       override protected implicit val idHandler: BSONHandler[BSONTargetType, IdType] = idHandlerImpl
+      override protected implicit val identifier: Identifier[Entity, IdType] = identifierImpl
 
       override val collectionName: String = collName
 
@@ -27,6 +31,10 @@ object MongoCollection {
   }
 
   private def interpretWriteResult(wr: WriteResult): Future[Unit] = {
+    when(!wr.ok) failWith MongoDBException(code = wr.code.map(_.toString), msg = wr.writeErrors.headOption.map(_.toString))
+  }
+
+  private def interpretWriteResult(wr: MultiBulkWriteResult): Future[Unit] = {
     when(!wr.ok) failWith MongoDBException(code = wr.code.map(_.toString), msg = wr.writeErrors.headOption.map(_.toString))
   }
 }
@@ -38,6 +46,8 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   protected implicit def idHandler: BSONHandler[BSONTargetType, IdType]
 
+  protected implicit def identifier: Identifier[Entity, IdType]
+
   protected def db: Database
 
   def collectionName: String
@@ -45,6 +55,8 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
   lazy val collection: BSONCollection = db(collectionName)
 
   def idQuery(id: IdType): BSONDocument = BSONDocument(_id -> id)
+
+  def idQueryByEntity(id: Entity): BSONDocument = BSONDocument(_id -> identifier.id(id))
 
   def findOne(query: BSONDocument): Future[Option[Entity]] = {
     collection.find(query).one[Entity]
@@ -59,7 +71,7 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
     this.findMany(BSONDocument.empty)
   }
 
-  def findById(id: IdType): Future[Option[Entity]] = {
+  def find(id: IdType): Future[Option[Entity]] = {
     this.findOne(idQuery(id))
   }
 
@@ -83,10 +95,34 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
     } yield ()
   }
 
+  def create(toCreate: List[Entity]): Future[Unit] = {
+    val bulkDocs =
+      toCreate.map(implicitly[collection.ImplicitlyDocumentProducer](_))
+    for {
+      wr <- collection.bulkInsert(ordered = false)(bulkDocs: _*)
+      _ <- MongoCollection.interpretWriteResult(wr)
+    } yield ()
+  }
+
   def createOrUpdate(query: BSONDocument, toCreate: Entity): Future[Unit] = {
     for {
       wr <- collection.update(query, toCreate, upsert = true)
       _ <- MongoCollection.interpretWriteResult(wr)
+    } yield ()
+  }
+
+  def createOrUpdate(toCreate: Entity): Future[Unit] = {
+    for {
+      wr <- collection.update(idQueryByEntity(toCreate), toCreate, upsert = true)
+      _ <- MongoCollection.interpretWriteResult(wr)
+    } yield ()
+  }
+
+  def createOrUpdate(toCreateOrUpdate: List[Entity]): Future[Unit] = {
+    for {
+      _ <- Future.traverse(toCreateOrUpdate) { entity =>
+        this.createOrUpdate(entity)
+      }
     } yield ()
   }
 
@@ -95,7 +131,10 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
       wr <- collection.remove(q, firstMatchOnly = firstMatchOnly)
       _ <- MongoCollection.interpretWriteResult(wr)
     } yield ()
+  }
 
+  def remove(id: IdType): Future[Unit] = {
+    this.remove(idQuery(id), firstMatchOnly = true)
   }
 
 }

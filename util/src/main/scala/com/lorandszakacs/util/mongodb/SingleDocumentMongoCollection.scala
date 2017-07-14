@@ -1,6 +1,7 @@
 package com.lorandszakacs.util.mongodb
 
 import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.math.Identifier
 
 /**
   *
@@ -18,6 +19,10 @@ trait SingleDocumentMongoCollection[Entity, IdType, BSONTargetType <: BSONValue]
   protected def objectHandler: BSONDocumentHandler[Entity]
 
   protected implicit def idHandler: BSONHandler[BSONTargetType, IdType]
+
+  protected implicit def identifier: Identifier[Entity, IdType] = new Identifier[Entity, IdType] {
+    override def id(t: Entity): IdType = uniqueDocumentId
+  }
 
   protected implicit def objectHandlerWithUniqueId: BSONDocumentHandler[Entity] = {
     new BSONDocumentReader[Entity] with BSONDocumentWriter[Entity] with BSONHandler[BSONDocument, Entity] {
