@@ -17,31 +17,32 @@ import scala.util.control.NonFatal
   * @since 01 Jul 2017
   *
   */
-class HarvesterCommandLineEvaluator(
+class DownloaderCommandLineInterpreter(
   assembly: ModelExporterAssembly with
     SGDownloaderAssembly
 ) extends StrictLogging {
 
   private implicit val executionContext: ExecutionContext = assembly.executionContext
 
-  def evaluate(args: Array[String]): Unit = {
+  def interpret(args: Array[String]): Option[Command] = {
     assert(args.nonEmpty, "why did you call the command line evaluator if you have no command line args?")
     val stringArgs = args.mkString(" ")
 
-    this.evaluate(stringArgs)
+    this.interpret(stringArgs)
   }
 
-  def evaluate(args: String): Unit = {
-    val ecx = eventualEvaluate(args) recover {
+  def interpret(args: String): Option[Command] = {
+    val ecx = eventualInterpretation(args).map(Option.apply) recover {
       case NonFatal(e) =>
         logger.error(s"Failed to evaluate command: $args", e)
+        None
     }
     ecx.await(24 hours)
   }
 
   private val downloader = assembly.sgDownloader
 
-  private def eventualEvaluate(args: String): Future[Unit] = {
+  private def eventualInterpretation(args: String): Future[Command] = {
     val triedCommand = CommandParser.parseCommand(args) recoverWith {
       case NonFatal(e) =>
         logger.error(s"failed to parse command: '$args'", e)
@@ -50,15 +51,15 @@ class HarvesterCommandLineEvaluator(
 
     for {
       command <- Future fromTry triedCommand
-      _ <- evaluateCommand(command)
-    } yield ()
+      _ <- interpretCommand(command)
+    } yield command
   }
 
-  private def evaluateCommand(command: Command): Future[Unit] = {
+  private def interpretCommand(command: Command): Future[Unit] = {
     command match {
 
       //=======================================================================
-      case Commands.DeltaHarvest(days, usernameAndPassword) =>
+      case Commands.DeltaDownload(days, usernameAndPassword) =>
         implicit val ppProvider = optionalPasswordParams(usernameAndPassword)
         downloader.download.delta(
           daysToExport = days.getOrElse(120),
@@ -72,6 +73,11 @@ class HarvesterCommandLineEvaluator(
             c.fullDescription
           } mkString "\n----------------\n"
           print(s"----------------\n$string\n")
+        }
+      //=======================================================================
+      case Commands.Exit =>
+        Future.successful {
+          print("\n-------- exiting --------\n")
         }
       //=======================================================================
     }
