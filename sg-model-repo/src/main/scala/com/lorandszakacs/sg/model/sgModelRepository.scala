@@ -13,6 +13,7 @@ import com.lorandszakacs.util.future._
   *
   */
 trait SGModelRepository {
+  @scala.deprecated("unused", "now")
   def modelsWithZeroPhotoSets: Future[(List[SuicideGirl], List[Hopeful])]
 
   def reindexSGs(names: List[ModelName]): Future[Unit]
@@ -27,14 +28,17 @@ trait SGModelRepository {
     * Removes all specified [[ModelName]]s from the appropriate indexes, removes all [[Model]]
     * entries. Updates the [[CleanedUpModelsIndex]] with the specified models.
     */
+  @scala.deprecated("unused", "now")
   def cleanUpModels(sgs: List[ModelName], hopefuls: List[ModelName]): Future[Unit]
 
   def createOrUpdateLastProcessed(l: LastProcessedMarker): Future[Unit]
 
   def lastProcessedIndex: Future[Option[LastProcessedMarker]]
 
+  @scala.deprecated("unused", "now")
   def suicideGirlIndex: Future[SuicideGirlIndex]
 
+  @scala.deprecated("unused", "now")
   def hopefulIndex: Future[HopefulIndex]
 
   def completeModelIndex: Future[CompleteModelIndex]

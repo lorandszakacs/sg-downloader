@@ -167,7 +167,7 @@ final class PhotoSetTitle private(
 
 final case class SuicideGirl(
   photoSetURL: URL,
-  name: ModelName,
+  @BSONMacros.Annotations.Key("_id") name: ModelName,
   photoSets: List[PhotoSet]
 ) extends Model with ModelUpdater[SuicideGirl] {
 
@@ -190,7 +190,7 @@ final case class SuicideGirl(
 
 final case class Hopeful(
   photoSetURL: URL,
-  name: ModelName,
+  @BSONMacros.Annotations.Key("_id") name: ModelName,
   photoSets: List[PhotoSet]
 ) extends Model with ModelUpdater[Hopeful] {
 

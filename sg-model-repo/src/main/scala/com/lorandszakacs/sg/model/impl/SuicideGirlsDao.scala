@@ -12,6 +12,7 @@ import com.lorandszakacs.util.mongodb.MongoCollection
   * @since 04 Jul 2016
   *
   */
+@scala.deprecated("use repo instead", "now")
 private[model] class SuicideGirlsDao(val db: Database)(implicit val ec: ExecutionContext) extends MongoDAO {
 
   override protected val collectionName: String = "suicide_girls"

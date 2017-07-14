@@ -10,6 +10,7 @@ import com.lorandszakacs.util.future._
   * @since 04 Jul 2016
   *
   */
+@scala.deprecated("use repo", "now")
 final private[model] class IndexDao(val db: Database)(implicit val ec: ExecutionContext) extends MongoDAO {
   override protected val collectionName: String = "models_index"
 

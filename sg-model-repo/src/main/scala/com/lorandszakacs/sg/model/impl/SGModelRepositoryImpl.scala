@@ -6,6 +6,7 @@ import org.joda.time.LocalDate
 
 import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.list._
+import com.lorandszakacs.util.time._
 
 /**
   *
@@ -147,7 +148,7 @@ private[model] class SGModelRepositoryImpl(
   }
 
   private def groupModelsBetweenDays(start: LocalDate, end: LocalDate, models: List[Model]): List[(LocalDate, List[Model])] = {
-    val days = RepoTimeUtil.daysBetween(start, end)
+    val days = TimeUtil.daysBetween(start, end)
     for {
       day <- days
       modelsForDay = models.filter(_.photoSets.exists(_.date == day))

@@ -12,6 +12,7 @@ import com.lorandszakacs.util.future._
   * @since 04 Jul 2016
   *
   */
+@scala.deprecated("use HopefulsRepo instead", "now")
 private[model] class HopefulsDao(val db: Database)(implicit val ec: ExecutionContext) extends MongoDAO {
 
   override protected val collectionName: String = "hopefuls"

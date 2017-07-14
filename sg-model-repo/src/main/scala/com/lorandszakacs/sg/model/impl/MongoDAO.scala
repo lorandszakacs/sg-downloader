@@ -6,12 +6,14 @@ import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.model._
 import org.joda.time.LocalDate
 import com.lorandszakacs.util.mongodb._
+
 /**
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 04 Jul 2016
   *
   */
+@scala.deprecated("use repo", "now")
 private[impl] trait SGRepoBSON {
   protected val SuicideGirlsIndexId = "suicide-girls-index"
   protected val HopefulIndexId = "hopefuls-index"
@@ -44,7 +46,7 @@ private[impl] trait SGRepoBSON {
     }
 
   protected implicit val cleanedUpIndexBSON: BSONDocumentReader[CleanedUpModelsIndex] with BSONDocumentWriter[CleanedUpModelsIndex] with BSONHandler[BSONDocument, CleanedUpModelsIndex] =
-    new BSONDocumentReader[CleanedUpModelsIndex] with BSONDocumentWriter[CleanedUpModelsIndex] with BSONHandler[BSONDocument, CleanedUpModelsIndex]{
+    new BSONDocumentReader[CleanedUpModelsIndex] with BSONDocumentWriter[CleanedUpModelsIndex] with BSONHandler[BSONDocument, CleanedUpModelsIndex] {
       private val handler = BSONMacros.handler[CleanedUpModelsIndex]
 
       override def write(t: CleanedUpModelsIndex): BSONDocument = BSONDocument(_id -> CleanedUpIndexId) ++ handler.write(t)
@@ -107,6 +109,7 @@ private[impl] trait SGRepoBSON {
   implicit val lastProcessedMarkerBSON: BSONDocumentHandler[LastProcessedMarker] = BSONMacros.handler[LastProcessedMarker]
 }
 
+@scala.deprecated("use repo", "now")
 private[impl] trait MongoDAO extends SGRepoBSON {
   protected def db: Database
 
