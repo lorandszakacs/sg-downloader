@@ -53,6 +53,24 @@ class TestListUtilFunctions extends FlatSpec {
     assert(result == resultRP)
   }
 
+  behavior of "list.distinctById"
+
+  it should "... return nothing for empty list" in {
+    val thisList = List[I]()
+    val resultEx = List[I]()
+
+    val result = thisList.distinctById
+    assert(result == resultEx)
+  }
+
+  it should "... return only elements which identify distinctly" in {
+    val thisList = List(I(1, "one"), I(1, "two"), I(3, "three"))
+    val resultEx = List(I(1, "one"), I(3, "three"))
+
+    val result = thisList.distinctById
+    assert(result == resultEx)
+  }
+
 
   case class I(
     id: Int,

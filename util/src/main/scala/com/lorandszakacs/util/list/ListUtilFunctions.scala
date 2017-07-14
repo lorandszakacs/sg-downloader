@@ -2,6 +2,8 @@ package com.lorandszakacs.util.list
 
 import com.lorandszakacs.util.math.Identity
 
+import scala.annotation.tailrec
+
 /**
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
@@ -38,8 +40,28 @@ trait ListUtilFunctions {
         val replaced = this.replace(toReplace)
         replaced ++ toAdd
       }
+    }
+
+    def distinctById(implicit id: Identity[T]): List[T] = {
+      @tailrec
+      def accumulateUnique(left: List[T], acc: List[T]): List[T] = {
+        if (left.isEmpty) {
+          acc
+        } else {
+          val head = left.head
+          val tail = left.tail
+          if (acc.exists(e => id.identifiesAs(head, e))) {
+            accumulateUnique(tail, acc)
+          } else {
+            accumulateUnique(tail, acc :+ head)
+          }
+        }
+      }
+
+      accumulateUnique(thisList, List.empty[T])
 
     }
+
   }
 
 }
