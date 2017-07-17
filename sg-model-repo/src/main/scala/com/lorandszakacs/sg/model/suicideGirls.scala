@@ -62,6 +62,8 @@ case class Models(
 }
 
 sealed trait Model {
+  type ModelType <: Model
+
   def photoSetURL: URL
 
   def name: ModelName
@@ -82,6 +84,8 @@ sealed trait Model {
 
   def stringifyType: String
 
+  def updatePhotoSets(newPhotoSets: List[PhotoSet]): ModelType
+
   final def numberOfSets: Int = photoSets.length
 
   final def numberOfPhotos: Int = photoSets.map(_.photos.length).sum
@@ -92,20 +96,15 @@ sealed trait Model {
   final def photoSetsNewestFirst: List[PhotoSet] =
     this.photoSetsOldestFirst.reverse
 
+  final def setsByNewestFirst: ModelType = updatePhotoSets(this.photoSets.sortBy(_.date).reverse)
+
+  final def setsByOldestFirst: ModelType = updatePhotoSets(this.photoSets.sortBy(_.date))
+
   override def toString: String =
     s"""|---------${this.getClass.getSimpleName}: ${name.name} : ${photoSets.length}---------
         |url=${photoSetURL.toExternalForm}
         |${photoSetsNewestFirst.mkString("", "\n", "")}
         |""".stripMargin
-}
-
-sealed trait ModelUpdater[T <: Model] {
-  this: Model =>
-  def updatePhotoSets(newPhotoSets: List[PhotoSet]): T
-
-  final def setsByNewestFirst: T = updatePhotoSets(this.photoSets.sortBy(_.date).reverse)
-
-  final def setsByOldestFirst: T = updatePhotoSets(this.photoSets.sortBy(_.date))
 }
 
 object ModelName {
@@ -169,7 +168,8 @@ final case class SuicideGirl(
   photoSetURL: URL,
   @Annotations.Key("_id") name: ModelName,
   photoSets: List[PhotoSet]
-) extends Model with ModelUpdater[SuicideGirl] {
+) extends Model {
+  override type ModelType = SuicideGirl
 
   override def updatePhotoSets(newPhotoSets: List[PhotoSet]): SuicideGirl = this.copy(photoSets = newPhotoSets)
 
@@ -192,7 +192,9 @@ final case class Hopeful(
   photoSetURL: URL,
   @Annotations.Key("_id") name: ModelName,
   photoSets: List[PhotoSet]
-) extends Model with ModelUpdater[Hopeful] {
+) extends Model {
+
+  override type ModelType = Hopeful
 
   override def updatePhotoSets(newPhotoSets: List[PhotoSet]): Hopeful = this.copy(photoSets = newPhotoSets)
 
