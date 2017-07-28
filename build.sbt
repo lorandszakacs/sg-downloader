@@ -49,9 +49,11 @@ lazy val `sg-harvester` = Project(
       )
     )
 ).aggregate(
-  `sg-model-repo`
+  `sg-model-repo`,
+  `util`
 ).dependsOn(
-  `sg-model-repo`
+  `sg-model-repo`,
+  `util`
 )
 
 lazy val `sg-model-repo` = Project(
@@ -91,7 +93,6 @@ lazy val `util` = Project(
         //required for package com.lorandszakacs.util.logging
         common.dev.logbackClassic,
         common.dev.scalaLogging,
-
 
         common.test.scalaTest
       )
