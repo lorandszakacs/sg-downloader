@@ -235,7 +235,6 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
       }
 
       while (!stop) {
-        pc.throttleThread()
         val newURI = offsetUri(uri, offset)
         val newPage = sGClient.getPage(newURI).await()
         offset += offsetStep
@@ -243,6 +242,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
           stop = true
         } else {
           logger.info(s"load repeatedly: step=$offsetStep [$newURI]")
+          pc.throttleThread()
           parsingFunction(newPage) match {
             case Success(s) =>
               result ++= s
