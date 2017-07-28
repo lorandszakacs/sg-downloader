@@ -23,7 +23,7 @@ import com.typesafe.scalalogging.StrictLogging
 class Assembly extends ModelExporterAssembly with SGModelAssembly with IndexerAssembly with ReifierAssembly with SanitizerAssembly with SGDownloaderAssembly with StrictLogging {
 
   override implicit lazy val db: Database = new Database(
-    uri = """mongodb://localhost""",
+    uri = """mongodb://localhost:27016""",
     dbName = "sgs_repo"
   )
 
