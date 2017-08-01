@@ -32,6 +32,7 @@ lazy val `sg-harvester` = Project(
   common.buildSettings(projectInfo, common.defaults.lorandszakacsOrg, Option(publishInfo)) ++
     Seq(
       mainClass in(Compile, run) in ThisBuild := Some("com.lorandszakacs.sg.app.Main"),
+      suppressSbtShellNotification := true,
       fork in run := true,
       libraryDependencies ++= Seq(
         common.dev.akka.actor,
