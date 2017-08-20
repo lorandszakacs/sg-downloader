@@ -60,14 +60,14 @@ class CommandLineInterpreter(
 
       //=======================================================================
       case Commands.DeltaDownload(days, usernameAndPassword) =>
-        implicit val ppProvider = optionalPasswordParams(usernameAndPassword)
+        implicit val ppProvider: PasswordProvider = optionalPasswordParams(usernameAndPassword)
         downloader.download.delta(
           daysToExport = days.getOrElse(120),
           includeProblematic = true
         )
       //=======================================================================
       case Commands.DownloadSpecific(models, usernameAndPassword) =>
-        implicit val ppProvider = optionalPasswordParams(usernameAndPassword)
+        implicit val ppProvider: PasswordProvider = optionalPasswordParams(usernameAndPassword)
         downloader.download.specific(
           modelNames = models,
           daysToExport = 120 //TODO: read from commandline
