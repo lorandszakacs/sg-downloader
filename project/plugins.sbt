@@ -1,1 +1,1 @@
-addSbtPlugin("com.lorandszakacs" % "sbt-common-build-plugin" % "0.3.0-SNAPSHOT")
+addSbtPlugin("org.xerial.sbt" % "sbt-pack" % "0.9.3")
