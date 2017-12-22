@@ -78,6 +78,9 @@ lazy val `util` = Project(
         Dependencies.logbackClassic,
         Dependencies.scalaLogging,
 
+        //required for package com.lorandszakacs.util.html
+        Dependencies.java.jsoup,
+
         Dependencies.scalaTest
       )
     )

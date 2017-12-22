@@ -16,10 +16,13 @@
  */
 package com.lorandszakacs.util.html
 
-import java.io.File
+import org.jsoup._
+import org.jsoup.nodes._
+import org.jsoup.select._
 
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
+import scala.collection.mutable.ListBuffer
+
+import java.io.File
 
 /**
  * @author Lorand Szakacs, lsz@lorandszakacs.com
