@@ -7,6 +7,22 @@ import com.github.nscala_time.time.Imports._
 
 /**
   *
+  * {{{
+  *   .
+  *   ├── css
+  *   │   ├── image_loading.js
+  *   │   └── w3.css
+  *   ├── icons
+  *   │   └── sg_logo.ico
+  *   ├── models
+  *   │   ├── all
+  *   │   ├── favorites
+  *   │   └── newest.html
+  *   └── scripts
+  *       ├── image_loading.js
+  *       └── loading_gif.gif
+  * }}}
+  *
   * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 17 Jul 2016
   *
@@ -15,7 +31,9 @@ private[html] class HTMLGeneratorImpl()(
   implicit val ec: ExecutionContext
 ) extends HTMLGenerator {
 
-  private val RootPath = "../../.."
+  private val RootPath1 = ".."
+  private val RootPath2 = "../.."
+  private val RootPath3 = "../../.."
 
   override def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): Future[MRootIndex] = {
     for {
@@ -34,6 +52,24 @@ private[html] class HTMLGeneratorImpl()(
     Future.successful(rootIndexPageForModelNames(ms))
   }
 
+  /**
+    *
+    * {{{
+    *   .
+    *   ├── css
+    *   │   ├── image_loading.js
+    *   │   └── w3.css
+    *   ├── icons
+    *   │   └── sg_logo.ico
+    *   ├── models
+    *   │   ├── all
+    *   │   ├── favorites
+    *   │   └── newest.html
+    *   └── scripts
+    *       ├── image_loading.js
+    *       └── loading_gif.gif
+    * }}}
+    */
   def createNewestPage(ms: List[(LocalDate, List[M])]): Future[Html] = {
     def newestPageElementForDay(date: LocalDate, models: List[M]): String = {
       val elements = models.sortBy(_.name.name).map { model =>
@@ -60,7 +96,7 @@ private[html] class HTMLGeneratorImpl()(
            |<!DOCTYPE html>
            |<html>
            |<title>Newest Sets</title>
-           |<head><link rel="icon" href="../../../icons/sg_logo.ico"></head>
+           |<head><link rel="icon" href="$RootPath1/icons/sg_logo.ico"></head>
            |  <h3><a href="../index.html">BACK</a></h3>
            |${eachDay.mkString("\n")}
            |</html>
@@ -73,11 +109,11 @@ private[html] class HTMLGeneratorImpl()(
 
   private def modelIndex(m: M)(implicit settings: HtmlSettings): MIndex = {
     def iconForPhotoSet(ps: PhotoSet): String = {
-      ps.photos.headOption.map(_.thumbnailURL.toExternalForm).getOrElse(s"$RootPath/icons/sg_logo.ico")
+      ps.photos.headOption.map(_.thumbnailURL.toExternalForm).getOrElse(s"$RootPath3/icons/sg_logo.ico")
     }
 
     def iconForModel(m: M): String = {
-      m.photoSets.headOption.map(iconForPhotoSet).getOrElse(s"$RootPath/icons/sg_logo.ico")
+      m.photoSets.headOption.map(iconForPhotoSet).getOrElse(s"$RootPath3/icons/sg_logo.ico")
     }
 
     def modelIndexHtmlPage(m: M)(psi: List[PhotoSetIndex])(implicit settings: HtmlSettings): Html = {
@@ -122,8 +158,8 @@ private[html] class HTMLGeneratorImpl()(
                      |   <title>${m.name.externalForm}: ${ps.title.externalForm}</title>
                      |   <head><link rel="icon" href="${iconForPhotoSet(ps)}"></head>
                      |   <meta name="viewport" content="width=device-width, initial-scale=1">
-                     |   <link rel="stylesheet" href="$RootPath/css/w3.css">
-                     |   <script type="text/javascript" src="$RootPath/scripts/image_loading.js"></script>
+                     |   <link rel="stylesheet" href="$RootPath3/css/w3.css">
+                     |   <script type="text/javascript" src="$RootPath3/scripts/image_loading.js"></script>
                      |   <style>
                      |      .picture {display:none}
                      |   </style>
@@ -190,7 +226,7 @@ private[html] class HTMLGeneratorImpl()(
                    |<!DOCTYPE html>
                    |<html>
                    |<title>$title</title>
-                   |<head><link rel="icon" href="$RootPath/icons/sg_logo.ico"></head>
+                   |<head><link rel="icon" href="$RootPath2/icons/sg_logo.ico"></head>
                    |  <h3><a href="../../${settings.indexFileName}">BACK</a></h3>
                    |  <h3><ol type="1">
                    |${els.map(item).mkString("\t\t", "\n\t\t", "\n")}
