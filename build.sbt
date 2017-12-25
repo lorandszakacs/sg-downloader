@@ -68,10 +68,7 @@ lazy val `sg-core` = Project(
   "sg-core",
   base = file("./sg-core")
 ).settings(
-  Settings.common ++
-    Seq(
-      libraryDependencies := Seq()
-    )
+  Settings.common
 )
 
 lazy val `util` = Project(

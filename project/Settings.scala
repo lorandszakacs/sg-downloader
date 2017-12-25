@@ -1,15 +1,18 @@
 import sbt._
 import Keys._
+import sbtassembly.AssemblyKeys._
 
 object Settings {
   lazy val organizationName: String = "com.lorandszakacs"
 
   def common: Seq[Setting[_]] =
     Seq(
-      organization in ThisBuild := organizationName,
-      scalaVersion              := Dependencies.mainScalaVersion,
+      organization in ThisBuild   := organizationName,
+      test in assembly            := {},
+      assemblyJarName in assembly := s"${name.value}.jar",
+      scalaVersion                := Dependencies.mainScalaVersion,
       dependencyOverrides += Dependencies.akkaStream,
-      dependencyOverrides += Dependencies.akkaActor
+      dependencyOverrides += Dependencies.akkaActor,
     ) // ++ scalaCompilerSettings
 
   /**
