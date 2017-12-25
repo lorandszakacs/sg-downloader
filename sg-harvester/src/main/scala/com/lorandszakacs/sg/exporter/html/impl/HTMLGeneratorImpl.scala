@@ -60,7 +60,7 @@ private[html] class HTMLGeneratorImpl()(
            |<!DOCTYPE html>
            |<html>
            |<title>Newest Sets</title>
-           |<head><link rel="icon" href="../../../icons/suicide_girls_favorites.ico"></head>
+           |<head><link rel="icon" href="../../../icons/sg_logo.ico"></head>
            |  <h3><a href="../index.html">BACK</a></h3>
            |${eachDay.mkString("\n")}
            |</html>
@@ -73,11 +73,11 @@ private[html] class HTMLGeneratorImpl()(
 
   private def modelIndex(m: M)(implicit settings: HtmlSettings): MIndex = {
     def iconForPhotoSet(ps: PhotoSet): String = {
-      ps.photos.headOption.map(_.thumbnailURL.toExternalForm).getOrElse(s"$RootPath/icons/suicide_girls_favorites.ico")
+      ps.photos.headOption.map(_.thumbnailURL.toExternalForm).getOrElse(s"$RootPath/icons/sg_logo.ico")
     }
 
     def iconForModel(m: M): String = {
-      m.photoSets.headOption.map(iconForPhotoSet).getOrElse(s"$RootPath/icons/suicide_girls_favorites.ico")
+      m.photoSets.headOption.map(iconForPhotoSet).getOrElse(s"$RootPath/icons/sg_logo.ico")
     }
 
     def modelIndexHtmlPage(m: M)(psi: List[PhotoSetIndex])(implicit settings: HtmlSettings): Html = {
@@ -190,7 +190,7 @@ private[html] class HTMLGeneratorImpl()(
                    |<!DOCTYPE html>
                    |<html>
                    |<title>$title</title>
-                   |<head><link rel="icon" href="$RootPath/icons/suicide_girls_favorites.ico"></head>
+                   |<head><link rel="icon" href="$RootPath/icons/sg_logo.ico"></head>
                    |  <h3><a href="../../${settings.indexFileName}">BACK</a></h3>
                    |  <h3><ol type="1">
                    |${els.map(item).mkString("\t\t", "\n\t\t", "\n")}
