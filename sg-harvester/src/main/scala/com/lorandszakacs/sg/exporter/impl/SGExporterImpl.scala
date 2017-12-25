@@ -51,7 +51,7 @@ private[exporter] class SGExporterImpl(
       for {
         favoritesIndexDelta <- html.createHTMLPageForModels(deltaFavorites)(FavoritesHtmlSettings)
         _ <- fileWriter.writeRootModelIndex(favoritesIndexDelta)(favoritesWriterSettings)
-        completeFavoriteRootIndex <- html.createRootIndex(Favorites.modelNames)(FavoritesHtmlSettings)
+        completeFavoriteRootIndex <- html.createRootIndex(Favorites.names)(FavoritesHtmlSettings)
         _ <- fileWriter.rewriteRootIndexFile(completeFavoriteRootIndex)(favoritesWriterSettings)
       } yield {
         logger.info(s"-- successfully updated DELTA favorites index ${deltaFavorites.length}: @ ${completeFavoriteRootIndex.relativePathAndName}")
@@ -82,7 +82,7 @@ private[exporter] class SGExporterImpl(
   override def exportHTMLOfOnlyGivenSubsetOfModels(ms: List[ModelName])(implicit ws: ExporterSettings): Future[Unit] = {
     for {
       models <- repo.find(ms)
-      favorites: List[Model] = models.filter(m => Favorites.modelNames.contains(m.name))
+      favorites: List[Model] = models.filter(m => Favorites.names.contains(m.name))
 
       _ <- updateFavoritesHTML(favorites)
       _ <- updateAllHTML(models)
@@ -90,7 +90,7 @@ private[exporter] class SGExporterImpl(
   }
 
   override def exportDeltaHTMLOfModels(models: List[Model])(implicit ws: ExporterSettings): Future[Unit] = {
-    val favorites: List[Model] = models.filter(m => Favorites.modelNames.contains(m.name))
+    val favorites: List[Model] = models.filter(m => Favorites.names.contains(m.name))
     for {
       _ <- updateFavoritesHTML(favorites)
       _ <- updateAllHTML(models)
@@ -99,7 +99,7 @@ private[exporter] class SGExporterImpl(
 
   override def exportHTMLIndexOfFavorites(implicit ws: ExporterSettings): Future[Unit] = {
     for {
-      models <- repo.find(Favorites.modelNames)
+      models <- repo.find(Favorites.names)
       favoritesIndex: ModelsRootIndex <- html.createHTMLPageForModels(models)(FavoritesHtmlSettings)
       _ <- fileWriter.writeRootModelIndex(favoritesIndex)(favoritesWriterSettings)
     } yield ()
