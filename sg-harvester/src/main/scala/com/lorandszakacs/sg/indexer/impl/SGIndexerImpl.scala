@@ -2,6 +2,7 @@ package com.lorandszakacs.sg.indexer.impl
 
 import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.contentparser.SGContentParser
+import com.lorandszakacs.sg.core
 import com.lorandszakacs.sg.indexer.{FailedToRepeatedlyLoadPageException, SGIndexer}
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.M.{HFFactory, ModelFactory, SGFactory}
@@ -30,9 +31,9 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
 
   private[this] implicit val Authentication: Authentication = DefaultSGAuthentication
 
-  private val SGsSortedByFollowers = "https://www.suicidegirls.com/profiles/girl/followers/"
-  private val HFsSortedByFollowers = "https://www.suicidegirls.com/profiles/hopeful/followers/"
-  private val NewestSets           = "https://www.suicidegirls.com/photos/all/recent/all/"
+  private val SGsSortedByFollowers = s"${core.Domain}/profiles/girl/followers/"
+  private val HFsSortedByFollowers = s"${core.Domain}/profiles/hopeful/followers/"
+  private val NewestSets           = s"${core.Domain}/photos/all/recent/all/"
 
   /**
     * Gathers the names of all available [[SG]]s
@@ -80,7 +81,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     * At the time of writing, there are at most 9 sets displayed per such a page.
     *
     * Check:
-    * https://www.suicidegirls.com/girls/dwam/photos/view/photosets/
+    * $domain/girls/dwam/photos/view/photosets/
     * To see if this still holds true.
     *
     * @return
@@ -124,7 +125,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
   /**
     *
     * Gathers information about the latest published sets from:
-    * https://www.suicidegirls.com/photos/all/recent/all/
+    * $domain/photos/all/recent/all/
     *
     * The amount of crawling is limited by the absolute limit, or by the set identified by [[LastProcessedMarker.lastPhotoSetID]]
     * This last set is not included in the results.
@@ -171,7 +172,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
   /**
     *
     * Reindexes the Ms that have a set on the page:
-    * https://www.suicidegirls.com/photos/all/recent/all/
+    * $domain/photos/all/recent/all/
     *
     * The amount of crawling is limited by the absolute limit, or by the set identified by [[LastProcessedMarker.lastPhotoSetID]]
     * This last set is not included in the results.

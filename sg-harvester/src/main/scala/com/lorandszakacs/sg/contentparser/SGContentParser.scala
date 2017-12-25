@@ -43,7 +43,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
 
   /**
     * Source:
-    * https://www.suicidegirls.com/girls/valkyria/photos/
+    * $domain/girls/valkyria/photos/
     *
     * this filter will yield elements like the following:
     *
@@ -107,80 +107,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
   /**
     *
     * Source:
-    * https://www.suicidegirls.com/photos/
-    *
-    * Elements of interest are the following:
-    *
-    * {{{
-    * <article id="" class="content-box type-album" data-url="" data-number="1" data-last-page="False" data-page-count="24" >
-    * <header post_id="2752796" posttype="album" class="header clearfix">
-    * <h2 class="title top-bar">
-    * <a href="/girls/saria/">
-    * saria
-    * </a> +
-    * <a href="/girls/mille/">
-    * mille
-    * </a>
-    * <div>
-    * <span class="set-type">SG Set</span>
-    * <span class="photographer">
-    * by <a href="/girls/talena/photography/">talena</a>
-    * </span>
-    * </div>
-    * </h2>
-    * <div class="sub-header clearfix">
-    * <div class="sub-header-container">
-    * <div class="meta-data">
-    * <time class="time-ago">
-    * 1 hr
-    * </time>
-    * </div>
-    * <a id="button-share_2752796" type="submit" class="button icon-share has-bar"></a>
-    * <a id="likeScore" appName='album' object="album" objectid="2752796" direction="up" class="button like  icon-heart  youLike not-active">&nbsp;222</a>
-    * </div>
-    * <div id="share_2752796" class="admin-bar share-links share-menu">
-    * <ul class="">
-    * <li><a class="facebook-share" href="http://www.suicidegirls.com/girls/saria/album/2752796/infinite-fire/" verbose="album" data-facebook-id="508713652527801" data-picture-url="https://d1a0n9gptf7ayu.cloudfront.net/photos/464e0940856ea89ccde1a4eade9aedac.jpg" data-name="infinite fire" data-description="chile shootfest">Facebook</a></li>
-    * <li><a class="twitter-share" href="http://twitter.com/share?url=http://www.suicidegirls.com/girls/saria/album/2752796/infinite-fire/">Tweet</a></li>
-    * <li><a class="email-share" href="mailto:?&body=http://www.suicidegirls.com/girls/saria/album/2752796/infinite-fire/">Email</a></li>
-    * </ul>
-    * </div>
-    * <div id="edit_2752796" class="admin-bar share-links">
-    * <ul class="">
-    * </ul>
-    * </div>
-    * </div>
-    * </header>
-    * <section class="image-section">
-    * <a href="/girls/saria/album/2752796/infinite-fire/">
-    * <figure data-width="" data-height=""  data-ratio="" class="ratio-16-9 res-image  ">
-    * <noscript data-tablet="" data-small="https://d1a0n9gptf7ayu.cloudfront.net/cache/f1/1e/f11e20a1965befc98950588ca9ed0365.jpg" data-mobile="" data-retina="https://d1a0n9gptf7ayu.cloudfront.net/cache/fa/a0/faa0b2dc966a93d018a9e961dc00e3ba.jpg" data-src="https://d1a0n9gptf7ayu.cloudfront.net/cache/a3/0c/a30c714ae1189666be23f8b241675d70.jpg">
-    * <img src="https://d1a0n9gptf7ayu.cloudfront.net/cache/a3/0c/a30c714ae1189666be23f8b241675d70.jpg" class="ratio-16-9" alt="" >
-    * </noscript>
-    * </figure>
-    * </a>
-    * <button type="button" class="icon-hex gallery-view gallery-view-hd" data-album-id="2752796" title="Open Gallery"></button>
-    * </section>
-    * <form class="commentForm inline-comment plain-text" action="/girls/saria/album/2752796/infinite-fire/comments/" method="POST">
-    * <ul>
-    * <li>
-    * <p contenteditable class="comment" type="text" placeholder="Write a comment..." name="text" id="id_text"></p>
-    * </li>
-    * <li class="hidden-inputs">
-    * <input class="span6 comment" type="text" hidden="hidden" name="text" />
-    * <input class="span6 comment" type="number" hidden="hidden" name="album" id="id_album" />
-    * <input class="span6 comment" type="text" hidden="hidden" id="noteditable" name="noteditable" value="" />
-    * <input type='hidden' name='csrfmiddlewaretoken' value='Dz3c4rCesDvRFMs9vd3wx0AniRpQBz7Q' />
-    * </li>
-    * <li>
-    * <a href="/girls/saria/album/2752796/infinite-fire/" data-comment-count="54" class="button comment-count icon-bubble">54</a>
-    * <button type="submit" data-active-text="Submit" class="">Submit</button>
-    * </li>
-    * </ul>
-    * </form>
-    * </article>
-    * }}}
-    *
+    * $domain/photos/
     */
   def gatherNewestPhotoSets(html: Html): Try[List[M]] = {
 
@@ -223,7 +150,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
 
     /**
       * {{{
-      * <a class="facebook-share" href="http://www.suicidegirls.com/members/yessiejune/album/2750189/go-a-little-crazy/" verbose="album" data-facebook-id="508713652527801" data-picture-url="https://d1a0n9gptf7ayu.cloudfront.net/photos/42ec323941a25929a132d317082d0b49.jpg" data-name="Go a Little Crazy!" data-description="Inspired by Harley Quinn">Facebook</a>
+      * <a class="facebook-share" href="$domain/members/yessiejune/album/2750189/go-a-little-crazy/" verbose="album" data-facebook-id="508713652527801" data-picture-url="https://d1a0n9gptf7ayu.cloudfront.net/photos/42ec323941a25929a132d317082d0b49.jpg" data-name="Go a Little Crazy!" data-description="Inspired by Harley Quinn">Facebook</a>
       * }}}
       */
     def getPhotoSetTitle(html: Html): Try[PhotoSetTitle] = {

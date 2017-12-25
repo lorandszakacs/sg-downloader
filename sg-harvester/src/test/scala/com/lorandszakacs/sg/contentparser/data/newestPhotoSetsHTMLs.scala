@@ -2,6 +2,7 @@ package com.lorandszakacs.sg.contentparser.data
 
 import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.URLConversions
+import com.lorandszakacs.sg._
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html.Html
 
@@ -35,11 +36,11 @@ trait NewestPhotosPage {
 object NewestPhotosPageWithDoubleMSet extends NewestPhotosPage with URLConversions {
   override def ms: List[M] = List(
     SG(
-      photoSetURL = "https://www.suicidegirls.com/girls/saria/photos/view/photosets/",
+      photoSetURL = s"${core.Domain}/girls/saria/photos/view/photosets/",
       name        = "Saria",
       photoSets = List(
         PhotoSet(
-          url    = "https://www.suicidegirls.com/girls/saria/album/2752796/infinite-fire/",
+          url    = s"${core.Domain}/girls/saria/album/2752796/infinite-fire/",
           title  = "INFINITE FIRE",
           date   = LocalDate.today, //this set has a relative date, not absolute one
           photos = Nil
@@ -47,11 +48,11 @@ object NewestPhotosPageWithDoubleMSet extends NewestPhotosPage with URLConversio
       )
     ),
     SG(
-      photoSetURL = "https://www.suicidegirls.com/girls/valkyria/photos/view/photosets/",
+      photoSetURL = s"${core.Domain}/girls/valkyria/photos/view/photosets/",
       name        = "valkyria",
       photoSets = List(
         PhotoSet(
-          url    = "https://www.suicidegirls.com/girls/valkyria/album/2750395/pictures-of-home/",
+          url    = s"${core.Domain}/girls/valkyria/album/2750395/pictures-of-home/",
           title  = "PICTURES OF HOME",
           date   = LocalDate.today, //this set has a relative date, not absolute one
           photos = Nil
@@ -59,11 +60,11 @@ object NewestPhotosPageWithDoubleMSet extends NewestPhotosPage with URLConversio
       )
     ),
     HF(
-      photoSetURL = "https://www.suicidegirls.com/girls/rias/photos/view/photosets/",
+      photoSetURL = s"${core.Domain}/girls/rias/photos/view/photosets/",
       name        = "rias",
       photoSets = List(
         PhotoSet(
-          url    = "https://www.suicidegirls.com/members/rias/album/2749693/cats-blues/",
+          url    = s"${core.Domain}/members/rias/album/2749693/cats-blues/",
           title  = "CAT'S BLUES",
           date   = LocalDate.today, //this set has a relative date, not absolute one,
           photos = Nil
@@ -71,11 +72,11 @@ object NewestPhotosPageWithDoubleMSet extends NewestPhotosPage with URLConversio
       )
     ),
     HF(
-      photoSetURL = "https://www.suicidegirls.com/girls/insatiableindica/photos/view/photosets/",
+      photoSetURL = s"${core.Domain}/girls/insatiableindica/photos/view/photosets/",
       name        = "insatiableindica",
       photoSets = List(
         PhotoSet(
-          url    = "https://www.suicidegirls.com/members/insatiableindica/album/2748045/gamer-girl/",
+          url    = s"${core.Domain}/members/insatiableindica/album/2748045/gamer-girl/",
           title  = "GAMER GIRL",
           date   = LocalDate.today, //this set has a relative date, not absolute one,
           photos = Nil

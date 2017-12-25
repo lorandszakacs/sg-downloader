@@ -1,6 +1,7 @@
 package com.lorandszakacs.sg.indexer.impl
 
 import akka.actor.ActorSystem
+import com.lorandszakacs.sg.core
 import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.indexer.IndexerAssembly
 import com.lorandszakacs.sg.model.M.{HFFactory, SGFactory}
@@ -30,7 +31,7 @@ class SGIndexerTests extends IndexerTest {
 
   /**
     * at the time of writing of this test:
-    * https://www.suicidegirls.com/members/odina/photos/
+    * $domain/members/odina/photos/
     * had only one single set
     */
   it should "... fetch URIs for a page that does not need a subsequent query -- odina" in { indexer =>
@@ -44,7 +45,7 @@ class SGIndexerTests extends IndexerTest {
       withClue("content") {
         sets should contain {
           PhotoSet(
-            url     = "https://www.suicidegirls.com/members/odina/album/2745718/do-i-wanna-know/",
+            url     = s"${core.Domain}/members/odina/album/2745718/do-i-wanna-know/",
             title   = "DO I WANNA KNOW",
             date    = LocalDate.parse("2016-07-03"),
             isHFSet = Some(true)
@@ -67,7 +68,7 @@ class SGIndexerTests extends IndexerTest {
       withClue("content") {
         sets should contain {
           PhotoSet(
-            url     = "https://www.suicidegirls.com/members/odina/album/2745718/do-i-wanna-know/",
+            url     = s"${core.Domain}/members/odina/album/2745718/do-i-wanna-know/",
             title   = "DO I WANNA KNOW",
             date    = LocalDate.parse("2016-07-03"),
             isHFSet = Some(true)
@@ -83,7 +84,7 @@ class SGIndexerTests extends IndexerTest {
 
   /**
     * at the time of writing of this test:
-    * https://www.suicidegirls.com/girls/zoli/photos/
+    * $domain/girls/zoli/photos/
     * had 22 sets. And has not published a new set in ages.
     */
   it should "... fetch URIs for a page that needs several queries -- zoli" in { indexer =>
@@ -97,7 +98,7 @@ class SGIndexerTests extends IndexerTest {
       withClue("... content") {
         sets should contain {
           PhotoSet(
-            url   = "https://www.suicidegirls.com/girls/zoli/album/996153/lounge-act/",
+            url   = s"${core.Domain}/girls/zoli/album/996153/lounge-act/",
             title = "lounge act",
             date  = LocalDate.parse("2012-10-17")
           )
@@ -105,7 +106,7 @@ class SGIndexerTests extends IndexerTest {
 
         sets should contain {
           PhotoSet(
-            url   = "https://www.suicidegirls.com/girls/zoli/album/969351/the-beat/",
+            url   = s"${core.Domain}/girls/zoli/album/969351/the-beat/",
             title = "THE BEAT",
             date  = LocalDate.parse("2006-05-03")
           )
@@ -117,7 +118,7 @@ class SGIndexerTests extends IndexerTest {
 
   /**
     * at the time of writing of this test:
-    * https://www.suicidegirls.com/girls/zoli/photos/
+    * $domain/girls/zoli/photos/
     * had 22 sets. And has not published a new set in ages.
     */
   it should "... fetch URIs for a page that needs several queries -- zoli -- generic" in { indexer =>
@@ -132,7 +133,7 @@ class SGIndexerTests extends IndexerTest {
       withClue("... content") {
         sets should contain {
           PhotoSet(
-            url   = "https://www.suicidegirls.com/girls/zoli/album/996153/lounge-act/",
+            url   = s"${core.Domain}/girls/zoli/album/996153/lounge-act/",
             title = "lounge act",
             date  = LocalDate.parse("2012-10-17")
           )
@@ -140,7 +141,7 @@ class SGIndexerTests extends IndexerTest {
 
         sets should contain {
           PhotoSet(
-            url   = "https://www.suicidegirls.com/girls/zoli/album/969351/the-beat/",
+            url   = s"${core.Domain}/girls/zoli/album/969351/the-beat/",
             title = "THE BEAT",
             date  = LocalDate.parse("2006-05-03")
           )

@@ -33,9 +33,11 @@ lazy val `sg-harvester` = Project(
       )
     )
 ).aggregate(
+  `sg-core`,
   `sg-model-repo`,
   `util`
 ).dependsOn(
+  `sg-core`,
   `sg-model-repo`,
   `util`
 )
@@ -56,9 +58,18 @@ lazy val `sg-model-repo` = Project(
       )
     )
 ).aggregate(
+  `sg-core`,
   `util`
 ).dependsOn(
+  `sg-core`,
   `util`
+)
+
+lazy val `sg-core` = Project(
+  "sg-core",
+  base = file("./sg-core")
+).settings(
+  Settings.common
 )
 
 lazy val `util` = Project(

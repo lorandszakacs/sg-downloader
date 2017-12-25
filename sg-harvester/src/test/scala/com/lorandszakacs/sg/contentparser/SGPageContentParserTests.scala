@@ -40,11 +40,11 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
         val last = result.last
         assert(last.index == expected.numberOfPhotos - 1, "... index")
         assert(
-          last.url.toExternalForm == "https://d1a0n9gptf7ayu.cloudfront.net/photos/b55708001e9a594a5851758a86706659.jpg",
+          last.url.toExternalForm == "https://example.com/sample_image_aaaaaa.jpg",
           "... url"
         )
         assert(
-          last.thumbnailURL.toExternalForm == "https://d1a0n9gptf7ayu.cloudfront.net/cache/19/27/19275ec62786360c34dcc18731cb121d.jpg",
+          last.thumbnailURL.toExternalForm == "https://example.com/sample_image_bbbbbb.jpg",
           "... thumbnail url"
         )
       case Failure(e) => fail("did not return any photos", e)
@@ -114,11 +114,6 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
         result.head.photoSets should equal(expected.ms.head.photoSets)
 
         result.head should equal(expected.ms.head)
-
-        println {
-          result.take(2)
-        }
-
         result.take(4).diff(expected.ms) should equal(Nil)
 
       case Failure(e) => fail("did not return any Ms", e)

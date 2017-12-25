@@ -4,9 +4,9 @@ import java.net.URL
 
 import akka.http.scaladsl.model.headers.{HttpOrigin, Origin, RawHeader, Referer}
 import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
+import com.lorandszakacs.sg.core
 import com.lorandszakacs.util.html.Html
 import org.joda.time.DateTime
-
 import com.lorandszakacs.util.future._
 
 /**
@@ -56,8 +56,8 @@ final case class Session(
 }
 
 object DefaultSGAuthentication extends Authentication {
-  private val OriginHeader:  Origin  = Origin(HttpOrigin("https://www.suicidegirls.com"))
-  private val RefererHeader: Referer = Referer("https://www.suicidegirls.com/")
+  private val OriginHeader:  Origin  = Origin(HttpOrigin(s"${core.Domain}"))
+  private val RefererHeader: Referer = Referer(s"${core.Domain}/")
 
   private val defaultSGHeaders: Seq[HttpHeader] = Seq(OriginHeader, RefererHeader)
 

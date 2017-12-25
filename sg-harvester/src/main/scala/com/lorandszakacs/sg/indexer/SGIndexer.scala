@@ -34,7 +34,7 @@ trait SGIndexer {
     * At the time of writing, there are at most 9 sets displayed per such a page.
     *
     * Check:
-    * https://www.suicidegirls.com/girls/dwam/photos/view/photosets/
+    * $domain/girls/dwam/photos/view/photosets/
     * To see if this still holds true.
     *
     * @return

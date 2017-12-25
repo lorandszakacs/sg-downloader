@@ -25,6 +25,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
+import com.lorandszakacs.sg.core
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.util.html._
 import com.lorandszakacs.util.future._
@@ -32,6 +33,7 @@ import org.joda.time.DateTimeZone
 
 import scala.collection.immutable.Seq
 import com.lorandszakacs.util.future._
+
 import scala.util.Try
 
 /**
@@ -69,7 +71,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
   /**
     * Steps:
     * ------------------------------------------
-    * 1. GET ``https://www.suicidegirls.com/``
+    * 1. GET ``$domain/``
     *
     * we receive headers:
     *
@@ -81,11 +83,11 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     * let ``SessionID``="gAJ9cQEoVQJhZE5VCmdlbmVyaWNfYWROdS4:1bK63H:i1FhbU7q9BwYx5pXybGPe4V32u0"
     *
     * ------------------------------------------
-    * 2. POST ``https://www.suicidegirls.com/login``
+    * 2. POST ``$domain/login``
     * we add headers:
     * {{{
-    *   Origin: https://www.suicidegirls.com
-    *   Referer: https://www.suicidegirls.com/
+    *   Origin: $domain
+    *   Referer: $domain/
     *   Cookie: csrftoken=``$CSRF``; sessionid=``$SessionID``
     *   X-CSRFToken: $CSRF
     *   Form Data: csrfmiddlewaretoken=``$CSRF``&username=``$username``&password=``$plainTextPassword``
@@ -103,7 +105,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     * ------------------------------------------
     * 3. On any subsequent request we include the following headers:
     * {{{
-    *   Referer: https://www.suicidegirls.com/
+    *   Referer: $domain/
     *   Cookie: sessionid=``$FinalSessionID``; csrftoken=``$FinalCSRFToken``
     * }}}
     */
@@ -143,7 +145,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     def getTokensFromStartPage: Future[StartPageTokens] = {
       val getRequest = HttpRequest(
         method = GET,
-        uri    = "https://www.suicidegirls.com/"
+        uri    = s"${core.Domain}/"
       )
       for {
         response <- http.singleRequest(getRequest)
@@ -214,7 +216,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
         .toEntity(HttpCharsets.`UTF-8`)
 
       val loginRequest = post(
-        uri     = "https://www.suicidegirls.com/login/",
+        uri     = s"${core.Domain}/login/",
         headers = headers,
         entity  = entity
       )
@@ -307,7 +309,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
 
   /**
     * Simply tries to go to:
-    * https://www.suicidegirls.com/members/$username/
+    * $domain/members/$username/
     *
     * and verify that the login button is no longer there. HTML looks like the following:
     * {{{
@@ -334,7 +336,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     * }}}
     */
   private def verifyAuthentication(newAuthentication: Authentication): Future[Unit] = {
-    val uri: Uri = s"https://www.suicidegirls.com/members/${newAuthentication.session.username}/"
+    val uri: Uri = s"${core.Domain}/members/${newAuthentication.session.username}/"
     for {
       page <- getPage(uri)(newAuthentication)
       loginButton = (page filter Tag("div") && Class("login-form-wrapper")).headOption
