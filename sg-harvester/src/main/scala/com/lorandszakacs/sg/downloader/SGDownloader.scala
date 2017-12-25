@@ -159,7 +159,7 @@ final class SGDownloader private[downloader] (
     def all(daysToExport: Int, onlyFavorites: Boolean)(
       implicit settings:  ExporterSettings = exporterSettings
     ): Future[Unit] = {
-      logger.info(s"export.all --> to: ${settings.allMsRootFolderPath}")
+      logger.info(s"export.all --> onlyFavorites=$onlyFavorites --> to: ${settings.allMsRootFolderPath}")
       for {
         all <- if (onlyFavorites)
                 repo.find(Favorites.names)

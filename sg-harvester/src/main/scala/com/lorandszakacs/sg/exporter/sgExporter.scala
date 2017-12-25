@@ -75,10 +75,12 @@ trait SGExporter {
 
 object ExporterSettings {
 
-  def apply(favoritesRootFolderPath: String,
-            allMsRootFolderPath:     String,
-            newestRootFolderPath:    String,
-            rewriteEverything:       Boolean): ExporterSettings = {
+  def apply(
+    favoritesRootFolderPath: String,
+    allMsRootFolderPath:     String,
+    newestRootFolderPath:    String,
+    rewriteEverything:       Boolean
+  ): ExporterSettings = {
     new ExporterSettings(
       favoritesRootFolderPath = Paths.get(FileUtils.normalizeHomePath(favoritesRootFolderPath)).toAbsolutePath,
       allMsRootFolderPath     = Paths.get(FileUtils.normalizeHomePath(allMsRootFolderPath)).toAbsolutePath,

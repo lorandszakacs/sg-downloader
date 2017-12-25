@@ -125,6 +125,21 @@ object CommandParser extends JavaTokenParsers {
   }
 
   //===========================================================================
+  //================================= EXPORT ==================================
+  //===========================================================================
+
+  private val exportHTMLCommandParser: Parser[Commands.ExportHTML] = {
+    for {
+      _ <- literal(Commands.ExportHTML.id)
+      f <- (`space*` ~> literal("-f")).?
+    } yield
+      Commands.ExportHTML(
+        onlyFavorites = f.isDefined
+      )
+
+  }
+
+  //===========================================================================
   //============================= FAVORITES ===================================
   //===========================================================================
 
@@ -174,6 +189,7 @@ object CommandParser extends JavaTokenParsers {
   private val rootCommandParser: Parser[Command] =
     deltaHarvestCommandParser |
       downloadSpecificCommandParser |
+      exportHTMLCommandParser |
       showCommandParser |
       favoritesCommandParser |
       helpCommandParser |
