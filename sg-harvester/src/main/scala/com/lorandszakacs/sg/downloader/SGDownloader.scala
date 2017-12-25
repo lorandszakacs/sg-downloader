@@ -21,7 +21,7 @@ import scala.language.postfixOps
   *
   */
 final class SGDownloader private[downloader](
-  private[this] val repo: SGModelRepository,
+  private[this] val repo: SGAndHFRepository,
   private[this] val indexer: SGIndexer,
   private[this] val reifier: SGReifier,
   private[this] val exporter: SGExporter
@@ -32,9 +32,9 @@ final class SGDownloader private[downloader](
     */
   protected implicit val exporterSettings: ExporterSettings = ExporterSettings(
     favoritesRootFolderPath = "~/sgs/local/models/favorites",
-    allModelsRootFolderPath = "~/sgs/local/models/all",
-    newestRootFolderPath = "~/sgs/local/models",
-    rewriteEverything = true
+    allMsRootFolderPath = "~/sgs/local/models/all",
+    newestRootFolderPath    = "~/sgs/local/models",
+    rewriteEverything       = true
   )
 
   /**
@@ -42,7 +42,7 @@ final class SGDownloader private[downloader](
     */
   protected implicit val deltaExporterSettings: ExporterSettings = ExporterSettings(
     favoritesRootFolderPath = "~/sgs/delta/models/favorites",
-    allModelsRootFolderPath = "~/sgs/delta/models/all",
+    allMsRootFolderPath = "~/sgs/delta/models/all",
     newestRootFolderPath = "~/sgs/delta/models",
     rewriteEverything = true
   )
@@ -64,7 +64,7 @@ final class SGDownloader private[downloader](
       for {
         all <- indexer.gatherHFNames(Int.MaxValue)
         _ = logger.info(s"index.allHFs --> finished gathering ${all.length} SGs")
-        _ <- repo.reindexHopefuls(all)
+        _ <- repo.reindexHFs(all)
       } yield ()
     }
 
@@ -76,73 +76,73 @@ final class SGDownloader private[downloader](
       } yield ()
     }
 
-    def deltaPure(lastProcessedOpt: Option[LastProcessedMarker])(implicit patienceConfig: PatienceConfig): Future[Models] = {
+    def deltaPure(lastProcessedOpt: Option[LastProcessedMarker])(implicit patienceConfig: PatienceConfig): Future[Ms] = {
       logger.info(s"index.delta --> starting from ${lastProcessedOpt.map(_.lastPhotoSetID).getOrElse("")}")
       for {
-        newModels: List[Model] <- indexer.gatherAllNewModelsAndAllTheirPhotoSets(Int.MaxValue, lastProcessedOpt)
-        models = newModels.group
+        newMs: List[M] <- indexer.gatherAllNewMsAndAllTheirPhotoSets(Int.MaxValue, lastProcessedOpt)
+        ms = newMs.group
         _ = {
-          logger.info(s"finished indexing new entries. Total: #${models.all.length}")
-          logger.info(s"# of new suicide girls indexed: ${models.sgs.length}. Names: ${models.sgNames.stringify}")
-          logger.info(s"# of new hopefuls indexed     : ${models.hfs.length}. Names: ${models.hfNames.stringify}")
+          logger.info(s"finished indexing new entries. Total: #${ms.all.length}")
+          logger.info(s"# of new SGs indexed: ${ms.sgs.length}. Names: ${ms.sgNames.stringify}")
+          logger.info(s"# of new HFs indexed: ${ms.hfs.length}. Names: ${ms.hfNames.stringify}")
         }
-      } yield models
+      } yield ms
     }
 
-    def specificPure(modelNames: List[ModelName])(implicit patienceConfig: PatienceConfig): Future[Models] = {
+    def specificPure(modelNames: List[Name])(implicit patienceConfig: PatienceConfig): Future[Ms] = {
       logger.info(s"index.specific --> ${modelNames.stringify}")
       for {
-        newModels: List[Model] <- Future.serialize(modelNames) { modelName =>
+        newMs: List[M] <- Future.serialize(modelNames) { modelName =>
           patienceConfig.throttleAfter {
             indexer.gatherPhotoSetInformationForModel(modelName)
           }
         }
-        models = newModels.group
+        ms = newMs.group
         _ = {
-          logger.info(s"finished indexing specific entries. Total: #${models.all.length}")
-          logger.info(s"# of suicide girls indexed: ${models.sgs.length}. Names: ${models.sgNames.stringify}")
-          logger.info(s"# of hopefuls indexed     : ${models.hfs.length}. Names: ${models.hfNames.stringify}")
+          logger.info(s"finished indexing specific entries. Total: #${ms.all.length}")
+          logger.info(s"# of SGs indexed: ${ms.sgs.length}. Names: ${ms.sgNames.stringify}")
+          logger.info(s"# of HFs indexed: ${ms.hfs.length}. Names: ${ms.hfNames.stringify}")
         }
-      } yield models
+      } yield ms
     }
   }
 
   object reify {
-    def deltaPure(indexedModels: Models): Future[Models] = {
-      logger.info(s"reify.delta --> reifying indexed models # ${indexedModels.all.size}: ${indexedModels.allNames.stringify}")
+    def deltaPure(indexedMs: Ms): Future[Ms] = {
+      logger.info(s"reify.delta --> reifying indexed Ms # ${indexedMs.all.size}: ${indexedMs.allNames.stringify}")
       for {
-        reifiedSGs <- Future.serialize(indexedModels.sgs)(reifier.reifySuicideGirl)
-        reifiedHFs <- Future.serialize(indexedModels.hfs)(reifier.reifyHopeful)
-        reifiedModels = (reifiedSGs, reifiedHFs).group
+        reifiedSGs <- Future.serialize(indexedMs.sgs)(reifier.reifySG)
+        reifiedHFs <- Future.serialize(indexedMs.hfs)(reifier.reifyHF)
+        reifiedMs = (reifiedSGs, reifiedHFs).group
 
         _ = {
-          logger.info(s"finished reifying new entries. Total: #${reifiedModels.all.length}")
-          logger.info(s"# of new suicide girls reified: ${reifiedSGs.length}")
-          logger.info(s"# of new hopefuls reified     : ${reifiedHFs.length}")
+          logger.info(s"finished reifying new entries. Total: #${reifiedMs.all.length}")
+          logger.info(s"# of new SGs reified: ${reifiedSGs.length}")
+          logger.info(s"# of new HFs reified: ${reifiedHFs.length}")
         }
 
       } yield (reifiedSGs, reifiedHFs).group
     }
 
-    def specificPure(indexedModels: Models): Future[Models] = {
+    def specificPure(indexedMs: Ms): Future[Ms] = {
       logger.info(s"reify.specific --> delagating to reify.delta")
-      this.deltaPure(indexedModels)
+      this.deltaPure(indexedMs)
     }
   }
 
   object export {
 
-    def delta(daysToExport: Int = 28, delta: List[Model]): Future[Unit] = {
-      logger.info(s"export.delta --> export. Days to export: $daysToExport. #models: ${delta.length}")
+    def delta(daysToExport: Int = 28, delta: List[M]): Future[Unit] = {
+      logger.info(s"export.delta --> export. Days to export: $daysToExport. #Ms: ${delta.length}")
       for {
-        _ <- exporter.exportDeltaHTMLOfModels(delta)(deltaExporterSettings)
+        _ <- exporter.exportDeltaHTMLOfMs(delta)(deltaExporterSettings)
         _ = logger.info(s"export.delta --IMPURE--> finished exporting HTML to ${deltaExporterSettings.newestRootFolderPath}.")
         _ <- exporter.exportLatestForDaysWithDelta(daysToExport, delta)(deltaExporterSettings)
         _ = logger.info(s"export.delta --IMPURE--> finished newest HTML to ${deltaExporterSettings.newestRootFolderPath}.")
       } yield ()
     }
 
-    def specific(daysToExport: Int = 28, delta: List[Model]): Future[Unit] = {
+    def specific(daysToExport: Int = 28, delta: List[M]): Future[Unit] = {
       logger.info(s"export.specific --> delagating to export.delta")
       this.delta(daysToExport, delta)
     }
@@ -151,48 +151,48 @@ final class SGDownloader private[downloader](
   object write {
     /**
       *
-      * @param indexedModels
-      * assumes that indexedModels are in the order that they were gathered in initially
+      * @param indexedMs
+      * assumes that indexedMs are in the order that they were gathered in initially
       * @return
       */
-    def delta(indexedModels: Models, reifiedModels: Models, oldLastProcessedMarker: Option[LastProcessedMarker]): Future[Unit] = {
-      logger.info(s"write.delta --> writing state to DB. # of fully reified models: ${reifiedModels.all.length}")
+    def delta(indexedMs: Ms, reifiedMs: Ms, oldLastProcessedMarker: Option[LastProcessedMarker]): Future[Unit] = {
+      logger.info(s"write.delta --> writing state to DB. # of fully reified Ms: ${reifiedMs.all.length}")
       logger.info(s"write.delta --> delegating to write.specific")
       for {
-        _ <- this.specific(indexedModels, reifiedModels)
+        _ <- this.specific(indexedMs, reifiedMs)
         _ = logger.info(s"write.delta --> finished doing write.specific")
 
-        _ <- updateLatestProcessedMarker(indexedModels, reifiedModels, oldLastProcessedMarker)
+        _ <- updateLatestProcessedMarker(indexedMs, reifiedMs, oldLastProcessedMarker)
         _ = logger.info(s"update.delta --IMPURE--> finished writing last processed market to repository")
       } yield ()
     }
 
-    def specific(indexedModels: Models, reifiedModels: Models): Future[Unit] = {
-      logger.info(s"write.specific --> writing state to DB. # of fully reified models: ${reifiedModels.all.length}")
+    def specific(indexedMs: Ms, reifiedMs: Ms): Future[Unit] = {
+      logger.info(s"write.specific --> writing state to DB. # of fully reified Ms: ${reifiedMs.all.length}")
       for {
-        _ <- repo.markAsIndexed(indexedModels.hfs, indexedModels.sgs)
+        _ <- repo.markAsIndexed(indexedMs.hfs, indexedMs.sgs)
         _ = logger.info(s"write.specific --IMPURE--> finished writing SG and HF indexes to repository")
 
-        _ <- repo.createOrUpdateSGs(reifiedModels.sgs)
+        _ <- repo.createOrUpdateSGs(reifiedMs.sgs)
         _ = logger.info(s"write.specific --IMPURE--> finished writing reified SGs to repository")
 
-        _ <- repo.createOrUpdateHopefuls(reifiedModels.hfs)
+        _ <- repo.createOrUpdateHFs(reifiedMs.hfs)
         _ = logger.info(s"write.specific --IMPURE--> finished writing reified HFs to repository")
       } yield ()
     }
 
-    private def updateLatestProcessedMarker(indexedModels: Models, reifiedModels: Models, lastProcessedMarker: Option[LastProcessedMarker]): Future[Unit] = {
+    private def updateLatestProcessedMarker(indexedMs: Ms, reifiedMs: Ms, lastProcessedMarker: Option[LastProcessedMarker]): Future[Unit] = {
       logger.info(s"delta.UpdateLatestProcessedIndex: old='${lastProcessedMarker.map(_.lastPhotoSetID).mkString("")}'")
-      when(reifiedModels.all.nonEmpty) execute {
+      when(reifiedMs.all.nonEmpty) execute {
 
-        val optNewestModel: Option[Model] = for {
-          newestIndexed <- indexedModels.newestModel
-          newestReified <- reifiedModels.ml(newestIndexed.name)
+        val optNewestM: Option[M] = for {
+          newestIndexed <- indexedMs.newestM
+          newestReified <- reifiedMs.ml(newestIndexed.name)
         } yield newestReified
 
         for {
-          _ <- when(optNewestModel.isEmpty) failWith new IllegalArgumentException("... should have at least one newest gathered")
-          newestModel = optNewestModel.get
+          _ <- when(optNewestM.isEmpty) failWith new IllegalArgumentException("... should have at least one newest gathered")
+          newestModel = optNewestM.get
           newMarker = indexer.createLastProcessedIndex(newestModel)
           _ = logger.info(s"delta.UpdateLatestProcessedIndex: new='${newMarker.lastPhotoSetID}'")
           _ <- repo.createOrUpdateLastProcessed(newMarker)
@@ -226,37 +226,37 @@ final class SGDownloader private[downloader](
         _ = logger.info(s"the last processed set was: ${lastProcessedOpt.map(_.lastPhotoSetID)}")
 
         _ = logger.info("---------------------------------------------- starting delta.indexing --------------------------------------------")
-        indexedModels <- This.index.deltaPure(lastProcessedOpt)
+        indexedMs <- This.index.deltaPure(lastProcessedOpt)
         _ = logger.info("---------------------------------------------- starting delta.reifying --------------------------------------------")
-        reifiedModels <- This.reify.deltaPure(indexedModels)
+        reifiedMs <- This.reify.deltaPure(indexedMs)
         _ = logger.info("---------------------------------------------- starting delta.export ----------------------------------------------")
-        _ <- This.export.delta(daysToExport, reifiedModels.all)
+        _ <- This.export.delta(daysToExport, reifiedMs.all)
         _ = logger.info("---------------------------------------------- starting delta.write in DB -----------------------------------------")
-        _ <- This.write.delta(indexedModels, reifiedModels, lastProcessedOpt)
+        _ <- This.write.delta(indexedMs, reifiedMs, lastProcessedOpt)
         _ = logger.info("---------------------------------------------- finished download.delta -----------------------------------------")
       } yield ()
     }
 
-    def specific(modelNames: List[ModelName], daysToExport: Int = 28)(implicit passwordProvider: PasswordProvider): Future[Unit] = {
+    def specific(names: List[Name], daysToExport: Int = 28)(implicit passwordProvider: PasswordProvider): Future[Unit] = {
       logger.info("---------------------------------------------- starting download.specific --------------------------------------------")
-      logger.info(s"download.specific --> IMPURE --> daysToExport: $daysToExport models: ${modelNames.stringify}")
+      logger.info(s"download.specific --> IMPURE --> daysToExport: $daysToExport models: ${names.stringify}")
       for {
         _ <- reifier.authenticateIfNeeded()
         _ = logger.info("---------------------------------------------- starting specific.indexing --------------------------------------------")
-        indexedModels <- This.index.specificPure(modelNames)
+        indexedMs <- This.index.specificPure(names)
         _ = logger.info("---------------------------------------------- starting specific.reifying --------------------------------------------")
-        reifiedModels <- This.reify.deltaPure(indexedModels)
+        reifiedMs <- This.reify.deltaPure(indexedMs)
         _ = logger.info("---------------------------------------------- starting specific.export ----------------------------------------------")
-        _ <- This.export.specific(daysToExport, reifiedModels.all)
+        _ <- This.export.specific(daysToExport, reifiedMs.all)
         _ = logger.info("---------------------------------------------- starting specific.write in DB -----------------------------------------")
-        _ <- This.write.specific(indexedModels, reifiedModels)
+        _ <- This.write.specific(indexedMs, reifiedMs)
         _ = logger.info("---------------------------------------------- finished download.specific -----------------------------------------")
       } yield ()
     }
   }
 
   object show {
-    def apply(name: ModelName): Future[String] = {
+    def apply(name: Name): Future[String] = {
       exporter.prettyPrint(name)
     }
 

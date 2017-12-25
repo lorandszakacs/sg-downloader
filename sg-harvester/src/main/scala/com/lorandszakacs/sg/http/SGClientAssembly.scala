@@ -17,6 +17,6 @@ trait SGClientAssembly {
 
   implicit def executionContext: ExecutionContext
 
-  lazy val suicideGirlsClient: SGClient = SGClientImpl()
+  lazy val sgClient: SGClient = SGClientImpl()
 
 }

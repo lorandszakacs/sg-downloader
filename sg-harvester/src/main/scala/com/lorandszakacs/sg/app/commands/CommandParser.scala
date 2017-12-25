@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.app.commands
 
-import com.lorandszakacs.sg.model.ModelName
+import com.lorandszakacs.sg.model.Name
 
 import scala.util.parsing.combinator._
 
@@ -69,8 +69,8 @@ object CommandParser extends JavaTokenParsers {
     } yield (username, password)
   }
 
-  private val modelName: Parser[ModelName] = {
-    regex(s"[^, ]+".r).map(ModelName.apply)
+  private val name: Parser[Name] = {
+    regex(s"[^, ]+".r).map(Name.apply)
   }
 
 
@@ -103,19 +103,19 @@ object CommandParser extends JavaTokenParsers {
   //===========================================================================
 
   private val downloadSpecificCommandParser: Parser[Commands.DownloadSpecific] = {
-    val modelsParser: Parser[List[ModelName]] = for {
-      _ <- literal("models=")
-      models <- repsep(modelName, literal(","))
-    } yield models
+    val namesParser: Parser[List[Name]] = for {
+      _ <- literal("names=")
+      names <- repsep(name, literal(","))
+    } yield names
 
     for {
       _ <- literal(Commands.DownloadSpecific.id)
       _ <- `space+`
-      models <- modelsParser
+      names <- namesParser
       _ <- `space*`
       optUsrPwd <- usernameAndPassword.?
     } yield Commands.DownloadSpecific(
-      models = models,
+      names = names,
       usernameAndPassword = optUsrPwd
     )
   }
@@ -136,7 +136,7 @@ object CommandParser extends JavaTokenParsers {
     for {
       _ <- literal(Commands.Show.id)
       _ <- `space+`
-      name <- modelName
+      name <- name
     } yield Commands.Show(name)
 
   }

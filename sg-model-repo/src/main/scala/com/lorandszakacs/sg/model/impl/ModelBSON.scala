@@ -16,10 +16,10 @@ import com.lorandszakacs.util.mongodb._
 private[impl] object ModelBSON extends ModelBSON
 
 private[impl] trait ModelBSON {
-  def modelNameBSON: BSONHandler[BSONString, ModelName] = new BSONHandler[BSONString, ModelName] {
-    override def read(bson: BSONString): ModelName = ModelName(bson.value)
+  def nameBSON: BSONHandler[BSONString, Name] = new BSONHandler[BSONString, Name] {
+    override def read(bson: BSONString): Name = Name(bson.value)
 
-    override def write(t: ModelName): BSONString = BSONString(t.name)
+    override def write(t: Name): BSONString = BSONString(t.name)
   }
 
   implicit val photoSetTitleBSON: BSONHandler[BSONString, PhotoSetTitle] = new BSONHandler[BSONString, PhotoSetTitle] {

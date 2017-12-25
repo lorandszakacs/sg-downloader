@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.exporter
 
-import com.lorandszakacs.sg.model.ModelName
+import com.lorandszakacs.sg.model.Name
 
 /**
   *
@@ -8,6 +8,6 @@ import com.lorandszakacs.sg.model.ModelName
   * @since 17 Jul 2016
   *
   */
-final case class ModelNotFoundException(modelName: ModelName) extends Exception(
+final case class ModelNotFoundException(modelName: Name) extends Exception(
   s"Model: ${modelName.name} could not be found."
 )

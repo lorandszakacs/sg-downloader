@@ -13,11 +13,9 @@ import com.lorandszakacs.sg.model._
   */
 trait SGURLBuilder {
   /**
-    * This is the URI to the page containing all [[PhotoSet]] of a [[Model]]
-    *
-    * It is prefixed with "girls" instead of "members" even for hopefuls
+    * This is the URI to the page containing all [[PhotoSet]] of a [[M]]
     */
-  def photoSetsPageURL(modelName: ModelName): URL =
+  def photoSetsPageURL(modelName: Name): URL =
     new URL(s"https://www.suicidegirls.com/girls/${modelName.name}/photos/view/photosets/")
 
   def makeFullPathURL(uri: String): URL = {

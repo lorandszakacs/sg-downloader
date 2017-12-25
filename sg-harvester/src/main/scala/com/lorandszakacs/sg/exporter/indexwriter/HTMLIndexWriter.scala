@@ -12,7 +12,7 @@ import com.lorandszakacs.util.future._
   *
   */
 private[exporter] trait HTMLIndexWriter {
-  def writeRootModelIndex(index: ModelsRootIndex)(implicit ws: WriterSettings): Future[Unit]
+  def writeRootModelIndex(index: MRootIndex)(implicit ws: WriterSettings): Future[Unit]
 
   def rewriteRootIndexFile(indexFile: Html)(implicit ws: WriterSettings): Future[Unit]
 

@@ -4,8 +4,8 @@ import java.net.URL
 
 import com.lorandszakacs.sg.contentparser.SGContentParser
 import com.lorandszakacs.sg.http._
-import com.lorandszakacs.sg.model.Model.{HopefulFactory, ModelFactory, SuicideGirlFactory}
-import com.lorandszakacs.sg.model.{Hopeful, Model, Photo, SuicideGirl}
+import com.lorandszakacs.sg.model.M.{HFFactory, ModelFactory, SGFactory}
+import com.lorandszakacs.sg.model.{HF, M, Photo, SG}
 import com.lorandszakacs.sg.reifier.{DidNotFindAnyPhotoLinksOnSetPageException, SGReifier}
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
@@ -69,18 +69,18 @@ private[reifier] class SGReifierImpl(
     } yield newAuthentication
   }
 
-  override def reifySuicideGirl(sg: SuicideGirl)(implicit pc: PatienceConfig): Future[SuicideGirl] = {
-    reifyModel(SuicideGirlFactory)(sg)
+  override def reifySG(sg: SG)(implicit pc: PatienceConfig): Future[SG] = {
+    reifyModel(SGFactory)(sg)
   }
 
-  override def reifyHopeful(hf: Hopeful)(implicit pc: PatienceConfig): Future[Hopeful] = {
-    reifyModel(HopefulFactory)(hf)
+  override def reifyHF(hf: HF)(implicit pc: PatienceConfig): Future[HF] = {
+    reifyModel(HFFactory)(hf)
   }
 
-  override def reify(m: Model)(implicit pc: PatienceConfig): Future[Model] = {
+  override def reifyM(m: M)(implicit pc: PatienceConfig): Future[M] = {
     m match {
-      case sg: SuicideGirl => reifyModel(SuicideGirlFactory)(sg)
-      case hf: Hopeful => reifyModel(HopefulFactory)(hf)
+      case sg: SG => reifyModel(SGFactory)(sg)
+      case hf: HF => reifyModel(HFFactory)(hf)
     }
 
   }
@@ -96,7 +96,7 @@ private[reifier] class SGReifierImpl(
     } yield photos
   }
 
-  private def reifyModel[T <: Model](mf: ModelFactory[T])(model: T)(implicit pc: PatienceConfig): Future[T] = {
+  private def reifyModel[T <: M](mf: ModelFactory[T])(model: T)(implicit pc: PatienceConfig): Future[T] = {
     logger.info(s"SGReifier --> reifying: ${mf.name} ${model.name.name}. Expecting ${model.photoSets.length} sets")
     for {
       reifiedPhotoSets <- Future.serialize(model.photoSets) { photoSet =>

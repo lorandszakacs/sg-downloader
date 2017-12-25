@@ -3,6 +3,7 @@ package com.lorandszakacs.sg.model.impl
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.mongodb._
+import com.lorandszakacs.util.time.DateTime
 
 /**
   *
@@ -16,8 +17,14 @@ private[impl] class RepoLastProcessedMarker(override protected val db: Database)
 
   override protected def objectHandler: BSONDocumentHandler[LastProcessedMarker] = BSONMacros.handler[LastProcessedMarker]
 
-  override protected def uniqueDocumentId: String = "last-processed"
+  override protected def uniqueDocumentId: String = "last_processed"
 
-  override protected def defaultEntity: LastProcessedMarker =
-    throw new AssertionError("no such thing as a default LastProcessedMarker")
+  override protected def defaultEntity: LastProcessedMarker = LastProcessedMarker(
+    timestamp = DateTime.now(),
+    photoSet = PhotoSet(
+      url = new java.net.URL("http://example.com/"),
+      title = PhotoSetTitle("example"),
+      date = DateTime.now().toLocalDate
+    )
+  )
 }

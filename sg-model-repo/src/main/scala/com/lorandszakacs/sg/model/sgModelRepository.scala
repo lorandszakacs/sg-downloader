@@ -7,83 +7,75 @@ import com.lorandszakacs.util.time._
 
 /**
   *
-  * Used to do basic CRUD on the SG information about: SGs, Hopefuls, images, photosets, etc.
+  * Used to do basic CRUD on the SG information about: SGs, HFs, images, photosets, etc.
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 03 Jul 2016
   *
   */
-trait SGModelRepository {
-  @scala.deprecated("unused", "now")
-  def modelsWithZeroPhotoSets: Future[Models]
+trait SGAndHFRepository {
+  def reindexSGs(names: List[Name]): Future[Unit]
 
-  def reindexSGs(names: List[ModelName]): Future[Unit]
+  def reindexHFs(names: List[Name]): Future[Unit]
 
-  def reindexHopefuls(names: List[ModelName]): Future[Unit]
+  def markAsIndexed(newHFs: List[HF], newSGs: List[SG]): Future[Unit]
 
-  def markAsIndexed(newHopefuls: List[Hopeful], newSGs: List[SuicideGirl]): Future[Unit]
-
-  def markAsIndexedForNames(newHopefuls: List[ModelName], newSGs: List[ModelName]): Future[Unit]
+  def markAsIndexedForNames(newHFs: List[Name], newSGs: List[Name]): Future[Unit]
 
   def createOrUpdateLastProcessed(l: LastProcessedMarker): Future[Unit]
 
   def lastProcessedIndex: Future[Option[LastProcessedMarker]]
 
-  def completeModelIndex: Future[CompleteModelIndex]
+  def completeIndex: Future[CompleteIndex]
 
   /**
-    * Updates or creates [[SuicideGirl]], removes the name from [[SuicideGirlIndex.needsReindexing]]
+    * Updates or creates [[SG]], removes the name from [[SGIndex.needsReindexing]]
     */
-  def createOrUpdateSGs(sgs: List[SuicideGirl]): Future[Unit]
+  def createOrUpdateSGs(sgs: List[SG]): Future[Unit]
 
   /**
-    * Updates or creates [[Hopeful]], removes the name from [[HopefulIndex.needsReindexing]]
+    * Updates or creates [[HF]], removes the name from [[HFIndex.needsReindexing]]
     *
     */
-  def createOrUpdateHopefuls(hopefuls: List[Hopeful]): Future[Unit]
+  def createOrUpdateHFs(hfs: List[HF]): Future[Unit]
 
   /**
-    * Returns the models which had a on any given day between the two dates given as parameters
-    * Where the models which are given as a parameter have precedence over the already existing
-    * models.
+    * Returns the Ms which had a on any given day between the two dates given as parameters
+    * Where the Ms which are given as a parameter have precedence over the already existing
+    * Ms.
     *
-    * i.e. models parameter is a delta of sorts
+    * i.e. Ms parameter is a delta of sorts
     */
-  def aggregateBetweenDays(start: LocalDate, end: LocalDate, models: List[Model] = Nil): Future[List[(LocalDate, List[Model])]]
+  def aggregateBetweenDays(start: LocalDate, end: LocalDate, ms: List[M] = Nil): Future[List[(LocalDate, List[M])]]
 
-  def find(modelName: ModelName): Future[Option[Model]]
+  def find(name: Name): Future[Option[M]]
 
-  def find(modelNames: Seq[ModelName]): Future[List[Model]]
+  def find(names: Seq[Name]): Future[List[M]]
 
-  def findAll: Future[List[Model]]
+  def findAll: Future[List[M]]
 
 }
 
 
-final case class HopefulIndex(
-  names: List[ModelName],
-  needsReindexing: List[ModelName],
+final case class HFIndex(
+  names: List[Name],
+  needsReindexing: List[Name],
   number: Int
 )
 
-final case class SuicideGirlIndex(
-  names: List[ModelName],
-  needsReindexing: List[ModelName],
+final case class SGIndex(
+  names: List[Name],
+  needsReindexing: List[Name],
   number: Int
 )
 
 /**
-  * Always the sum of [[HopefulIndex]], and [[SuicideGirlIndex]]
+  * Always the sum of [[HFIndex]], and [[SGIndex]]
   */
-final case class CompleteModelIndex(
-  names: List[ModelName],
-  needsReindexing: List[ModelName],
+final case class CompleteIndex(
+  names: List[Name],
+  needsReindexing: List[Name],
   number: Int
-)
-
-final case class CleanedUpModelsIndex(
-  suicideGirls: List[ModelName],
-  hopefuls: List[ModelName]
 )
 
 case class LastProcessedMarker(

@@ -16,7 +16,7 @@
   */
 package com.lorandszakacs.sg.contentparser.data
 
-import com.lorandszakacs.sg.model.ModelName
+import com.lorandszakacs.sg.model.Name
 import com.lorandszakacs.util.html.Html
 
 import scala.io.Source
@@ -27,7 +27,7 @@ import scala.io.Source
   *
   */
 object SGProfileListPage {
-  val names: List[ModelName] = List(
+  val names: List[Name] = List(
     "Sash",
     "Kemper",
     "Radeo",
@@ -53,7 +53,7 @@ object SGProfileListPage {
 }
 
 object HopefulProfileListPage {
-  val names: List[ModelName] = List(
+  val names: List[Name] = List(
     "Nuru",
     "Lain_",
     "Drica",

@@ -3,7 +3,7 @@ package com.lorandszakacs.sg.sanitizer
 import java.nio.file.Paths
 
 import com.lorandszakacs.util.files.FileUtils
-import com.lorandszakacs.sg.model.SGModelRepository
+import com.lorandszakacs.sg.model.SGAndHFRepository
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
@@ -14,13 +14,13 @@ import com.typesafe.scalalogging.StrictLogging
   *
   */
 final class SGSanitizer(
-  private[this] val repo: SGModelRepository
+  private[this] val repo: SGAndHFRepository
 )(implicit val executionContext: ExecutionContext) extends StrictLogging {
 
   /**
     * The two paths:
-    * ``~/suicide-girls/models/favorites/porcelinna/porcelinna_2016-06-11_PEACH_BLOSSOM.html``
-    * ``~/suicide-girls/models/favorites/porcelinna/porcelinna_2016-07-19_PEACH_BLOSSOM.html``
+    * ``~/path/porcelinna/porcelinna_2016-06-11_PEACH_BLOSSOM.html``
+    * ``~/path/porcelinna/porcelinna_2016-07-19_PEACH_BLOSSOM.html``
     *
     * Differ only in date, if we keep exporting then  you will eventually
     * wind up in a situation that the same set was first published on 2016-06-11, and then on 2016-07-19

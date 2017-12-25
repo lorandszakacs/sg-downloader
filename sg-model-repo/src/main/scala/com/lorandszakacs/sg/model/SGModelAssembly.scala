@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.model
 
-import com.lorandszakacs.sg.model.impl.SGModelRepositoryImpl
+import com.lorandszakacs.sg.model.impl.SGAndHFRepositoryImpl
 import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.mongodb.Database
 
@@ -16,9 +16,9 @@ trait SGModelAssembly {
 
   implicit def executionContext: ExecutionContext
 
-  def sgModelRepository: SGModelRepository = _sgModelRepository
+  def sgModelRepository: SGAndHFRepository = _sgModelRepository
 
-  private[model] lazy val _sgModelRepository = new SGModelRepositoryImpl(
+  private[model] lazy val _sgModelRepository = new SGAndHFRepositoryImpl(
     db
   )
 

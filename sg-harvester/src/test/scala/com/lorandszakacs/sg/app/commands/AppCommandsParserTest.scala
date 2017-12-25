@@ -15,51 +15,51 @@ class AppCommandsParserTest extends FlatSpec {
   //===========================================================================
   behavior of "CommandParser download"
 
-  it should "... parse with only one model" in {
-    val input = """download models=nameOne"""
+  it should "... parse with only one name" in {
+    val input = """download names=nameOne"""
     val result = parse(input)
     assert(result == Commands.DownloadSpecific(
-      models = List("nameOne"),
+      names = List("nameOne"),
       usernameAndPassword = None)
     )
   }
 
-  it should "... parse with multiple models" in {
-    val input = """download models=nameOne,nameTwo,nameThree"""
+  it should "... parse with multiple names" in {
+    val input = """download names=nameOne,nameTwo,nameThree"""
     val result = parse(input)
     assert(result == Commands.DownloadSpecific(
-      models = List("nameOne", "nameTwo", "nameThree"),
+      names = List("nameOne", "nameTwo", "nameThree"),
       usernameAndPassword = None)
     )
   }
 
-  it should "... parse with only one model + username, password" in {
-    val input = """download models=nameOne username=someUser password=!@#$sf123AC%^&*()\"/|"""
+  it should "... parse with only one name + username, password" in {
+    val input = """download names=nameOne username=someUser password=!@#$sf123AC%^&*()\"/|"""
     val result = parse(input)
     assert(
       result == Commands.DownloadSpecific(
-        models = List("nameOne"),
+        names = List("nameOne"),
         usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|""")))
     )
   }
 
   it should "... fail when we have trailing comma" in {
-    val input = """download models=nameOne,"""
+    val input = """download names=nameOne,"""
     expectFailure(input)
   }
 
-  it should "... parse with multiple models + username, password" in {
-    val input = """download models=nameOne,nameTwo,nameThree username=someUser password=!@#$sf123AC%^&*()\"/|"""
+  it should "... parse with multiple names + username, password" in {
+    val input = """download names=nameOne,nameTwo,nameThree username=someUser password=!@#$sf123AC%^&*()\"/|"""
     val result = parse(input)
     assert(
       result == Commands.DownloadSpecific(
-        models = List("nameOne", "nameTwo", "nameThree"),
+        names = List("nameOne", "nameTwo", "nameThree"),
         usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|""")))
     )
   }
 
   it should "... fail when we have trailing comma and opt username password" in {
-    val input = """download models=nameOne,  username=someUser password=!@#$sf123AC%^&*()\"/|"""
+    val input = """download names=nameOne,  username=someUser password=!@#$sf123AC%^&*()\"/|"""
     expectFailure(input)
   }
 

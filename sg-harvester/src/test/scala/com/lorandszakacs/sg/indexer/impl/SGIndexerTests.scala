@@ -3,7 +3,7 @@ package com.lorandszakacs.sg.indexer.impl
 import akka.actor.ActorSystem
 import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.indexer.IndexerAssembly
-import com.lorandszakacs.sg.model.Model.{HopefulFactory, SuicideGirlFactory}
+import com.lorandszakacs.sg.model.M.{HFFactory, SGFactory}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.future._
 import org.joda.time.LocalDate
@@ -34,7 +34,7 @@ class SGIndexerTests extends IndexerTest {
     * had only one single set
     */
   it should "... fetch URIs for a page that does not need a subsequent query -- odina" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForModel(HopefulFactory)(ModelName("odina"))) { h: Hopeful =>
+    whenReady(indexer.gatherPhotoSetInformationForModel(HFFactory)(Name("odina"))) { h: HF =>
       val sets: List[PhotoSet] = h.photoSets
 
       withClue("size") {
@@ -47,7 +47,7 @@ class SGIndexerTests extends IndexerTest {
             url = "https://www.suicidegirls.com/members/odina/album/2745718/do-i-wanna-know/",
             title = "DO I WANNA KNOW",
             date = LocalDate.parse("2016-07-03"),
-            isHopefulSet = Some(true)
+            isHFSet = Some(true)
           )
         }
       }
@@ -56,8 +56,8 @@ class SGIndexerTests extends IndexerTest {
   }
 
   it should "... fetch URIs for a page that does not need a subsequent query -- odina -- generic" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForModel(ModelName("odina"))) { h: Model =>
-      h shouldBe a[Hopeful]
+    whenReady(indexer.gatherPhotoSetInformationForModel(Name("odina"))) { h: M =>
+      h shouldBe a[HF]
       val sets: List[PhotoSet] = h.photoSets
 
       withClue("size") {
@@ -70,7 +70,7 @@ class SGIndexerTests extends IndexerTest {
             url = "https://www.suicidegirls.com/members/odina/album/2745718/do-i-wanna-know/",
             title = "DO I WANNA KNOW",
             date = LocalDate.parse("2016-07-03"),
-            isHopefulSet = Some(true)
+            isHFSet = Some(true)
           )
         }
       }
@@ -87,7 +87,7 @@ class SGIndexerTests extends IndexerTest {
     * had 22 sets. And has not published a new set in ages.
     */
   it should "... fetch URIs for a page that needs several queries -- zoli" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForModel(SuicideGirlFactory)(ModelName("zoli"))) { sg: SuicideGirl =>
+    whenReady(indexer.gatherPhotoSetInformationForModel(SGFactory)(Name("zoli"))) { sg: SG =>
       val sets: List[PhotoSet] = sg.photoSets
 
       withClue("... size") {
@@ -121,8 +121,8 @@ class SGIndexerTests extends IndexerTest {
     * had 22 sets. And has not published a new set in ages.
     */
   it should "... fetch URIs for a page that needs several queries -- zoli -- generic" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForModel(ModelName("zoli"))) { sg: Model =>
-      sg shouldBe a[SuicideGirl]
+    whenReady(indexer.gatherPhotoSetInformationForModel(Name("zoli"))) { sg: M =>
+      sg shouldBe a[SG]
       val sets: List[PhotoSet] = sg.photoSets
 
       withClue("... size") {
@@ -163,14 +163,14 @@ class SGIndexerTests extends IndexerTest {
     * this test might fail. Therefore one must always be vigilant.
     */
   it should "... gather the first 48 SG names by followers" in { indexer =>
-    whenReady(indexer.gatherSGNames(48)) { names: List[ModelName] =>
+    whenReady(indexer.gatherSGNames(48)) { names: List[Name] =>
       withClue("... size") {
         names should have size 48
       }
 
       print {
         s"""
-           |sg names:
+           |SG names:
            |${names.mkString("\n")}
            |
         """.stripMargin
@@ -188,12 +188,12 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
   //===============================================================================================
 
-  it should "... gather the first 48 Hopeful names by followers" in { indexer =>
-    whenReady(indexer.gatherHFNames(48)) { names: List[ModelName] =>
+  it should "... gather the first 48 HF names by followers" in { indexer =>
+    whenReady(indexer.gatherHFNames(48)) { names: List[Name] =>
 
       print {
         s"""
-           |hopeful names:
+           |HF names:
            |${names.mkString("\n")}
            |
         """.stripMargin
@@ -214,14 +214,14 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
 
   it should "... gather the first 48 new sets" in { indexer =>
-    whenReady(indexer.gatherAllNewModelsAndOnlyTheirLatestSet(48, None)) { models: List[Model] =>
+    whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None)) { ms: List[M] =>
 
       withClue("... size") {
-        models should have size 48
+        ms should have size 48
       }
       withClue("... distribution") {
-        assert(models.exists(_.isHopeful), "... there should be at least one hopeful in the past 48 new sets")
-        assert(models.exists(_.isSuicideGirl), "... there should be at least one suicidegirl in the past 48 new sets")
+        assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+        assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
       }
     }
   }
@@ -230,31 +230,31 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
 
   it should "... gather the first 48 new sets, then use one in the middle as the latest processed, and return only the ones before it" in { indexer =>
-    val previousModels = whenReady(indexer.gatherAllNewModelsAndOnlyTheirLatestSet(48, None)) { models: List[Model] =>
+    val previousMs = whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None)) { ms: List[M] =>
       withClue("... size") {
-        models should have size 48
+        ms should have size 48
       }
       withClue("... distribution") {
-        assert(models.exists(_.isHopeful), "... there should be at least one hopeful in the past 48 new sets")
-        assert(models.exists(_.isSuicideGirl), "... there should be at least one suicidegirl in the past 48 new sets")
+        assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+        assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
       }
-      models
+      ms
     }
     val index = 13
-    val latest = previousModels(index)
+    val latest = previousMs(index)
     val lastProcessed: LastProcessedMarker = indexer.createLastProcessedIndex(latest)
 
     withClue("... now gathering only a part of the processed sets") {
-      whenReady(indexer.gatherAllNewModelsAndOnlyTheirLatestSet(48, Option(lastProcessed))) { models: List[Model] =>
+      whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, Option(lastProcessed))) { ms: List[M] =>
         withClue("... size") {
-          models should have size index
+          ms should have size index
         }
         withClue("... distribution") {
-          assert(!models.exists(_.name == latest.name), "... the latest model should not be in this list")
-          assert(models.exists(_.isHopeful), "... there should be at least one hopeful in the past 48 new sets")
-          assert(models.exists(_.isSuicideGirl), "... there should be at least one suicidegirl in the past 48 new sets")
+          assert(!ms.exists(_.name == latest.name), "... the latest model should not be in this list")
+          assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+          assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
         }
-        models
+        ms
       }
     }
   }
@@ -262,30 +262,30 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
   //===============================================================================================
 
-  it should "... gather the first 48 new sets, then use first one as latest. No subsequent models should be returned" in { indexer =>
-    val previousModels = whenReady(indexer.gatherAllNewModelsAndOnlyTheirLatestSet(48, None)) { models: List[Model] =>
+  it should "... gather the first 48 new sets, then use first one as latest. No subsequent MS should be returned" in { indexer =>
+    val previousMs = whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None)) { ms: List[M] =>
       withClue("... size") {
-        models should have size 48
+        ms should have size 48
       }
       withClue("... distribution") {
-        assert(models.exists(_.isHopeful), "... there should be at least one hopeful in the past 48 new sets")
-        assert(models.exists(_.isSuicideGirl), "... there should be at least one suicidegirl in the past 48 new sets")
+        assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+        assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
       }
-      models
+      ms
     }
     val index = 0
-    val latest = previousModels(index)
+    val latest = previousMs(index)
     val lastProcessed: LastProcessedMarker = indexer.createLastProcessedIndex(latest)
 
     withClue("... now gathering only a part of the processed sets") {
-      whenReady(indexer.gatherAllNewModelsAndOnlyTheirLatestSet(48, Option(lastProcessed))) { models: List[Model] =>
+      whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, Option(lastProcessed))) { ms: List[M] =>
         withClue("... size") {
-          models should have size index
+          ms should have size index
         }
         withClue("... distribution") {
-          assert(!models.exists(_.name == latest.name), "... the latest model should not be in this list")
+          assert(!ms.exists(_.name == latest.name), "... the latest model should not be in this list")
         }
-        models
+        ms
       }
     }
   }

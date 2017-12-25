@@ -88,7 +88,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
         title = PhotoSetTitle(title),
         date = date.get,
         photos = List.empty,
-        isHopefulSet = if (ae.contains("Hopeful Set")) Option(true) else None
+        isHFSet = if (ae.contains("Hopeful Set")) Option(true) else None
       )
     }
     photoSets
@@ -172,7 +172,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
     * }}}
     *
     */
-  def gatherNewestPhotoSets(html: Html): Try[List[Model]] = {
+  def gatherNewestPhotoSets(html: Html): Try[List[M]] = {
     /**
       * Example:
       * {{{
@@ -234,16 +234,16 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
       * </h2>
       * }}}
       */
-    def getModelName(html: Html): Try[ModelName] = {
+    def getModelName(html: Html): Try[Name] = {
       val potentialName = html filter Tag("article") && Tag("header") && Tag("h2") && Content(RetainFirst(Tag("a")))
       potentialName.headOption match {
-        case Some(name) => Success(ModelName(name))
+        case Some(name) => Success(Name(name))
         case None => Failure(SetRepresentationDidNotContainModelNameException(html))
       }
     }
 
     val elements = html filter Tag("article") && Class("type-album")
-    val models: List[Try[Model]] = elements map { el =>
+    val ms: List[Try[M]] = elements map { el =>
       val html = Html(el)
       for {
         setURL <- getPhotoSetLink(html) map makeFullPathURL
@@ -258,13 +258,13 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
         )
       } yield {
         if (setURL.toString.contains("members")) {
-          Hopeful(
+          HF(
             photoSetURL = photoSetsPageURL(modelName),
             name = modelName,
             photoSets = List(photoSet)
           )
         } else {
-          SuicideGirl(
+          SG(
             photoSetURL = photoSetsPageURL(modelName),
             name = modelName,
             photoSets = List(photoSet)
@@ -274,20 +274,20 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
       }
     }
 
-    Try(models.map(_.get))
+    Try(ms.map(_.get))
   }
 
-  def gatherSGNames(html: Html): Try[List[ModelName]] = {
+  def gatherSGNames(html: Html): Try[List[Name]] = {
     html filter (Class("image-section") && RetainFirst(Tag("a")) && HrefLink()) match {
-      case Nil => Failure(DidNotFindAnySuicideGirlProfileLinksException())
-      case links => Success(links.map(s => ModelName(s.replace("/girls/", "").replace("/", ""))))
+      case Nil => Failure(DidNotFindAnySGProfileLinksException())
+      case links => Success(links.map(s => Name(s.replace("/girls/", "").replace("/", ""))))
     }
   }
 
-  def gatherHopefulNames(html: Html): Try[List[ModelName]] = {
+  def gatherHFNames(html: Html): Try[List[Name]] = {
     html filter (Class("image-section") && RetainFirst(Tag("a")) && HrefLink()) match {
-      case Nil => Failure(DidNotFindAnyHopefulProfileLinksException())
-      case links => Success(links.map(s => ModelName(s.replace("/members/", "").replace("/", ""))))
+      case Nil => Failure(DidNotFindAnyHFProfileLinksException())
+      case links => Success(links.map(s => Name(s.replace("/members/", "").replace("/", ""))))
     }
   }
 

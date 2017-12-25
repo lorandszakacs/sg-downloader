@@ -17,23 +17,23 @@ private[html] class HTMLGeneratorImpl()(
 
   private val RootPath = "../../.."
 
-  override def createHTMLPageForModels(models: List[Model])(implicit settings: HtmlSettings): Future[ModelsRootIndex] = {
+  override def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): Future[MRootIndex] = {
     for {
-      modelIndexes: List[ModelIndex] <- Future.traverse(models) { model => Future(modelIndex(model)) }
+      modelIndexes: List[MIndex] <- Future.traverse(ms) { model => Future(modelIndex(model)) }
     } yield {
-      ModelsRootIndex(
+      MRootIndex(
         html = rootIndexPage(modelIndexes),
-        models = modelIndexes
+        ms = modelIndexes
       )
     }
   }
 
-  override def createRootIndex(models: List[ModelName])(implicit settings: HtmlSettings): Future[Html] = {
-    Future.successful(rootIndexPageForModelNames(models))
+  override def createRootIndex(ms: List[Name])(implicit settings: HtmlSettings): Future[Html] = {
+    Future.successful(rootIndexPageForModelNames(ms))
   }
 
-  def createNewestPage(models: List[(LocalDate, List[Model])]): Future[Html] = {
-    def newestPageElementForDay(date: LocalDate, models: List[Model]): String = {
+  def createNewestPage(ms: List[(LocalDate, List[M])]): Future[Html] = {
+    def newestPageElementForDay(date: LocalDate, models: List[M]): String = {
       val elements = models.sortBy(_.name.name).map { model =>
         val latestSet = model.photoSets.maxBy(_.date)
         val link = photoSetPageRelativePathFromCurrentDirectory(model.name, latestSet)
@@ -50,7 +50,7 @@ private[html] class HTMLGeneratorImpl()(
     }
 
     Future {
-      val eachDay = models.map { p =>
+      val eachDay = ms.map { p =>
         newestPageElementForDay(p._1, p._2)
       }
       val content =
@@ -69,16 +69,16 @@ private[html] class HTMLGeneratorImpl()(
 
   }
 
-  private def modelIndex(m: Model)(implicit settings: HtmlSettings): ModelIndex = {
+  private def modelIndex(m: M)(implicit settings: HtmlSettings): MIndex = {
     def iconForPhotoSet(ps: PhotoSet): String = {
       ps.photos.headOption.map(_.thumbnailURL.toExternalForm).getOrElse(s"$RootPath/icons/suicide_girls_favorites.ico")
     }
 
-    def iconForModel(m: Model): String = {
+    def iconForModel(m: M): String = {
       m.photoSets.headOption.map(iconForPhotoSet).getOrElse(s"$RootPath/icons/suicide_girls_favorites.ico")
     }
 
-    def modelIndexHtmlPage(m: Model)(psi: List[PhotoSetIndex])(implicit settings: HtmlSettings): Html = {
+    def modelIndexHtmlPage(m: M)(psi: List[PhotoSetIndex])(implicit settings: HtmlSettings): Html = {
       def photoSetLink(photoSet: PhotoSetIndex): String = {
         s"""|<li><a href="../${photoSet.html.relativePathAndName}" target="_blank">${photoSet.displayName}</a></li>
             |""".stripMargin
@@ -104,7 +104,7 @@ private[html] class HTMLGeneratorImpl()(
       )
     }
 
-    def photoSetIndexPage(m: Model)(ps: PhotoSet)(implicit settings: HtmlSettings): PhotoSetIndex = {
+    def photoSetIndexPage(m: M)(ps: PhotoSet)(implicit settings: HtmlSettings): PhotoSetIndex = {
       def photoDiv(photo: Photo): String = {
         s"""|<div class="w3-col s3 w3-container">
             |   <a class="w3-hover-opacity", onclick="showImage('${photo.url}');">
@@ -151,26 +151,26 @@ private[html] class HTMLGeneratorImpl()(
 
     val photoSets: List[PhotoSetIndex] = m.photoSetsNewestFirst map photoSetIndexPage(m)
     val modelIndexHtml = modelIndexHtmlPage(m)(photoSets)
-    ModelIndex(
+    MIndex(
       name = m.name,
       html = modelIndexHtml,
       photoSets = photoSets
     )
   }
 
-  private def rootIndexPage(models: List[ModelIndex])(implicit settings: HtmlSettings): Html = {
-    generateRootIndexPage(models)(
+  private def rootIndexPage(ms: List[MIndex])(implicit settings: HtmlSettings): Html = {
+    generateRootIndexPage(ms)(
       title = settings.rootIndexTitle,
-      linkAndItemNameGenerator = { m: ModelIndex =>
+      linkAndItemNameGenerator = { m: MIndex =>
         (m.html.relativePathAndName, m.name.name)
       }
     )
   }
 
-  private def rootIndexPageForModelNames(modelNames: List[ModelName])(implicit settings: HtmlSettings): Html = {
+  private def rootIndexPageForModelNames(modelNames: List[Name])(implicit settings: HtmlSettings): Html = {
     generateRootIndexPage(modelNames)(
       title = settings.rootIndexTitle,
-      linkAndItemNameGenerator = { m: ModelName =>
+      linkAndItemNameGenerator = { m: Name =>
         (modelIndexPageRelativePathFromCurrentDirectory(m), m.name)
       }
     )
@@ -199,11 +199,11 @@ private[html] class HTMLGeneratorImpl()(
     )
   }
 
-  private def modelIndexPageRelativePathFromCurrentDirectory(m: ModelName)(implicit settings: HtmlSettings): String = {
+  private def modelIndexPageRelativePathFromCurrentDirectory(m: Name)(implicit settings: HtmlSettings): String = {
     s"${m.name}/${settings.indexFileName}"
   }
 
-  private def photoSetPageRelativePathFromCurrentDirectory(m: ModelName, ps: PhotoSet): String = {
+  private def photoSetPageRelativePathFromCurrentDirectory(m: Name, ps: PhotoSet): String = {
     val setName = s"${m.name}_${ps.date}_${ps.title.name}.html".replaceAll("[^a-zA-Z0-9.-]", "_")
     val modelName = s"${m.name}"
     s"$modelName/$setName"

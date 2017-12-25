@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.contentparser.SGContentParser
 import com.lorandszakacs.sg.indexer.{FailedToRepeatedlyLoadPageException, SGIndexer}
 import com.lorandszakacs.sg.http._
-import com.lorandszakacs.sg.model.Model.{HopefulFactory, ModelFactory, SuicideGirlFactory}
+import com.lorandszakacs.sg.model.M.{HFFactory, ModelFactory, SGFactory}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.list._
@@ -18,7 +18,7 @@ import scala.util.{Failure, Success, Try}
   *
   * All public methods ensure that the URIs are fully qualified, and not relative!
   *
-  * This crawler only fetches a complete list of [[SuicideGirl]], and/or [[Hopeful]]s with
+  * This crawler only fetches a complete list of [[SG]], and/or [[HF]]s with
   * all their [[PhotoSet]]s, but none of the photo links
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com
@@ -30,19 +30,19 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
   private[this] implicit val Authentication: Authentication = DefaultSGAuthentication
 
   private val SGsSortedByFollowers = "https://www.suicidegirls.com/profiles/girl/followers/"
-  private val HopefulsSortedByFollowers = "https://www.suicidegirls.com/profiles/hopeful/followers/"
+  private val HFsSortedByFollowers = "https://www.suicidegirls.com/profiles/hopeful/followers/"
   private val NewestSets = "https://www.suicidegirls.com/photos/all/recent/all/"
 
   /**
-    * Gathers the names of all available [[SuicideGirl]]s
+    * Gathers the names of all available [[SG]]s
     */
-  override def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
+  override def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): Future[List[Name]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
 
-    loadPageRepeatedly[ModelName](
+    loadPageRepeatedly[Name](
       uri = SGsSortedByFollowers,
       offsetStep = 12,
       parsingFunction = SGContentParser.gatherSGNames,
@@ -53,18 +53,18 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
 
 
   /**
-    * Gathers the names of all available [[Hopeful]]s
+    * Gathers the names of all available [[HF]]s
     */
-  override def gatherHFNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]] = {
+  override def gatherHFNames(limit: Int)(implicit pc: PatienceConfig): Future[List[Name]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
 
-    loadPageRepeatedly[ModelName](
-      uri = HopefulsSortedByFollowers,
+    loadPageRepeatedly[Name](
+      uri = HFsSortedByFollowers,
       offsetStep = 12,
-      parsingFunction = SGContentParser.gatherHopefulNames,
+      parsingFunction = SGContentParser.gatherHFNames,
       isEndPage = isEndPage,
       cutOffLimit = limit
     )
@@ -87,7 +87,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     * the [[PhotoSet]]s of the given model.
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]], and [[PhotoSet.url]] will be a full path URL.
     */
-  override def gatherPhotoSetInformationForModel[T <: Model](mf: ModelFactory[T])(modelName: ModelName)(implicit pc: PatienceConfig): Future[T] = {
+  override def gatherPhotoSetInformationForModel[T <: M](mf: ModelFactory[T])(modelName: Name)(implicit pc: PatienceConfig): Future[T] = {
     val pageURL = photoSetsPageURL(modelName)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
@@ -102,7 +102,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     }
   }
 
-  override def gatherPhotoSetInformationForModel(modelName: ModelName)(implicit pc: PatienceConfig): Future[Model] = {
+  override def gatherPhotoSetInformationForModel(modelName: Name)(implicit pc: PatienceConfig): Future[M] = {
     val pageURL = photoSetsPageURL(modelName)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
@@ -111,8 +111,8 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
         parsingFunction = SGContentParser.gatherPhotoSetsForModel,
         isEndPage = isEndPageForModelIndexing
       )
-      isHopeful = sets.exists(_.isHopefulSet.contains(true))
-      mf = if (isHopeful) HopefulFactory else SuicideGirlFactory
+      isHF = sets.exists(_.isHFSet.contains(true))
+      mf = if (isHF) HFFactory else SGFactory
     } yield {
       logger.info(s"gathered all sets for ${mf.name} ${modelName.name}. #sets: ${sets.length}")
       mf(photoSetURL = pageURL, name = modelName, photoSets = sets)
@@ -128,35 +128,35 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     * The amount of crawling is limited by the absolute limit, or by the set identified by [[LastProcessedMarker.lastPhotoSetID]]
     * This last set is not included in the results.
     *
-    * Returns a [[Model]] with only one [[Model.photoSets]], the one that shows up on the page.
+    * Returns a [[M]] with only one [[M.photoSets]], the one that shows up on the page.
     */
-  private[impl] def gatherAllNewModelsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
+  private[impl] def gatherAllNewMsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[M]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
 
-    def isEndInput(models: List[Model]): Boolean = {
+    def isEndInput(ms: List[M]): Boolean = {
       lastProcessedIndex match {
         case None => false
         case Some(lpi) =>
-          models.exists(_.photoSets.exists(_.id == lpi.lastPhotoSetID))
+          ms.exists(_.photoSets.exists(_.id == lpi.lastPhotoSetID))
       }
 
     }
 
-    loadPageRepeatedly[Model](
+    loadPageRepeatedly[M](
       uri = NewestSets,
       offsetStep = 24,
       parsingFunction = SGContentParser.gatherNewestPhotoSets,
       isEndPage = isEndPage,
       isEndInput = isEndInput,
       cutOffLimit = limit
-    ) map { models =>
+    ) map { ms =>
       if (lastProcessedIndex.isEmpty)
-        models
+        ms
       else
-        models.takeWhile { m =>
+        ms.takeWhile { m =>
           val photoset = m.photoSets.headOption.getOrElse(throw new AssertionError("... tried to get lastPhotoSet, of a NewestModelPhotoSet, but it did not exist"))
           lastProcessedIndex.isEmpty || (photoset.id != lastProcessedIndex.get.lastPhotoSetID)
         }
@@ -165,31 +165,30 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
 
   /**
     *
-    * Reindexes the models that have a set on the page:
+    * Reindexes the Ms that have a set on the page:
     * https://www.suicidegirls.com/photos/all/recent/all/
-    *
     *
     * The amount of crawling is limited by the absolute limit, or by the set identified by [[LastProcessedMarker.lastPhotoSetID]]
     * This last set is not included in the results.
     *
-    * Eliminates duplicate [[Model]], sometimes it happens that a model has two sets on the newest page, especially
+    * Eliminates duplicate [[M]], sometimes it happens that a model has two sets on the newest page, especially
     * if we wait a lot of time between updates.
     *
     * @return
-    * All models that have been gathered with fully indexed information, i.e. all their photosets, but no photo information
+    * All Ms that have been gathered with fully indexed information, i.e. all their photosets, but no photo information
     */
-  override def gatherAllNewModelsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]] = {
+  override def gatherAllNewMsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[M]] = {
     for {
-      modelsWithOnlyOneSet: List[Model] <- gatherAllNewModelsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
-      sgHF = modelsWithOnlyOneSet.distinctById.group
+      msWithOnlyOneSet: List[M] <- gatherAllNewMsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
+      sgHF = msWithOnlyOneSet.distinctById.group
       sgs <- Future.serialize(sgHF.sgs) { sg =>
         pc.throttleAfter {
-          this.gatherPhotoSetInformationForModel(Model.SuicideGirlFactory)(sg.name)
+          this.gatherPhotoSetInformationForModel(M.SGFactory)(sg.name)
         }
       }
       hfs <- Future.serialize(sgHF.hfs) { hf =>
         pc.throttleAfter {
-          this.gatherPhotoSetInformationForModel(Model.HopefulFactory)(hf.name)
+          this.gatherPhotoSetInformationForModel(M.HFFactory)(hf.name)
         }
       }
     } yield sgs ++ hfs

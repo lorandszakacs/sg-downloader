@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.app.commands
 
-import com.lorandszakacs.sg.model.ModelName
+import com.lorandszakacs.sg.model.Name
 
 /**
   *
@@ -30,18 +30,18 @@ object Commands {
     override def id: String = "download"
 
     override def humanlyReadableDescription: String =
-      s"""|Downloads the specified models only, updates state to database, and exports them as html
+      s"""|Downloads the specified Ms only, updates state to database, and exports them as html
         """.stripMargin.trim()
 
     override def manDescription: String =
-      """download models=X[,Y]* [username=Y password=Z]"""
+      """download names=X[,Y]* [username=Y password=Z]"""
   }
 
   case class DownloadSpecific(
-    models: List[ModelName],
+    names: List[Name],
     usernameAndPassword: Option[(String, String)]
   ) extends Command {
-    require(models.nonEmpty, "DownloadSpecific models cannot be empty")
+    require(names.nonEmpty, "DownloadSpecific names cannot be empty")
   }
 
   //====================================================================================
@@ -83,7 +83,7 @@ object Commands {
   }
 
   case class Show(
-    modelName: ModelName
+    modelName: Name
   ) extends Command
 
   //====================================================================================

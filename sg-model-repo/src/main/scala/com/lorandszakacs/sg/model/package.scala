@@ -12,50 +12,50 @@ import scala.language.implicitConversions
   */
 package object model {
 
-  implicit val modelIdentity: Identity[Model] = Identity[Model] { (m1, m2) =>
+  implicit val mIdentity: Identity[M] = Identity[M] { (m1, m2) =>
     m1.name == m2.name
   }
 
-  implicit val suicideGirlIdentifier: Identifier[SuicideGirl, ModelName] = Identifier[SuicideGirl, ModelName] { m: SuicideGirl => m.name }
-  implicit val hopefulIdentifier: Identifier[Hopeful, ModelName] = Identifier[Hopeful, ModelName] { m: Hopeful => m.name }
+  implicit val sgIdentifier: Identifier[SG, Name] = Identifier[SG, Name] { m: SG => m.name }
+  implicit val hfIdentifier: Identifier[HF, Name] = Identifier[HF, Name] { m: HF => m.name }
 
   implicit class StringBuffedWithModelName(str: String) {
-    def toModelName: ModelName = ModelName(str)
+    def toModelName: Name = Name(str)
 
     def toTitleName: PhotoSetTitle = PhotoSetTitle(str)
   }
 
-  implicit class BuffedModels(models: List[Model]) {
-    def group: Models = {
-      val (sgs, hf) = models partition (_.isSuicideGirl)
-      Models(
-        sgs = sgs map (_.asSuicideGirl) map (_.get),
-        hfs = hf map (_.asHopeful) map (_.get),
-        all = models
+  implicit class BuffedMs(ms: List[M]) {
+    def group: Ms = {
+      val (sgs, hf) = ms partition (_.isSG)
+      Ms(
+        sgs = sgs map (_.asSG) map (_.get),
+        hfs = hf map (_.asHF) map (_.get),
+        all = ms
       )
     }
   }
 
-  implicit class BuffedTuple(models: (List[SuicideGirl], List[Hopeful])) {
-    def group: Models = {
-      Models(
-        sgs = models._1,
-        hfs = models._2,
-        all = models._1 ++ models._2
+  implicit class BuffedTuple(ms: (List[SG], List[HF])) {
+    def group: Ms = {
+      Ms(
+        sgs = ms._1,
+        hfs = ms._2,
+        all = ms._1 ++ ms._2
       )
     }
   }
 
-  implicit class BuffedModelNames(models: List[ModelName]) {
-    def stringify: String = models.map(_.name).mkString(",")
+  implicit class BuffedNames(names: List[Name]) {
+    def stringify: String = names.map(_.name).mkString(",")
   }
 
-  implicit def stringToModelName(str: String): ModelName = ModelName(str)
+  implicit def stringToName(str: String): Name = Name(str)
 
   implicit def stringToPhotoSetTitleName(str: String): PhotoSetTitle = PhotoSetTitle(str)
 
-  implicit val ModelNameOrdering: Ordering[ModelName] = new Ordering[ModelName] {
-    override def compare(x: ModelName, y: ModelName): Int = x.name.compareTo(y.name)
+  implicit val ModelNameOrdering: Ordering[Name] = new Ordering[Name] {
+    override def compare(x: Name, y: Name): Int = x.name.compareTo(y.name)
   }
 
   implicit val PhotoSetTitleOrdering: Ordering[PhotoSetTitle] = new Ordering[PhotoSetTitle] {

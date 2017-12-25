@@ -85,9 +85,9 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
 
   //===============================================================================================
 
-  it should "return all the HopefulNames from the profile listing page" in {
+  it should "return all the HF Names from the profile listing page" in {
     val expected = HopefulProfileListPage
-    SGContentParser.gatherHopefulNames(expected.html) match {
+    SGContentParser.gatherHFNames(expected.html) match {
       case Success(result) =>
         result should have length expected.numberOfSGs
         result should equal(expected.names)
@@ -97,24 +97,24 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
 
   //===============================================================================================
 
-  it should "return all the Models from the newest photos page" in {
-    val expected = NewestPhotosPageWithDoubleModelSet
+  it should "return all the Ms from the newest photos page" in {
+    val expected = NewestPhotosPageWithDoubleMSet
     SGContentParser.gatherNewestPhotoSets(expected.html) match {
       case Success(result) =>
-        result should have length expected.numberOfModels
-        result.head.photoSetURL should equal(expected.models.head.photoSetURL)
-        result.head.name should equal(expected.models.head.name)
-        result.head.photoSets should equal(expected.models.head.photoSets)
+        result should have length expected.numberOfMs
+        result.head.photoSetURL should equal(expected.ms.head.photoSetURL)
+        result.head.name should equal(expected.ms.head.name)
+        result.head.photoSets should equal(expected.ms.head.photoSets)
 
-        result.head should equal(expected.models.head)
+        result.head should equal(expected.ms.head)
 
         println{
           result.take(2)
         }
 
-        result.take(4).diff(expected.models) should equal(Nil)
+        result.take(4).diff(expected.ms) should equal(Nil)
 
-      case Failure(e) => fail("did not return any Models", e)
+      case Failure(e) => fail("did not return any Ms", e)
     }
   }
 

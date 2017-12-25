@@ -13,7 +13,7 @@ import scala.util.control.NonFatal
   *
   * For simplicity's sake ``./`` denotes the path to either
   * [[com.lorandszakacs.sg.exporter.ExporterSettings.favoritesRootFolderPath]],
-  * or [[com.lorandszakacs.sg.exporter.ExporterSettings.allModelsRootFolderPath]], depending on context
+  * or [[com.lorandszakacs.sg.exporter.ExporterSettings.allMsRootFolderPath]], depending on context
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 17 Jul 2016
@@ -22,7 +22,7 @@ import scala.util.control.NonFatal
 private[indexwriter] class HTMLIndexWriterImpl()
   (implicit val ec: ExecutionContext) extends HTMLIndexWriter with StrictLogging {
 
-  override def writeRootModelIndex(index: ModelsRootIndex)(implicit ws: WriterSettings): Future[Unit] = {
+  override def writeRootModelIndex(index: MRootIndex)(implicit ws: WriterSettings): Future[Unit] = {
     for {
       _ <- (if (ws.rewriteEverything) FileUtils.cleanFolderOrCreate(ws.rootFolder) else Future.unit) recover {
         case NonFatal(e) =>
@@ -49,22 +49,22 @@ private[indexwriter] class HTMLIndexWriterImpl()
   }
 
   /**
-    * This writes:[[ModelsRootIndex.html]] to ``./index.html`` on the disk
+    * This writes:[[MRootIndex.html]] to ``./index.html`` on the disk
     */
-  private def writeRootIndexFile(rootIndex: ModelsRootIndex)(implicit ws: WriterSettings): Future[Unit] = {
+  private def writeRootIndexFile(rootIndex: MRootIndex)(implicit ws: WriterSettings): Future[Unit] = {
     val path = ws.rootFolder.resolve(rootIndex.html.relativePathAndName)
     for {
-      _: List[Unit] <- Future.traverse(rootIndex.models) { m: ModelIndex => writeModelIndex(rootIndex)(m) }
-      _ = logger.info(s"finished writing all #${rootIndex.models.length} models @ ${ws.rootFolder}")
+      _: List[Unit] <- Future.traverse(rootIndex.ms) { m: MIndex => writeModelIndex(rootIndex)(m) }
+      _ = logger.info(s"finished writing all #${rootIndex.ms.length} Ms @ ${ws.rootFolder}")
       _ <- FileUtils.writeFile(path, rootIndex.html.content)
     } yield ()
   }
 
   /**
-    * It will create a folder ./[[ModelIndex.name]]/, and write everything inside that folder
-    * This writes:[[ModelIndex.html]] to ``./[[ModelIndex.html.relativePathAndName]]`` on the disk
+    * It will create a folder ./[[MIndex.name]]/, and write everything inside that folder
+    * This writes:[[MIndex.html]] to ``./[[MIndex.html.relativePathAndName]]`` on the disk
     */
-  private def writeModelIndex(rootIndex: ModelsRootIndex)(m: ModelIndex)(implicit ws: WriterSettings): Future[Unit] = {
+  private def writeModelIndex(rootIndex: MRootIndex)(m: MIndex)(implicit ws: WriterSettings): Future[Unit] = {
     def writeModelPhotoSetIndex(ps: PhotoSetIndex)(implicit ws: WriterSettings): Future[Unit] = {
       val psPath = ws.rootFolder.resolve(ps.html.relativePathAndName)
       logger.debug(s"attempting to write file: $psPath")

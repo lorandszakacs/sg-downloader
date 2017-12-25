@@ -13,21 +13,14 @@ import com.lorandszakacs.util.math.Identifier
   * @since 14 Jul 2017
   *
   */
-private[impl] abstract class ModelRepo[M <: Model]
-(override protected val identifier: Identifier[M, ModelName])
-  extends MongoCollection[M, ModelName, BSONString] {
+private[impl] abstract class MRepo[Content <: M]
+(override protected val identifier: Identifier[Content, Name])
+  extends MongoCollection[Content, Name, BSONString] {
 
-  override protected implicit val idHandler: BSONHandler[BSONString, ModelName] =
-    modelNameBSON
+  override protected implicit val idHandler: BSONHandler[BSONString, Name] =
+    nameBSON
 
-  def findWithZeroSets: Future[List[M]] = {
-    val q: BSONDocument = document(
-      "photoSets" -> BSONDocument($size -> 0)
-    )
-    this.findMany(q)
-  }
-
-  def findBetweenDays(start: LocalDate, end: LocalDate): Future[List[Model]] = {
+  final def findBetweenDays(start: LocalDate, end: LocalDate): Future[List[Content]] = {
     val q = document(
       "photoSets.date" -> document($gte -> start),
       "photoSets.date" -> document($lte -> end)

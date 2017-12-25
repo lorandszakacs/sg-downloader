@@ -18,6 +18,6 @@ trait IndexerAssembly extends SGClientAssembly {
 
   def sgIndexer: SGIndexer = _sgIndexerImpl
 
-  private[indexer] lazy val _sgIndexerImpl = new SGIndexerImpl(suicideGirlsClient)
+  private[indexer] lazy val _sgIndexerImpl = new SGIndexerImpl(sgClient)
 
 }

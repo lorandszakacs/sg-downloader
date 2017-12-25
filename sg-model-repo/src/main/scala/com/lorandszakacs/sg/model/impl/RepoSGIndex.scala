@@ -10,21 +10,21 @@ import com.lorandszakacs.util.mongodb._
   * @since 14 Jul 2017
   *
   */
-private[impl] class RepoHopefulIndex(override protected val db: Database)(
+private[impl] class RepoSGIndex(override protected val db: Database)(
   implicit override val executionContext: ExecutionContext
-) extends IndexSingleDocRepo[HopefulIndex] with ModelBSON {
+) extends IndexSingleDocRepo[SGIndex] with ModelBSON {
 
-  override protected def objectHandler: BSONDocumentHandler[HopefulIndex] = BSONMacros.handler[HopefulIndex]
+  override protected def objectHandler: BSONDocumentHandler[SGIndex] = BSONMacros.handler[SGIndex]
 
-  override protected def uniqueDocumentId: String = "hopefuls-index"
+  override protected def uniqueDocumentId: String = "sg_index"
 
-  override protected def defaultEntity: HopefulIndex = HopefulIndex(
+  override protected def defaultEntity: SGIndex = SGIndex(
     names = Nil,
     needsReindexing = Nil,
     number = 0
   )
 
-  private def sanitize(i: HopefulIndex): HopefulIndex = {
+  private def sanitize(i: SGIndex): SGIndex = {
     val temp = i.names.distinct.sorted
     i.copy(
       names = temp,
@@ -33,24 +33,24 @@ private[impl] class RepoHopefulIndex(override protected val db: Database)(
     )
   }
 
-  private def sanitize(names: List[ModelName]): HopefulIndex = {
+  private def sanitize(names: List[Name]): SGIndex = {
     val temp = names.distinct.sorted
-    HopefulIndex(
+    SGIndex(
       names = temp,
       needsReindexing = temp,
       number = temp.length
     )
   }
 
-  override def create(sg: HopefulIndex): Future[Unit] = {
+  override def create(sg: SGIndex): Future[Unit] = {
     super.create(sanitize(sg))
   }
 
-  override def createOrUpdate(sg: HopefulIndex): Future[Unit] = {
+  override def createOrUpdate(sg: SGIndex): Future[Unit] = {
     super.createOrUpdate(sanitize(sg))
   }
 
-  def rewriteIndex(names: List[ModelName]): Future[Unit] = {
+  def rewriteIndex(names: List[Name]): Future[Unit] = {
     this.createOrUpdate(sanitize(names))
   }
 

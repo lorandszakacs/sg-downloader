@@ -66,10 +66,10 @@ class CommandLineInterpreter(
           includeProblematic = true
         )
       //=======================================================================
-      case Commands.DownloadSpecific(models, usernameAndPassword) =>
+      case Commands.DownloadSpecific(names, usernameAndPassword) =>
         implicit val ppProvider: PasswordProvider = optionalPasswordParams(usernameAndPassword)
         downloader.download.specific(
-          modelNames = models,
+          names = names,
           daysToExport = 120 //TODO: read from commandline
         )
       //=======================================================================

@@ -23,17 +23,17 @@ trait NewestPhotosPage {
 
   def currentYear: Int = DateTime.now(DateTimeZone.UTC).getYear
 
-  def numberOfModels: Int
+  def numberOfMs: Int
 
-  def models: List[Model]
+  def ms: List[M]
 }
 
 /**
-  * DoubleModel = Saria + Talena; i.e. two models in the same set
+  * DoubleModel = Saria + Talena; i.e. two Ms in the same set
   */
-object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage with URLConversions {
-  override def models: List[Model] = List(
-    SuicideGirl(
+object NewestPhotosPageWithDoubleMSet extends NewestPhotosPage with URLConversions {
+  override def ms: List[M] = List(
+    SG(
       photoSetURL = "https://www.suicidegirls.com/girls/saria/photos/view/photosets/",
       name = "Saria",
       photoSets = List(
@@ -46,7 +46,7 @@ object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage with URLConve
       )
     ),
 
-    SuicideGirl(
+    SG(
       photoSetURL = "https://www.suicidegirls.com/girls/valkyria/photos/view/photosets/",
       name = "valkyria",
       photoSets = List(
@@ -59,7 +59,7 @@ object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage with URLConve
       )
     ),
 
-    Hopeful(
+    HF(
       photoSetURL = "https://www.suicidegirls.com/girls/rias/photos/view/photosets/",
       name = "rias",
       photoSets = List(
@@ -72,7 +72,7 @@ object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage with URLConve
       )
     ),
 
-    Hopeful(
+    HF(
       photoSetURL = "https://www.suicidegirls.com/girls/insatiableindica/photos/view/photosets/",
       name = "insatiableindica",
       photoSets = List(
@@ -86,5 +86,5 @@ object NewestPhotosPageWithDoubleModelSet extends NewestPhotosPage with URLConve
     )
   )
 
-  override def numberOfModels: Int = 24
+  override def numberOfMs: Int = 24
 }

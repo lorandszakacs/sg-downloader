@@ -1,7 +1,7 @@
 package com.lorandszakacs.sg.indexer
 
 import com.lorandszakacs.sg.http.PatienceConfig
-import com.lorandszakacs.sg.model.Model.ModelFactory
+import com.lorandszakacs.sg.model.M.ModelFactory
 import com.lorandszakacs.sg.model._
 import org.joda.time.DateTime
 
@@ -20,14 +20,14 @@ import com.lorandszakacs.util.future._
 trait SGIndexer {
 
   /**
-    * Gathers the names of all available [[SuicideGirl]]s
+    * Gathers the names of all available [[SG]]s
     */
-  def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]]
+  def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): Future[List[Name]]
 
   /**
-    * Gathers the names of all available [[Hopeful]]s
+    * Gathers the names of all available [[HF]]s
     */
-  def gatherHFNames(limit: Int)(implicit pc: PatienceConfig): Future[List[ModelName]]
+  def gatherHFNames(limit: Int)(implicit pc: PatienceConfig): Future[List[Name]]
 
   /**
     *
@@ -41,20 +41,20 @@ trait SGIndexer {
     * the [[PhotoSet]]s of the given model.
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]], and [[PhotoSet.url]] will be a full path URL.
     */
-  def gatherPhotoSetInformationForModel[T <: Model](mf: ModelFactory[T])(modelName: ModelName)(implicit pc: PatienceConfig): Future[T]
+  def gatherPhotoSetInformationForModel[T <: M](mf: ModelFactory[T])(modelName: Name)(implicit pc: PatienceConfig): Future[T]
 
   /**
     * Similar to [[gatherPhotoSetInformationForModel]], but with more potential for failure
     */
-  def gatherPhotoSetInformationForModel(modelName: ModelName)(implicit pc: PatienceConfig): Future[Model]
+  def gatherPhotoSetInformationForModel(modelName: Name)(implicit pc: PatienceConfig): Future[M]
 
   /**
     *
     *
     */
-  def gatherAllNewModelsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[Model]]
+  def gatherAllNewMsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[M]]
 
-  final def createLastProcessedIndex(lastModel: Model): LastProcessedMarker = {
+  final def createLastProcessedIndex(lastModel: M): LastProcessedMarker = {
     LastProcessedMarker(
       timestamp = DateTime.now(),
       photoSet = lastModel.photoSetsNewestFirst

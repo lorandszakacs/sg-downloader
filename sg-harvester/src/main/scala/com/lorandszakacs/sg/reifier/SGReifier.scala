@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.reifier
 
 
 import com.lorandszakacs.sg.http.{Authentication, PasswordProvider, PatienceConfig}
-import com.lorandszakacs.sg.model.{Hopeful, Model, SuicideGirl}
+import com.lorandszakacs.sg.model.{HF, M, SG}
 import com.lorandszakacs.util.future._
 
 /**
@@ -24,11 +24,11 @@ trait SGReifier {
     */
   def authenticateIfNeeded()(implicit passwordProvider: PasswordProvider): Future[Authentication]
 
-  def reifySuicideGirl(sg: SuicideGirl)(implicit pc: PatienceConfig): Future[SuicideGirl]
+  def reifySG(sg: SG)(implicit pc: PatienceConfig): Future[SG]
 
-  def reifyHopeful(hf: Hopeful)(implicit pc: PatienceConfig): Future[Hopeful]
+  def reifyHF(hf: HF)(implicit pc: PatienceConfig): Future[HF]
 
-  def reify(m: Model)(implicit pc: PatienceConfig): Future[Model]
+  def reifyM(m: M)(implicit pc: PatienceConfig): Future[M]
 
   def authentication: Authentication
 }

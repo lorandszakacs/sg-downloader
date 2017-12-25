@@ -39,10 +39,10 @@ final case class SetRepresentationDidNotContainURLException(html: Html) extends 
   """.stripMargin
 )
 
-final case class DidNotFindAnySuicideGirlProfileLinksException() extends Exception(
-  "Did not find any suicide girls profile links"
+final case class DidNotFindAnySGProfileLinksException() extends Exception(
+  "Did not find any SG profile links"
 )
 
-final case class DidNotFindAnyHopefulProfileLinksException() extends Exception(
-  "Did not find any hopeful girls profile links"
+final case class DidNotFindAnyHFProfileLinksException() extends Exception(
+  "Did not find any HF profile links"
 )

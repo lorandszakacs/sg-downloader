@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.exporter
 
 import java.nio.file.{Path, Paths}
 
-import com.lorandszakacs.sg.model.{Model, ModelName}
+import com.lorandszakacs.sg.model.{M, Name}
 import com.lorandszakacs.util.files.FileUtils
 import com.lorandszakacs.util.future._
 
@@ -13,16 +13,16 @@ import com.lorandszakacs.util.future._
   *
   */
 trait SGExporter {
-  def prettyPrint(modelName: ModelName): Future[String]
+  def prettyPrint(modelName: Name): Future[String]
 
   /**
-    * Only exports the given [[ModelName]]s. with the data
+    * Only exports the given [[Name]]s. with the data
     * that is available in the system
     *
     * It will recreate the:
     * ./[[ExporterSettings.favoritesRootFolderPath]]/index.html
-    * ./[[ExporterSettings.allModelsRootFolderPath]]/index.html
-    * Taking into consideration *all* models, and *all favorites*, not just the
+    * ./[[ExporterSettings.allMsRootFolderPath]]/index.html
+    * Taking into consideration *all* Ms, and *all favorites*, not just the
     * ones specified.
     *
     * But *all* corresponding model specific folders as specified by the model names,
@@ -30,15 +30,15 @@ trait SGExporter {
     *
     * @return
     */
-  def exportHTMLOfOnlyGivenSubsetOfModels(ms: List[ModelName])(implicit ws: ExporterSettings): Future[Unit]
+  def exportHTMLOfOnlyGivenSubsetOfMs(ms: List[Name])(implicit ws: ExporterSettings): Future[Unit]
 
   /**
-    * Only exports the given [[Model]]s.
+    * Only exports the given [[M]]s.
     *
     * It will recreate the:
     * ./[[ExporterSettings.favoritesRootFolderPath]]/index.html
-    * ./[[ExporterSettings.allModelsRootFolderPath]]/index.html
-    * Taking into consideration *all* models, and *all favorites*, not just the
+    * ./[[ExporterSettings.allMsRootFolderPath]]/index.html
+    * Taking into consideration *all* Ms, and *all favorites*, not just the
     * ones specified.
     *
     * But *all* corresponding model specific folders as specified by the model names,
@@ -46,7 +46,7 @@ trait SGExporter {
     *
     * @return
     */
-  def exportDeltaHTMLOfModels(ms: List[Model])(implicit ws: ExporterSettings): Future[Unit]
+  def exportDeltaHTMLOfMs(ms: List[M])(implicit ws: ExporterSettings): Future[Unit]
 
   /**
     * Create a navigable HTML webpage at [[ExporterSettings.favoritesRootFolderPath]]
@@ -55,9 +55,9 @@ trait SGExporter {
   def exportHTMLIndexOfFavorites(implicit ws: ExporterSettings): Future[Unit]
 
   /**
-    * Create a navigable HTML webpage at [[ExporterSettings.allModelsRootFolderPath]]
+    * Create a navigable HTML webpage at [[ExporterSettings.allMsRootFolderPath]]
     */
-  def exportHTMLIndexOfAllModels(implicit ws: ExporterSettings): Future[Unit]
+  def exportHTMLIndexOfAllMs(implicit ws: ExporterSettings): Future[Unit]
 
   /**
     * Creates and HTML webpage at [[ExporterSettings.newestRootFolderPath]] containing
@@ -66,19 +66,19 @@ trait SGExporter {
   def exportLatestForDays(nrOfDays: Int)(implicit ws: ExporterSettings): Future[Unit]
 
   /**
-    * Same as [[exportLatestForDays]] but adds in to the already existing models
+    * Same as [[exportLatestForDays]] but adds in to the already existing Ms
     * the delta passed as parameter
     */
-  def exportLatestForDaysWithDelta(nrOfDays: Int, delta: List[Model])(implicit ws: ExporterSettings): Future[Unit]
-  
+  def exportLatestForDaysWithDelta(nrOfDays: Int, delta: List[M])(implicit ws: ExporterSettings): Future[Unit]
+
 }
 
 object ExporterSettings {
 
-  def apply(favoritesRootFolderPath: String, allModelsRootFolderPath: String, newestRootFolderPath: String, rewriteEverything: Boolean): ExporterSettings = {
+  def apply(favoritesRootFolderPath: String, allMsRootFolderPath: String, newestRootFolderPath: String, rewriteEverything: Boolean): ExporterSettings = {
     new ExporterSettings(
       favoritesRootFolderPath = Paths.get(FileUtils.normalizeHomePath(favoritesRootFolderPath)).toAbsolutePath,
-      allModelsRootFolderPath = Paths.get(FileUtils.normalizeHomePath(allModelsRootFolderPath)).toAbsolutePath,
+      allMsRootFolderPath = Paths.get(FileUtils.normalizeHomePath(allMsRootFolderPath)).toAbsolutePath,
       newestRootFolderPath = Paths.get(FileUtils.normalizeHomePath(newestRootFolderPath)).toAbsolutePath,
       rewriteEverything = rewriteEverything
     )
@@ -96,7 +96,7 @@ object ExporterSettings {
   */
 final class ExporterSettings private(
   val favoritesRootFolderPath: Path,
-  val allModelsRootFolderPath: Path,
+  val allMsRootFolderPath: Path,
   val newestRootFolderPath: Path,
   val rewriteEverything: Boolean
 )

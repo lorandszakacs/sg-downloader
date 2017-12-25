@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg
 
-import com.lorandszakacs.sg.model.ModelName
+import com.lorandszakacs.sg.model.Name
 
 /**
   *
@@ -53,9 +53,9 @@ object Favorites {
   private val _new = List[String](
   ).filterNot(_.isEmpty).sorted.distinct
 
-  val names: List[ModelName] = (if (_new.isEmpty) _names else _new) map ModelName.apply
+  val names: List[Name] = (if (_new.isEmpty) _names else _new) map Name.apply
 
   def codeFriendlyDisplay: String = (_names ++ _new)
-    .map(ModelName.apply).map(_.name).distinct.sorted.grouped(10)
+    .map(Name.apply).map(_.name).distinct.sorted.grouped(10)
     .map(_.mkString("\"", "\", \"", "\"")).mkString("List(\n", ",\n", "\n)")
 }
