@@ -23,6 +23,8 @@ class CommandLineInterpreter(
 
   private implicit val executionContext: ExecutionContext = assembly.executionContext
 
+  private val defaultDays = 160
+
   def interpret(args: Array[String]): Option[Command] = {
     assert(args.nonEmpty, "why did you call the command line evaluator if you have no command line args?")
     val stringArgs = args.mkString(" ")
@@ -61,7 +63,7 @@ class CommandLineInterpreter(
       case Commands.DeltaDownload(days, usernameAndPassword) =>
         implicit val ppProvider: PasswordProvider = optionalPasswordParams(usernameAndPassword)
         downloader.download.delta(
-          daysToExport       = days.getOrElse(120),
+          daysToExport       = days.getOrElse(defaultDays),
           includeProblematic = true
         )
       //=======================================================================
@@ -69,8 +71,15 @@ class CommandLineInterpreter(
         implicit val ppProvider: PasswordProvider = optionalPasswordParams(usernameAndPassword)
         downloader.download.specific(
           names        = names,
-          daysToExport = 120 //TODO: read from commandline
+          daysToExport = defaultDays
         )
+      //=======================================================================
+      case Commands.ExportHTML(onlyFavorites) =>
+        downloader.export.all(
+          daysToExport = defaultDays,
+          onlyFavorites = onlyFavorites
+        )
+
       //=======================================================================
       case Commands.Show(model) =>
         print("\n***************\n")

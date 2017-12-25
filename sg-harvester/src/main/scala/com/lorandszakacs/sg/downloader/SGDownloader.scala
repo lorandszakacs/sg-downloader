@@ -31,7 +31,7 @@ final class SGDownloader private[downloader] (
   /**
     * Used for commands that act on the entire repository
     */
-  protected implicit val exporterSettings: ExporterSettings = ExporterSettings(
+  protected val exporterSettings: ExporterSettings = ExporterSettings(
     favoritesRootFolderPath = "~/sgs/local/models/favorites",
     allMsRootFolderPath     = "~/sgs/local/models/all",
     newestRootFolderPath    = "~/sgs/local/models",
@@ -41,7 +41,7 @@ final class SGDownloader private[downloader] (
   /**
     * Used strictly for the delta export
     */
-  protected implicit val deltaExporterSettings: ExporterSettings = ExporterSettings(
+  protected val deltaExporterSettings: ExporterSettings = ExporterSettings(
     favoritesRootFolderPath = "~/sgs/delta/models/favorites",
     allMsRootFolderPath     = "~/sgs/delta/models/all",
     newestRootFolderPath    = "~/sgs/delta/models",
@@ -130,30 +130,44 @@ final class SGDownloader private[downloader] (
     }
 
     def specificPure(indexedMs: Ms): Future[Ms] = {
-      logger.info(s"reify.specific --> delagating to reify.delta")
+      logger.info(s"reify.specific --> delegating to reify.delta")
       this.deltaPure(indexedMs)
     }
   }
 
   object export {
 
-    def delta(daysToExport: Int = 28, delta: List[M]): Future[Unit] = {
+    def delta(daysToExport: Int, delta: List[M])(implicit settings: ExporterSettings): Future[Unit] = {
       logger.info(s"export.delta --> export. Days to export: $daysToExport. #Ms: ${delta.length}")
       for {
-        _ <- exporter.exportDeltaHTMLOfMs(delta)(deltaExporterSettings)
+        _ <- exporter.exportDeltaHTMLOfMs(delta)(settings)
         _ = logger.info(
-          s"export.delta --IMPURE--> finished exporting HTML to ${deltaExporterSettings.newestRootFolderPath}."
+          s"export.delta --IMPURE--> finished exporting HTML to ${settings.newestRootFolderPath}."
         )
-        _ <- exporter.exportLatestForDaysWithDelta(daysToExport, delta)(deltaExporterSettings)
+        _ <- exporter.exportLatestForDaysWithDelta(daysToExport, delta)(settings)
         _ = logger.info(
-          s"export.delta --IMPURE--> finished newest HTML to ${deltaExporterSettings.newestRootFolderPath}."
+          s"export.delta --IMPURE--> finished newest HTML to ${settings.newestRootFolderPath}."
         )
       } yield ()
     }
 
-    def specific(daysToExport: Int = 28, delta: List[M]): Future[Unit] = {
-      logger.info(s"export.specific --> delagating to export.delta")
-      this.delta(daysToExport, delta)
+    def specific(daysToExport: Int, specific: List[M])(implicit settings: ExporterSettings): Future[Unit] = {
+      logger.info(s"export.specific --> delegating to export.delta")
+      this.delta(daysToExport, specific)(settings)
+    }
+
+    def all(daysToExport: Int, onlyFavorites: Boolean)(
+      implicit settings:  ExporterSettings = exporterSettings
+    ): Future[Unit] = {
+      logger.info(s"export.all --> to: ${settings.allMsRootFolderPath}")
+      for {
+        all <- if (onlyFavorites)
+                repo.find(Favorites.names)
+              else
+                repo.findAll.map(_.filterNot(_.photoSets.isEmpty))
+        _ <- Future.successful(logger.info(s"export.all --> delegating to export.specific"))
+        _ <- this.specific(daysToExport, all)
+      } yield ()
     }
   }
 
@@ -231,8 +245,10 @@ final class SGDownloader private[downloader] (
       * TODO: settings outght to be read from a config file
       *
       */
-    def delta(daysToExport:       Int = 28,
-              includeProblematic: Boolean)(implicit passwordProvider: PasswordProvider): Future[Unit] = {
+    def delta(
+      daysToExport:              Int,
+      includeProblematic:        Boolean
+    )(implicit passwordProvider: PasswordProvider): Future[Unit] = {
       logger.info(
         "---------------------------------------------- starting download.delta --------------------------------------------"
       )
@@ -253,7 +269,7 @@ final class SGDownloader private[downloader] (
         _ = logger.info(
           "---------------------------------------------- starting delta.export ----------------------------------------------"
         )
-        _ <- This.export.delta(daysToExport, reifiedMs.all)
+        _ <- This.export.delta(daysToExport, reifiedMs.all)(deltaExporterSettings)
         _ = logger.info(
           "---------------------------------------------- starting delta.write in DB -----------------------------------------"
         )
@@ -264,8 +280,10 @@ final class SGDownloader private[downloader] (
       } yield ()
     }
 
-    def specific(names:        List[Name],
-                 daysToExport: Int = 28)(implicit passwordProvider: PasswordProvider): Future[Unit] = {
+    def specific(
+      names:                     List[Name],
+      daysToExport:              Int
+    )(implicit passwordProvider: PasswordProvider): Future[Unit] = {
       logger.info(
         "---------------------------------------------- starting download.specific --------------------------------------------"
       )
@@ -283,7 +301,7 @@ final class SGDownloader private[downloader] (
         _ = logger.info(
           "---------------------------------------------- starting specific.export ----------------------------------------------"
         )
-        _ <- This.export.specific(daysToExport, reifiedMs.all)
+        _ <- This.export.specific(daysToExport, reifiedMs.all)(deltaExporterSettings)
         _ = logger.info(
           "---------------------------------------------- starting specific.write in DB -----------------------------------------"
         )

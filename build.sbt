@@ -37,7 +37,6 @@ lazy val `sg-harvester` = Project(
   `sg-model-repo`,
   `util`
 ).dependsOn(
-  `sg-core`,
   `sg-model-repo`,
   `util`
 )
@@ -69,7 +68,10 @@ lazy val `sg-core` = Project(
   "sg-core",
   base = file("./sg-core")
 ).settings(
-  Settings.common
+  Settings.common ++
+    Seq(
+      libraryDependencies := Seq()
+    )
 )
 
 lazy val `util` = Project(

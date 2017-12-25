@@ -70,6 +70,26 @@ object Commands {
 
   //====================================================================================
 
+  object ExportHTML extends CommandDescription {
+    override val id: String = "export-html"
+
+    override val humanlyReadableDescription: String =
+      s"""|Exports all the existing data as HTML. By default it exports all, and favorites only.
+          |With the -f flag it exports on the html of favorites
+        """.stripMargin.trim()
+
+    override val manDescription: String =
+      """export-html [-f]"""
+
+  }
+
+  case class ExportHTML(
+    onlyFavorites: Boolean = false
+  ) extends Command {
+  }
+
+  //====================================================================================
+
   object Show extends CommandDescription {
     override val id: String = "show"
 
@@ -78,7 +98,7 @@ object Commands {
         """.stripMargin.trim()
 
     override val manDescription: String =
-      """show $MODEL_NAME"""
+      """show $NAME"""
 
   }
 
@@ -111,7 +131,6 @@ object Commands {
         |export - use integral harvested data to export (currently only HTML)
         |write - SIDE EFFECTUL in DB, this effectively writes to database.
         |download - harvests (index + reify), exports, and writes.
-        |=====
       """.stripMargin.trim()
 
     override val manDescription: String = "help"
@@ -133,8 +152,9 @@ object Commands {
     DownloadSpecific,
     DeltaDownload,
     Show,
+    ExportHTML,
     Favorites,
     Help,
-    Exit
+    Exit,
   ).sortBy(_.id)
 }
