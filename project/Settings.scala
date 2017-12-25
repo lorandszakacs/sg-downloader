@@ -3,23 +3,12 @@ import Keys._
 import sbtassembly.AssemblyKeys._
 
 object Settings {
-  lazy val organizationName: String = "com.lorandszakacs"
-
-  def common: Seq[Setting[_]] =
-    Seq(
-      organization in ThisBuild   := organizationName,
-      test in assembly            := {},
-      assemblyJarName in assembly := s"${name.value}.jar",
-      scalaVersion                := Dependencies.mainScalaVersion,
-      dependencyOverrides += Dependencies.akkaStream,
-      dependencyOverrides += Dependencies.akkaActor,
-    ) // ++ scalaCompilerSettings
 
   /**
     * tpolecat's glorious compile flag list:
     * https://tpolecat.github.io/2017/04/25/scalac-flags.html
     */
-  def scalaCompilerSettings: Seq[Setting[_]] = Seq(
+  def scalaCompilerFlags: Seq[Setting[_]] = Seq(
     scalacOptions ++= Seq(
       "-deprecation", // Emit warning and location for usages of deprecated APIs.
       "-encoding",
@@ -63,7 +52,9 @@ object Settings {
       "-Ywarn-unused:patvars", // Warn if a variable bound in a pattern is unused.
       "-Ywarn-unused:privates", // Warn if a private member is unused.
       "-Ywarn-value-discard", // Warn when non-Unit expression results are unused.
-      "-Ypartial-unification" // Enable partial unification in type constructor inference
+      "-Ypartial-unification", // Enable partial unification in type constructor inference
+
+      //"-Xfatal-warnings",
     )
   )
 }
