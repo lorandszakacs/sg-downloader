@@ -1,9 +1,11 @@
 import sbt._
 import sbt.Keys._
 
+addCommandAlias("mkJar", ";clean;update;compile;project sg-harvester;assembly")
+
 lazy val root = Project(
   "sg-downloader",
-  base = file(".")
+  base = file("."),
 ).settings(
   Settings.common
 ).aggregate(
@@ -17,6 +19,7 @@ lazy val `sg-harvester` = Project(
   Settings.common ++
     Seq(
       mainClass in(Compile, run) in ThisBuild := Some("com.lorandszakacs.sg.app.Main"),
+      mainClass in assembly := Some("com.lorandszakacs.sg.app.Main"),
       suppressSbtShellNotification := true,
       fork in run := true,
       libraryDependencies ++= Seq(
