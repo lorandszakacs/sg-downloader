@@ -32,7 +32,15 @@ object Main extends App with StrictLogging {
 
   if (args.nonEmpty) {
     logger.info(s"Received args: ${args.mkString(",")}    --> executing command")
-    interpreter.interpret(args)
+    interpreter.interpretArgs(args) match {
+      case Some(_) =>
+        () //intentionally doing nothing, let it terminate gracefully
+      case None =>
+        logger.error("—— something went wrong during interpretation —— exiting")
+        assembly.shutdown().await()
+        System.exit(1)
+    }
+
   }
   else {
     logger.info(s"Did not receive any arguments, going into REPL mode")

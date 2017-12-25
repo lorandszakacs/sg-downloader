@@ -24,7 +24,7 @@ CMD_STOP='stop'
 isRunning=$(docker inspect -f {{.State.Running}} $RESULTING_CONTAINER_NAME)
 
 echo_commands() {
-  echo "possible commands — all apply to docker image '$RESULTING_CONTAINER_NAME':"
+  echo "-- possible commands — all apply to docker image '$RESULTING_CONTAINER_NAME':"
   echo ""
   echo "  $CMD_START        -> starts a docker image, attemps creates it if it doesn't exist"
   echo "  $CMD_RESTART      -> restarts the existing docker image"
@@ -50,7 +50,7 @@ dockerRemove() {
 if (( $# == 0 ));
 then
   echo ""
-  echo "no command line arguments specified. Defaulting to command: $CMD_START"
+  echo "-- no command line arguments specified. Defaulting to command: $CMD_START"
   echo ""
   echo_commands
   user_cmd="start"
@@ -63,29 +63,33 @@ then
   if [ "$isRunning" == "true" ]
   then
     echo ""
-    echo "container already started. doing nothing"
+    echo "-- container already started. doing nothing"
     echo ""
   elif [ "$isRunning" == "false" ]
   then
     echo ""
-    echo "container exists; but is not running, starting up."
+    echo "-- container exists; but is not running, starting up."
     echo ""
     dockerRestart
   else
     echo ""
-    echo "container does not exist. creating"
+    echo "-- container does not exist. creating"
     echo ""
     dockerStart
   fi #end "start"
 elif [ "$user_cmd" == "$CMD_RESTART" ]
 then
-  echo "restarting container"
+  echo "-- restarting container"
   dockerRestart
 elif [ "$user_cmd" == "$CMD_STOP" ]
 then
-  echo "stopping docker container"
+  echo "-- stopping docker container"
   dockerStop
 else
-  echo "unknown command: $user_cmd"
+  echo "  ******"
+  echo "-- unknown command: $user_cmd"
+  echo "  ******"
+  echo ""
   echo_commands
+  exit 1;
 fi

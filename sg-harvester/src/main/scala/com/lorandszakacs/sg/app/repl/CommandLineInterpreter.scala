@@ -25,7 +25,7 @@ class CommandLineInterpreter(
 
   private val defaultDays = 160
 
-  def interpret(args: Array[String]): Option[Command] = {
+  def interpretArgs(args: Array[String]): Option[Command] = {
     assert(args.nonEmpty, "why did you call the command line evaluator if you have no command line args?")
     val stringArgs = args.mkString(" ")
 
