@@ -1,9 +1,7 @@
 package com.lorandszakacs.sg.model
 
-
 import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.time._
-
 
 /**
   *
@@ -56,31 +54,30 @@ trait SGAndHFRepository {
 
 }
 
-
 final case class HFIndex(
-  names: List[Name],
+  names:           List[Name],
   needsReindexing: List[Name],
-  number: Int
+  number:          Int
 )
 
 final case class SGIndex(
-  names: List[Name],
+  names:           List[Name],
   needsReindexing: List[Name],
-  number: Int
+  number:          Int
 )
 
 /**
   * Always the sum of [[HFIndex]], and [[SGIndex]]
   */
 final case class CompleteIndex(
-  names: List[Name],
+  names:           List[Name],
   needsReindexing: List[Name],
-  number: Int
+  number:          Int
 )
 
 case class LastProcessedMarker(
   timestamp: DateTime,
-  photoSet: PhotoSet
+  photoSet:  PhotoSet
 ) {
   final def lastPhotoSetID: String = photoSet.id
 }

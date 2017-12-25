@@ -1,6 +1,5 @@
 package com.lorandszakacs.sg.exporter.indexwriter.impl
 
-
 import com.lorandszakacs.sg.exporter.html._
 import com.lorandszakacs.sg.exporter.indexwriter.{HTMLIndexWriter, WriterSettings}
 import com.lorandszakacs.util.files.FileUtils
@@ -19,16 +18,16 @@ import scala.util.control.NonFatal
   * @since 17 Jul 2016
   *
   */
-private[indexwriter] class HTMLIndexWriterImpl()
-  (implicit val ec: ExecutionContext) extends HTMLIndexWriter with StrictLogging {
+private[indexwriter] class HTMLIndexWriterImpl()(implicit val ec: ExecutionContext)
+    extends HTMLIndexWriter with StrictLogging {
 
   override def writeRootModelIndex(index: MRootIndex)(implicit ws: WriterSettings): Future[Unit] = {
     for {
       _ <- (if (ws.rewriteEverything) FileUtils.cleanFolderOrCreate(ws.rootFolder) else Future.unit) recover {
-        case NonFatal(e) =>
-          logger.error(s"failed to clean root folder: ${e.getMessage}", e)
-          throw e
-      }
+            case NonFatal(e) =>
+              logger.error(s"failed to clean root folder: ${e.getMessage}", e)
+              throw e
+          }
       _ <- writeRootIndexFile(index)
 
     } yield ()
@@ -54,7 +53,9 @@ private[indexwriter] class HTMLIndexWriterImpl()
   private def writeRootIndexFile(rootIndex: MRootIndex)(implicit ws: WriterSettings): Future[Unit] = {
     val path = ws.rootFolder.resolve(rootIndex.html.relativePathAndName)
     for {
-      _: List[Unit] <- Future.traverse(rootIndex.ms) { m: MIndex => writeModelIndex(rootIndex)(m) }
+      _: List[Unit] <- Future.traverse(rootIndex.ms) { m: MIndex =>
+                        writeModelIndex(rootIndex)(m)
+                      }
       _ = logger.info(s"finished writing all #${rootIndex.ms.length} Ms @ ${ws.rootFolder}")
       _ <- FileUtils.writeFile(path, rootIndex.html.content)
     } yield ()
@@ -74,12 +75,12 @@ private[indexwriter] class HTMLIndexWriterImpl()
     }
 
     val modelFolderPath = ws.rootFolder.resolve(m.name.name).toAbsolutePath
-    val indexPath = ws.rootFolder.resolve(m.html.relativePathAndName).toAbsolutePath
+    val indexPath       = ws.rootFolder.resolve(m.html.relativePathAndName).toAbsolutePath
     for {
       _ <- FileUtils.createFolders(modelFolderPath)
       _ <- Future.serialize(m.photoSets) { ps =>
-        writeModelPhotoSetIndex(ps)
-      }
+            writeModelPhotoSetIndex(ps)
+          }
       _ <- FileUtils.writeFile(indexPath, m.html.content)
     } yield {
       logger.info(s"wrote entire model entry @ $indexPath")
@@ -87,5 +88,3 @@ private[indexwriter] class HTMLIndexWriterImpl()
   }
 
 }
-
-

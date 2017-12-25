@@ -13,9 +13,8 @@ import com.lorandszakacs.util.math.Identifier
   * @since 14 Jul 2017
   *
   */
-private[impl] abstract class MRepo[Content <: M]
-(override protected val identifier: Identifier[Content, Name])
-  extends MongoCollection[Content, Name, BSONString] {
+private[impl] abstract class MRepo[Content <: M](override protected val identifier: Identifier[Content, Name])
+    extends MongoCollection[Content, Name, BSONString] {
 
   override protected implicit val idHandler: BSONHandler[BSONString, Name] =
     nameBSON

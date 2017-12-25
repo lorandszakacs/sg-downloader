@@ -15,5 +15,4 @@ trait MongoDBTypes extends MongoDBBSONTypes with DefaultBSONHandlers {
   type Cursor[T] = reactivemongo.api.Cursor[T]
   val Cursor: api.Cursor.type = reactivemongo.api.Cursor
 
-
 }

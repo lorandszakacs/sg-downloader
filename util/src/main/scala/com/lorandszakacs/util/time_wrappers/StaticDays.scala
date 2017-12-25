@@ -11,6 +11,7 @@ import org.joda.time.{Days, ReadablePartial}
 object StaticDays extends StaticDays
 
 trait StaticDays {
+
   def daysBetween(start: ReadablePartial, end: ReadablePartial): Days = {
     org.joda.time.Days.daysBetween(start, end)
   }

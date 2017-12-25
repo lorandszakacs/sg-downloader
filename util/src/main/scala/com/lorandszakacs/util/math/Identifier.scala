@@ -11,6 +11,7 @@ trait Identifier[Type, IdType] {
 }
 
 object Identifier {
+
   def apply[Type, IdType](f: Type => IdType) = new Identifier[Type, IdType] {
     override def id(t: Type): IdType = f(t)
   }

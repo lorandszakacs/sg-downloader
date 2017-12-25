@@ -19,27 +19,27 @@ private[exporter] trait HTMLGenerator {
 }
 
 case class HtmlSettings(
-  indexFileName: String,
+  indexFileName:  String,
   rootIndexTitle: String
 )
 
 case class Html(
   relativePathAndName: String,
-  content: String
+  content:             String
 )
 
 case class MRootIndex(
   html: Html,
-  ms: List[MIndex]
+  ms:   List[MIndex]
 )
 
 case class MIndex(
-  name: Name,
-  html: Html,
+  name:      Name,
+  html:      Html,
   photoSets: List[PhotoSetIndex]
 )
 
 case class PhotoSetIndex(
-  html: Html,
+  html:        Html,
   displayName: String
 )

@@ -1,7 +1,7 @@
 package com.lorandszakacs.util.mongodb
 
 import com.lorandszakacs.util.future._
-import org.scalatest.{Matchers, OneInstancePerTest, Outcome, fixture}
+import org.scalatest.{fixture, Matchers, OneInstancePerTest, Outcome}
 
 /**
   *
@@ -15,8 +15,8 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
   class SingleEntityRepository(
     override protected val db: Database
   )(implicit
-    override protected implicit val executionContext: ExecutionContext
-  ) extends SingleDocumentMongoCollection[Entity, String, BSONString] {
+    override protected implicit val executionContext: ExecutionContext)
+      extends SingleDocumentMongoCollection[Entity, String, BSONString] {
     protected implicit def objectHandler: BSONDocumentHandler[Entity] = BSONMacros.handler[Entity]
 
     override protected implicit lazy val idHandler: BSONHandler[BSONString, String] =
@@ -32,16 +32,15 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
     )
   }
 
-
   case class Entity(
-    opt: Option[String],
+    opt:    Option[String],
     actual: String
   )
 
   override protected def withFixture(test: OneArgTest): Outcome = {
     val dbName = Database.testName(this.getClass.getSimpleName, test.text)
     val db = new Database(
-      uri = """mongodb://localhost""",
+      uri    = """mongodb://localhost""",
       dbName = dbName
     )
     val repo = new SingleEntityRepository(db)(ec)
@@ -49,7 +48,8 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
     val outcome: Outcome = withFixture(test.toNoArgTest(repo))
     val f = if (outcome.isFailed || outcome.isCanceled) {
       db.shutdown()
-    } else {
+    }
+    else {
       for {
         _ <- db.drop()
         _ <- db.shutdown()
@@ -67,7 +67,7 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
 
   it should "001 single: write + read + update + remove" in { repo =>
     val e = Entity(
-      opt = Option("MY FIRST VALUE"),
+      opt    = Option("MY FIRST VALUE"),
       actual = "ACTUAL"
     )
     withClue("create single doc") {
@@ -98,7 +98,7 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
 
   it should "002 fail when double creating it" in { repo =>
     val e = Entity(
-      opt = Option("MY FIRST VALUE"),
+      opt    = Option("MY FIRST VALUE"),
       actual = "ACTUAL"
     )
     withClue("create single doc") {

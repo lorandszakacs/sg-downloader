@@ -19,30 +19,33 @@ object CommandParser extends JavaTokenParsers {
       case Success(result, next) =>
         if (next.atEnd) {
           scala.util.Success[Command](result)
-        } else {
-          scala.util.Failure[Command](new IllegalArgumentException(s"failed to parse all input of: '$s' still have input left: '$next'"))
+        }
+        else {
+          scala.util.Failure[Command](
+            new IllegalArgumentException(s"failed to parse all input of: '$s' still have input left: '$next'")
+          )
         }
       case _: NoSuccess =>
         scala.util.Failure[Command](new IllegalArgumentException(s"failed to parse command: $s"))
     }
   }
 
-  private val `space+`: Parser[String] = whiteSpace
+  private val `space+` : Parser[String] = whiteSpace
 
-  private val `space*`: Parser[String] = regex("[ ]*".r)
+  private val `space*` : Parser[String] = regex("[ ]*".r)
 
   private val everythingUntilSpaceOrEnd: Parser[String] = regex(s"[^ ]+".r)
 
   private def anyCombinationOptional[P1, P2](p1: Parser[P1], p2: Parser[P2]): Parser[(Option[P1], Option[P2])] = {
     val both: Parser[(Option[P1], Option[P2])] = for {
       v1 <- p1
-      _ <- `space+`
+      _  <- `space+`
       v2 <- p2
     } yield (Option(v1), Option(v2))
 
     val bothReverse: Parser[(Option[P1], Option[P2])] = for {
       v2 <- p2
-      _ <- `space+`
+      _  <- `space+`
       v1 <- p1
     } yield (Option(v1), Option(v2))
 
@@ -61,10 +64,10 @@ object CommandParser extends JavaTokenParsers {
 
   private val usernameAndPassword: Parser[(String, String)] = {
     for {
-      _ <- literal("username=")
+      _        <- literal("username=")
       username <- everythingUntilSpaceOrEnd
-      _ <- `space+`
-      _ <- literal("password=")
+      _        <- `space+`
+      _        <- literal("password=")
       password <- everythingUntilSpaceOrEnd
     } yield (username, password)
   }
@@ -72,7 +75,6 @@ object CommandParser extends JavaTokenParsers {
   private val name: Parser[Name] = {
     regex(s"[^, ]+".r).map(Name.apply)
   }
-
 
   //===========================================================================
   //================================= DELTA ===================================
@@ -85,17 +87,18 @@ object CommandParser extends JavaTokenParsers {
     } yield v.toInt
 
     val maybeDaysMaybeUserAndPass = for {
-      _ <- `space+`
+      _     <- `space+`
       maybe <- anyCombinationOptional(days, usernameAndPassword)
     } yield maybe
 
     for {
-      _ <- literal(Commands.DeltaDownload.id)
+      _     <- literal(Commands.DeltaDownload.id)
       maybe <- maybeDaysMaybeUserAndPass.?
-    } yield Commands.DeltaDownload(
-      days = maybe.flatMap(_._1),
-      usernameAndPassword = maybe.flatMap(_._2)
-    )
+    } yield
+      Commands.DeltaDownload(
+        days                = maybe.flatMap(_._1),
+        usernameAndPassword = maybe.flatMap(_._2)
+      )
   }
 
   //===========================================================================
@@ -104,20 +107,21 @@ object CommandParser extends JavaTokenParsers {
 
   private val downloadSpecificCommandParser: Parser[Commands.DownloadSpecific] = {
     val namesParser: Parser[List[Name]] = for {
-      _ <- literal("names=")
+      _     <- literal("names=")
       names <- repsep(name, literal(","))
     } yield names
 
     for {
-      _ <- literal(Commands.DownloadSpecific.id)
-      _ <- `space+`
-      names <- namesParser
-      _ <- `space*`
+      _         <- literal(Commands.DownloadSpecific.id)
+      _         <- `space+`
+      names     <- namesParser
+      _         <- `space*`
       optUsrPwd <- usernameAndPassword.?
-    } yield Commands.DownloadSpecific(
-      names = names,
-      usernameAndPassword = optUsrPwd
-    )
+    } yield
+      Commands.DownloadSpecific(
+        names               = names,
+        usernameAndPassword = optUsrPwd
+      )
   }
 
   //===========================================================================
@@ -125,7 +129,9 @@ object CommandParser extends JavaTokenParsers {
   //===========================================================================
 
   private val favoritesCommandParser: Parser[Commands.Favorites.type] = {
-    literal(Commands.Favorites.id) ^^ { _ => Commands.Favorites }
+    literal(Commands.Favorites.id) ^^ { _ =>
+      Commands.Favorites
+    }
   }
 
   //===========================================================================
@@ -134,8 +140,8 @@ object CommandParser extends JavaTokenParsers {
 
   private val showCommandParser: Parser[Commands.Show] = {
     for {
-      _ <- literal(Commands.Show.id)
-      _ <- `space+`
+      _    <- literal(Commands.Show.id)
+      _    <- `space+`
       name <- name
     } yield Commands.Show(name)
 
@@ -146,7 +152,9 @@ object CommandParser extends JavaTokenParsers {
   //===========================================================================
 
   private val helpCommandParser: Parser[Commands.Help.type] = {
-    literal(Commands.Help.id) ^^ { _ => Commands.Help }
+    literal(Commands.Help.id) ^^ { _ =>
+      Commands.Help
+    }
   }
 
   //===========================================================================
@@ -154,7 +162,9 @@ object CommandParser extends JavaTokenParsers {
   //===========================================================================
 
   private val exitCommandParser: Parser[Commands.Exit.type] = {
-    literal(Commands.Exit.id) ^^ { _ => Commands.Exit }
+    literal(Commands.Exit.id) ^^ { _ =>
+      Commands.Exit
+    }
   }
 
   //===========================================================================
@@ -168,6 +178,5 @@ object CommandParser extends JavaTokenParsers {
       favoritesCommandParser |
       helpCommandParser |
       exitCommandParser
-
 
 }

@@ -12,6 +12,7 @@ import com.lorandszakacs.sg.model._
   *
   */
 trait SGURLBuilder {
+
   /**
     * This is the URI to the page containing all [[PhotoSet]] of a [[M]]
     */
@@ -21,7 +22,8 @@ trait SGURLBuilder {
   def makeFullPathURL(uri: String): URL = {
     if (uri.startsWith("/")) {
       new URL(s"https://www.suicidegirls.com$uri")
-    } else {
+    }
+    else {
       new URL(s"https://www.suicidegirls.com/$uri")
     }
   }

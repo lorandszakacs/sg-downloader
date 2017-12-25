@@ -7,6 +7,7 @@ package com.lorandszakacs.util.future
   *
   */
 trait FutureTypes {
+
   /**
     * convenience aliases, so that you don't have to import this package and [[scala.concurrent.Future]]
     * at the same time
@@ -16,7 +17,11 @@ trait FutureTypes {
   val ExecutionContext: concurrent.ExecutionContext.type = concurrent.ExecutionContext
   type ExecutionContext = concurrent.ExecutionContext
 
-  val `Any => Unit`: Any => Unit = { _ => () }
+  val `Any => Unit`: Any => Unit = { _ =>
+    ()
+  }
 
-  val `Any => Future[Unit]`: Any => Future[Unit] = { _ => Future.unit }
+  val `Any => Future[Unit]` : Any => Future[Unit] = { _ =>
+    Future.unit
+  }
 }

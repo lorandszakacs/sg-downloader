@@ -12,19 +12,20 @@ import com.lorandszakacs.util.time.DateTime
   *
   */
 private[impl] class RepoLastProcessedMarker(override protected val db: Database)(
-  implicit override val executionContext: ExecutionContext
+  implicit override val executionContext:                              ExecutionContext
 ) extends IndexSingleDocRepo[LastProcessedMarker] with ModelBSON {
 
-  override protected def objectHandler: BSONDocumentHandler[LastProcessedMarker] = BSONMacros.handler[LastProcessedMarker]
+  override protected def objectHandler: BSONDocumentHandler[LastProcessedMarker] =
+    BSONMacros.handler[LastProcessedMarker]
 
   override protected def uniqueDocumentId: String = "last_processed"
 
   override protected def defaultEntity: LastProcessedMarker = LastProcessedMarker(
     timestamp = DateTime.now(),
     photoSet = PhotoSet(
-      url = new java.net.URL("http://example.com/"),
+      url   = new java.net.URL("http://example.com/"),
       title = PhotoSetTitle("example"),
-      date = DateTime.now().toLocalDate
+      date  = DateTime.now().toLocalDate
     )
   )
 }

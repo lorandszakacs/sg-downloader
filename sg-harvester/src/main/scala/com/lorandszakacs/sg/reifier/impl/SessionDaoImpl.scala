@@ -14,13 +14,15 @@ import com.lorandszakacs.util.time._
   *
   */
 private[reifier] final class SessionDaoImpl(
-  override protected val db: Database
-)(implicit override val executionContext: ExecutionContext) extends
-  SingleDocumentMongoCollection[Session, String, BSONString]
-  with StrictLogging {
+  override protected val db:              Database
+)(implicit override val executionContext: ExecutionContext)
+    extends SingleDocumentMongoCollection[Session, String, BSONString] with StrictLogging {
 
-  private implicit val dateTimeHandler: BSONReader[BSONDateTime, DateTime] with BSONWriter[DateTime, BSONDateTime] with BSONHandler[BSONDateTime, DateTime] =
-    new BSONReader[BSONDateTime, DateTime] with BSONWriter[DateTime, BSONDateTime] with BSONHandler[BSONDateTime, DateTime] {
+  private implicit val dateTimeHandler
+    : BSONReader[BSONDateTime, DateTime] with BSONWriter[DateTime, BSONDateTime] with BSONHandler[BSONDateTime,
+                                                                                                  DateTime] =
+    new BSONReader[BSONDateTime, DateTime] with BSONWriter[DateTime, BSONDateTime]
+    with BSONHandler[BSONDateTime, DateTime] {
       override def read(bson: BSONDateTime): DateTime = {
         new DateTime(bson.value, DateTimeZone.UTC)
       }
@@ -35,7 +37,7 @@ private[reifier] final class SessionDaoImpl(
   override protected val uniqueDocumentId: String = "sg-session"
 
   override protected def defaultEntity: Session = Session(
-    username = "temp",
+    username  = "temp",
     sessionID = "123",
     csrfToken = "456",
     expiresAt = DateTime.now()
@@ -47,9 +49,9 @@ private[reifier] final class SessionDaoImpl(
     for {
       opt <- this.find
       _ <- when(opt.isEmpty) execute this.create {
-        logger.info("creating default session info")
-        this.defaultEntity
-      }
+            logger.info("creating default session info")
+            this.defaultEntity
+          }
     } yield ()
   }
 

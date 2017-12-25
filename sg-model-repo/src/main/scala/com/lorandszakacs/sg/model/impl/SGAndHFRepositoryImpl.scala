@@ -15,8 +15,9 @@ import com.lorandszakacs.util.time._
   *
   */
 private[model] class SGAndHFRepositoryImpl(
-  val db: Database
-)(implicit val ec: ExecutionContext) extends SGAndHFRepository with StrictLogging {
+  val db:          Database
+)(implicit val ec: ExecutionContext)
+    extends SGAndHFRepository with StrictLogging {
 
   private val sgsRepo = new RepoSGs(db)
   private val sgiRepo = new RepoSGIndex(db)
@@ -40,6 +41,7 @@ private[model] class SGAndHFRepositoryImpl(
   }
 
   override def markAsIndexedForNames(newHFs: List[Name], newSGs: List[Name]): Future[Unit] = {
+
     /**
       *
       * @return
@@ -48,7 +50,8 @@ private[model] class SGAndHFRepositoryImpl(
     def updateHF(newHFs: List[Name]): Future[List[Name]] = {
       if (newHFs.isEmpty) {
         Future.successful(Nil)
-      } else {
+      }
+      else {
         for {
           ikdHFs <- hfiRepo.get
           hfsThatBecameSGS: List[Name] = ikdHFs.names.filter { ohn =>
@@ -57,12 +60,13 @@ private[model] class SGAndHFRepositoryImpl(
           //we remove all the HFs that became SGs from the index
           newHFIndex = ikdHFs.copy(
             names = (ikdHFs.names ++ newHFs).filterNot(n => hfsThatBecameSGS.contains(n.stripUnderscore)),
-            needsReindexing = ikdHFs.needsReindexing.diff(newHFs).filterNot(n => hfsThatBecameSGS.contains(n.stripUnderscore))
+            needsReindexing =
+              ikdHFs.needsReindexing.diff(newHFs).filterNot(n => hfsThatBecameSGS.contains(n.stripUnderscore))
           )
           _ <- hfiRepo.createOrUpdate(newHFIndex)
           _ <- Future.traverse(hfsThatBecameSGS) { hfName =>
-            hfsRepo.remove(hfName)
-          }
+                hfsRepo.remove(hfName)
+              }
         } yield hfsThatBecameSGS
       }
     }
@@ -70,11 +74,12 @@ private[model] class SGAndHFRepositoryImpl(
     def updateSGs(newSGs: List[Name]): Future[Unit] = {
       if (newSGs.isEmpty) {
         Future.unit
-      } else {
+      }
+      else {
         for {
           oldSGs <- sgiRepo.get
           newSGIndex = oldSGs.copy(
-            names = oldSGs.names ++ newSGs,
+            names           = oldSGs.names ++ newSGs,
             needsReindexing = oldSGs.needsReindexing.diff(newSGs)
           )
           _ <- sgiRepo.createOrUpdate(newSGIndex)
@@ -85,7 +90,7 @@ private[model] class SGAndHFRepositoryImpl(
 
     for {
       hfsThatBecameSGs <- updateHF(newHFs)
-      _ <- updateSGs(newSGs)
+      _                <- updateSGs(newSGs)
     } yield {
       logger.info(s"new SGs: ${newSGs.stringify}")
       logger.info(s"new HFs: ${newHFs.stringify}")
@@ -106,12 +111,12 @@ private[model] class SGAndHFRepositoryImpl(
       hfIndex: HFIndex <- hfiRepo.get
       sgIndex: SGIndex <- sgiRepo.get
     } yield {
-      val normalizedNames = (hfIndex.names ++ sgIndex.names).distinct.sorted
+      val normalizedNames      = (hfIndex.names ++ sgIndex.names).distinct.sorted
       val normalizedReindexing = (hfIndex.needsReindexing ++ sgIndex.needsReindexing).distinct.sorted
       CompleteIndex(
-        names = normalizedNames,
+        names           = normalizedNames,
         needsReindexing = normalizedReindexing,
-        number = normalizedNames.length
+        number          = normalizedNames.length
       )
     }
   }
@@ -138,12 +143,14 @@ private[model] class SGAndHFRepositoryImpl(
     } yield (day, msForDay)
   }
 
-  override def aggregateBetweenDays(start: LocalDate, end: LocalDate, ms: List[M]): Future[List[(LocalDate, List[M])]] = {
+  override def aggregateBetweenDays(start: LocalDate,
+                                    end:   LocalDate,
+                                    ms:    List[M]): Future[List[(LocalDate, List[M])]] = {
     for {
       sgs <- sgsRepo.findBetweenDays(start, end)
       hfs <- hfsRepo.findBetweenDays(start, end)
       allFromDB: List[M] = sgs ++ hfs
-      all: List[M] = allFromDB.addOrReplace(ms)
+      all:       List[M] = allFromDB.addOrReplace(ms)
 
       result = groupMsBetweenDays(start, end, all)
     } yield result

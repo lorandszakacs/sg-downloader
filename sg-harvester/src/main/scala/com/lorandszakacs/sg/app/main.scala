@@ -26,14 +26,15 @@ import com.typesafe.scalalogging.StrictLogging
   *
   */
 object Main extends App with StrictLogging {
-  val assembly = new Assembly
+  val assembly    = new Assembly
   val interpreter = new CommandLineInterpreter(assembly)
-  val repl = new REPL(interpreter)
+  val repl        = new REPL(interpreter)
 
   if (args.nonEmpty) {
     logger.info(s"Received args: ${args.mkString(",")}    --> executing command")
     interpreter.interpret(args)
-  } else {
+  }
+  else {
     logger.info(s"Did not receive any arguments, going into REPL mode")
     repl.run()
   }
@@ -42,4 +43,3 @@ object Main extends App with StrictLogging {
   println("... finished gracefully")
   System.exit(0)
 }
-

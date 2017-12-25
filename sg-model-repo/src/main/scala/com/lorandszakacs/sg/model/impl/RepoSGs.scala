@@ -10,11 +10,10 @@ import com.lorandszakacs.util.future._
   * @since 14 Jul 2017
   *
   */
-private[impl] class RepoSGs
-(override protected val db: Database)(
-  implicit override val executionContext: ExecutionContext
+private[impl] class RepoSGs(override protected val db: Database)(
+  implicit override val executionContext:              ExecutionContext
 ) extends MRepo[SG](sgIdentifier) with ModelBSON {
 
-  override val collectionName: String = "suicide_girls"
+  override val collectionName:                   String                  = "suicide_girls"
   override protected implicit val objectHandler: BSONDocumentHandler[SG] = BSONMacros.handler[SG]
 }

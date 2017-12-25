@@ -31,13 +31,13 @@ protected sealed trait HtmlFilter {
   def &&(that: HtmlFilter): HtmlFilter = CompositeFilter(this, that)
 
   def apply(doc: Document): List[String] = {
-    val elements = filter(doc)
+    val elements       = filter(doc)
     val listOfElements = elementsToList(elements)
     listOfElements map (_.toString)
   }
 
   protected final def elementsToList(elements: Elements): List[Element] = {
-    val buff = ListBuffer[Element]()
+    val buff     = ListBuffer[Element]()
     val iterator = elements.iterator()
     while (iterator.hasNext) {
       buff.append(iterator.next())
@@ -121,7 +121,7 @@ case class Value(attribute: Attribute) extends HtmlFilter {
 case class Content(filter: HtmlFilter) extends HtmlFilter {
   override def apply(doc: Document): List[String] = {
     val filtered = filter.apply(doc)
-    val docs = filtered map (e => Jsoup.parse(e))
+    val docs     = filtered map (e => Jsoup.parse(e))
     //because we reparse whatever the result was is being put in a new body
     //e.body().children().first() will always return non-null.
     docs map (e => e.body().children().first().html())
@@ -129,4 +129,3 @@ case class Content(filter: HtmlFilter) extends HtmlFilter {
 
   override def filter(doc: Document): Elements = ???
 }
-

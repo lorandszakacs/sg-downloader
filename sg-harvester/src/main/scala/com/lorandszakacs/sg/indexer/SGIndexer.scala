@@ -41,7 +41,9 @@ trait SGIndexer {
     * the [[PhotoSet]]s of the given model.
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]], and [[PhotoSet.url]] will be a full path URL.
     */
-  def gatherPhotoSetInformationForModel[T <: M](mf: ModelFactory[T])(modelName: Name)(implicit pc: PatienceConfig): Future[T]
+  def gatherPhotoSetInformationForModel[T <: M](mf: ModelFactory[T])(modelName: Name)(
+    implicit pc:                                    PatienceConfig
+  ): Future[T]
 
   /**
     * Similar to [[gatherPhotoSetInformationForModel]], but with more potential for failure
@@ -52,13 +54,20 @@ trait SGIndexer {
     *
     *
     */
-  def gatherAllNewMsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[M]]
+  def gatherAllNewMsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(
+    implicit pc:                                PatienceConfig
+  ): Future[List[M]]
 
   final def createLastProcessedIndex(lastModel: M): LastProcessedMarker = {
     LastProcessedMarker(
       timestamp = DateTime.now(),
-      photoSet = lastModel.photoSetsNewestFirst
-        .headOption.getOrElse(throw new AssertionError(s"... tried to create last processed index from model ${lastModel.name.name}, but they had no sets")).copy(photos = Nil)
+      photoSet = lastModel.photoSetsNewestFirst.headOption
+        .getOrElse(
+          throw new AssertionError(
+            s"... tried to create last processed index from model ${lastModel.name.name}, but they had no sets"
+          )
+        )
+        .copy(photos = Nil)
     )
   }
 

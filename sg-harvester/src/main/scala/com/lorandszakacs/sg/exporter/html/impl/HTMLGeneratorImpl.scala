@@ -19,11 +19,13 @@ private[html] class HTMLGeneratorImpl()(
 
   override def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): Future[MRootIndex] = {
     for {
-      modelIndexes: List[MIndex] <- Future.traverse(ms) { model => Future(modelIndex(model)) }
+      modelIndexes: List[MIndex] <- Future.traverse(ms) { model =>
+                                     Future(modelIndex(model))
+                                   }
     } yield {
       MRootIndex(
         html = rootIndexPage(modelIndexes),
-        ms = modelIndexes
+        ms   = modelIndexes
       )
     }
   }
@@ -35,8 +37,8 @@ private[html] class HTMLGeneratorImpl()(
   def createNewestPage(ms: List[(LocalDate, List[M])]): Future[Html] = {
     def newestPageElementForDay(date: LocalDate, models: List[M]): String = {
       val elements = models.sortBy(_.name.name).map { model =>
-        val latestSet = model.photoSets.maxBy(_.date)
-        val link = photoSetPageRelativePathFromCurrentDirectory(model.name, latestSet)
+        val latestSet   = model.photoSets.maxBy(_.date)
+        val link        = photoSetPageRelativePathFromCurrentDirectory(model.name, latestSet)
         val displayText = s"${model.name.externalForm} - ${latestSet.title.externalForm}"
         s"""<li><a href="all/$link" target="_blank">$displayText</a></li>"""
       }
@@ -86,20 +88,19 @@ private[html] class HTMLGeneratorImpl()(
 
       Html(
         relativePathAndName = modelIndexPageRelativePathFromCurrentDirectory(m.name),
-        content =
-          s"""
-             |<!DOCTYPE html>
-             |<html>
-             |<title>${m.name.externalForm}</title>
-             |  <head><link rel="icon" href="${iconForModel(m)}"></head>
-             |  <h2><a href="../${settings.indexFileName}">BACK</a></h2>
-             |  <h2>${m.stringifyType.capitalize}: ${m.name.externalForm}</h2>
-             |  <h3>
-             |  <ol type="1">
-             |    ${psi.map(photoSetLink).mkString("\n")}
-             |  </ol>
-             |  </h3>
-             |</html>
+        content             = s"""
+                     |<!DOCTYPE html>
+                     |<html>
+                     |<title>${m.name.externalForm}</title>
+                     |  <head><link rel="icon" href="${iconForModel(m)}"></head>
+                     |  <h2><a href="../${settings.indexFileName}">BACK</a></h2>
+                     |  <h2>${m.stringifyType.capitalize}: ${m.name.externalForm}</h2>
+                     |  <h3>
+                     |  <ol type="1">
+                     |    ${psi.map(photoSetLink).mkString("\n")}
+                     |  </ol>
+                     |  </h3>
+                     |</html>
     """.stripMargin
       )
     }
@@ -115,36 +116,35 @@ private[html] class HTMLGeneratorImpl()(
 
       val html = Html(
         relativePathAndName = photoSetPageRelativePathFromCurrentDirectory(m.name, ps),
-        content =
-          s"""
-             |<!DOCTYPE html>
-             |<html>
-             |   <title>${m.name.externalForm}: ${ps.title.externalForm}</title>
-             |   <head><link rel="icon" href="${iconForPhotoSet(ps)}"></head>
-             |   <meta name="viewport" content="width=device-width, initial-scale=1">
-             |   <link rel="stylesheet" href="$RootPath/css/w3.css">
-             |   <script type="text/javascript" src="$RootPath/scripts/image_loading.js"></script>
-             |   <style>
-             |      .picture {display:none}
-             |   </style>
-             |   <body>
-             |      <div class="w3-container">
-             |         <h2>${m.name.externalForm}: ${ps.title.externalForm} - ${ps.date}</h2>
-             |         <h2><a href="../${modelIndexPageRelativePathFromCurrentDirectory(m.name)}">BACK</a></h2>
-             |      </div>
-             |
-           |      <div class="w3-row">
-             |${ps.photos.map(phs => photoDiv(phs)).mkString("\n")}
-             |      </div>
-             |    <div id="largeImgPanel" onclick="hideMe(this);">
-             |    <img id="largeImg" style="height: 100%; margin: 0; padding: 0;">
-             |   </body>
-             |</html>
+        content             = s"""
+                     |<!DOCTYPE html>
+                     |<html>
+                     |   <title>${m.name.externalForm}: ${ps.title.externalForm}</title>
+                     |   <head><link rel="icon" href="${iconForPhotoSet(ps)}"></head>
+                     |   <meta name="viewport" content="width=device-width, initial-scale=1">
+                     |   <link rel="stylesheet" href="$RootPath/css/w3.css">
+                     |   <script type="text/javascript" src="$RootPath/scripts/image_loading.js"></script>
+                     |   <style>
+                     |      .picture {display:none}
+                     |   </style>
+                     |   <body>
+                     |      <div class="w3-container">
+                     |         <h2>${m.name.externalForm}: ${ps.title.externalForm} - ${ps.date}</h2>
+                     |         <h2><a href="../${modelIndexPageRelativePathFromCurrentDirectory(m.name)}">BACK</a></h2>
+                     |      </div>
+                     |
+                     |      <div class="w3-row">
+                     |${ps.photos.map(phs => photoDiv(phs)).mkString("\n")}
+                     |      </div>
+                     |    <div id="largeImgPanel" onclick="hideMe(this);">
+                     |    <img id="largeImg" style="height: 100%; margin: 0; padding: 0;">
+                     |   </body>
+                     |</html>
     """.stripMargin
       )
 
       PhotoSetIndex(
-        html = html,
+        html        = html,
         displayName = s"${ps.date}: ${ps.title.name}"
       )
     }
@@ -152,8 +152,8 @@ private[html] class HTMLGeneratorImpl()(
     val photoSets: List[PhotoSetIndex] = m.photoSetsNewestFirst map photoSetIndexPage(m)
     val modelIndexHtml = modelIndexHtmlPage(m)(photoSets)
     MIndex(
-      name = m.name,
-      html = modelIndexHtml,
+      name      = m.name,
+      html      = modelIndexHtml,
       photoSets = photoSets
     )
   }
@@ -176,7 +176,9 @@ private[html] class HTMLGeneratorImpl()(
     )
   }
 
-  private def generateRootIndexPage[T](els: List[T])(title: String, linkAndItemNameGenerator: T => (String, String))(implicit settings: HtmlSettings): Html = {
+  private def generateRootIndexPage[T](
+    els:   List[T]
+  )(title: String, linkAndItemNameGenerator: T => (String, String))(implicit settings: HtmlSettings): Html = {
     def item(el: T) = {
       val (link, name) = linkAndItemNameGenerator(el)
       s"""<li><a href="$link" target="_blank">$name</a></li>"""
@@ -184,17 +186,16 @@ private[html] class HTMLGeneratorImpl()(
 
     Html(
       relativePathAndName = settings.indexFileName,
-      content =
-        s"""
-           |<!DOCTYPE html>
-           |<html>
-           |<title>$title</title>
-           |<head><link rel="icon" href="$RootPath/icons/suicide_girls_favorites.ico"></head>
-           |  <h3><a href="../../${settings.indexFileName}">BACK</a></h3>
-           |  <h3><ol type="1">
-           |${els.map(item).mkString("\t\t", "\n\t\t", "\n")}
-           |  </ol></h3>
-           |</html>
+      content             = s"""
+                   |<!DOCTYPE html>
+                   |<html>
+                   |<title>$title</title>
+                   |<head><link rel="icon" href="$RootPath/icons/suicide_girls_favorites.ico"></head>
+                   |  <h3><a href="../../${settings.indexFileName}">BACK</a></h3>
+                   |  <h3><ol type="1">
+                   |${els.map(item).mkString("\t\t", "\n\t\t", "\n")}
+                   |  </ol></h3>
+                   |</html>
       """.stripMargin
     )
   }
@@ -204,10 +205,9 @@ private[html] class HTMLGeneratorImpl()(
   }
 
   private def photoSetPageRelativePathFromCurrentDirectory(m: Name, ps: PhotoSet): String = {
-    val setName = s"${m.name}_${ps.date}_${ps.title.name}.html".replaceAll("[^a-zA-Z0-9.-]", "_")
+    val setName   = s"${m.name}_${ps.date}_${ps.title.name}.html".replaceAll("[^a-zA-Z0-9.-]", "_")
     val modelName = s"${m.name}"
     s"$modelName/$setName"
   }
-
 
 }

@@ -46,24 +46,32 @@ trait FutureUtilFunctions {
       *
       *
       */
-    def serialize[A, B, M[X] <: TraversableOnce[X]](traversable: M[A])(fn: A => Future[B])(implicit cbf: CanBuildFrom[M[A], B, M[B]], executor: ExecutionContext): Future[M[B]] = {
+    def serialize[A, B, M[X] <: TraversableOnce[X]](
+      traversable: M[A]
+    )(fn:          A => Future[B])(implicit cbf: CanBuildFrom[M[A], B, M[B]], executor: ExecutionContext): Future[M[B]] = {
       if (traversable.isEmpty) {
         Future.successful(cbf.apply().result())
-      } else {
-        val seq = traversable.toSeq
+      }
+      else {
+        val seq  = traversable.toSeq
         val head = seq.head
         val tail = seq.tail
         val builder: mutable.Builder[B, M[B]] = cbf.apply()
-        val firstBuilder = fn(head) map { z => builder.+=(z) }
-        val eventualBuilder: Future[mutable.Builder[B, M[B]]] = tail.foldLeft(firstBuilder) { (serializedBuilder: Future[mutable.Builder[B, M[B]]], element: A) =>
-          serializedBuilder flatMap { (result: mutable.Builder[B, M[B]]) =>
-            val f: Future[mutable.Builder[B, M[B]]] = fn(element) map { newElement =>
-              result.+=(newElement)
-            }
-            f
-          }
+        val firstBuilder = fn(head) map { z =>
+          builder.+=(z)
         }
-        eventualBuilder map { b => b.result() }
+        val eventualBuilder: Future[mutable.Builder[B, M[B]]] = tail.foldLeft(firstBuilder) {
+          (serializedBuilder: Future[mutable.Builder[B, M[B]]], element: A) =>
+            serializedBuilder flatMap { (result: mutable.Builder[B, M[B]]) =>
+              val f: Future[mutable.Builder[B, M[B]]] = fn(element) map { newElement =>
+                result.+=(newElement)
+              }
+              f
+            }
+        }
+        eventualBuilder map { b =>
+          b.result()
+        }
       }
     }
   }

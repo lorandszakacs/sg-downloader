@@ -6,7 +6,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-
 /**
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com
@@ -27,18 +26,19 @@ class FutureSerializeTest extends FlatSpec with Matchers {
     val expected = Seq("1", "2", "3", "4", "5", "6")
 
     var previouslyProcessed: Option[Int] = None
-    var startedFlag: Option[Int] = None
+    var startedFlag:         Option[Int] = None
 
     val eventualResult: Future[Seq[String]] = Future.serialize(input) { i =>
       val toWaitInMillis = (Math.random() * 1000).toInt % 200
       Future {
-        assert(startedFlag.isEmpty, s"started flag should have been empty at the start of each future but was: $startedFlag")
+        assert(startedFlag.isEmpty,
+               s"started flag should have been empty at the start of each future but was: $startedFlag")
         previouslyProcessed foreach { previous =>
           assertResult(expected = i - 1, "... the futures were not executed in the correct order.")(actual = previous)
         }
         startedFlag = Some(i)
         Thread.sleep(toWaitInMillis)
-        startedFlag = None
+        startedFlag         = None
         previouslyProcessed = Some(i)
         i.toString
       }
@@ -56,18 +56,19 @@ class FutureSerializeTest extends FlatSpec with Matchers {
     val expected = Seq()
 
     var previouslyProcessed: Option[Int] = None
-    var startedFlag: Option[Int] = None
+    var startedFlag:         Option[Int] = None
 
     val eventualResult: Future[Seq[String]] = Future.serialize(input) { i =>
       val toWaitInMillis = (Math.random() * 1000).toInt % 200
       Future {
-        assert(startedFlag.isEmpty, s"started flag should have been empty at the start of each future but was: $startedFlag")
+        assert(startedFlag.isEmpty,
+               s"started flag should have been empty at the start of each future but was: $startedFlag")
         previouslyProcessed foreach { previous =>
           assertResult(expected = i - 1, "... the futures were not executed in the correct order.")(actual = previous)
         }
         startedFlag = Some(i)
         Thread.sleep(toWaitInMillis)
-        startedFlag = None
+        startedFlag         = None
         previouslyProcessed = Some(i)
         i.toString
       }
@@ -81,7 +82,7 @@ class FutureSerializeTest extends FlatSpec with Matchers {
   //===========================================================================
 
   it should "... work on sets" in {
-    val input: Set[Int] = Set(1, 2, 3, 4)
+    val input:    Set[Int]    = Set(1, 2, 3, 4)
     val expected: Set[String] = Set("1", "2", "3", "4")
 
     var startedFlag: Option[Int] = None
@@ -89,7 +90,8 @@ class FutureSerializeTest extends FlatSpec with Matchers {
     val eventualResult: Future[Set[String]] = Future.serialize(input) { i =>
       val toWaitInMillis = (Math.random() * 1000).toInt % 200
       Future {
-        assert(startedFlag.isEmpty, s"started flag should have been empty at the start of each future but was: $startedFlag")
+        assert(startedFlag.isEmpty,
+               s"started flag should have been empty at the start of each future but was: $startedFlag")
         startedFlag = Some(i)
         Thread.sleep(toWaitInMillis)
         startedFlag = None

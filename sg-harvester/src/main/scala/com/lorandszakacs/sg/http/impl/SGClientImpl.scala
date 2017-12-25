@@ -16,7 +16,6 @@ package com.lorandszakacs.sg.http.impl
   * limitations under the License.
   *
   */
-
 import java.net.URL
 
 import akka.actor.ActorSystem
@@ -45,22 +44,24 @@ private[http] object SGClientImpl {
   private[http] def apply()(implicit actorSystem: ActorSystem, ec: ExecutionContext) = new SGClientImpl()
 }
 
-private[impl] final class SGClientImpl private()(implicit val actorSystem: ActorSystem, val ec: ExecutionContext) extends SGClient {
+private[impl] final class SGClientImpl private ()(implicit val actorSystem: ActorSystem, val ec: ExecutionContext)
+    extends SGClient {
 
-  private val http: HttpExt = Http()
+  private val http:                  HttpExt           = Http()
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   override def getPage(url: URL)(implicit authentication: Authentication): Future[Html] = {
-    val req = get(url)
+    val req         = get(url)
     val reqWithAuth = authentication(req)
 
     for {
       response <- http.singleRequest(reqWithAuth)
       body <- if (response.status == StatusCodes.OK || response.status == StatusCodes.NotModified) {
-        response.entityAsString
-      } else {
-        Future.failed(FailedToGetPageException(url, req, response))
-      }
+               response.entityAsString
+             }
+             else {
+               Future.failed(FailedToGetPageException(url, req, response))
+             }
       html = Html(body)
     } yield html
   }
@@ -113,6 +114,7 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
     ) {
       def toCookieHeader: RawHeader = RawHeader("Cookie", s"csrftoken=$csrfToken; sessionid=$sessionID")
     }
+
     /**
       * Needed because SG sends us bullshit, apparently:
       * {{{
@@ -123,59 +125,78 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
       val firstSemicolonIndex = value.indexOf(";")
       if (firstSemicolonIndex >= 0) {
         value.take(firstSemicolonIndex)
-      } else value
+      }
+      else value
     }
 
     def splitAtEqualChar(string: String): Option[(String, String)] = {
       val split = string.split("=")
       if (split.length != 2) {
         None
-      } else Option {
-        (split(0), split(1))
       }
+      else
+        Option {
+          (split(0), split(1))
+        }
     }
 
     def getTokensFromStartPage: Future[StartPageTokens] = {
       val getRequest = HttpRequest(
         method = GET,
-        uri = "https://www.suicidegirls.com/"
+        uri    = "https://www.suicidegirls.com/"
       )
       for {
         response <- http.singleRequest(getRequest)
         result <- if (response.status != StatusCodes.OK) {
-          Future.failed(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
-        } else {
-          val headers = response._2
+                   Future.failed(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
+                 }
+                 else {
+                   val headers = response._2
 
-          /**
-            * At this point in time the cookies will look like this:
-            * {{{
-            *     Set-Cookie=sessionid=gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8
-            *     Set-Cookie=csrftoken=ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z
-            * }}}
-            */
-          val wrongCookies: Seq[HttpCookie] = headers.filter(_.is("set-cookie")).map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
-          if (wrongCookies.length != 2) {
-            Future.failed(ExpectedTwoSetCookieHeadersFromHomepage(getRequest.uri, headers))
-          } else {
-            /**
-              * Will look like:
-              * {{{
-              *   (sessionid, gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8)
-              *   (csrftoken, ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z)
-              * }}}
-              */
-            val rawCookies: Seq[(String, String)] = wrongCookies flatMap (c => splitAtEqualChar(c.value))
-            val tokens = for {
-              csrfToken <- Try(rawCookies.find(_._1 == "csrftoken").getOrElse(throw ExpectedCSRFTokenOnSGHomepageException(getRequest.uri))._2)
-              sessionId <- Try(rawCookies.find(_._1 == "sessionid").getOrElse(throw ExpectedSessionIdSGHomepageException(getRequest.uri))._2)
-            } yield StartPageTokens(
-              csrfToken = csrfToken,
-              sessionID = sessionId
-            )
-            Future fromTry tokens
-          }
-        }
+                   /**
+                     * At this point in time the cookies will look like this:
+                     * {{{
+                     *     Set-Cookie=sessionid=gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8
+                     *     Set-Cookie=csrftoken=ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z
+                     * }}}
+                     */
+                   val wrongCookies: Seq[HttpCookie] = headers
+                     .filter(_.is("set-cookie"))
+                     .map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
+                   if (wrongCookies.length != 2) {
+                     Future.failed(ExpectedTwoSetCookieHeadersFromHomepage(getRequest.uri, headers))
+                   }
+                   else {
+
+                     /**
+                       * Will look like:
+                       * {{{
+                       *   (sessionid, gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8)
+                       *   (csrftoken, ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z)
+                       * }}}
+                       */
+                     val rawCookies: Seq[(String, String)] = wrongCookies flatMap (c => splitAtEqualChar(c.value))
+                     val tokens = for {
+                       csrfToken <- Try(
+                                     rawCookies
+                                       .find(_._1 == "csrftoken")
+                                       .getOrElse(throw ExpectedCSRFTokenOnSGHomepageException(getRequest.uri))
+                                       ._2
+                                   )
+                       sessionId <- Try(
+                                     rawCookies
+                                       .find(_._1 == "sessionid")
+                                       .getOrElse(throw ExpectedSessionIdSGHomepageException(getRequest.uri))
+                                       ._2
+                                   )
+                     } yield
+                       StartPageTokens(
+                         csrfToken = csrfToken,
+                         sessionID = sessionId
+                       )
+                     Future fromTry tokens
+                   }
+                 }
       } yield result
     }
 
@@ -184,63 +205,81 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
         tokens.toCookieHeader,
         RawHeader("X-CSRFToken", tokens.csrfToken)
       )
-      val entity = FormData.apply(
-        "csrfmiddlewaretoken" -> tokens.csrfToken,
-        "username" -> username,
-        "password" -> plainTextPassword
-      ).toEntity(HttpCharsets.`UTF-8`)
+      val entity = FormData
+        .apply(
+          "csrfmiddlewaretoken" -> tokens.csrfToken,
+          "username"            -> username,
+          "password"            -> plainTextPassword
+        )
+        .toEntity(HttpCharsets.`UTF-8`)
 
       val loginRequest = post(
-        uri = "https://www.suicidegirls.com/login/",
+        uri     = "https://www.suicidegirls.com/login/",
         headers = headers,
-        entity = entity
+        entity  = entity
       )
 
       for {
         response <- http.singleRequest(DefaultSGAuthentication(loginRequest))
         tokens <- if (response.status != StatusCodes.Created) {
-          Future.failed(FailedToPostLoginException(loginRequest, response))
-        } else {
-          val headers = response._2
+                   Future.failed(FailedToPostLoginException(loginRequest, response))
+                 }
+                 else {
+                   val headers = response._2
 
-          /**
-            * At this point in time the cookies will look like this:
-            * {{{
-            *     Set-Cookie=sessionid=gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8
-            *     Set-Cookie=csrftoken=ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z
-            * }}}
-            */
-          val wrongCookies: Seq[HttpCookie] = headers.filter(_.is("set-cookie")).map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
-          if (wrongCookies.length != 2) {
-            Future.failed(ExpectedTwoSetCookieHeadersFromLoginResponseException(loginRequest.uri, headers))
-          } else {
-            /**
-              * Will look like:
-              * {{{
-              *   (sessionid, gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8)
-              *   (csrftoken, ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z)
-              * }}}
-              */
-            val rawCookies: Seq[(String, String)] = wrongCookies flatMap (c => splitAtEqualChar(c.value))
-            val tokens = for {
-              csrfToken <- Try(rawCookies.find(_._1 == "csrftoken").getOrElse(throw ExpectedCSRFTokenOnSGLoginResponseException(loginRequest.uri))._2)
-              sessionId <- Try(rawCookies.find(_._1 == "sessionid").getOrElse(throw ExpectedSessionIdSGLoginResponseException(loginRequest.uri))._2)
-            } yield Session(
-              username = username,
-              sessionID = sessionId,
-              csrfToken = csrfToken,
-              expiresAt = org.joda.time.DateTime.now(DateTimeZone.UTC).plusDays(13)
-            )
-            Future fromTry tokens
-          }
-        }
+                   /**
+                     * At this point in time the cookies will look like this:
+                     * {{{
+                     *     Set-Cookie=sessionid=gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8
+                     *     Set-Cookie=csrftoken=ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z
+                     * }}}
+                     */
+                   val wrongCookies: Seq[HttpCookie] = headers
+                     .filter(_.is("set-cookie"))
+                     .map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
+                   if (wrongCookies.length != 2) {
+                     Future.failed(ExpectedTwoSetCookieHeadersFromLoginResponseException(loginRequest.uri, headers))
+                   }
+                   else {
+
+                     /**
+                       * Will look like:
+                       * {{{
+                       *   (sessionid, gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8)
+                       *   (csrftoken, ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z)
+                       * }}}
+                       */
+                     val rawCookies: Seq[(String, String)] = wrongCookies flatMap (c => splitAtEqualChar(c.value))
+                     val tokens = for {
+                       csrfToken <- Try(
+                                     rawCookies
+                                       .find(_._1 == "csrftoken")
+                                       .getOrElse(throw ExpectedCSRFTokenOnSGLoginResponseException(loginRequest.uri))
+                                       ._2
+                                   )
+                       sessionId <- Try(
+                                     rawCookies
+                                       .find(_._1 == "sessionid")
+                                       .getOrElse(throw ExpectedSessionIdSGLoginResponseException(loginRequest.uri))
+                                       ._2
+                                   )
+                     } yield
+                       Session(
+                         username  = username,
+                         sessionID = sessionId,
+                         csrfToken = csrfToken,
+                         expiresAt = org.joda.time.DateTime.now(DateTimeZone.UTC).plusDays(13)
+                       )
+                     Future fromTry tokens
+                   }
+                 }
 
       } yield tokens
     }
 
     for {
       initialTokens: StartPageTokens <- getTokensFromStartPage
-      newSession: Session <- postLoginAndGetTokens(initialTokens)
+      newSession:    Session         <- postLoginAndGetTokens(initialTokens)
       newAuthentication = authenticationFromSession(newSession)
       _ <- verifyAuthentication(newAuthentication)
     } yield newAuthentication
@@ -303,12 +342,11 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
     } yield ()
   }
 
-
   private def get(uri: Uri, headers: Seq[HttpHeader] = Nil): HttpRequest = {
     DefaultSGAuthentication {
       HttpRequest(
-        method = GET,
-        uri = uri,
+        method  = GET,
+        uri     = uri,
         headers = headers
       )
     }
@@ -317,16 +355,18 @@ private[impl] final class SGClientImpl private()(implicit val actorSystem: Actor
   private def post(uri: Uri, headers: Seq[HttpHeader], entity: RequestEntity): HttpRequest = {
     DefaultSGAuthentication {
       HttpRequest(
-        method = POST,
-        uri = uri,
+        method  = POST,
+        uri     = uri,
         headers = headers,
-        entity = entity
+        entity  = entity
       )
     }
   }
 
   implicit class BuffedHttpResponse(val r: HttpResponse)(implicit val ec: ExecutionContext) {
-    def entityAsString: Future[String] = r.entity.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))
+
+    def entityAsString: Future[String] =
+      r.entity.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))
   }
 
 }

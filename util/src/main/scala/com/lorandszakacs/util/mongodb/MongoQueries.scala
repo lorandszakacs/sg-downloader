@@ -11,7 +11,7 @@ object MongoQueries extends MongoQueries
 trait MongoQueries {
   val _id: String = "_id"
 
-  val $in: String = "$in"
+  val $in:   String = "$in"
   val $size: String = "$size"
 
   val $gte: String = "$gte"

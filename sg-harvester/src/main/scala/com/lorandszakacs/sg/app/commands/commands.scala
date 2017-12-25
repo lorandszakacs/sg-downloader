@@ -38,7 +38,7 @@ object Commands {
   }
 
   case class DownloadSpecific(
-    names: List[Name],
+    names:               List[Name],
     usernameAndPassword: Option[(String, String)]
   ) extends Command {
     require(names.nonEmpty, "DownloadSpecific names cannot be empty")
@@ -60,7 +60,7 @@ object Commands {
   }
 
   case class DeltaDownload(
-    days: Option[Int],
+    days:                Option[Int],
     usernameAndPassword: Option[(String, String)]
   ) extends Command {
     def username: Option[String] = usernameAndPassword.map(_._1)
@@ -130,7 +130,11 @@ object Commands {
   //====================================================================================
 
   lazy val descriptions: List[CommandDescription] = List(
-    DownloadSpecific, DeltaDownload, Show, Favorites, Help, Exit
+    DownloadSpecific,
+    DeltaDownload,
+    Show,
+    Favorites,
+    Help,
+    Exit
   ).sortBy(_.id)
 }
-

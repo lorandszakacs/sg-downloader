@@ -14,8 +14,9 @@ import com.typesafe.scalalogging.StrictLogging
   *
   */
 final class SGSanitizer(
-  private[this] val repo: SGAndHFRepository
-)(implicit val executionContext: ExecutionContext) extends StrictLogging {
+  private[this] val repo:        SGAndHFRepository
+)(implicit val executionContext: ExecutionContext)
+    extends StrictLogging {
 
   /**
     * The two paths:

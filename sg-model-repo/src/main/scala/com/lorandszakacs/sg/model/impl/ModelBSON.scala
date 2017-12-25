@@ -16,6 +16,7 @@ import com.lorandszakacs.util.mongodb._
 private[impl] object ModelBSON extends ModelBSON
 
 private[impl] trait ModelBSON {
+
   def nameBSON: BSONHandler[BSONString, Name] = new BSONHandler[BSONString, Name] {
     override def read(bson: BSONString): Name = Name(bson.value)
 
@@ -49,10 +50,12 @@ private[impl] trait ModelBSON {
       override def write(t: URL): BSONString = BSONString(t.toExternalForm)
     }
 
-  implicit val photoBSON: BSONDocumentReader[Photo] with BSONDocumentWriter[Photo] with BSONHandler[BSONDocument, Photo] =
+  implicit val photoBSON
+    : BSONDocumentReader[Photo] with BSONDocumentWriter[Photo] with BSONHandler[BSONDocument, Photo] =
     BSONMacros.handler[Photo]
 
-  implicit val photoSetBSON: BSONDocumentReader[PhotoSet] with BSONDocumentWriter[PhotoSet] with BSONHandler[BSONDocument, PhotoSet] =
+  implicit val photoSetBSON
+    : BSONDocumentReader[PhotoSet] with BSONDocumentWriter[PhotoSet] with BSONHandler[BSONDocument, PhotoSet] =
     BSONMacros.handler[PhotoSet]
 
 }

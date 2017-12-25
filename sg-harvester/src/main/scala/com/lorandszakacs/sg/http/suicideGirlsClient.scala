@@ -47,7 +47,7 @@ trait Authentication {
   * Session contains all the information necessary to create an authentication
   */
 final case class Session(
-  username: String,
+  username:  String,
   sessionID: String,
   csrfToken: String,
   expiresAt: DateTime
@@ -55,9 +55,8 @@ final case class Session(
   def toCookieHeader: RawHeader = RawHeader("Cookie", s"csrftoken=$csrfToken; sessionid=$sessionID")
 }
 
-
 object DefaultSGAuthentication extends Authentication {
-  private val OriginHeader: Origin = Origin(HttpOrigin("https://www.suicidegirls.com"))
+  private val OriginHeader:  Origin  = Origin(HttpOrigin("https://www.suicidegirls.com"))
   private val RefererHeader: Referer = Referer("https://www.suicidegirls.com/")
 
   private val defaultSGHeaders: Seq[HttpHeader] = Seq(OriginHeader, RefererHeader)

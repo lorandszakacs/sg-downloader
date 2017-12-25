@@ -18,8 +18,7 @@ import scala.util.control.NonFatal
   *
   */
 class CommandLineInterpreter(
-  assembly: SanitizerAssembly with
-    SGDownloaderAssembly
+  assembly: SanitizerAssembly with SGDownloaderAssembly
 ) extends StrictLogging {
 
   private implicit val executionContext: ExecutionContext = assembly.executionContext
@@ -51,7 +50,7 @@ class CommandLineInterpreter(
 
     for {
       command <- Future fromTry triedCommand
-      _ <- interpretCommand(command)
+      _       <- interpretCommand(command)
     } yield command
   }
 
@@ -62,14 +61,14 @@ class CommandLineInterpreter(
       case Commands.DeltaDownload(days, usernameAndPassword) =>
         implicit val ppProvider: PasswordProvider = optionalPasswordParams(usernameAndPassword)
         downloader.download.delta(
-          daysToExport = days.getOrElse(120),
+          daysToExport       = days.getOrElse(120),
           includeProblematic = true
         )
       //=======================================================================
       case Commands.DownloadSpecific(names, usernameAndPassword) =>
         implicit val ppProvider: PasswordProvider = optionalPasswordParams(usernameAndPassword)
         downloader.download.specific(
-          names = names,
+          names        = names,
           daysToExport = 120 //TODO: read from commandline
         )
       //=======================================================================

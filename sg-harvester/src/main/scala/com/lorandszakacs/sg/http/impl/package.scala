@@ -8,6 +8,4 @@ import com.lorandszakacs.sg.URLConversions
   * @since 11 Jul 2016
   *
   */
-package object impl extends URLConversions {
-
-}
+package object impl extends URLConversions {}

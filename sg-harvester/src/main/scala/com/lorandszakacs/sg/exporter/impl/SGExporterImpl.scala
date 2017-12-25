@@ -16,47 +16,51 @@ import com.typesafe.scalalogging.StrictLogging
   *
   */
 private[exporter] class SGExporterImpl(
-  val repo: SGAndHFRepository,
-  val html: HTMLGenerator,
+  val repo:       SGAndHFRepository,
+  val html:       HTMLGenerator,
   val fileWriter: HTMLIndexWriter
-)(implicit ec: ExecutionContext) extends SGExporter with StrictLogging {
+)(implicit ec:    ExecutionContext)
+    extends SGExporter with StrictLogging {
 
   private val FavoritesHtmlSettings = HtmlSettings(
-    indexFileName = "index.html",
+    indexFileName  = "index.html",
     rootIndexTitle = "Favorite Suicide Girls"
   )
 
   private def favoritesWriterSettings(implicit es: ExporterSettings) = WriterSettings(
-    rootFolder = es.favoritesRootFolderPath,
+    rootFolder        = es.favoritesRootFolderPath,
     rewriteEverything = es.rewriteEverything
   )
 
   private def allWriterSettings(implicit es: ExporterSettings) = WriterSettings(
-    rootFolder = es.allMsRootFolderPath,
+    rootFolder        = es.allMsRootFolderPath,
     rewriteEverything = es.rewriteEverything
   )
 
   private def newestWriterSettings(implicit es: ExporterSettings) = WriterSettings(
-    rootFolder = es.newestRootFolderPath,
+    rootFolder        = es.newestRootFolderPath,
     rewriteEverything = es.rewriteEverything
   )
 
   private val AllHtmlSettings = HtmlSettings(
-    indexFileName = "index.html",
+    indexFileName  = "index.html",
     rootIndexTitle = "All Suicide Girls"
   )
 
   private def updateFavoritesHTML(deltaFavorites: List[M])(implicit ws: ExporterSettings): Future[Unit] = {
     if (deltaFavorites.nonEmpty) {
       for {
-        favoritesIndexDelta <- html.createHTMLPageForMs(deltaFavorites)(FavoritesHtmlSettings)
-        _ <- fileWriter.writeRootModelIndex(favoritesIndexDelta)(favoritesWriterSettings)
+        favoritesIndexDelta       <- html.createHTMLPageForMs(deltaFavorites)(FavoritesHtmlSettings)
+        _                         <- fileWriter.writeRootModelIndex(favoritesIndexDelta)(favoritesWriterSettings)
         completeFavoriteRootIndex <- html.createRootIndex(Favorites.names)(FavoritesHtmlSettings)
-        _ <- fileWriter.rewriteRootIndexFile(completeFavoriteRootIndex)(favoritesWriterSettings)
+        _                         <- fileWriter.rewriteRootIndexFile(completeFavoriteRootIndex)(favoritesWriterSettings)
       } yield {
-        logger.info(s"-- successfully updated DELTA favorites index ${deltaFavorites.length}: @ ${completeFavoriteRootIndex.relativePathAndName}")
+        logger.info(
+          s"-- successfully updated DELTA favorites index ${deltaFavorites.length}: @ ${completeFavoriteRootIndex.relativePathAndName}"
+        )
       }
-    } else {
+    }
+    else {
       logger.info("-- no delta for favorite")
       Future.unit
     }
@@ -67,13 +71,14 @@ private[exporter] class SGExporterImpl(
       for {
         completeIndex: CompleteIndex <- repo.completeIndex
         allIndexDelta <- html.createHTMLPageForMs(delta)(AllHtmlSettings)
-        _ <- fileWriter.writeRootModelIndex(allIndexDelta)(allWriterSettings)
-        allRootIndex <- html.createRootIndex(completeIndex.names)(AllHtmlSettings)
-        _ <- fileWriter.rewriteRootIndexFile(allRootIndex)(allWriterSettings)
+        _             <- fileWriter.writeRootModelIndex(allIndexDelta)(allWriterSettings)
+        allRootIndex  <- html.createRootIndex(completeIndex.names)(AllHtmlSettings)
+        _             <- fileWriter.rewriteRootIndexFile(allRootIndex)(allWriterSettings)
       } yield {
         logger.info(s"--- successfully updated DELTA all model index of: ${delta.length}")
       }
-    } else {
+    }
+    else {
       logger.info("-- no delta for normal ms")
       Future.unit
     }
@@ -113,36 +118,37 @@ private[exporter] class SGExporterImpl(
     } yield ()
   }
 
-  override def exportLatestForDaysWithDelta(nrOfDays: Int, delta: List[M])(implicit ws: ExporterSettings): Future[Unit] = {
-    val today = LocalDate.today()
+  override def exportLatestForDaysWithDelta(nrOfDays: Int,
+                                            delta:    List[M])(implicit ws: ExporterSettings): Future[Unit] = {
+    val today     = LocalDate.today()
     val inThePast = today.minusDays(nrOfDays)
     for {
       ms <- repo.aggregateBetweenDays(inThePast, today, delta)
       sortedLatestToEarliest = ms.sortBy(_._1).reverse
       newestMsPage <- html.createNewestPage(sortedLatestToEarliest)
-      _ <- fileWriter.rewriteNewestModelPage(newestMsPage)(newestWriterSettings)
+      _            <- fileWriter.rewriteNewestModelPage(newestMsPage)(newestWriterSettings)
     } yield ()
   }
 
   override def exportLatestForDays(nrOfDays: Int)(implicit ws: ExporterSettings): Future[Unit] = {
-    val today = LocalDate.today()
+    val today     = LocalDate.today()
     val inThePast = today.minusDays(nrOfDays)
     for {
       ms <- repo.aggregateBetweenDays(inThePast, today)
       sortedLatestToEarliest = ms.sortBy(_._1).reverse
       newestMsPage <- html.createNewestPage(sortedLatestToEarliest)
-      _ <- fileWriter.rewriteNewestModelPage(newestMsPage)(newestWriterSettings)
+      _            <- fileWriter.rewriteNewestModelPage(newestMsPage)(newestWriterSettings)
     } yield ()
   }
 
   override def prettyPrint(modelName: Name): Future[String] = {
     for {
       model <- repo.find(modelName) map (_.getOrElse(throw ModelNotFoundException(modelName)))
-    } yield model match {
-      case sg: SG => sg.setsByNewestFirst.toString
-      case h: HF => h.setsByNewestFirst.toString
-    }
+    } yield
+      model match {
+        case sg: SG => sg.setsByNewestFirst.toString
+        case h:  HF => h.setsByNewestFirst.toString
+      }
   }
-
 
 }

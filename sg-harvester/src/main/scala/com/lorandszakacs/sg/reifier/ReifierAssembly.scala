@@ -25,4 +25,3 @@ trait ReifierAssembly extends SGClientAssembly {
 
   private[reifier] lazy val _sgReifierImpl = new SGReifierImpl(sgClient, _sessionDao)
 }
-

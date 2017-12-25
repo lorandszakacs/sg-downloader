@@ -23,9 +23,9 @@ trait SGDownloaderAssembly {
   def sgDownloader: SGDownloader = _sgDownloader
 
   private[downloader] lazy val _sgDownloader = new SGDownloader(
-    repo = sgModelRepository,
-    indexer = sgIndexer,
-    reifier = sgReifier,
+    repo     = sgModelRepository,
+    indexer  = sgIndexer,
+    reifier  = sgReifier,
     exporter = sgExporter
   )(executionContext)
 

@@ -6,7 +6,4 @@ package com.lorandszakacs.util
   * @since 12 Jul 2017
   *
   */
-package object list extends ListUtilFunctions {
-
-
-}
+package object list extends ListUtilFunctions {}

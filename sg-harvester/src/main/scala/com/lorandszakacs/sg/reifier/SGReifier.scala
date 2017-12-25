@@ -1,6 +1,5 @@
 package com.lorandszakacs.sg.reifier
 
-
 import com.lorandszakacs.sg.http.{Authentication, PasswordProvider, PatienceConfig}
 import com.lorandszakacs.sg.model.{HF, M, SG}
 import com.lorandszakacs.util.future._

@@ -10,9 +10,8 @@ import com.lorandszakacs.util.future._
   * @since 14 Jul 2017
   *
   */
-private[impl] class RepoHFs
-(override protected val db: Database)(
-  implicit override val executionContext: ExecutionContext
+private[impl] class RepoHFs(override protected val db: Database)(
+  implicit override val executionContext:              ExecutionContext
 ) extends MRepo[HF](hfIdentifier) with ModelBSON {
 
   override val collectionName: String = "hopefuls"

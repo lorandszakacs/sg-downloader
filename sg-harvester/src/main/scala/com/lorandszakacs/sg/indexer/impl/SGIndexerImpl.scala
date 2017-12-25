@@ -25,13 +25,14 @@ import scala.util.{Failure, Success, Try}
   * @since 03 Jul 2016
   *
   */
-private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val ec: ExecutionContext) extends SGIndexer with SGURLBuilder with StrictLogging {
+private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val ec: ExecutionContext)
+    extends SGIndexer with SGURLBuilder with StrictLogging {
 
   private[this] implicit val Authentication: Authentication = DefaultSGAuthentication
 
   private val SGsSortedByFollowers = "https://www.suicidegirls.com/profiles/girl/followers/"
   private val HFsSortedByFollowers = "https://www.suicidegirls.com/profiles/hopeful/followers/"
-  private val NewestSets = "https://www.suicidegirls.com/photos/all/recent/all/"
+  private val NewestSets           = "https://www.suicidegirls.com/photos/all/recent/all/"
 
   /**
     * Gathers the names of all available [[SG]]s
@@ -43,14 +44,13 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     }
 
     loadPageRepeatedly[Name](
-      uri = SGsSortedByFollowers,
-      offsetStep = 12,
+      uri             = SGsSortedByFollowers,
+      offsetStep      = 12,
       parsingFunction = SGContentParser.gatherSGNames,
-      isEndPage = isEndPage,
-      cutOffLimit = limit
+      isEndPage       = isEndPage,
+      cutOffLimit     = limit
     )
   }
-
 
   /**
     * Gathers the names of all available [[HF]]s
@@ -62,11 +62,11 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     }
 
     loadPageRepeatedly[Name](
-      uri = HFsSortedByFollowers,
-      offsetStep = 12,
+      uri             = HFsSortedByFollowers,
+      offsetStep      = 12,
       parsingFunction = SGContentParser.gatherHFNames,
-      isEndPage = isEndPage,
-      cutOffLimit = limit
+      isEndPage       = isEndPage,
+      cutOffLimit     = limit
     )
   }
 
@@ -87,15 +87,17 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     * the [[PhotoSet]]s of the given model.
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]], and [[PhotoSet.url]] will be a full path URL.
     */
-  override def gatherPhotoSetInformationForModel[T <: M](mf: ModelFactory[T])(modelName: Name)(implicit pc: PatienceConfig): Future[T] = {
+  override def gatherPhotoSetInformationForModel[T <: M](
+    mf:        ModelFactory[T]
+  )(modelName: Name)(implicit pc: PatienceConfig): Future[T] = {
     val pageURL = photoSetsPageURL(modelName)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
-        uri = pageURL,
-        offsetStep = 9,
-        parsingFunction = SGContentParser.gatherPhotoSetsForModel,
-        isEndPage = isEndPageForModelIndexing
-      )
+               uri             = pageURL,
+               offsetStep      = 9,
+               parsingFunction = SGContentParser.gatherPhotoSetsForModel,
+               isEndPage       = isEndPageForModelIndexing
+             )
     } yield {
       logger.info(s"gathered all sets for ${mf.name} ${modelName.name}. #sets: ${sets.length}")
       mf(photoSetURL = pageURL, name = modelName, photoSets = sets)
@@ -106,19 +108,18 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     val pageURL = photoSetsPageURL(modelName)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
-        uri = pageURL,
-        offsetStep = 9,
-        parsingFunction = SGContentParser.gatherPhotoSetsForModel,
-        isEndPage = isEndPageForModelIndexing
-      )
+               uri             = pageURL,
+               offsetStep      = 9,
+               parsingFunction = SGContentParser.gatherPhotoSetsForModel,
+               isEndPage       = isEndPageForModelIndexing
+             )
       isHF = sets.exists(_.isHFSet.contains(true))
-      mf = if (isHF) HFFactory else SGFactory
+      mf   = if (isHF) HFFactory else SGFactory
     } yield {
       logger.info(s"gathered all sets for ${mf.name} ${modelName.name}. #sets: ${sets.length}")
       mf(photoSetURL = pageURL, name = modelName, photoSets = sets)
     }
   }
-
 
   /**
     *
@@ -130,7 +131,9 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     *
     * Returns a [[M]] with only one [[M.photoSets]], the one that shows up on the page.
     */
-  private[impl] def gatherAllNewMsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[M]] = {
+  private[impl] def gatherAllNewMsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(
+    implicit pc:                                               PatienceConfig
+  ): Future[List[M]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -146,18 +149,20 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     }
 
     loadPageRepeatedly[M](
-      uri = NewestSets,
-      offsetStep = 24,
+      uri             = NewestSets,
+      offsetStep      = 24,
       parsingFunction = SGContentParser.gatherNewestPhotoSets,
-      isEndPage = isEndPage,
-      isEndInput = isEndInput,
-      cutOffLimit = limit
+      isEndPage       = isEndPage,
+      isEndInput      = isEndInput,
+      cutOffLimit     = limit
     ) map { ms =>
       if (lastProcessedIndex.isEmpty)
         ms
       else
         ms.takeWhile { m =>
-          val photoset = m.photoSets.headOption.getOrElse(throw new AssertionError("... tried to get lastPhotoSet, of a NewestModelPhotoSet, but it did not exist"))
+          val photoset = m.photoSets.headOption.getOrElse(
+            throw new AssertionError("... tried to get lastPhotoSet, of a NewestModelPhotoSet, but it did not exist")
+          )
           lastProcessedIndex.isEmpty || (photoset.id != lastProcessedIndex.get.lastPhotoSetID)
         }
     }
@@ -177,23 +182,24 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     * @return
     * All Ms that have been gathered with fully indexed information, i.e. all their photosets, but no photo information
     */
-  override def gatherAllNewMsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(implicit pc: PatienceConfig): Future[List[M]] = {
+  override def gatherAllNewMsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(
+    implicit pc:                                         PatienceConfig
+  ): Future[List[M]] = {
     for {
       msWithOnlyOneSet: List[M] <- gatherAllNewMsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
       sgHF = msWithOnlyOneSet.distinctById.group
       sgs <- Future.serialize(sgHF.sgs) { sg =>
-        pc.throttleAfter {
-          this.gatherPhotoSetInformationForModel(M.SGFactory)(sg.name)
-        }
-      }
+              pc.throttleAfter {
+                this.gatherPhotoSetInformationForModel(M.SGFactory)(sg.name)
+              }
+            }
       hfs <- Future.serialize(sgHF.hfs) { hf =>
-        pc.throttleAfter {
-          this.gatherPhotoSetInformationForModel(M.HFFactory)(hf.name)
-        }
-      }
+              pc.throttleAfter {
+                this.gatherPhotoSetInformationForModel(M.HFFactory)(hf.name)
+              }
+            }
     } yield sgs ++ hfs
   }
-
 
   /**
     *
@@ -210,21 +216,23 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     *
     */
   private def loadPageRepeatedly[T](
-    uri: Uri,
-    offsetStep: Int,
+    uri:             Uri,
+    offsetStep:      Int,
     parsingFunction: Html => Try[List[T]],
-    isEndPage: Html => Boolean,
-    cutOffLimit: Int = Int.MaxValue,
-    isEndInput: List[T] => Boolean = { ls: List[T] => false }
+    isEndPage:       Html => Boolean,
+    cutOffLimit:     Int = Int.MaxValue,
+    isEndInput: List[T] => Boolean = { ls: List[T] =>
+      false
+    }
   )(implicit pc: PatienceConfig): Future[List[T]] = {
 
     def offsetUri(uri: Uri, offset: Int) =
       Uri(s"$uri?partial=true&offset=$offset")
 
     sGClient.getPage(offsetUri(uri, 0)) map { firstHtml =>
-      val result = ListBuffer[T]()
+      val result     = ListBuffer[T]()
       val firstBatch = parsingFunction(firstHtml).get
-      var offset = offsetStep
+      var offset     = offsetStep
 
       var stop = false
       result ++= firstBatch
@@ -234,12 +242,13 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
       }
 
       while (!stop) {
-        val newURI = offsetUri(uri, offset)
+        val newURI  = offsetUri(uri, offset)
         val newPage = sGClient.getPage(newURI).await()
         offset += offsetStep
         if (isEndPage(newPage) || offset > cutOffLimit) {
           stop = true
-        } else {
+        }
+        else {
           logger.info(s"load repeatedly: step=$offsetStep [$newURI]")
           pc.throttleThread()
           parsingFunction(newPage) match {

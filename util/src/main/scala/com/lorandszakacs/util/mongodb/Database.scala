@@ -15,15 +15,16 @@ import scala.util.Try
   *
   */
 final case class Database(
-  uri: String,
-  dbName: String
-)(implicit ec: ExecutionContext) extends StrictLogging {
+  uri:         String,
+  dbName:      String
+)(implicit ec: ExecutionContext)
+    extends StrictLogging {
 
   def value(): DefaultDB = _db
 
   def apply(colName: String): BSONCollection = this.value().apply(colName)
 
-  private lazy val _mongoDriver: MongoDriver = new MongoDriver()
+  private lazy val _mongoDriver:     MongoDriver     = new MongoDriver()
   private lazy val _mongoConnection: MongoConnection = _mongoDriver.connection(MongoConnection.parseURI(uri).get)
   private lazy val _dataBase: Try[DefaultDB] = {
     Try(Database.getDatabase(_mongoDriver, _mongoConnection)(dbName).await())
@@ -40,19 +41,20 @@ final case class Database(
   def shutdown(): Future[Unit] = {
     for {
       _ <- Future fromTry Try {
-        logger.info("attempting to close _mongoDriver.close(...)")
-        _mongoDriver.close(1 minute)
-      }
+            logger.info("attempting to close _mongoDriver.close(...)")
+            _mongoDriver.close(1 minute)
+          }
       _ <- _mongoDriver.system.terminate() map { _ =>
-        logger.info("terminated -- _mongoDriver.system.terminate()")
-      }
+            logger.info("terminated -- _mongoDriver.system.terminate()")
+          }
     } yield ()
   }
 }
 
 object Database {
-  private[mongodb] def getDatabase(_mongoDriver: MongoDriver, _mongoConnection: MongoConnection)(name: String)
-    (implicit ec: ExecutionContext): Future[DefaultDB] = {
+  private[mongodb] def getDatabase(_mongoDriver: MongoDriver, _mongoConnection: MongoConnection)(
+    name:                                        String
+  )(implicit ec:                                 ExecutionContext): Future[DefaultDB] = {
     val future = {
       _mongoConnection.database(name)
     } recover {

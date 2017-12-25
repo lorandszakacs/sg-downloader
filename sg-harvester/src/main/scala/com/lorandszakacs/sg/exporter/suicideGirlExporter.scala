@@ -75,16 +75,18 @@ trait SGExporter {
 
 object ExporterSettings {
 
-  def apply(favoritesRootFolderPath: String, allMsRootFolderPath: String, newestRootFolderPath: String, rewriteEverything: Boolean): ExporterSettings = {
+  def apply(favoritesRootFolderPath: String,
+            allMsRootFolderPath:     String,
+            newestRootFolderPath:    String,
+            rewriteEverything:       Boolean): ExporterSettings = {
     new ExporterSettings(
       favoritesRootFolderPath = Paths.get(FileUtils.normalizeHomePath(favoritesRootFolderPath)).toAbsolutePath,
-      allMsRootFolderPath = Paths.get(FileUtils.normalizeHomePath(allMsRootFolderPath)).toAbsolutePath,
-      newestRootFolderPath = Paths.get(FileUtils.normalizeHomePath(newestRootFolderPath)).toAbsolutePath,
-      rewriteEverything = rewriteEverything
+      allMsRootFolderPath     = Paths.get(FileUtils.normalizeHomePath(allMsRootFolderPath)).toAbsolutePath,
+      newestRootFolderPath    = Paths.get(FileUtils.normalizeHomePath(newestRootFolderPath)).toAbsolutePath,
+      rewriteEverything       = rewriteEverything
     )
   }
 }
-
 
 /**
   *
@@ -94,9 +96,9 @@ object ExporterSettings {
   * if true, then everything in the rootFolderPath will be deleted,
   * then rewritten. if false, then the rootFolderPath has to be empty
   */
-final class ExporterSettings private(
+final class ExporterSettings private (
   val favoritesRootFolderPath: Path,
-  val allMsRootFolderPath: Path,
-  val newestRootFolderPath: Path,
-  val rewriteEverything: Boolean
+  val allMsRootFolderPath:     Path,
+  val newestRootFolderPath:    Path,
+  val rewriteEverything:       Boolean
 )

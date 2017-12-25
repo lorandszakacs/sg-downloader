@@ -21,11 +21,12 @@ trait ListUtilFunctions {
     def replace(that: List[T])(implicit id: Identity[T]): List[T] = {
       if (that.isEmpty) {
         thisList
-      } else {
+      }
+      else {
         thisList.map { e =>
           val tr = that.find(l => id.identifiesAs(l, e))
           tr match {
-            case None => e
+            case None              => e
             case Some(replacement) => replacement
           }
         }
@@ -35,9 +36,10 @@ trait ListUtilFunctions {
     def addOrReplace(that: List[T])(implicit id: Identity[T]): List[T] = {
       if (that.isEmpty) {
         thisList
-      } else {
+      }
+      else {
         val (toReplace, toAdd) = that.partition(p => thisList.exists(e => id.identifiesAs(e, p)))
-        val replaced = this.replace(toReplace)
+        val replaced           = this.replace(toReplace)
         replaced ++ toAdd
       }
     }
@@ -47,12 +49,14 @@ trait ListUtilFunctions {
       def accumulateUnique(left: List[T], acc: List[T]): List[T] = {
         if (left.isEmpty) {
           acc
-        } else {
+        }
+        else {
           val head = left.head
           val tail = left.tail
           if (acc.exists(e => id.identifiesAs(head, e))) {
             accumulateUnique(tail, acc)
-          } else {
+          }
+          else {
             accumulateUnique(tail, acc :+ head)
           }
         }
@@ -65,4 +69,3 @@ trait ListUtilFunctions {
   }
 
 }
-

@@ -33,7 +33,8 @@ object FileUtils extends StrictLogging {
         override def visitFileFailed(file: Path, exc: IOException): FileVisitResult = {
           if (file.toAbsolutePath == fd.toAbsolutePath) {
             throw RootFolderCouldNotBeOpenedException(fd.toAbsolutePath.toString, exc)
-          } else {
+          }
+          else {
             FileVisitResult.CONTINUE
           }
         }
@@ -42,7 +43,8 @@ object FileUtils extends StrictLogging {
           if (Files.isDirectory(file)) {
             //in this case, the folder will be deleted in the postVisitDirectory, once the folder is deleted.
             FileVisitResult.CONTINUE
-          } else {
+          }
+          else {
             Try(Files.delete(file)) match {
               case Failure(exception) =>
                 throw RootFolderFileCouldNotBeDeleted(file.toAbsolutePath.toString, exception)
@@ -61,7 +63,8 @@ object FileUtils extends StrictLogging {
           if (dir.toAbsolutePath != fd.toAbsolutePath) {
             Files.deleteIfExists(dir)
             FileVisitResult.CONTINUE
-          } else {
+          }
+          else {
             FileVisitResult.CONTINUE
           }
         }
@@ -76,7 +79,7 @@ object FileUtils extends StrictLogging {
     else {
       val zip = s1.zip(s2)
       val set: Set[Char] = zip.filterNot(p => p._1 == p._2).map(p => Set(p._1, p._2)).toSet.flatten
-      val setOfNumber = Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
+      val setOfNumber  = Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
       val intersection = set.diff(setOfNumber)
       set.nonEmpty && intersection.isEmpty
     }
@@ -96,7 +99,8 @@ object FileUtils extends StrictLogging {
         override def visitFileFailed(file: Path, exc: IOException): FileVisitResult = {
           if (file.toAbsolutePath == fd.toAbsolutePath) {
             throw RootFolderCouldNotBeOpenedException(fd.toAbsolutePath.toString, exc)
-          } else {
+          }
+          else {
             logger.error(s"visit failed @$file", exc)
             FileVisitResult.CONTINUE
           }
@@ -136,10 +140,9 @@ object FileUtils extends StrictLogging {
     val f = fd.toAbsolutePath.toFile
     for {
       result <- Future(f.mkdirs())
-      _ <- when(!result) failWith FailedToCreateFolderException(f.getAbsolutePath)
+      _      <- when(!result) failWith FailedToCreateFolderException(f.getAbsolutePath)
     } yield ()
   }
-
 
   /**
     * Does NOT overwrite file!

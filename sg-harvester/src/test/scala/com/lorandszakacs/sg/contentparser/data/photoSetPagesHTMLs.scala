@@ -29,10 +29,11 @@ import scala.io.Source
   *
   */
 trait PhotoSetPage {
+
   def html = {
     val resourceName = s"${getClass.getSimpleName.replace("$", "")}.txt"
-    val URL = getClass.getResource(resourceName)
-    val source = Source.fromURL(URL)
+    val URL          = getClass.getResource(resourceName)
+    val source       = Source.fromURL(URL)
     Html(source.getLines().mkString("\n"))
   }
 
@@ -66,5 +67,3 @@ object PhotoSetPageFullDate extends PhotoSetPage {
 
   def date: LocalDate = LocalDate.parse("2013-02-07")
 }
-
-

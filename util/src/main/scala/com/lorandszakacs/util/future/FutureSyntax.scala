@@ -8,6 +8,7 @@ package com.lorandszakacs.util.future
   */
 trait FutureSyntax {
   this: FutureTypes =>
+
   /**
     * Used when you want to compose a potentially failing future into a
     * large for comprehension. Helps reduce boilerplate. Instead of writing the usual:
@@ -35,13 +36,14 @@ trait FutureSyntax {
 
   def when(boolExpr: Future[Boolean]): FailWithWordFuture = new FailWithWordFuture(boolExpr)
 
-  final class FailWithWord private[FutureSyntax](bool: Boolean) {
+  final class FailWithWord private[FutureSyntax] (bool: Boolean) {
     def failWith(exn: => Throwable): Future[Unit] = if (bool) Future.failed(exn) else Future.unit
 
     def execute(exn: => Future[Unit]): Future[Unit] = if (bool) exn else Future.unit
   }
 
-  final class FailWithWordFuture private[FutureSyntax](val futureCondition: Future[Boolean]) {
+  final class FailWithWordFuture private[FutureSyntax] (val futureCondition: Future[Boolean]) {
+
     def failWith(exn: => Throwable)(implicit ec: ExecutionContext): Future[Unit] = {
       futureCondition flatMap { condition =>
         if (condition) Future.failed(exn) else Future.unit

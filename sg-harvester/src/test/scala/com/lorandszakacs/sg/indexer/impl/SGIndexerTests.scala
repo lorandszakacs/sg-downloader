@@ -44,9 +44,9 @@ class SGIndexerTests extends IndexerTest {
       withClue("content") {
         sets should contain {
           PhotoSet(
-            url = "https://www.suicidegirls.com/members/odina/album/2745718/do-i-wanna-know/",
-            title = "DO I WANNA KNOW",
-            date = LocalDate.parse("2016-07-03"),
+            url     = "https://www.suicidegirls.com/members/odina/album/2745718/do-i-wanna-know/",
+            title   = "DO I WANNA KNOW",
+            date    = LocalDate.parse("2016-07-03"),
             isHFSet = Some(true)
           )
         }
@@ -67,9 +67,9 @@ class SGIndexerTests extends IndexerTest {
       withClue("content") {
         sets should contain {
           PhotoSet(
-            url = "https://www.suicidegirls.com/members/odina/album/2745718/do-i-wanna-know/",
-            title = "DO I WANNA KNOW",
-            date = LocalDate.parse("2016-07-03"),
+            url     = "https://www.suicidegirls.com/members/odina/album/2745718/do-i-wanna-know/",
+            title   = "DO I WANNA KNOW",
+            date    = LocalDate.parse("2016-07-03"),
             isHFSet = Some(true)
           )
         }
@@ -97,17 +97,17 @@ class SGIndexerTests extends IndexerTest {
       withClue("... content") {
         sets should contain {
           PhotoSet(
-            url = "https://www.suicidegirls.com/girls/zoli/album/996153/lounge-act/",
+            url   = "https://www.suicidegirls.com/girls/zoli/album/996153/lounge-act/",
             title = "lounge act",
-            date = LocalDate.parse("2012-10-17")
+            date  = LocalDate.parse("2012-10-17")
           )
         }
 
         sets should contain {
           PhotoSet(
-            url = "https://www.suicidegirls.com/girls/zoli/album/969351/the-beat/",
+            url   = "https://www.suicidegirls.com/girls/zoli/album/969351/the-beat/",
             title = "THE BEAT",
-            date = LocalDate.parse("2006-05-03")
+            date  = LocalDate.parse("2006-05-03")
           )
         }
       }
@@ -132,17 +132,17 @@ class SGIndexerTests extends IndexerTest {
       withClue("... content") {
         sets should contain {
           PhotoSet(
-            url = "https://www.suicidegirls.com/girls/zoli/album/996153/lounge-act/",
+            url   = "https://www.suicidegirls.com/girls/zoli/album/996153/lounge-act/",
             title = "lounge act",
-            date = LocalDate.parse("2012-10-17")
+            date  = LocalDate.parse("2012-10-17")
           )
         }
 
         sets should contain {
           PhotoSet(
-            url = "https://www.suicidegirls.com/girls/zoli/album/969351/the-beat/",
+            url   = "https://www.suicidegirls.com/girls/zoli/album/969351/the-beat/",
             title = "THE BEAT",
-            date = LocalDate.parse("2006-05-03")
+            date  = LocalDate.parse("2006-05-03")
           )
         }
       }
@@ -190,7 +190,6 @@ class SGIndexerTests extends IndexerTest {
 
   it should "... gather the first 48 HF names by followers" in { indexer =>
     whenReady(indexer.gatherHFNames(48)) { names: List[Name] =>
-
       print {
         s"""
            |HF names:
@@ -215,7 +214,6 @@ class SGIndexerTests extends IndexerTest {
 
   it should "... gather the first 48 new sets" in { indexer =>
     whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None)) { ms: List[M] =>
-
       withClue("... size") {
         ms should have size 48
       }
@@ -229,65 +227,67 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
   //===============================================================================================
 
-  it should "... gather the first 48 new sets, then use one in the middle as the latest processed, and return only the ones before it" in { indexer =>
-    val previousMs = whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None)) { ms: List[M] =>
-      withClue("... size") {
-        ms should have size 48
-      }
-      withClue("... distribution") {
-        assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
-        assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
-      }
-      ms
-    }
-    val index = 13
-    val latest = previousMs(index)
-    val lastProcessed: LastProcessedMarker = indexer.createLastProcessedIndex(latest)
-
-    withClue("... now gathering only a part of the processed sets") {
-      whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, Option(lastProcessed))) { ms: List[M] =>
+  it should "... gather the first 48 new sets, then use one in the middle as the latest processed, and return only the ones before it" in {
+    indexer =>
+      val previousMs = whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None)) { ms: List[M] =>
         withClue("... size") {
-          ms should have size index
+          ms should have size 48
         }
         withClue("... distribution") {
-          assert(!ms.exists(_.name == latest.name), "... the latest model should not be in this list")
           assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
           assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
         }
         ms
       }
-    }
+      val index  = 13
+      val latest = previousMs(index)
+      val lastProcessed: LastProcessedMarker = indexer.createLastProcessedIndex(latest)
+
+      withClue("... now gathering only a part of the processed sets") {
+        whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, Option(lastProcessed))) { ms: List[M] =>
+          withClue("... size") {
+            ms should have size index
+          }
+          withClue("... distribution") {
+            assert(!ms.exists(_.name == latest.name), "... the latest model should not be in this list")
+            assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+            assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
+          }
+          ms
+        }
+      }
   }
 
   //===============================================================================================
   //===============================================================================================
 
-  it should "... gather the first 48 new sets, then use first one as latest. No subsequent MS should be returned" in { indexer =>
-    val previousMs = whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None)) { ms: List[M] =>
-      withClue("... size") {
-        ms should have size 48
-      }
-      withClue("... distribution") {
-        assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
-        assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
-      }
-      ms
-    }
-    val index = 0
-    val latest = previousMs(index)
-    val lastProcessed: LastProcessedMarker = indexer.createLastProcessedIndex(latest)
-
-    withClue("... now gathering only a part of the processed sets") {
-      whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, Option(lastProcessed))) { ms: List[M] =>
+  it should "... gather the first 48 new sets, then use first one as latest. No subsequent MS should be returned" in {
+    indexer =>
+      val previousMs = whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None)) { ms: List[M] =>
         withClue("... size") {
-          ms should have size index
+          ms should have size 48
         }
         withClue("... distribution") {
-          assert(!ms.exists(_.name == latest.name), "... the latest model should not be in this list")
+          assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+          assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
         }
         ms
       }
-    }
+      val index  = 0
+      val latest = previousMs(index)
+      val lastProcessed: LastProcessedMarker = indexer.createLastProcessedIndex(latest)
+
+      withClue("... now gathering only a part of the processed sets") {
+        whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, Option(lastProcessed))) { ms: List[M] =>
+          withClue("... size") {
+            ms should have size index
+          }
+          withClue("... distribution") {
+            assert(!ms.exists(_.name == latest.name), "... the latest model should not be in this list")
+          }
+          ms
+        }
+      }
   }
 
   //===============================================================================================

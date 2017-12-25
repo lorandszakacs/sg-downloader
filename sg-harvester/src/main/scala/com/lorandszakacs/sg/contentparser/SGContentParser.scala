@@ -28,10 +28,18 @@ import scala.util._
 import scala.util.control.NonFatal
 
 object SGContentParser extends SGURLBuilder with StrictLogging with URLConversions {
-  private val months = Map(1 -> "Jan", 2 -> "Feb", 3 -> "Mar",
-    4 -> "Apr", 5 -> "May", 6 -> "Jun",
-    7 -> "Jul", 8 -> "Aug", 9 -> "Sep",
-    10 -> "Oct", 11 -> "Nov", 12 -> "Dec").map(p => p._2 -> p._1)
+  private val months = Map(1 -> "Jan",
+                           2  -> "Feb",
+                           3  -> "Mar",
+                           4  -> "Apr",
+                           5  -> "May",
+                           6  -> "Jun",
+                           7  -> "Jul",
+                           8  -> "Aug",
+                           9  -> "Sep",
+                           10 -> "Oct",
+                           11 -> "Nov",
+                           12 -> "Dec").map(p => p._2 -> p._1)
 
   /**
     * Source:
@@ -72,22 +80,24 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
     * }}}
     */
   def gatherPhotoSetsForModel(html: Html): Try[List[PhotoSet]] = Try {
-    val albumElement = Tag("header") && Attribute("post_id")
+    val albumElement  = Tag("header") && Attribute("post_id")
     val albumElements = html filter albumElement
 
     val photoSets: List[PhotoSet] = albumElements map { ae =>
-      val html = Html(ae)
-      val urlRepr = html filter Tag("h2") && Class("title") && RetainFirst(Tag("a")) && HrefLink()
+      val html      = Html(ae)
+      val urlRepr   = html filter Tag("h2") && Class("title") && RetainFirst(Tag("a")) && HrefLink()
       val titleRepr = html filter Content(Tag("h2") && Class("title") && RetainFirst(Tag("a")))
-      val timeRepr = html filter Content(Tag("time"))
-      val url = urlRepr.headOption.getOrElse(throw SetRepresentationDidNotContainURLException(html)).trim()
-      val title = titleRepr.headOption.getOrElse(throw SetRepresentationDidNotContainTitleException(html)).trim()
-      val date = parseStringToDateTime(timeRepr.headOption.getOrElse(throw SetRepresentationDidNotContainTimeTagException(html)).trim())
+      val timeRepr  = html filter Content(Tag("time"))
+      val url       = urlRepr.headOption.getOrElse(throw SetRepresentationDidNotContainURLException(html)).trim()
+      val title     = titleRepr.headOption.getOrElse(throw SetRepresentationDidNotContainTitleException(html)).trim()
+      val date = parseStringToDateTime(
+        timeRepr.headOption.getOrElse(throw SetRepresentationDidNotContainTimeTagException(html)).trim()
+      )
       PhotoSet(
-        url = makeFullPathURL(url),
-        title = PhotoSetTitle(title),
-        date = date.get,
-        photos = List.empty,
+        url     = makeFullPathURL(url),
+        title   = PhotoSetTitle(title),
+        date    = date.get,
+        photos  = List.empty,
         isHFSet = if (ae.contains("Hopeful Set")) Option(true) else None
       )
     }
@@ -173,6 +183,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
     *
     */
   def gatherNewestPhotoSets(html: Html): Try[List[M]] = {
+
     /**
       * Example:
       * {{{
@@ -193,7 +204,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
       val potentialLink = html filter RetainFirst(Tag("section") && Class("image-section") && HrefLink())
       potentialLink.headOption match {
         case Some(name) => Success(name)
-        case None => Failure(HTMLPageDidNotContainAnyPhotoSetLinksException(html))
+        case None       => Failure(HTMLPageDidNotContainAnyPhotoSetLinksException(html))
       }
     }
 
@@ -206,7 +217,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
       val potentialTime = html filter Content(RetainFirst(Tag("time") && Class("time-ago")))
       potentialTime.headOption match {
         case Some(timeRepr) => parseStringToDateTime(timeRepr)
-        case None => Failure(SetRepresentationDidNotContainTimeTagException(html))
+        case None           => Failure(SetRepresentationDidNotContainTimeTagException(html))
       }
     }
 
@@ -219,7 +230,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
       val potentialTitle = html filter Tag("a") && Class("facebook-share") && Value(Attribute("data-name"))
       potentialTitle.headOption match {
         case Some(title) => Success(title)
-        case None => Failure(SetRepresentationDidNotContainTitleException(html))
+        case None        => Failure(SetRepresentationDidNotContainTitleException(html))
       }
     }
 
@@ -238,7 +249,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
       val potentialName = html filter Tag("article") && Tag("header") && Tag("h2") && Content(RetainFirst(Tag("a")))
       potentialName.headOption match {
         case Some(name) => Success(Name(name))
-        case None => Failure(SetRepresentationDidNotContainModelNameException(html))
+        case None       => Failure(SetRepresentationDidNotContainModelNameException(html))
       }
     }
 
@@ -246,28 +257,29 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
     val ms: List[Try[M]] = elements map { el =>
       val html = Html(el)
       for {
-        setURL <- getPhotoSetLink(html) map makeFullPathURL
-        setDate <- getPhotoSetDate(html)
-        setTitle <- getPhotoSetTitle(html)
+        setURL    <- getPhotoSetLink(html) map makeFullPathURL
+        setDate   <- getPhotoSetDate(html)
+        setTitle  <- getPhotoSetTitle(html)
         modelName <- getModelName(html)
 
         photoSet = PhotoSet(
-          url = setURL,
+          url   = setURL,
           title = setTitle,
-          date = setDate
+          date  = setDate
         )
       } yield {
         if (setURL.toString.contains("members")) {
           HF(
             photoSetURL = photoSetsPageURL(modelName),
-            name = modelName,
-            photoSets = List(photoSet)
+            name        = modelName,
+            photoSets   = List(photoSet)
           )
-        } else {
+        }
+        else {
           SG(
             photoSetURL = photoSetsPageURL(modelName),
-            name = modelName,
-            photoSets = List(photoSet)
+            name        = modelName,
+            photoSets   = List(photoSet)
           )
 
         }
@@ -279,14 +291,14 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
 
   def gatherSGNames(html: Html): Try[List[Name]] = {
     html filter (Class("image-section") && RetainFirst(Tag("a")) && HrefLink()) match {
-      case Nil => Failure(DidNotFindAnySGProfileLinksException())
+      case Nil   => Failure(DidNotFindAnySGProfileLinksException())
       case links => Success(links.map(s => Name(s.replace("/girls/", "").replace("/", ""))))
     }
   }
 
   def gatherHFNames(html: Html): Try[List[Name]] = {
     html filter (Class("image-section") && RetainFirst(Tag("a")) && HrefLink()) match {
-      case Nil => Failure(DidNotFindAnyHFProfileLinksException())
+      case Nil   => Failure(DidNotFindAnyHFProfileLinksException())
       case links => Success(links.map(s => Name(s.replace("/members/", "").replace("/", ""))))
     }
   }
@@ -313,23 +325,25 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
     */
   def parsePhotos(albumPage: Html): Try[List[Photo]] = {
     albumPage filter Class("image-section") && Tag("li") && Class("photo-container") match {
-      case Nil => Failure(new Exception(s"Failed to extract any Photo from this document:${albumPage.document.toString}"))
+      case Nil =>
+        Failure(new Exception(s"Failed to extract any Photo from this document:${albumPage.document.toString}"))
       case photosContainers =>
         Try {
           val photos: List[Photo] = photosContainers map { pc =>
-            val html = Html(pc)
-            val photoIndexOpt = html filter RetainFirst(Value(Attribute("data-index"))) headOption
-            val photoURLOpt = html filter RetainFirst(HrefLink()) headOption
+            val html            = Html(pc)
+            val photoIndexOpt   = html filter RetainFirst(Value(Attribute("data-index"))) headOption
+            val photoURLOpt     = html filter RetainFirst(HrefLink()) headOption
             val thumbnailURLOpt = html filter Value(Attribute("data-retina")) headOption
             val opt = for {
-              photoIndex <- photoIndexOpt map (_.trim.toInt)
-              photoURL <- photoURLOpt
+              photoIndex   <- photoIndexOpt map (_.trim.toInt)
+              photoURL     <- photoURLOpt
               thumbnailURL <- thumbnailURLOpt
-            } yield Photo(
-              url = photoURL,
-              thumbnailURL = thumbnailURL,
-              index = photoIndex
-            )
+            } yield
+              Photo(
+                url          = photoURL,
+                thumbnailURL = thumbnailURL,
+                index        = photoIndex
+              )
             opt.getOrElse(throw new Exception(s"failed to get Photo out of this html: $pc"))
           }
 
@@ -342,29 +356,34 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
     val time = t.trim()
     if (t.contains("yesterday")) {
       Try(LocalDate.yesterday())
-    } else if (t.contains("hrs")) {
+    }
+    else if (t.contains("hrs")) {
       val nrOfHours = t.replace(" hrs", "")
       Try(DateTime.now.minusHours(nrOfHours.toInt)) map {
         _.toLocalDate
       }
-    } else if (t.contains("hr")) {
+    }
+    else if (t.contains("hr")) {
       val nrOfHours = t.replace(" hr", "")
       Try(DateTime.now.minusHours(nrOfHours.toInt)) map {
         _.toLocalDate
       }
-    } else if (t.contains("mins")) {
+    }
+    else if (t.contains("mins")) {
       val nrOfMinutes = t.replace(" mins", "")
       Try(DateTime.now.minusMinutes(nrOfMinutes.toInt)) map {
         _.toLocalDate
       }
-    } else if (t.contains("min")) {
+    }
+    else if (t.contains("min")) {
       val nrOfMinutes = t.replace(" min", "")
       Try(DateTime.now.minusMinutes(nrOfMinutes.toInt)) map {
         _.toLocalDate
       }
-    } else {
+    }
+    else {
       Try {
-        val datePattern = """(\w\w\w) (\d*), (\d\d\d\d)""".r
+        val datePattern                   = """(\w\w\w) (\d*), (\d\d\d\d)""".r
         val datePattern(month, day, year) = time
 
         val monthAsInt = months(month)
@@ -372,12 +391,13 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
         val dateTime = new LocalDate(year.toInt, monthAsInt, day.toInt)
         dateTime
       } recoverWith {
-        case NonFatal(e) => Try {
-          val simplifiedDatePattern = """(\w\w\w) (\d*)""".r
-          val simplifiedDatePattern(month, day) = time
-          val monthAsInt = months(month)
-          new LocalDate(DateTime.now.getYear, monthAsInt, day.toInt)
-        }
+        case NonFatal(e) =>
+          Try {
+            val simplifiedDatePattern             = """(\w\w\w) (\d*)""".r
+            val simplifiedDatePattern(month, day) = time
+            val monthAsInt                        = months(month)
+            new LocalDate(DateTime.now.getYear, monthAsInt, day.toInt)
+          }
       }
     }
   }

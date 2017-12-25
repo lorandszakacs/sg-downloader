@@ -14,17 +14,18 @@ import scala.util.control.NonFatal
   */
 
 object MongoCollection {
-  def apply[Entity, IdType, BSONTargetType <: BSONValue](collName: String, database: Database)
-    (implicit entityHandlerImpl: BSONDocumentHandler[Entity],
-      idHandlerImpl: BSONHandler[BSONTargetType, IdType],
-      ec: ExecutionContext,
-      identifierImpl: Identifier[Entity, IdType]
-    ): MongoCollection[Entity, IdType, BSONTargetType] = {
+
+  def apply[Entity, IdType, BSONTargetType <: BSONValue](collName: String, database: Database)(
+    implicit entityHandlerImpl:                                    BSONDocumentHandler[Entity],
+    idHandlerImpl:                                                 BSONHandler[BSONTargetType, IdType],
+    ec:                                                            ExecutionContext,
+    identifierImpl:                                                Identifier[Entity, IdType]
+  ): MongoCollection[Entity, IdType, BSONTargetType] = {
     new MongoCollection[Entity, IdType, BSONTargetType] {
-      override protected implicit val executionContext: ExecutionContext = ec
-      override protected implicit val objectHandler: BSONDocumentHandler[Entity] = entityHandlerImpl
-      override protected implicit val idHandler: BSONHandler[BSONTargetType, IdType] = idHandlerImpl
-      override protected implicit val identifier: Identifier[Entity, IdType] = identifierImpl
+      override protected implicit val executionContext: ExecutionContext                    = ec
+      override protected implicit val objectHandler:    BSONDocumentHandler[Entity]         = entityHandlerImpl
+      override protected implicit val idHandler:        BSONHandler[BSONTargetType, IdType] = idHandlerImpl
+      override protected implicit val identifier:       Identifier[Entity, IdType]          = identifierImpl
 
       override val collectionName: String = collName
 
@@ -33,13 +34,16 @@ object MongoCollection {
   }
 
   private def interpretWriteResult(wr: WriteResult): Future[Unit] = {
-    when(!wr.ok) failWith MongoDBException(code = wr.code.map(_.toString), msg = wr.writeErrors.headOption.map(_.toString))
+    when(!wr.ok) failWith MongoDBException(code = wr.code.map(_.toString),
+                                           msg  = wr.writeErrors.headOption.map(_.toString))
   }
 
   private def interpretWriteResult(wr: MultiBulkWriteResult)(implicit ec: ExecutionContext): Future[Unit] = {
     for {
-      _ <- when(!wr.ok) failWith MongoDBException(code = wr.code.map(_.toString), msg = wr.writeErrors.headOption.map(_.toString))
-      _ <- when(wr.writeErrors.nonEmpty) failWith MongoDBException(code = wr.code.map(_.toString), msg = wr.writeErrors.headOption.map(_.toString))
+      _ <- when(!wr.ok) failWith MongoDBException(code = wr.code.map(_.toString),
+                                                  msg = wr.writeErrors.headOption.map(_.toString))
+      _ <- when(wr.writeErrors.nonEmpty) failWith MongoDBException(code = wr.code.map(_.toString),
+                                                                   msg = wr.writeErrors.headOption.map(_.toString))
     } yield ()
 
   }
@@ -84,7 +88,8 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
   def findManyById(ids: Seq[IdType]): Future[List[Entity]] = {
     if (ids.isEmpty) {
       Future.successful(Nil)
-    } else {
+    }
+    else {
       val q = BSONDocument(
         _id -> BSONDocument(
           `$in` -> ids
@@ -97,12 +102,12 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
   def create(toCreate: Entity): Future[Unit] = {
     for {
       _ <- collection.insert(toCreate) recoverWith {
-        case e: LastError =>
-          MongoCollection.interpretWriteResult(e)
+            case e: LastError =>
+              MongoCollection.interpretWriteResult(e)
 
-        case NonFatal(e) =>
-          Future.failed(e)
-      }
+            case NonFatal(e) =>
+              Future.failed(e)
+          }
     } yield ()
   }
 
@@ -111,51 +116,51 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
       toCreate.map(implicitly[collection.ImplicitlyDocumentProducer](_))
     for {
       wr <- collection.bulkInsert(ordered = false)(bulkDocs: _*)
-      _ <- MongoCollection.interpretWriteResult(wr)
+      _  <- MongoCollection.interpretWriteResult(wr)
     } yield ()
   }
 
   def createOrUpdate(query: BSONDocument, toCreate: Entity): Future[Unit] = {
     for {
       _ <- collection.update(query, toCreate, upsert = true) recoverWith {
-        case e: LastError =>
-          MongoCollection.interpretWriteResult(e)
+            case e: LastError =>
+              MongoCollection.interpretWriteResult(e)
 
-        case NonFatal(e) =>
-          Future.failed(e)
-      }
+            case NonFatal(e) =>
+              Future.failed(e)
+          }
     } yield ()
   }
 
   def createOrUpdate(toCreate: Entity): Future[Unit] = {
     for {
       _ <- collection.update(idQueryByEntity(toCreate), toCreate, upsert = true) recoverWith {
-        case e: LastError =>
-          MongoCollection.interpretWriteResult(e)
+            case e: LastError =>
+              MongoCollection.interpretWriteResult(e)
 
-        case NonFatal(e) =>
-          Future.failed(e)
-      }
+            case NonFatal(e) =>
+              Future.failed(e)
+          }
     } yield ()
   }
 
   def createOrUpdate(toCreateOrUpdate: List[Entity]): Future[Unit] = {
     for {
       _ <- Future.traverse(toCreateOrUpdate) { entity =>
-        this.createOrUpdate(entity)
-      }
+            this.createOrUpdate(entity)
+          }
     } yield ()
   }
 
   def remove(q: BSONDocument, firstMatchOnly: Boolean = false): Future[Unit] = {
     for {
       _ <- collection.remove(q, firstMatchOnly = firstMatchOnly) recoverWith {
-        case e: LastError =>
-          MongoCollection.interpretWriteResult(e)
+            case e: LastError =>
+              MongoCollection.interpretWriteResult(e)
 
-        case NonFatal(e) =>
-          Future.failed(e)
-      }
+            case NonFatal(e) =>
+              Future.failed(e)
+          }
     } yield ()
   }
 

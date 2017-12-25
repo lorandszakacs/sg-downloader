@@ -2,7 +2,7 @@ package com.lorandszakacs.util.mongodb
 
 import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.math.Identifier
-import org.scalatest.{Matchers, OneInstancePerTest, Outcome, fixture}
+import org.scalatest.{fixture, Matchers, OneInstancePerTest, Outcome}
 
 /**
   *
@@ -16,29 +16,30 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
   class EntityRepository(
     override protected val db: Database
   )(implicit
-    override protected implicit val executionContext: ExecutionContext
-  ) extends MongoCollection[Entity, String, BSONString] {
+    override protected implicit val executionContext: ExecutionContext)
+      extends MongoCollection[Entity, String, BSONString] {
     protected implicit def objectHandler: BSONDocumentHandler[Entity] = BSONMacros.handler[Entity]
 
     override protected implicit lazy val idHandler: BSONHandler[BSONString, String] =
       BSONStringHandler
 
-    override protected implicit lazy val identifier: Identifier[Entity, String] = Identifier { e => e.id }
+    override protected implicit lazy val identifier: Identifier[Entity, String] = Identifier { e =>
+      e.id
+    }
 
     override def collectionName: String = "test_entities"
   }
 
-
   case class Entity(
     @Annotations.Key("_id") id: String,
-    opt: Option[String],
-    actual: String
+    opt:                        Option[String],
+    actual:                     String
   )
 
   override protected def withFixture(test: OneArgTest): Outcome = {
     val dbName = Database.testName(this.getClass.getSimpleName, test.text)
     val db = new Database(
-      uri = """mongodb://localhost""",
+      uri    = """mongodb://localhost""",
       dbName = dbName
     )
     val repo = new EntityRepository(db)(ec)
@@ -46,7 +47,8 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     val outcome: Outcome = withFixture(test.toNoArgTest(repo))
     val f = if (outcome.isFailed || outcome.isCanceled) {
       db.shutdown()
-    } else {
+    }
+    else {
       for {
         _ <- db.drop()
         _ <- db.shutdown()
@@ -64,8 +66,8 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
 
   it should "001 single: write + read + update + remove" in { repo =>
     val original = Entity(
-      id = "1",
-      opt = Some("OPTIONAL"),
+      id     = "1",
+      opt    = Some("OPTIONAL"),
       actual = "VALUE"
     )
 
@@ -74,9 +76,12 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     }
 
     withClue("we read") {
-      val read = repo.find(original.id).await().getOrElse(
-        fail("... expected entity")
-      )
+      val read = repo
+        .find(original.id)
+        .await()
+        .getOrElse(
+          fail("... expected entity")
+        )
       assert(read == original)
     }
 
@@ -87,9 +92,12 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     }
 
     withClue("we read after update") {
-      val read = repo.find(updateNoOpt.id).await().getOrElse(
-        fail("... expected entity")
-      )
+      val read = repo
+        .find(updateNoOpt.id)
+        .await()
+        .getOrElse(
+          fail("... expected entity")
+        )
       assert(read == updateNoOpt)
     }
 
@@ -108,8 +116,8 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
 
   it should "002: attempt to write twice" in { repo =>
     val original = Entity(
-      id = "1",
-      opt = Some("OPTIONAL"),
+      id     = "1",
+      opt    = Some("OPTIONAL"),
       actual = "VALUE"
     )
 
@@ -129,20 +137,20 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
 
   it should "003: bulk create + many read + bulk update" in { repo =>
     val e1 = Entity(
-      id = "1",
-      opt = Some("OPTIONAL"),
+      id     = "1",
+      opt    = Some("OPTIONAL"),
       actual = "VALUE"
     )
 
     val e2 = Entity(
-      id = "2",
-      opt = Some("OPTIONAL2"),
+      id     = "2",
+      opt    = Some("OPTIONAL2"),
       actual = "VALUE2"
     )
 
     val e3 = Entity(
-      id = "3",
-      opt = Some("OPTIONAL3"),
+      id     = "3",
+      opt    = Some("OPTIONAL3"),
       actual = "VALUE3"
     )
 
@@ -186,20 +194,20 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
 
   it should "004: bulk create + double create" in { repo =>
     val e1 = Entity(
-      id = "1",
-      opt = Some("OPTIONAL"),
+      id     = "1",
+      opt    = Some("OPTIONAL"),
       actual = "VALUE"
     )
 
     val e2 = Entity(
-      id = "2",
-      opt = Some("OPTIONAL2"),
+      id     = "2",
+      opt    = Some("OPTIONAL2"),
       actual = "VALUE2"
     )
 
     val e3 = Entity(
-      id = "3",
-      opt = Some("OPTIONAL3"),
+      id     = "3",
+      opt    = Some("OPTIONAL3"),
       actual = "VALUE3"
     )
 

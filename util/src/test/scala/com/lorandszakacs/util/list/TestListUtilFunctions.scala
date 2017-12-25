@@ -71,11 +71,9 @@ class TestListUtilFunctions extends FlatSpec {
     assert(result == resultEx)
   }
 
-
   case class I(
-    id: Int,
+    id:      Int,
     content: String
   )
-
 
 }

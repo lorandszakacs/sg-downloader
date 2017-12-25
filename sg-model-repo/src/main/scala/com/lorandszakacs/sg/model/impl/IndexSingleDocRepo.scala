@@ -9,8 +9,7 @@ import com.lorandszakacs.util.mongodb._
   * @since 14 Jul 2017
   *
   */
-private[impl] trait IndexSingleDocRepo[T] extends
-  SingleDocumentMongoCollection[T, String, BSONString] {
+private[impl] trait IndexSingleDocRepo[T] extends SingleDocumentMongoCollection[T, String, BSONString] {
 
   protected implicit val modelNameBSONFFS: BSONHandler[BSONString, Name] = ModelBSON.nameBSON
 

@@ -11,7 +11,7 @@ import com.lorandszakacs.util.mongodb._
   *
   */
 private[impl] class RepoHFIndex(override protected val db: Database)(
-  implicit override val executionContext: ExecutionContext
+  implicit override val executionContext:                  ExecutionContext
 ) extends IndexSingleDocRepo[HFIndex] with ModelBSON {
 
   override protected def objectHandler: BSONDocumentHandler[HFIndex] = BSONMacros.handler[HFIndex]
@@ -19,26 +19,26 @@ private[impl] class RepoHFIndex(override protected val db: Database)(
   override protected def uniqueDocumentId: String = "hf_index"
 
   override protected def defaultEntity: HFIndex = HFIndex(
-    names = Nil,
+    names           = Nil,
     needsReindexing = Nil,
-    number = 0
+    number          = 0
   )
 
   private def sanitize(i: HFIndex): HFIndex = {
     val temp = i.names.distinct.sorted
     i.copy(
-      names = temp,
+      names           = temp,
       needsReindexing = i.needsReindexing.distinct.sorted,
-      number = temp.size
+      number          = temp.size
     )
   }
 
   private def sanitize(names: List[Name]): HFIndex = {
     val temp = names.distinct.sorted
     HFIndex(
-      names = temp,
+      names           = temp,
       needsReindexing = temp,
-      number = temp.length
+      number          = temp.length
     )
   }
 

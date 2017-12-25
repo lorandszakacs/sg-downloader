@@ -15,6 +15,7 @@ trait Identity[T] {
 }
 
 object Identity {
+
   def apply[T](f: (T, T) => Boolean) = new Identity[T] {
     override def identifiesAs(x: T, y: T): Boolean = f(x, y)
   }

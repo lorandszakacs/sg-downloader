@@ -15,9 +15,13 @@ object TimeUtil {
   def daysBetween(start: LocalDate, end: LocalDate): List[LocalDate] = {
     val nrOfDays = Days.daysBetween(start, end).getDays
     if (start > end) {
-      throw new IllegalArgumentException(s".... days between cannot be computed for start($start) smaller than end($end)")
+      throw new IllegalArgumentException(
+        s".... days between cannot be computed for start($start) smaller than end($end)"
+      )
     }
-    (0 to nrOfDays map { d => start.plusDays(d) }).toList
+    (0 to nrOfDays map { d =>
+      start.plusDays(d)
+    }).toList
   }
 
 }

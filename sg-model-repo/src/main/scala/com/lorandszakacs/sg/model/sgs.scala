@@ -108,12 +108,13 @@ sealed trait M {
 }
 
 object Name {
+
   def apply(name: String): Name = {
     new Name(name.trim.toLowerCase)
   }
 }
 
-final class Name private(
+final class Name private (
   val name: String
 ) {
   override def toString: String = s"Name($name)"
@@ -143,12 +144,13 @@ final class Name private(
 }
 
 object PhotoSetTitle {
+
   def apply(name: String): PhotoSetTitle = {
     new PhotoSetTitle(name.trim.toUpperCase.replace("  ", "").replace("\t", " "))
   }
 }
 
-final class PhotoSetTitle private(
+final class PhotoSetTitle private (
   val name: String
 ) {
   override def toString: String = s"PhotoSetTitle($name)"
@@ -167,9 +169,9 @@ final class PhotoSetTitle private(
 }
 
 final case class SG(
-  photoSetURL: URL,
+  photoSetURL:                  URL,
   @Annotations.Key("_id") name: Name,
-  photoSets: List[PhotoSet]
+  photoSets:                    List[PhotoSet]
 ) extends M {
   override type MType = SG
 
@@ -191,9 +193,9 @@ final case class SG(
 }
 
 final case class HF(
-  photoSetURL: URL,
+  photoSetURL:                  URL,
   @Annotations.Key("_id") name: Name,
-  photoSets: List[PhotoSet]
+  photoSets:                    List[PhotoSet]
 ) extends M {
 
   override type MType = HF
@@ -217,10 +219,10 @@ final case class HF(
 }
 
 final case class PhotoSet(
-  url: URL,
-  title: PhotoSetTitle,
-  date: LocalDate,
-  photos: List[Photo] = Nil,
+  url:                           URL,
+  title:                         PhotoSetTitle,
+  date:                          LocalDate,
+  photos:                        List[Photo] = Nil,
   @Annotations.Ignore() isHFSet: Option[Boolean] = None
 ) {
 
@@ -238,9 +240,9 @@ final case class PhotoSet(
 }
 
 final case class Photo(
-  url: URL,
+  url:          URL,
   thumbnailURL: URL,
-  index: Int
+  index:        Int
 ) {
 
   override def toString: String = s"$url :: $thumbnailURL"

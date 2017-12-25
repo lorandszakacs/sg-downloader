@@ -11,7 +11,7 @@ import com.lorandszakacs.util.mongodb._
   *
   */
 private[impl] class RepoSGIndex(override protected val db: Database)(
-  implicit override val executionContext: ExecutionContext
+  implicit override val executionContext:                  ExecutionContext
 ) extends IndexSingleDocRepo[SGIndex] with ModelBSON {
 
   override protected def objectHandler: BSONDocumentHandler[SGIndex] = BSONMacros.handler[SGIndex]
@@ -19,26 +19,26 @@ private[impl] class RepoSGIndex(override protected val db: Database)(
   override protected def uniqueDocumentId: String = "sg_index"
 
   override protected def defaultEntity: SGIndex = SGIndex(
-    names = Nil,
+    names           = Nil,
     needsReindexing = Nil,
-    number = 0
+    number          = 0
   )
 
   private def sanitize(i: SGIndex): SGIndex = {
     val temp = i.names.distinct.sorted
     i.copy(
-      names = temp,
+      names           = temp,
       needsReindexing = i.needsReindexing.distinct.sorted,
-      number = temp.size
+      number          = temp.size
     )
   }
 
   private def sanitize(names: List[Name]): SGIndex = {
     val temp = names.distinct.sorted
     SGIndex(
-      names = temp,
+      names           = temp,
       needsReindexing = temp,
-      number = temp.length
+      number          = temp.length
     )
   }
 

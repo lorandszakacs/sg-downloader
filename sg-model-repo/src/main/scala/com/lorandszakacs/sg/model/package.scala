@@ -16,8 +16,12 @@ package object model {
     m1.name == m2.name
   }
 
-  implicit val sgIdentifier: Identifier[SG, Name] = Identifier[SG, Name] { m: SG => m.name }
-  implicit val hfIdentifier: Identifier[HF, Name] = Identifier[HF, Name] { m: HF => m.name }
+  implicit val sgIdentifier: Identifier[SG, Name] = Identifier[SG, Name] { m: SG =>
+    m.name
+  }
+  implicit val hfIdentifier: Identifier[HF, Name] = Identifier[HF, Name] { m: HF =>
+    m.name
+  }
 
   implicit class StringBuffedWithModelName(str: String) {
     def toModelName: Name = Name(str)
@@ -26,6 +30,7 @@ package object model {
   }
 
   implicit class BuffedMs(ms: List[M]) {
+
     def group: Ms = {
       val (sgs, hf) = ms partition (_.isSG)
       Ms(
@@ -37,6 +42,7 @@ package object model {
   }
 
   implicit class BuffedTuple(ms: (List[SG], List[HF])) {
+
     def group: Ms = {
       Ms(
         sgs = ms._1,
