@@ -37,19 +37,19 @@ private[html] class HTMLGeneratorImpl()(
 
   override def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): Future[MRootIndex] = {
     for {
-      modelIndexes: List[MIndex] <- Future.traverse(ms) { model =>
-                                     Future(modelIndex(model))
-                                   }
+      mIndexes <- Future.traverse(ms) { m =>
+                   Future(mIndex(m))
+                 }
     } yield {
       MRootIndex(
-        html = rootIndexPage(modelIndexes),
-        ms   = modelIndexes
+        html = rootIndexPage(mIndexes),
+        ms   = mIndexes
       )
     }
   }
 
   override def createRootIndex(ms: List[Name])(implicit settings: HtmlSettings): Future[Html] = {
-    Future.successful(rootIndexPageForModelNames(ms))
+    Future.successful(rootIndexPageForNames(ms))
   }
 
   /**
@@ -107,7 +107,7 @@ private[html] class HTMLGeneratorImpl()(
 
   }
 
-  private def modelIndex(m: M)(implicit settings: HtmlSettings): MIndex = {
+  private def mIndex(m: M)(implicit settings: HtmlSettings): MIndex = {
     def iconForPhotoSet(ps: PhotoSet): String = {
       ps.photos.headOption.map(_.thumbnailURL.toExternalForm).getOrElse(s"$RootPath3/icons/sg_logo.ico")
     }
@@ -203,8 +203,8 @@ private[html] class HTMLGeneratorImpl()(
     )
   }
 
-  private def rootIndexPageForModelNames(modelNames: List[Name])(implicit settings: HtmlSettings): Html = {
-    generateRootIndexPage(modelNames)(
+  private def rootIndexPageForNames(names: List[Name])(implicit settings: HtmlSettings): Html = {
+    generateRootIndexPage(names)(
       title = settings.rootIndexTitle,
       linkAndItemNameGenerator = { m: Name =>
         (modelIndexPageRelativePathFromCurrentDirectory(m), m.name)

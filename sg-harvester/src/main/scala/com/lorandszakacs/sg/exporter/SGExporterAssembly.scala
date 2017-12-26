@@ -13,7 +13,7 @@ import com.lorandszakacs.util.future._
   * @since 17 Jul 2016
   *
   */
-trait ModelExporterAssembly extends HTMLIndexWriterAssembly with HTMLGeneratorAssembly {
+trait SGExporterAssembly extends HTMLIndexWriterAssembly with HTMLGeneratorAssembly {
   this: SGModelAssembly =>
 
   implicit def executionContext: ExecutionContext
@@ -21,7 +21,7 @@ trait ModelExporterAssembly extends HTMLIndexWriterAssembly with HTMLGeneratorAs
   def sgExporter: SGExporter = _exporter
 
   private lazy val _exporter = new SGExporterImpl(
-    repo       = sgModelRepository,
+    repo       = sgAndHFRepository,
     html       = htmlGenerator,
     fileWriter = htmlIndexWriter
   )(executionContext)

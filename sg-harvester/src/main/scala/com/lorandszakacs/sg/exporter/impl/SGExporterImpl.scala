@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.exporter.impl
 
 import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.Favorites
-import com.lorandszakacs.sg.exporter.html.{HTMLGenerator, HtmlSettings, MRootIndex}
+import com.lorandszakacs.sg.exporter.html.{HTMLGenerator, HtmlSettings}
 import com.lorandszakacs.sg.exporter.indexwriter.{HTMLIndexWriter, WriterSettings}
 import com.lorandszakacs.sg.exporter.{ExporterSettings, ModelNotFoundException, SGExporter}
 import com.lorandszakacs.sg.model._
@@ -24,7 +24,7 @@ private[exporter] class SGExporterImpl(
 
   private val FavoritesHtmlSettings = HtmlSettings(
     indexFileName  = "index.html",
-    rootIndexTitle = "Favorite Suicide Girls"
+    rootIndexTitle = "Favorite SGs"
   )
 
   private def favoritesWriterSettings(implicit es: ExporterSettings) = WriterSettings(
@@ -44,14 +44,14 @@ private[exporter] class SGExporterImpl(
 
   private val AllHtmlSettings = HtmlSettings(
     indexFileName  = "index.html",
-    rootIndexTitle = "All Suicide Girls"
+    rootIndexTitle = "All SGs"
   )
 
   private def updateFavoritesHTML(deltaFavorites: List[M])(implicit ws: ExporterSettings): Future[Unit] = {
     if (deltaFavorites.nonEmpty) {
       for {
         favoritesIndexDelta       <- html.createHTMLPageForMs(deltaFavorites)(FavoritesHtmlSettings)
-        _                         <- fileWriter.writeRootModelIndex(favoritesIndexDelta)(favoritesWriterSettings)
+        _                         <- fileWriter.writeRootMIndex(favoritesIndexDelta)(favoritesWriterSettings)
         completeFavoriteRootIndex <- html.createRootIndex(Favorites.names)(FavoritesHtmlSettings)
         _                         <- fileWriter.rewriteRootIndexFile(completeFavoriteRootIndex)(favoritesWriterSettings)
       } yield {
@@ -69,9 +69,9 @@ private[exporter] class SGExporterImpl(
   private def updateAllHTML(delta: List[M])(implicit ws: ExporterSettings): Future[Unit] = {
     if (delta.nonEmpty) {
       for {
-        completeIndex: CompleteIndex <- repo.completeIndex
+        completeIndex <- repo.completeIndex
         allIndexDelta <- html.createHTMLPageForMs(delta)(AllHtmlSettings)
-        _             <- fileWriter.writeRootModelIndex(allIndexDelta)(allWriterSettings)
+        _             <- fileWriter.writeRootMIndex(allIndexDelta)(allWriterSettings)
         allRootIndex  <- html.createRootIndex(completeIndex.names)(AllHtmlSettings)
         _             <- fileWriter.rewriteRootIndexFile(allRootIndex)(allWriterSettings)
       } yield {
@@ -104,17 +104,17 @@ private[exporter] class SGExporterImpl(
 
   override def exportHTMLIndexOfFavorites(implicit ws: ExporterSettings): Future[Unit] = {
     for {
-      ms <- repo.find(Favorites.names)
-      favoritesIndex: MRootIndex <- html.createHTMLPageForMs(ms)(FavoritesHtmlSettings)
-      _ <- fileWriter.writeRootModelIndex(favoritesIndex)(favoritesWriterSettings)
+      ms       <- repo.find(Favorites.names)
+      favIndex <- html.createHTMLPageForMs(ms)(FavoritesHtmlSettings)
+      _        <- fileWriter.writeRootMIndex(favIndex)(favoritesWriterSettings)
     } yield ()
   }
 
   override def exportHTMLIndexOfAllMs(implicit ws: ExporterSettings): Future[Unit] = {
     for {
-      ms <- repo.findAll
-      allMsIndex: MRootIndex <- html.createHTMLPageForMs(ms)(AllHtmlSettings)
-      _ <- fileWriter.writeRootModelIndex(allMsIndex)(allWriterSettings)
+      ms         <- repo.findAll
+      allMsIndex <- html.createHTMLPageForMs(ms)(AllHtmlSettings)
+      _          <- fileWriter.writeRootMIndex(allMsIndex)(allWriterSettings)
     } yield ()
   }
 

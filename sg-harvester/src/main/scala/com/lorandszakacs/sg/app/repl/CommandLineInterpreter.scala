@@ -3,7 +3,6 @@ package com.lorandszakacs.sg.app.repl
 import com.lorandszakacs.sg.app.commands.{Command, CommandParser, Commands}
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
 import com.lorandszakacs.sg.http.PasswordProvider
-import com.lorandszakacs.sg.sanitizer.SanitizerAssembly
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
@@ -18,7 +17,7 @@ import scala.util.control.NonFatal
   *
   */
 class CommandLineInterpreter(
-  assembly: SanitizerAssembly with SGDownloaderAssembly
+  assembly: SGDownloaderAssembly
 ) extends StrictLogging {
 
   private implicit val executionContext: ExecutionContext = assembly.executionContext
@@ -76,7 +75,7 @@ class CommandLineInterpreter(
       //=======================================================================
       case Commands.ExportHTML(onlyFavorites) =>
         downloader.export.all(
-          daysToExport = defaultDays,
+          daysToExport  = defaultDays,
           onlyFavorites = onlyFavorites
         )
 

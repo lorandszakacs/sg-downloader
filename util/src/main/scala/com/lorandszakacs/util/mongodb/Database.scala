@@ -27,7 +27,7 @@ final case class Database(
   private lazy val _mongoDriver:     MongoDriver     = new MongoDriver()
   private lazy val _mongoConnection: MongoConnection = _mongoDriver.connection(MongoConnection.parseURI(uri).get)
   private lazy val _dataBase: Try[DefaultDB] = {
-    Try(Database.getDatabase(_mongoDriver, _mongoConnection)(dbName).await())
+    Try(Database.getDatabase(_mongoConnection)(dbName).await())
   }
   private lazy val _db = _dataBase.get
 
@@ -52,9 +52,11 @@ final case class Database(
 }
 
 object Database {
-  private[mongodb] def getDatabase(_mongoDriver: MongoDriver, _mongoConnection: MongoConnection)(
-    name:                                        String
-  )(implicit ec:                                 ExecutionContext): Future[DefaultDB] = {
+  private[mongodb] def getDatabase(
+    _mongoConnection: MongoConnection
+  )(
+    name:        String
+  )(implicit ec: ExecutionContext): Future[DefaultDB] = {
     val future = {
       _mongoConnection.database(name)
     } recover {

@@ -108,8 +108,8 @@ private[model] class SGAndHFRepositoryImpl(
 
   def completeIndex: Future[CompleteIndex] = {
     for {
-      hfIndex: HFIndex <- hfiRepo.get
-      sgIndex: SGIndex <- sgiRepo.get
+      hfIndex <- hfiRepo.get
+      sgIndex <- sgiRepo.get
     } yield {
       val normalizedNames      = (hfIndex.names ++ sgIndex.names).distinct.sorted
       val normalizedReindexing = (hfIndex.needsReindexing ++ sgIndex.needsReindexing).distinct.sorted
@@ -143,14 +143,16 @@ private[model] class SGAndHFRepositoryImpl(
     } yield (day, msForDay)
   }
 
-  override def aggregateBetweenDays(start: LocalDate,
-                                    end:   LocalDate,
-                                    ms:    List[M]): Future[List[(LocalDate, List[M])]] = {
+  override def aggregateBetweenDays(
+    start: LocalDate,
+    end:   LocalDate,
+    ms:    List[M]
+  ): Future[List[(LocalDate, List[M])]] = {
     for {
       sgs <- sgsRepo.findBetweenDays(start, end)
       hfs <- hfsRepo.findBetweenDays(start, end)
-      allFromDB: List[M] = sgs ++ hfs
-      all:       List[M] = allFromDB.addOrReplace(ms)
+      allFromDB = sgs ++ hfs : List[M]
+      all       = allFromDB.addOrReplace(ms)
 
       result = groupMsBetweenDays(start, end, all)
     } yield result
@@ -158,8 +160,8 @@ private[model] class SGAndHFRepositoryImpl(
 
   override def find(name: Name): Future[Option[M]] = {
     for {
-      sg: Option[SG] <- sgsRepo.find(name)
-      hf: Option[HF] <- hfsRepo.find(name)
+      sg <- sgsRepo.find(name)
+      hf <- hfsRepo.find(name)
     } yield if (sg.isDefined) sg else hf
   }
 

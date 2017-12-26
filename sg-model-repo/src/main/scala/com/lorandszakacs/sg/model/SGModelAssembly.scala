@@ -16,10 +16,8 @@ trait SGModelAssembly {
 
   implicit def executionContext: ExecutionContext
 
-  def sgModelRepository: SGAndHFRepository = _sgModelRepository
+  def sgAndHFRepository: SGAndHFRepository = _sgAndHFRepository
 
-  private[model] lazy val _sgModelRepository = new SGAndHFRepositoryImpl(
-    db
-  )
+  private[model] lazy val _sgAndHFRepository = new SGAndHFRepositoryImpl(db)
 
 }

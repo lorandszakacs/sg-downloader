@@ -18,6 +18,7 @@ package com.lorandszakacs.sg.contentparser.data
 
 import akka.http.scaladsl.model.Uri
 import com.github.nscala_time.time.Imports._
+import com.lorandszakacs.sg.core
 import com.lorandszakacs.sg.model.PhotoSetTitle
 import com.lorandszakacs.util.html._
 
@@ -49,7 +50,7 @@ trait PhotoSetPage {
 }
 
 object PhotoSetPagePartialDate extends PhotoSetPage {
-  def uri: Uri = "https://suicidegirls.com/girls/dwam/album/1239337/adieu-tristesse/"
+  def uri: Uri = s"${core.Domain}/girls/dwam/album/1239337/adieu-tristesse/"
 
   def numberOfPhotos: Int = 53
 
@@ -59,7 +60,7 @@ object PhotoSetPagePartialDate extends PhotoSetPage {
 }
 
 object PhotoSetPageFullDate extends PhotoSetPage {
-  def uri: Uri = "https://suicidegirls.com/girls/dwam/album/977051/limportance-d-etre-ernest/"
+  def uri: Uri = s"${core.Domain}/girls/dwam/album/977051/limportance-d-etre-ernest/"
 
   def numberOfPhotos: Int = 45
 

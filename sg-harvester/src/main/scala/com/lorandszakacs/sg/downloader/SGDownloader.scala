@@ -83,7 +83,7 @@ final class SGDownloader private[downloader] (
     )(implicit patienceConfig: PatienceConfig): Future[Ms] = {
       logger.info(s"index.delta --> starting from ${lastProcessedOpt.map(_.lastPhotoSetID).getOrElse("")}")
       for {
-        newMs: List[M] <- indexer.gatherAllNewMsAndAllTheirPhotoSets(Int.MaxValue, lastProcessedOpt)
+        newMs <- indexer.gatherAllNewMsAndAllTheirPhotoSets(Int.MaxValue, lastProcessedOpt)
         ms = newMs.group
         _ = {
           logger.info(s"finished indexing new entries. Total: #${ms.all.length}")
@@ -93,14 +93,14 @@ final class SGDownloader private[downloader] (
       } yield ms
     }
 
-    def specificPure(modelNames: List[Name])(implicit patienceConfig: PatienceConfig): Future[Ms] = {
-      logger.info(s"index.specific --> ${modelNames.stringify}")
+    def specificPure(names: List[Name])(implicit patienceConfig: PatienceConfig): Future[Ms] = {
+      logger.info(s"index.specific --> ${names.stringify}")
       for {
-        newMs: List[M] <- Future.serialize(modelNames) { modelName =>
-                           patienceConfig.throttleAfter {
-                             indexer.gatherPhotoSetInformationForModel(modelName)
-                           }
-                         }
+        newMs <- Future.serialize(names) { name =>
+                  patienceConfig.throttleAfter {
+                    indexer.gatherPhotoSetInformationForModel(name)
+                  }
+                }
         ms = newMs.group
         _ = {
           logger.info(s"finished indexing specific entries. Total: #${ms.all.length}")
@@ -255,7 +255,7 @@ final class SGDownloader private[downloader] (
       logger.info(s"download.delta --> IMPURE --> daysToExport: $daysToExport includeProblematic: $includeProblematic")
       for {
         _ <- reifier.authenticateIfNeeded()
-        lastProcessedOpt: Option[LastProcessedMarker] <- repo.lastProcessedIndex
+        lastProcessedOpt <- repo.lastProcessedIndex
         _ = logger.info(s"the last processed set was: ${lastProcessedOpt.map(_.lastPhotoSetID)}")
 
         _ = logger.info(

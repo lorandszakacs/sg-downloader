@@ -18,11 +18,10 @@ private[reifier] final class SessionDaoImpl(
 )(implicit override val executionContext: ExecutionContext)
     extends SingleDocumentMongoCollection[Session, String, BSONString] with StrictLogging {
 
-  private implicit val dateTimeHandler
+  private[reifier] implicit val dateTimeHandler
     : BSONReader[BSONDateTime, DateTime] with BSONWriter[DateTime, BSONDateTime] with BSONHandler[BSONDateTime,
                                                                                                   DateTime] =
-    new BSONReader[BSONDateTime, DateTime] with BSONWriter[DateTime, BSONDateTime]
-    with BSONHandler[BSONDateTime, DateTime] {
+    new BSONHandler[BSONDateTime, DateTime] {
       override def read(bson: BSONDateTime): DateTime = {
         new DateTime(bson.value, DateTimeZone.UTC)
       }
@@ -45,7 +44,7 @@ private[reifier] final class SessionDaoImpl(
 
   override def collectionName: String = "sg_sessions"
 
-  private def onInit(): Unit = {
+  private def onInit(): Future[Unit] = {
     for {
       opt <- this.find
       _ <- when(opt.isEmpty) execute this.create {

@@ -29,7 +29,7 @@ class FutureSerializeTest extends FlatSpec with Matchers {
     var startedFlag:         Option[Int] = None
 
     val eventualResult: Future[Seq[String]] = Future.serialize(input) { i =>
-      val toWaitInMillis = (Math.random() * 1000).toInt % 200
+      val toWaitInMillis: Long = (Math.random() * 1000).toLong % 200
       Future {
         assert(startedFlag.isEmpty,
                s"started flag should have been empty at the start of each future but was: $startedFlag")
@@ -59,7 +59,7 @@ class FutureSerializeTest extends FlatSpec with Matchers {
     var startedFlag:         Option[Int] = None
 
     val eventualResult: Future[Seq[String]] = Future.serialize(input) { i =>
-      val toWaitInMillis = (Math.random() * 1000).toInt % 200
+      val toWaitInMillis: Long = (Math.random() * 1000).toLong % 200
       Future {
         assert(startedFlag.isEmpty,
                s"started flag should have been empty at the start of each future but was: $startedFlag")
@@ -88,7 +88,7 @@ class FutureSerializeTest extends FlatSpec with Matchers {
     var startedFlag: Option[Int] = None
 
     val eventualResult: Future[Set[String]] = Future.serialize(input) { i =>
-      val toWaitInMillis = (Math.random() * 1000).toInt % 200
+      val toWaitInMillis: Long = (Math.random() * 1000).toLong % 200
       Future {
         assert(startedFlag.isEmpty,
                s"started flag should have been empty at the start of each future but was: $startedFlag")

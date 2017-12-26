@@ -4,8 +4,9 @@ import sbt.Keys._
 lazy val `scala_2.12`:     String = "2.12.4"
 lazy val mainScalaVersion: String = `scala_2.12`
 
-addCommandAlias("mkJar", ";clean;update;compile;project sg-harvester;assembly")
+
 addCommandAlias("ci",    ";clean;update;compile;test:compile")
+addCommandAlias("mkJar", ";clean;update;compile;project sg-harvester;assembly")
 
 lazy val root = Project(
   "sg-downloader",
@@ -26,7 +27,10 @@ lazy val `sg-harvester` = project
       fork in run := true,
       libraryDependencies ++= Seq(
         akkaActor,
+        akkaStream,
         akkaHttp,
+
+        scalaParserCombinators,
 
         scalaTest
       )
@@ -91,8 +95,7 @@ lazy val `util` = project
 //========================================== Misc ============================================
 //============================================================================================
 
-lazy val scalaParserCombinators
-: ModuleID = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6" withSources ()
+lazy val scalaParserCombinators: ModuleID = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6" withSources ()
 
 lazy val nScalaJodaTime: ModuleID = "com.github.nscala-time" %% "nscala-time"   % "2.16.0" withSources ()
 lazy val reactiveMongo:  ModuleID = "org.reactivemongo"      %% "reactivemongo" % "0.12.5" withSources ()
@@ -131,14 +134,10 @@ lazy val attoParser: ModuleID = "org.tpolecat" %% "atto-core" % "0.6.1-M7" withS
 
 lazy val akkaVersion: String = "2.5.8"
 
-lazy val akkaActor:           ModuleID = "com.typesafe.akka" %% "akka-actor"            % akkaVersion withSources ()
-lazy val akkaStream:          ModuleID = "com.typesafe.akka" %% "akka-stream"           % akkaVersion withSources ()
-lazy val akkaCluster:         ModuleID = "com.typesafe.akka" %% "akka-cluster"          % akkaVersion withSources ()
-lazy val akkaClusterSharding: ModuleID = "com.typesafe.akka" %% "akka-cluster-sharding" % akkaVersion withSources ()
-lazy val akkaDistributedData: ModuleID = "com.typesafe.akka" %% "akka-distributed-data" % akkaVersion withSources ()
-lazy val akkaPersistence:     ModuleID = "com.typesafe.akka" %% "akka-persistence"      % akkaVersion withSources ()
+lazy val akkaActor:           ModuleID = "com.typesafe.akka" %% "akka-actor"  % akkaVersion withSources ()
+lazy val akkaStream:          ModuleID = "com.typesafe.akka" %% "akka-stream" % akkaVersion withSources ()
 
-lazy val akkaHttpVersion: String   = "10.0.11"
+lazy val akkaHttpVersion: String   = "10.1.0-RC1"
 lazy val akkaHttp:        ModuleID = "com.typesafe.akka" %% "akka-http" % akkaHttpVersion withSources ()
 
 //============================================================================================
@@ -148,24 +147,16 @@ lazy val akkaHttp:        ModuleID = "com.typesafe.akka" %% "akka-http" % akkaHt
 lazy val scalaTest:  ModuleID = "org.scalatest"  %% "scalatest"  % "3.0.4"  % Test withSources ()
 lazy val scalaCheck: ModuleID = "org.scalacheck" %% "scalacheck" % "1.13.4" % Test withSources ()
 
-lazy val akkaTestKit: ModuleID = "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test withSources ()
-lazy val akkaStreamTestKit
-: ModuleID = "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test withSources ()
-lazy val akkaHttpTestKit
-: ModuleID = "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test withSources ()
-
 //============================================================================================
-//=======================================  SETTINGS ==========================================
+//=================================== COMMON-SETTINGS ========================================
 //============================================================================================
-
-lazy val organizationName: String = "com.lorandszakacs"
 
 def commonSettings: Seq[Setting[_]] =
   Seq(
-    organization in ThisBuild   := organizationName,
+    organization in ThisBuild   := "com.lorandszakacs",
     test in assembly            := {},
     assemblyJarName in assembly := s"${name.value}.jar",
     scalaVersion                := mainScalaVersion,
     dependencyOverrides += akkaStream,
     dependencyOverrides += akkaActor,
-  ) // ++ scalaCompilerSettings
+  ) ++ Settings.scalaCompilerFlags

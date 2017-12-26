@@ -65,11 +65,6 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
     * <a id="likeScore" appname="album" object="album" objectid="997826" direction="clear" class="button like  icon-heart  youLike active">&nbsp;4097</a>
     * </div>
     * <div id="share_997826" class="admin-bar share-links share-menu">
-    * <ul class="">
-    * <li><a class="facebook-share" href="http://www.suicidegirls.com/girls/moon/album/997826/mirage/" verbose="album" data-facebook-id="508713652527801" data-picture-url="https://d1a0n9gptf7ayu.cloudfront.net/photos/f862054e3afd14f4aaa65dfe19f776ae.jpg" data-name="Mirage" data-description="<div class=&quot;legacy-text&quot;>&amp;lt;div class=&quot;legacy-text&quot;&amp;gt;&amp;lt;/div&amp;gt;</div>">Facebook</a></li>
-    * <li><a class="twitter-share" href="http://twitter.com/share?url=http://www.suicidegirls.com/girls/moon/album/997826/mirage/">Tweet</a></li>
-    * <li><a class="email-share" href="mailto:?&amp;body=http://www.suicidegirls.com/girls/moon/album/997826/mirage/">Email</a></li>
-    * </ul>
     * </div>
     * <div id="edit_997826" class="admin-bar share-links">
     * <ul class="">
@@ -318,7 +313,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
         val dateTime = new LocalDate(year.toInt, monthAsInt, day.toInt)
         dateTime
       } recoverWith {
-        case NonFatal(e) =>
+        case NonFatal(_) =>
           Try {
             val simplifiedDatePattern             = """(\w\w\w) (\d*)""".r
             val simplifiedDatePattern(month, day) = time

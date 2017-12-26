@@ -247,7 +247,7 @@ class SGIndexerTests extends IndexerTest {
       withClue("... now gathering only a part of the processed sets") {
         whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, Option(lastProcessed))) { ms: List[M] =>
           withClue("... size") {
-            ms should have size index
+            ms should have size index.toLong
           }
           withClue("... distribution") {
             assert(!ms.exists(_.name == latest.name), "... the latest model should not be in this list")
@@ -281,7 +281,7 @@ class SGIndexerTests extends IndexerTest {
       withClue("... now gathering only a part of the processed sets") {
         whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, Option(lastProcessed))) { ms: List[M] =>
           withClue("... size") {
-            ms should have size index
+            ms should have size index.toLong
           }
           withClue("... distribution") {
             assert(!ms.exists(_.name == latest.name), "... the latest model should not be in this list")

@@ -21,7 +21,7 @@ import scala.util.control.NonFatal
 private[indexwriter] class HTMLIndexWriterImpl()(implicit val ec: ExecutionContext)
     extends HTMLIndexWriter with StrictLogging {
 
-  override def writeRootModelIndex(index: MRootIndex)(implicit ws: WriterSettings): Future[Unit] = {
+  override def writeRootMIndex(index: MRootIndex)(implicit ws: WriterSettings): Future[Unit] = {
     for {
       _ <- (if (ws.rewriteEverything) FileUtils.cleanFolderOrCreate(ws.rootFolder) else Future.unit) recover {
             case NonFatal(e) =>
@@ -53,9 +53,7 @@ private[indexwriter] class HTMLIndexWriterImpl()(implicit val ec: ExecutionConte
   private def writeRootIndexFile(rootIndex: MRootIndex)(implicit ws: WriterSettings): Future[Unit] = {
     val path = ws.rootFolder.resolve(rootIndex.html.relativePathAndName)
     for {
-      _: List[Unit] <- Future.traverse(rootIndex.ms) { m: MIndex =>
-                        writeModelIndex(rootIndex)(m)
-                      }
+      _: List[Unit] <- Future.traverse(rootIndex.ms)(writeModelIndex)
       _ = logger.info(s"finished writing all #${rootIndex.ms.length} Ms @ ${ws.rootFolder}")
       _ <- FileUtils.writeFile(path, rootIndex.html.content)
     } yield ()
@@ -65,7 +63,7 @@ private[indexwriter] class HTMLIndexWriterImpl()(implicit val ec: ExecutionConte
     * It will create a folder ./[[MIndex.name]]/, and write everything inside that folder
     * This writes:[[MIndex.html]] to ``./[[MIndex.html.relativePathAndName]]`` on the disk
     */
-  private def writeModelIndex(rootIndex: MRootIndex)(m: MIndex)(implicit ws: WriterSettings): Future[Unit] = {
+  private def writeModelIndex(m: MIndex)(implicit ws: WriterSettings): Future[Unit] = {
     def writeModelPhotoSetIndex(ps: PhotoSetIndex)(implicit ws: WriterSettings): Future[Unit] = {
       val psPath = ws.rootFolder.resolve(ps.html.relativePathAndName)
       logger.debug(s"attempting to write file: $psPath")

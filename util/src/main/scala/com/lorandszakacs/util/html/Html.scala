@@ -18,9 +18,6 @@ package com.lorandszakacs.util.html
 
 import org.jsoup._
 import org.jsoup.nodes._
-import org.jsoup.select._
-
-import scala.collection.mutable.ListBuffer
 
 import java.io.File
 

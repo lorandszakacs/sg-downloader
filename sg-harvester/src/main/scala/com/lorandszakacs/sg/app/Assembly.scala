@@ -4,11 +4,10 @@ import java.util.concurrent.Executors
 
 import akka.actor.ActorSystem
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
-import com.lorandszakacs.sg.exporter.ModelExporterAssembly
+import com.lorandszakacs.sg.exporter.SGExporterAssembly
 import com.lorandszakacs.sg.indexer.IndexerAssembly
 import com.lorandszakacs.sg.model.SGModelAssembly
 import com.lorandszakacs.sg.reifier.ReifierAssembly
-import com.lorandszakacs.sg.sanitizer.SanitizerAssembly
 import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.mongodb.Database
 import com.typesafe.scalalogging.StrictLogging
@@ -20,8 +19,8 @@ import com.typesafe.scalalogging.StrictLogging
   *
   */
 class Assembly
-    extends ModelExporterAssembly with SGModelAssembly with IndexerAssembly with ReifierAssembly with SanitizerAssembly
-    with SGDownloaderAssembly with StrictLogging {
+    extends SGExporterAssembly with SGModelAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly
+    with StrictLogging {
 
   override implicit lazy val db: Database = new Database(
     uri    = """mongodb://localhost:27016""",

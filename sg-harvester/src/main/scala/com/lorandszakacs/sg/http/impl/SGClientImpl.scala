@@ -280,8 +280,8 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     }
 
     for {
-      initialTokens: StartPageTokens <- getTokensFromStartPage
-      newSession:    Session         <- postLoginAndGetTokens(initialTokens)
+      initialTokens <- getTokensFromStartPage
+      newSession    <- postLoginAndGetTokens(initialTokens)
       newAuthentication = authenticationFromSession(newSession)
       _ <- verifyAuthentication(newAuthentication)
     } yield newAuthentication

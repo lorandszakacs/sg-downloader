@@ -45,7 +45,7 @@ case class Ms(
   sgs: List[SG],
   hfs: List[HF],
   all: List[M]
-) {
+) extends Product with Serializable {
   def newestM: Option[M] = all.headOption
 
   def ml(name: Name): Option[M] = all.find(_.name == name)
@@ -61,7 +61,7 @@ case class Ms(
   def allNames: List[Name] = all.map(_.name)
 }
 
-sealed trait M {
+sealed trait M extends Product with Serializable {
   type MType <: M
 
   def photoSetURL: URL
@@ -172,7 +172,7 @@ final case class SG(
   photoSetURL:                  URL,
   @Annotations.Key("_id") name: Name,
   photoSets:                    List[PhotoSet]
-) extends M {
+) extends M with Product with Serializable {
   override type MType = SG
 
   override def updatePhotoSets(newPhotoSets: List[PhotoSet]): SG = this.copy(photoSets = newPhotoSets)
@@ -196,7 +196,7 @@ final case class HF(
   photoSetURL:                  URL,
   @Annotations.Key("_id") name: Name,
   photoSets:                    List[PhotoSet]
-) extends M {
+) extends M with Product with Serializable {
 
   override type MType = HF
 
@@ -224,7 +224,7 @@ final case class PhotoSet(
   date:                          LocalDate,
   photos:                        List[Photo] = Nil,
   @Annotations.Ignore() isHFSet: Option[Boolean] = None
-) {
+) extends Product with Serializable {
 
   def id: String = url.toExternalForm
 
@@ -243,7 +243,7 @@ final case class Photo(
   url:          URL,
   thumbnailURL: URL,
   index:        Int
-) {
+) extends Product with Serializable {
 
   override def toString: String = s"$url :: $thumbnailURL"
 }

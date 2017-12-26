@@ -187,7 +187,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     implicit pc:                                         PatienceConfig
   ): Future[List[M]] = {
     for {
-      msWithOnlyOneSet: List[M] <- gatherAllNewMsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
+      msWithOnlyOneSet <- gatherAllNewMsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
       sgHF = msWithOnlyOneSet.distinctById.group
       sgs <- Future.serialize(sgHF.sgs) { sg =>
               pc.throttleAfter {

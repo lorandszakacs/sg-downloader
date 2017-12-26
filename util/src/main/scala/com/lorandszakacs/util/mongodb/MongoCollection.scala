@@ -74,7 +74,7 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def findMany(query: BSONDocument, maxDocs: Int = Int.MaxValue): Future[List[Entity]] = {
     val cursor: Cursor[Entity] = collection.find(query).cursor[Entity]()
-    cursor.collect[List](maxDocs = Int.MaxValue, err = Cursor.FailOnError[List[Entity]]())
+    cursor.collect[List](maxDocs = maxDocs, err = Cursor.FailOnError[List[Entity]]())
   }
 
   def findAll: Future[List[Entity]] = {

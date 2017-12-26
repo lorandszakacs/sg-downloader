@@ -31,34 +31,34 @@ private[reifier] class SGReifierImpl(
     if (authentication.needsRefresh) {
       logger.info("need to authenticate")
       for {
-        possibleSession:   Option[Session] <- sessionDao.find
-        newAuthentication: Authentication <- possibleSession match {
-                                              case Some(session) =>
-                                                logger.info("attempting to recreate authentication from stored session")
-                                                val recreate = for {
-                                                  auth <- sGClient.createAuthentication(session)
-                                                } yield auth
+        possibleSession <- sessionDao.find
+        newAuth <- possibleSession match {
+                    case Some(session) =>
+                      logger.info("attempting to recreate authentication from stored session")
+                      val recreate = for {
+                        auth <- sGClient.createAuthentication(session)
+                      } yield auth
 
-                                                val result = recreate recoverWith {
-                                                  case e: FailedToVerifyNewAuthenticationException =>
-                                                    logger.error(
-                                                      "failed to verify stored session, defaulting to using username and password",
-                                                      e
-                                                    )
-                                                    authenticateWithUsernameAndPassword(passwordProvider)
-                                                }
+                      val result = recreate recoverWith {
+                        case e: FailedToVerifyNewAuthenticationException =>
+                          logger.error(
+                            "failed to verify stored session, defaulting to using username and password",
+                            e
+                          )
+                          authenticateWithUsernameAndPassword(passwordProvider)
+                      }
 
-                                                result map { r: Authentication =>
-                                                  logger.info("successfully restored authentication")
-                                                  r
-                                                }
+                      result map { r: Authentication =>
+                        logger.info("successfully restored authentication")
+                        r
+                      }
 
-                                              case None =>
-                                                authenticateWithUsernameAndPassword(passwordProvider)
-                                            }
+                    case None =>
+                      authenticateWithUsernameAndPassword(passwordProvider)
+                  }
       } yield {
-        _authentication = newAuthentication
-        newAuthentication
+        _authentication = newAuth
+        newAuth
       }
     }
     else {
@@ -108,7 +108,7 @@ private[reifier] class SGReifierImpl(
                            pc.throttleQuarterAfter {
                              for {
                                photos <- this.gatherAllPhotosFromSetPage(photoSet.url) recoverWith {
-                                          case e: DidNotFindAnyPhotoLinksOnSetPageException =>
+                                          case _: DidNotFindAnyPhotoLinksOnSetPageException =>
                                             logger.error(
                                               s"SGReifier --> reifying: ${photoSet.url} has no photos. `${mf.name} ${model.name.name}`"
                                             )
