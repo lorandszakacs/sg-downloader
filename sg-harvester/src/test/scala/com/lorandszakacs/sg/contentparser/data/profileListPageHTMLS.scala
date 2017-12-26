@@ -53,7 +53,7 @@ object SGProfileListPage {
   }
 }
 
-object HopefulProfileListPage {
+object HFProfileListPage {
 
   val names: List[Name] = List(
     "Nuru",

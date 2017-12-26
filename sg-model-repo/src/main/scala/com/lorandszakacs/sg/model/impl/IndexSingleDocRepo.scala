@@ -11,7 +11,7 @@ import com.lorandszakacs.util.mongodb._
   */
 private[impl] trait IndexSingleDocRepo[T] extends SingleDocumentMongoCollection[T, String, BSONString] {
 
-  protected implicit val modelNameBSONFFS: BSONHandler[BSONString, Name] = ModelBSON.nameBSON
+  protected implicit val nameBSONFFS: BSONHandler[BSONString, Name] = SGRepoBSON.nameBSON
 
   override protected implicit val idHandler: BSONHandler[BSONString, String] =
     BSONStringHandler

@@ -13,9 +13,9 @@ import com.lorandszakacs.util.mongodb._
   * @since 14 Jul 2017
   *
   */
-private[impl] object ModelBSON extends ModelBSON
+private[impl] object SGRepoBSON extends SGRepoBSON
 
-private[impl] trait ModelBSON {
+private[impl] trait SGRepoBSON {
 
   def nameBSON: BSONHandler[BSONString, Name] = new BSONHandler[BSONString, Name] {
     override def read(bson: BSONString): Name = Name(bson.value)

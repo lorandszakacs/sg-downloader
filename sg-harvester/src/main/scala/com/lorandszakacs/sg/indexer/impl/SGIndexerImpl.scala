@@ -5,7 +5,7 @@ import com.lorandszakacs.sg.contentparser.SGContentParser
 import com.lorandszakacs.sg.core
 import com.lorandszakacs.sg.indexer.{FailedToRepeatedlyLoadPageException, SGIndexer}
 import com.lorandszakacs.sg.http._
-import com.lorandszakacs.sg.model.M.{HFFactory, ModelFactory, SGFactory}
+import com.lorandszakacs.sg.model.M.{HFFactory, MFactory, SGFactory}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.list._
@@ -71,7 +71,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     )
   }
 
-  private def isEndPageForModelIndexing(html: Html): Boolean = {
+  private def isEndPageForMIndexing(html: Html): Boolean = {
     val PartialPageLoadingEndMarker = "No photos available."
     html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
   }
@@ -85,40 +85,40 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     * To see if this still holds true.
     *
     * @return
-    * the [[PhotoSet]]s of the given model.
+    * the [[PhotoSet]]s of the given M.
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]], and [[PhotoSet.url]] will be a full path URL.
     */
-  override def gatherPhotoSetInformationForModel[T <: M](
-    mf:        ModelFactory[T]
-  )(modelName: Name)(implicit pc: PatienceConfig): Future[T] = {
-    val pageURL = photoSetsPageURL(modelName)
+  override def gatherPhotoSetInformationForM[T <: M](
+    mf:   MFactory[T]
+  )(name: Name)(implicit pc: PatienceConfig): Future[T] = {
+    val pageURL = photoSetsPageURL(name)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
                uri             = pageURL,
                offsetStep      = 9,
-               parsingFunction = SGContentParser.gatherPhotoSetsForModel,
-               isEndPage       = isEndPageForModelIndexing
+               parsingFunction = SGContentParser.gatherPhotoSetsForM,
+               isEndPage       = isEndPageForMIndexing
              )
     } yield {
-      logger.info(s"gathered all sets for ${mf.name} ${modelName.name}. #sets: ${sets.length}")
-      mf(photoSetURL = pageURL, name = modelName, photoSets = sets)
+      logger.info(s"gathered all sets for ${mf.name} ${name.name}. #sets: ${sets.length}")
+      mf(photoSetURL = pageURL, name = name, photoSets = sets)
     }
   }
 
-  override def gatherPhotoSetInformationForModel(modelName: Name)(implicit pc: PatienceConfig): Future[M] = {
-    val pageURL = photoSetsPageURL(modelName)
+  override def gatherPhotoSetInformationForName(name: Name)(implicit pc: PatienceConfig): Future[M] = {
+    val pageURL = photoSetsPageURL(name)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
                uri             = pageURL,
                offsetStep      = 9,
-               parsingFunction = SGContentParser.gatherPhotoSetsForModel,
-               isEndPage       = isEndPageForModelIndexing
+               parsingFunction = SGContentParser.gatherPhotoSetsForM,
+               isEndPage       = isEndPageForMIndexing
              )
       isHF = sets.exists(_.isHFSet.contains(true))
       mf   = if (isHF) HFFactory else SGFactory
     } yield {
-      logger.info(s"gathered all sets for ${mf.name} ${modelName.name}. #sets: ${sets.length}")
-      mf(photoSetURL = pageURL, name = modelName, photoSets = sets)
+      logger.info(s"gathered all sets for ${mf.name} ${name.name}. #sets: ${sets.length}")
+      mf(photoSetURL = pageURL, name = name, photoSets = sets)
     }
   }
 
@@ -162,7 +162,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
       else
         ms.takeWhile { m =>
           val photoset = m.photoSets.headOption.getOrElse(
-            throw new AssertionError("... tried to get lastPhotoSet, of a NewestModelPhotoSet, but it did not exist")
+            throw new AssertionError("... tried to get lastPhotoSet, of a NewestMPhotoSet, but it did not exist")
           )
           lastProcessedIndex.isEmpty || (photoset.id != lastProcessedIndex.get.lastPhotoSetID)
         }
@@ -177,7 +177,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     * The amount of crawling is limited by the absolute limit, or by the set identified by [[LastProcessedMarker.lastPhotoSetID]]
     * This last set is not included in the results.
     *
-    * Eliminates duplicate [[M]], sometimes it happens that a model has two sets on the newest page, especially
+    * Eliminates duplicate [[M]], sometimes it happens that a M has two sets on the newest page, especially
     * if we wait a lot of time between updates.
     *
     * @return
@@ -191,12 +191,12 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
       sgHF = msWithOnlyOneSet.distinctById.group
       sgs <- Future.serialize(sgHF.sgs) { sg =>
               pc.throttleAfter {
-                this.gatherPhotoSetInformationForModel(M.SGFactory)(sg.name)
+                this.gatherPhotoSetInformationForM(M.SGFactory)(sg.name)
               }
             }
       hfs <- Future.serialize(sgHF.hfs) { hf =>
               pc.throttleAfter {
-                this.gatherPhotoSetInformationForModel(M.HFFactory)(hf.name)
+                this.gatherPhotoSetInformationForM(M.HFFactory)(hf.name)
               }
             }
     } yield sgs ++ hfs

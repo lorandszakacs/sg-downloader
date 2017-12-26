@@ -13,7 +13,7 @@ import com.lorandszakacs.util.time.DateTime
   */
 private[impl] class RepoLastProcessedMarker(override protected val db: Database)(
   implicit override val executionContext:                              ExecutionContext
-) extends IndexSingleDocRepo[LastProcessedMarker] with ModelBSON {
+) extends IndexSingleDocRepo[LastProcessedMarker] with SGRepoBSON {
 
   override protected def objectHandler: BSONDocumentHandler[LastProcessedMarker] =
     BSONMacros.handler[LastProcessedMarker]

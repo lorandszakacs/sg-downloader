@@ -35,7 +35,7 @@ class SGIndexerTests extends IndexerTest {
     * had only one single set
     */
   it should "... fetch URIs for a page that does not need a subsequent query -- odina" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForModel(HFFactory)(Name("odina"))) { h: HF =>
+    whenReady(indexer.gatherPhotoSetInformationForM(HFFactory)(Name("odina"))) { h: HF =>
       val sets: List[PhotoSet] = h.photoSets
 
       withClue("size") {
@@ -57,7 +57,7 @@ class SGIndexerTests extends IndexerTest {
   }
 
   it should "... fetch URIs for a page that does not need a subsequent query -- odina -- generic" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForModel(Name("odina"))) { h: M =>
+    whenReady(indexer.gatherPhotoSetInformationForName(Name("odina"))) { h: M =>
       h shouldBe a[HF]
       val sets: List[PhotoSet] = h.photoSets
 
@@ -88,7 +88,7 @@ class SGIndexerTests extends IndexerTest {
     * had 22 sets. And has not published a new set in ages.
     */
   it should "... fetch URIs for a page that needs several queries -- zoli" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForModel(SGFactory)(Name("zoli"))) { sg: SG =>
+    whenReady(indexer.gatherPhotoSetInformationForM(SGFactory)(Name("zoli"))) { sg: SG =>
       val sets: List[PhotoSet] = sg.photoSets
 
       withClue("... size") {
@@ -122,7 +122,7 @@ class SGIndexerTests extends IndexerTest {
     * had 22 sets. And has not published a new set in ages.
     */
   it should "... fetch URIs for a page that needs several queries -- zoli -- generic" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForModel(Name("zoli"))) { sg: M =>
+    whenReady(indexer.gatherPhotoSetInformationForName(Name("zoli"))) { sg: M =>
       sg shouldBe a[SG]
       val sets: List[PhotoSet] = sg.photoSets
 
@@ -178,9 +178,9 @@ class SGIndexerTests extends IndexerTest {
       }
 
       withClue("... content") {
-        names should contain("Sash".toModelName)
-        names should contain("Kemper".toModelName)
-        names should contain("Gogo".toModelName)
+        names should contain("Sash".toName)
+        names should contain("Kemper".toName)
+        names should contain("Gogo".toName)
       }
 
     }
@@ -208,7 +208,7 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
   //===============================================================================================
 
-  behavior of "SGIndexer.gatherNewestModelInformation"
+  behavior of "SGIndexer.gatherNewestMInformation"
 
   //===============================================================================================
   //===============================================================================================
@@ -250,7 +250,7 @@ class SGIndexerTests extends IndexerTest {
             ms should have size index.toLong
           }
           withClue("... distribution") {
-            assert(!ms.exists(_.name == latest.name), "... the latest model should not be in this list")
+            assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
             assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
             assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
           }
@@ -284,7 +284,7 @@ class SGIndexerTests extends IndexerTest {
             ms should have size index.toLong
           }
           withClue("... distribution") {
-            assert(!ms.exists(_.name == latest.name), "... the latest model should not be in this list")
+            assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
           }
           ms
         }

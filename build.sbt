@@ -37,14 +37,14 @@ lazy val `sg-harvester` = project
     )
 ).aggregate(
   `sg-core`,
-  `sg-model-repo`,
+  `sg-repo`,
   `util`
 ).dependsOn(
-  `sg-model-repo`,
+  `sg-repo`,
   `util`
 )
 
-lazy val `sg-model-repo` = project
+lazy val `sg-repo` = project
   .settings(
   commonSettings ++
     Seq(

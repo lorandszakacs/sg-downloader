@@ -74,7 +74,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
     * </header>
     * }}}
     */
-  def gatherPhotoSetsForModel(html: Html): Try[List[PhotoSet]] = Try {
+  def gatherPhotoSetsForM(html: Html): Try[List[PhotoSet]] = Try {
     val albumElement  = Tag("header") && Attribute("post_id")
     val albumElements = html filter albumElement
 
@@ -167,11 +167,11 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
       * </h2>
       * }}}
       */
-    def getModelName(html: Html): Try[Name] = {
+    def getName(html: Html): Try[Name] = {
       val potentialName = html filter Tag("article") && Tag("header") && Tag("h2") && Content(RetainFirst(Tag("a")))
       potentialName.headOption match {
         case Some(name) => Success(Name(name))
-        case None       => Failure(SetRepresentationDidNotContainModelNameException(html))
+        case None       => Failure(SetRepresentationDidNotContainNameException(html))
       }
     }
 
@@ -179,10 +179,10 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
     val ms: List[Try[M]] = elements map { el =>
       val html = Html(el)
       for {
-        setURL    <- getPhotoSetLink(html) map makeFullPathURL
-        setDate   <- getPhotoSetDate(html)
-        setTitle  <- getPhotoSetTitle(html)
-        modelName <- getModelName(html)
+        setURL   <- getPhotoSetLink(html) map makeFullPathURL
+        setDate  <- getPhotoSetDate(html)
+        setTitle <- getPhotoSetTitle(html)
+        name     <- getName(html)
 
         photoSet = PhotoSet(
           url   = setURL,
@@ -192,15 +192,15 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
       } yield {
         if (setURL.toString.contains("members")) {
           HF(
-            photoSetURL = photoSetsPageURL(modelName),
-            name        = modelName,
+            photoSetURL = photoSetsPageURL(name),
+            name        = name,
             photoSets   = List(photoSet)
           )
         }
         else {
           SG(
-            photoSetURL = photoSetsPageURL(modelName),
-            name        = modelName,
+            photoSetURL = photoSetsPageURL(name),
+            name        = name,
             photoSets   = List(photoSet)
           )
 

@@ -17,8 +17,8 @@ trait SGURLBuilder {
   /**
     * This is the URI to the page containing all [[PhotoSet]] of a [[M]]
     */
-  def photoSetsPageURL(modelName: Name): URL =
-    new URL(s"${core.Domain}/girls/${modelName.name}/photos/view/photosets/")
+  def photoSetsPageURL(name: Name): URL =
+    new URL(s"${core.Domain}/girls/${name.name}/photos/view/photosets/")
 
   def makeFullPathURL(uri: String): URL = {
     if (uri.startsWith("/")) {

@@ -4,7 +4,7 @@ import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.mongodb._
 import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.time._
-import ModelBSON._
+import SGRepoBSON._
 import com.lorandszakacs.util.math.Identifier
 
 /**

@@ -3,7 +3,7 @@ package com.lorandszakacs.sg.exporter
 import com.lorandszakacs.sg.exporter.html.HTMLGeneratorAssembly
 import com.lorandszakacs.sg.exporter.impl.SGExporterImpl
 import com.lorandszakacs.sg.exporter.indexwriter.HTMLIndexWriterAssembly
-import com.lorandszakacs.sg.model.SGModelAssembly
+import com.lorandszakacs.sg.model.SGRepoAssembly
 
 import com.lorandszakacs.util.future._
 
@@ -14,7 +14,7 @@ import com.lorandszakacs.util.future._
   *
   */
 trait SGExporterAssembly extends HTMLIndexWriterAssembly with HTMLGeneratorAssembly {
-  this: SGModelAssembly =>
+  this: SGRepoAssembly =>
 
   implicit def executionContext: ExecutionContext
 

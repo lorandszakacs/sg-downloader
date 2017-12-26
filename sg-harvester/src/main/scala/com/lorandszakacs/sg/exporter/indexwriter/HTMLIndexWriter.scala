@@ -16,7 +16,7 @@ private[exporter] trait HTMLIndexWriter {
 
   def rewriteRootIndexFile(indexFile: Html)(implicit ws: WriterSettings): Future[Unit]
 
-  def rewriteNewestModelPage(indexFile: Html)(implicit ws: WriterSettings): Future[Unit]
+  def rewriteNewestMPage(indexFile: Html)(implicit ws: WriterSettings): Future[Unit]
 }
 
 case class WriterSettings(

@@ -98,7 +98,7 @@ final class SGDownloader private[downloader] (
       for {
         newMs <- Future.serialize(names) { name =>
                   patienceConfig.throttleAfter {
-                    indexer.gatherPhotoSetInformationForModel(name)
+                    indexer.gatherPhotoSetInformationForName(name)
                   }
                 }
         ms = newMs.group
@@ -220,9 +220,9 @@ final class SGDownloader private[downloader] (
           _ <- when(optNewestM.isEmpty) failWith new IllegalArgumentException(
                 "... should have at least one newest gathered"
               )
-          newestModel = optNewestM.get
-          newMarker   = indexer.createLastProcessedIndex(newestModel)
-          _           = logger.info(s"delta.UpdateLatestProcessedIndex: new='${newMarker.lastPhotoSetID}'")
+          newestM   = optNewestM.get
+          newMarker = indexer.createLastProcessedIndex(newestM)
+          _         = logger.info(s"delta.UpdateLatestProcessedIndex: new='${newMarker.lastPhotoSetID}'")
           _ <- repo.createOrUpdateLastProcessed(newMarker)
         } yield ()
 
@@ -254,7 +254,7 @@ final class SGDownloader private[downloader] (
       )
       logger.info(s"download.delta --> IMPURE --> daysToExport: $daysToExport includeProblematic: $includeProblematic")
       for {
-        _ <- reifier.authenticateIfNeeded()
+        _                <- reifier.authenticateIfNeeded()
         lastProcessedOpt <- repo.lastProcessedIndex
         _ = logger.info(s"the last processed set was: ${lastProcessedOpt.map(_.lastPhotoSetID)}")
 

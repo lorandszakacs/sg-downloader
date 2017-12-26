@@ -4,7 +4,7 @@ import java.net.URL
 
 import com.lorandszakacs.sg.contentparser.SGContentParser
 import com.lorandszakacs.sg.http._
-import com.lorandszakacs.sg.model.M.{HFFactory, ModelFactory, SGFactory}
+import com.lorandszakacs.sg.model.M.{HFFactory, MFactory, SGFactory}
 import com.lorandszakacs.sg.model.{HF, M, Photo, SG}
 import com.lorandszakacs.sg.reifier.{DidNotFindAnyPhotoLinksOnSetPageException, SGReifier}
 import com.lorandszakacs.util.future._
@@ -75,17 +75,17 @@ private[reifier] class SGReifierImpl(
   }
 
   override def reifySG(sg: SG)(implicit pc: PatienceConfig): Future[SG] = {
-    reifyModel(SGFactory)(sg)
+    reifyM(SGFactory)(sg)
   }
 
   override def reifyHF(hf: HF)(implicit pc: PatienceConfig): Future[HF] = {
-    reifyModel(HFFactory)(hf)
+    reifyM(HFFactory)(hf)
   }
 
   override def reifyM(m: M)(implicit pc: PatienceConfig): Future[M] = {
     m match {
-      case sg: SG => reifyModel(SGFactory)(sg)
-      case hf: HF => reifyModel(HFFactory)(hf)
+      case sg: SG => reifyM(SGFactory)(sg)
+      case hf: HF => reifyM(HFFactory)(hf)
     }
 
   }
@@ -101,38 +101,38 @@ private[reifier] class SGReifierImpl(
     } yield photos
   }
 
-  private def reifyModel[T <: M](mf: ModelFactory[T])(model: T)(implicit pc: PatienceConfig): Future[T] = {
-    logger.info(s"SGReifier --> reifying: ${mf.name} ${model.name.name}. Expecting ${model.photoSets.length} sets")
+  private def reifyM[T <: M](mf: MFactory[T])(m: T)(implicit pc: PatienceConfig): Future[T] = {
+    logger.info(s"SGReifier --> reifying: ${mf.name} ${m.name.name}. Expecting ${m.photoSets.length} sets")
     for {
-      reifiedPhotoSets <- Future.serialize(model.photoSets) { photoSet =>
+      reifiedPhotoSets <- Future.serialize(m.photoSets) { photoSet =>
                            pc.throttleQuarterAfter {
                              for {
                                photos <- this.gatherAllPhotosFromSetPage(photoSet.url) recoverWith {
                                           case _: DidNotFindAnyPhotoLinksOnSetPageException =>
                                             logger.error(
-                                              s"SGReifier --> reifying: ${photoSet.url} has no photos. `${mf.name} ${model.name.name}`"
+                                              s"SGReifier --> reifying: ${photoSet.url} has no photos. `${mf.name} ${m.name.name}`"
                                             )
                                             Future.successful(Nil)
                                           case e: Throwable =>
                                             logger.error(
-                                              s"SGReifier --> reifying: ${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${model.name.name}`",
+                                              s"SGReifier --> reifying: ${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${m.name.name}`",
                                               e
                                             )
                                             Future.successful(Nil)
                                         }
                              } yield {
                                logger.info(
-                                 s"SGReifier --> reified: ${mf.name} ${model.name.name} photoset: ${photoSet.url}"
+                                 s"SGReifier --> reified: ${mf.name} ${m.name.name} photoset: ${photoSet.url}"
                                )
                                photoSet.copy(photos = photos)
                              }
                            }
                          }
     } yield {
-      logger.info(s"reified ${mf.name} ${model.name.name}. Found ${reifiedPhotoSets.length} photo sets.")
+      logger.info(s"reified ${mf.name} ${m.name.name}. Found ${reifiedPhotoSets.length} photo sets.")
       mf.apply(
-        photoSetURL = model.photoSetURL,
-        name        = model.name,
+        photoSetURL = m.photoSetURL,
+        name        = m.name,
         photoSets   = reifiedPhotoSets
       )
     }

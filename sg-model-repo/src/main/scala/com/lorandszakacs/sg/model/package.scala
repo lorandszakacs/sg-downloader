@@ -23,8 +23,8 @@ package object model {
     m.name
   }
 
-  implicit class StringBuffedWithModelName(str: String) {
-    def toModelName: Name = Name(str)
+  implicit class StringBuffedWithName(str: String) {
+    def toName: Name = Name(str)
 
     def toTitleName: PhotoSetTitle = PhotoSetTitle(str)
   }
@@ -60,7 +60,7 @@ package object model {
 
   implicit def stringToPhotoSetTitleName(str: String): PhotoSetTitle = PhotoSetTitle(str)
 
-  implicit val ModelNameOrdering: Ordering[Name] = new Ordering[Name] {
+  implicit val NameOrdering: Ordering[Name] = new Ordering[Name] {
     override def compare(x: Name, y: Name): Int = x.name.compareTo(y.name)
   }
 

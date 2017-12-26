@@ -4,7 +4,7 @@ import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.Favorites
 import com.lorandszakacs.sg.exporter.html.{HTMLGenerator, HtmlSettings}
 import com.lorandszakacs.sg.exporter.indexwriter.{HTMLIndexWriter, WriterSettings}
-import com.lorandszakacs.sg.exporter.{ExporterSettings, ModelNotFoundException, SGExporter}
+import com.lorandszakacs.sg.exporter.{ExporterSettings, NameNotFoundException, SGExporter}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
@@ -75,7 +75,7 @@ private[exporter] class SGExporterImpl(
         allRootIndex  <- html.createRootIndex(completeIndex.names)(AllHtmlSettings)
         _             <- fileWriter.rewriteRootIndexFile(allRootIndex)(allWriterSettings)
       } yield {
-        logger.info(s"--- successfully updated DELTA all model index of: ${delta.length}")
+        logger.info(s"--- successfully updated DELTA all M index of: ${delta.length}")
       }
     }
     else {
@@ -126,7 +126,7 @@ private[exporter] class SGExporterImpl(
       ms <- repo.aggregateBetweenDays(inThePast, today, delta)
       sortedLatestToEarliest = ms.sortBy(_._1).reverse
       newestMsPage <- html.createNewestPage(sortedLatestToEarliest)
-      _            <- fileWriter.rewriteNewestModelPage(newestMsPage)(newestWriterSettings)
+      _            <- fileWriter.rewriteNewestMPage(newestMsPage)(newestWriterSettings)
     } yield ()
   }
 
@@ -137,18 +137,14 @@ private[exporter] class SGExporterImpl(
       ms <- repo.aggregateBetweenDays(inThePast, today)
       sortedLatestToEarliest = ms.sortBy(_._1).reverse
       newestMsPage <- html.createNewestPage(sortedLatestToEarliest)
-      _            <- fileWriter.rewriteNewestModelPage(newestMsPage)(newestWriterSettings)
+      _            <- fileWriter.rewriteNewestMPage(newestMsPage)(newestWriterSettings)
     } yield ()
   }
 
-  override def prettyPrint(modelName: Name): Future[String] = {
+  override def prettyPrint(name: Name): Future[String] = {
     for {
-      model <- repo.find(modelName) map (_.getOrElse(throw ModelNotFoundException(modelName)))
-    } yield
-      model match {
-        case sg: SG => sg.setsByNewestFirst.toString
-        case h:  HF => h.setsByNewestFirst.toString
-      }
+      m <- repo.find(name) map (_.getOrElse(throw NameNotFoundException(name)))
+    } yield m.setsByNewestFirst.toString
   }
 
 }

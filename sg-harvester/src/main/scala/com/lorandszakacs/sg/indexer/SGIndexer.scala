@@ -1,7 +1,7 @@
 package com.lorandszakacs.sg.indexer
 
 import com.lorandszakacs.sg.http.PatienceConfig
-import com.lorandszakacs.sg.model.M.ModelFactory
+import com.lorandszakacs.sg.model.M.MFactory
 import com.lorandszakacs.sg.model._
 import org.joda.time.DateTime
 
@@ -41,14 +41,12 @@ trait SGIndexer {
     * the [[PhotoSet]]s of the given model.
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]], and [[PhotoSet.url]] will be a full path URL.
     */
-  def gatherPhotoSetInformationForModel[T <: M](mf: ModelFactory[T])(modelName: Name)(
-    implicit pc:                                    PatienceConfig
-  ): Future[T]
+  def gatherPhotoSetInformationForM[T <: M](mf: MFactory[T])(name: Name)(implicit pc: PatienceConfig): Future[T]
 
   /**
-    * Similar to [[gatherPhotoSetInformationForModel]], but with more potential for failure
+    * Similar to [[gatherPhotoSetInformationForName]], but with more potential for failure
     */
-  def gatherPhotoSetInformationForModel(modelName: Name)(implicit pc: PatienceConfig): Future[M]
+  def gatherPhotoSetInformationForName(name: Name)(implicit pc: PatienceConfig): Future[M]
 
   /**
     *
@@ -58,13 +56,13 @@ trait SGIndexer {
     implicit pc:                                PatienceConfig
   ): Future[List[M]]
 
-  final def createLastProcessedIndex(lastModel: M): LastProcessedMarker = {
+  final def createLastProcessedIndex(lastM: M): LastProcessedMarker = {
     LastProcessedMarker(
       timestamp = DateTime.now(),
-      photoSet = lastModel.photoSetsNewestFirst.headOption
+      photoSet = lastM.photoSetsNewestFirst.headOption
         .getOrElse(
           throw new AssertionError(
-            s"... tried to create last processed index from model ${lastModel.name.name}, but they had no sets"
+            s"... tried to create last processed index from model ${lastM.name.name}, but they had no sets"
           )
         )
         .copy(photos = Nil)

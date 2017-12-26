@@ -6,7 +6,7 @@ import akka.actor.ActorSystem
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
 import com.lorandszakacs.sg.exporter.SGExporterAssembly
 import com.lorandszakacs.sg.indexer.IndexerAssembly
-import com.lorandszakacs.sg.model.SGModelAssembly
+import com.lorandszakacs.sg.model.SGRepoAssembly
 import com.lorandszakacs.sg.reifier.ReifierAssembly
 import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.mongodb.Database
@@ -19,7 +19,7 @@ import com.typesafe.scalalogging.StrictLogging
   *
   */
 class Assembly
-    extends SGExporterAssembly with SGModelAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly
+    extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly
     with StrictLogging {
 
   override implicit lazy val db: Database = new Database(

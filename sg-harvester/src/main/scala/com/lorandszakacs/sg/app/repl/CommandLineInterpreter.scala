@@ -80,10 +80,10 @@ class CommandLineInterpreter(
         )
 
       //=======================================================================
-      case Commands.Show(model) =>
+      case Commands.Show(name) =>
         print("\n***************\n")
 
-        downloader.show(model).map(s => println(s))
+        downloader.show(name).map(s => println(s))
       //=======================================================================
       case Commands.Favorites =>
         print("\n***************\n")

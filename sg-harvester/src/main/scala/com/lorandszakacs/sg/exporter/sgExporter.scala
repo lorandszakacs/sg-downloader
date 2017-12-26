@@ -13,7 +13,7 @@ import com.lorandszakacs.util.future._
   *
   */
 trait SGExporter {
-  def prettyPrint(modelName: Name): Future[String]
+  def prettyPrint(name: Name): Future[String]
 
   /**
     * Only exports the given [[Name]]s. with the data
@@ -25,7 +25,7 @@ trait SGExporter {
     * Taking into consideration *all* Ms, and *all favorites*, not just the
     * ones specified.
     *
-    * But *all* corresponding model specific folders as specified by the model names,
+    * But *all* corresponding M specific folders as specified by the M names,
     * will be created.
     *
     * @return
@@ -41,7 +41,7 @@ trait SGExporter {
     * Taking into consideration *all* Ms, and *all favorites*, not just the
     * ones specified.
     *
-    * But *all* corresponding model specific folders as specified by the model names,
+    * But *all* corresponding M specific folders as specified by the M names,
     * will be created.
     *
     * @return

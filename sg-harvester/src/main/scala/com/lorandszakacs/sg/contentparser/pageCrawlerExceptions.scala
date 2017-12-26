@@ -26,10 +26,10 @@ final case class SetRepresentationDidNotContainTitleException(html: Html)
   """.stripMargin
     )
 
-final case class SetRepresentationDidNotContainModelNameException(html: Html)
+final case class SetRepresentationDidNotContainNameException(html: Html)
     extends Exception(
       s"""
-         |HTML element contain any information about the name of the model:
+         |HTML element contain any information about the name of the M:
          |${html.toString}
   """.stripMargin
     )

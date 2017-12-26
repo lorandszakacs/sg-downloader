@@ -13,20 +13,20 @@ import com.lorandszakacs.util.mongodb.Annotations
   */
 object M {
 
-  sealed trait ModelFactory[T <: M] {
+  sealed trait MFactory[T <: M] {
     def apply(photoSetURL: URL, name: Name, photoSets: List[PhotoSet]): T
 
     def name: String
   }
 
-  object SGFactory extends ModelFactory[SG] {
+  object SGFactory extends MFactory[SG] {
     override def apply(photoSetURL: URL, name: Name, photoSets: List[PhotoSet]): SG =
       SG(photoSetURL = photoSetURL, name = name, photoSets = photoSets.sortBy(_.date))
 
     override def name: String = "SG"
   }
 
-  object HFFactory extends ModelFactory[HF] {
+  object HFFactory extends MFactory[HF] {
     override def apply(photoSetURL: URL, name: Name, photoSets: List[PhotoSet]): HF = {
       HF(photoSetURL = photoSetURL, name = name, photoSets = photoSets.sortBy(_.date))
     }

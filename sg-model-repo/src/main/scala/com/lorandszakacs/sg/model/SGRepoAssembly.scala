@@ -10,7 +10,7 @@ import com.lorandszakacs.util.mongodb.Database
   * @since 04 Jul 2016
   *
   */
-trait SGModelAssembly {
+trait SGRepoAssembly {
 
   def db: Database
 

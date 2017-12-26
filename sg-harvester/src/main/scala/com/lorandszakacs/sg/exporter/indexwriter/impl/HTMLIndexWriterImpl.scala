@@ -40,7 +40,7 @@ private[indexwriter] class HTMLIndexWriterImpl()(implicit val ec: ExecutionConte
     }
   }
 
-  override def rewriteNewestModelPage(newestFile: Html)(implicit ws: WriterSettings): Future[Unit] = {
+  override def rewriteNewestMPage(newestFile: Html)(implicit ws: WriterSettings): Future[Unit] = {
     val p = ws.rootFolder.resolve(newestFile.relativePathAndName).toAbsolutePath
     FileUtils.overwriteFile(p, newestFile.content) map { _ =>
       logger.info(s"rewrote newest sets file @ $p")
@@ -53,7 +53,7 @@ private[indexwriter] class HTMLIndexWriterImpl()(implicit val ec: ExecutionConte
   private def writeRootIndexFile(rootIndex: MRootIndex)(implicit ws: WriterSettings): Future[Unit] = {
     val path = ws.rootFolder.resolve(rootIndex.html.relativePathAndName)
     for {
-      _: List[Unit] <- Future.traverse(rootIndex.ms)(writeModelIndex)
+      _: List[Unit] <- Future.traverse(rootIndex.ms)(writeMIndex)
       _ = logger.info(s"finished writing all #${rootIndex.ms.length} Ms @ ${ws.rootFolder}")
       _ <- FileUtils.writeFile(path, rootIndex.html.content)
     } yield ()
@@ -63,8 +63,8 @@ private[indexwriter] class HTMLIndexWriterImpl()(implicit val ec: ExecutionConte
     * It will create a folder ./[[MIndex.name]]/, and write everything inside that folder
     * This writes:[[MIndex.html]] to ``./[[MIndex.html.relativePathAndName]]`` on the disk
     */
-  private def writeModelIndex(m: MIndex)(implicit ws: WriterSettings): Future[Unit] = {
-    def writeModelPhotoSetIndex(ps: PhotoSetIndex)(implicit ws: WriterSettings): Future[Unit] = {
+  private def writeMIndex(m: MIndex)(implicit ws: WriterSettings): Future[Unit] = {
+    def writeMPhotoSetIndex(ps: PhotoSetIndex)(implicit ws: WriterSettings): Future[Unit] = {
       val psPath = ws.rootFolder.resolve(ps.html.relativePathAndName)
       logger.debug(s"attempting to write file: $psPath")
       FileUtils.writeFile(psPath, ps.html.content) map { _ =>
@@ -72,16 +72,16 @@ private[indexwriter] class HTMLIndexWriterImpl()(implicit val ec: ExecutionConte
       }
     }
 
-    val modelFolderPath = ws.rootFolder.resolve(m.name.name).toAbsolutePath
-    val indexPath       = ws.rootFolder.resolve(m.html.relativePathAndName).toAbsolutePath
+    val mFolderPath = ws.rootFolder.resolve(m.name.name).toAbsolutePath
+    val indexPath   = ws.rootFolder.resolve(m.html.relativePathAndName).toAbsolutePath
     for {
-      _ <- FileUtils.createFolders(modelFolderPath)
+      _ <- FileUtils.createFolders(mFolderPath)
       _ <- Future.serialize(m.photoSets) { ps =>
-            writeModelPhotoSetIndex(ps)
+            writeMPhotoSetIndex(ps)
           }
       _ <- FileUtils.writeFile(indexPath, m.html.content)
     } yield {
-      logger.info(s"wrote entire model entry @ $indexPath")
+      logger.info(s"wrote entire M entry @ $indexPath")
     }
   }
 

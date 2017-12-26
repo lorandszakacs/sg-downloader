@@ -94,7 +94,7 @@ object Commands {
     override val id: String = "show"
 
     override val humanlyReadableDescription: String =
-      s"""|Displays set information for a given model
+      s"""|Displays set information for a given name
         """.stripMargin.trim()
 
     override val manDescription: String =
@@ -103,7 +103,7 @@ object Commands {
   }
 
   case class Show(
-    modelName: Name
+    name: Name
   ) extends Command
 
   //====================================================================================
@@ -125,8 +125,8 @@ object Commands {
       """
         |Displays all available commands. Useful domain terminology:
         |
-        |index - gather only meta-data (model names, and photosets), and saves it --- does not require authentication
-        |reify - based on the previously indexed data (model names, photosets), it gathers the remaining photo links
+        |index - gather only meta-data (names, and photosets), and saves it --- does not require authentication
+        |reify - based on the previously indexed data (names, photosets), it gathers the remaining photo links
         |harvest - index + reify
         |export - use integral harvested data to export (currently only HTML)
         |write - SIDE EFFECTUL in DB, this effectively writes to database.

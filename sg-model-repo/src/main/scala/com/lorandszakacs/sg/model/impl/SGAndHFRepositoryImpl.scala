@@ -135,11 +135,11 @@ private[model] class SGAndHFRepositoryImpl(
     } yield ()
   }
 
-  private def groupMsBetweenDays(start: LocalDate, end: LocalDate, models: List[M]): List[(LocalDate, List[M])] = {
+  private def groupMsBetweenDays(start: LocalDate, end: LocalDate, ms: List[M]): List[(LocalDate, List[M])] = {
     val days = TimeUtil.daysBetween(start, end)
     for {
       day <- days
-      msForDay = models.filter(_.photoSets.exists(_.date == day))
+      msForDay = ms.filter(_.photoSets.exists(_.date == day))
     } yield (day, msForDay)
   }
 
@@ -151,7 +151,7 @@ private[model] class SGAndHFRepositoryImpl(
     for {
       sgs <- sgsRepo.findBetweenDays(start, end)
       hfs <- hfsRepo.findBetweenDays(start, end)
-      allFromDB = sgs ++ hfs : List[M]
+      allFromDB = sgs ++ hfs: List[M]
       all       = allFromDB.addOrReplace(ms)
 
       result = groupMsBetweenDays(start, end, all)

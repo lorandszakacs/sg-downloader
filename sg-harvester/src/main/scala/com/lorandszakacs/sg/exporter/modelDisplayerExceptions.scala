@@ -8,7 +8,7 @@ import com.lorandszakacs.sg.model.Name
   * @since 17 Jul 2016
   *
   */
-final case class ModelNotFoundException(modelName: Name)
+final case class NameNotFoundException(name: Name)
     extends Exception(
-      s"Model: ${modelName.name} could not be found."
+      s"M: ${name.name} could not be found."
     )

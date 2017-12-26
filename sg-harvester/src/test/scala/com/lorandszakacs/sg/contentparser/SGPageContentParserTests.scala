@@ -55,7 +55,7 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
 
   it should "return all PhotoSets from a SG page" in {
     val expected = SGSetPageAllInPast
-    SGContentParser.gatherPhotoSetsForModel(expected.html) match {
+    SGContentParser.gatherPhotoSetsForM(expected.html) match {
       case Success(result) =>
         result should have length expected.numberOfPhotoSets.toLong
         result.diff(expected.photoSets) should be(Nil)
@@ -68,7 +68,7 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
 
   it should "return all PhotoSets from a SG page, in which all sets are in the past" in {
     val expected = SGSetPageSomeInPast
-    SGContentParser.gatherPhotoSetsForModel(expected.html) match {
+    SGContentParser.gatherPhotoSetsForM(expected.html) match {
       case Success(result) =>
         result should have length expected.numberOfPhotoSets.toLong
         result.head should equal(expected.photoSets.head)
@@ -93,7 +93,7 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
   //===============================================================================================
 
   it should "return all the HF Names from the profile listing page" in {
-    val expected = HopefulProfileListPage
+    val expected = HFProfileListPage
     SGContentParser.gatherHFNames(expected.html) match {
       case Success(result) =>
         result should have length expected.numberOfSGs.toLong
@@ -114,7 +114,9 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
         result.head.photoSets should equal(expected.ms.head.photoSets)
 
         result.head should equal(expected.ms.head)
-        result.take(4).diff(expected.ms) should equal(Nil)
+        val r1 = result.take(4).sortBy(_.name)
+        val r2 = expected.ms.sortBy(_.name)
+        r1 should equal(r2)
 
       case Failure(e) => fail("did not return any Ms", e)
     }
