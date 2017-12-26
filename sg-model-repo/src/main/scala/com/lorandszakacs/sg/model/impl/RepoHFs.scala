@@ -14,7 +14,7 @@ private[impl] class RepoHFs(override protected val db: Database)(
   implicit override val executionContext:              ExecutionContext
 ) extends MRepo[HF](hfIdentifier) with ModelBSON {
 
-  override val collectionName: String = "hopefuls"
+  override val collectionName: String = "hfs"
   override protected implicit val objectHandler: BSONDocumentHandler[HF] =
     BSONMacros.handler[HF]
 

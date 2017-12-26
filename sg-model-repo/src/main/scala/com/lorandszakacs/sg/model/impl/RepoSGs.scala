@@ -14,6 +14,7 @@ private[impl] class RepoSGs(override protected val db: Database)(
   implicit override val executionContext:              ExecutionContext
 ) extends MRepo[SG](sgIdentifier) with ModelBSON {
 
-  override val collectionName:                   String                  = "suicide_girls"
-  override protected implicit val objectHandler: BSONDocumentHandler[SG] = BSONMacros.handler[SG]
+  override val collectionName: String = "sgs"
+  override protected implicit val objectHandler: BSONDocumentHandler[SG] =
+    BSONMacros.handler[SG]
 }
