@@ -96,7 +96,7 @@ private[html] class HTMLGeneratorImpl()(
            |<!DOCTYPE html>
            |<html>
            |<title>Newest Sets</title>
-           |<head><link rel="icon" href="$RootPath1/icons/sg_logo.ico"></head>
+           |<head><link rel="icon" href="$RootPath1/icons/sg_logo.ico"><meta charset="UTF-8"></head>
            |  <h3><a href="../index.html">BACK</a></h3>
            |${eachDay.mkString("\n")}
            |</html>
@@ -128,7 +128,7 @@ private[html] class HTMLGeneratorImpl()(
                      |<!DOCTYPE html>
                      |<html>
                      |<title>${m.name.externalForm}</title>
-                     |  <head><link rel="icon" href="${iconForM(m)}"></head>
+                     |  <head><link rel="icon" href="${iconForM(m)}"><meta charset="UTF-8"></head>
                      |  <h2><a href="../${settings.indexFileName}">BACK</a></h2>
                      |  <h2>${m.stringifyType.capitalize}: ${m.name.externalForm}</h2>
                      |  <h3>
@@ -156,7 +156,7 @@ private[html] class HTMLGeneratorImpl()(
                      |<!DOCTYPE html>
                      |<html>
                      |   <title>${m.name.externalForm}: ${ps.title.externalForm}</title>
-                     |   <head><link rel="icon" href="${iconForPhotoSet(ps)}"></head>
+                     |   <head><link rel="icon" href="${iconForPhotoSet(ps)}"><meta charset="UTF-8"></head>
                      |   <meta name="viewport" content="width=device-width, initial-scale=1">
                      |   <link rel="stylesheet" href="$RootPath3/css/w3.css">
                      |   <script type="text/javascript" src="$RootPath3/scripts/image_loading.js"></script>
@@ -226,7 +226,7 @@ private[html] class HTMLGeneratorImpl()(
                    |<!DOCTYPE html>
                    |<html>
                    |<title>$title</title>
-                   |<head><link rel="icon" href="$RootPath2/icons/sg_logo.ico"></head>
+                   |<head><link rel="icon" href="$RootPath2/icons/sg_logo.ico"><meta charset="UTF-8"></head>
                    |  <h3><a href="../../${settings.indexFileName}">BACK</a></h3>
                    |  <h3><ol type="1">
                    |${els.map(item).mkString("\t\t", "\n\t\t", "\n")}
