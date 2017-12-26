@@ -14,9 +14,9 @@ import scala.language.implicitConversions
   */
 trait URLConversions {
 
-  implicit def sprayURIToJavaURL(uri: Uri): URL = new URL(uri.toString)
+  implicit def akkaURIToJavaURL(uri: Uri): URL = new URL(uri.toString)
 
-  implicit def javaURLtoSprayUri(url: URL): Uri = Uri(url.toExternalForm)
+  implicit def javaURLtoAkkaUri(url: URL): Uri = Uri(url.toExternalForm)
 
   implicit def stringToURL(str: String): URL = new URL(str)
 
