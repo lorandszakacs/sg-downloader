@@ -36,14 +36,21 @@ private[html] class HTMLGeneratorImpl()(
   private val RootPath3 = "../../.."
 
   override def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): Future[MRootIndex] = {
+    def serialized(ms: List[M]): Future[List[MIndex]] = {
+      Future.serialize(ms) { m: M =>
+        Future(mIndex(m))
+      }
+    }
+    val grouped = ms.grouped(100)
     for {
-      mIndexes <- Future.traverse(ms) { m =>
-                   Future(mIndex(m))
+      mIndexes <- Future.traverse(grouped) { batch =>
+                   serialized(batch)
                  }
     } yield {
+      val flattened = mIndexes.flatten.toList
       MRootIndex(
-        html = rootIndexPage(mIndexes),
-        ms   = mIndexes
+        html = rootIndexPage(flattened),
+        ms   = flattened
       )
     }
   }
@@ -241,8 +248,8 @@ private[html] class HTMLGeneratorImpl()(
   }
 
   private def photoSetPageRelativePathFromCurrentDirectory(m: Name, ps: PhotoSet): String = {
-    val setName   = s"${m.name}_${ps.date}_${ps.title.name}.html".replaceAll("[^a-zA-Z0-9.-]", "_")
-    val name = s"${m.name}"
+    val setName = s"${m.name}_${ps.date}_${ps.title.name}.html".replaceAll("[^a-zA-Z0-9.-]", "_")
+    val name    = s"${m.name}"
     s"$name/$setName"
   }
 

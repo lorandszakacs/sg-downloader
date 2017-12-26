@@ -1,5 +1,7 @@
 #!/bin/bash
 
+MEMORY='-Xmx4G -Xms2G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xss64M'
+
 #the path to the AWS S3 instance where to sync the files that are in $AWS_ROOT
 AWS_CLOUD_LOC=$1
 
@@ -111,9 +113,9 @@ then
 fi
 
 
-info "executing: 'java -jar $JAR_NAME delta'";
+info "executing: 'java $MEMORY -jar $JAR_NAME delta'";
 
-java -jar $JAR_NAME delta;
+java -jar $MEMORY $JAR_NAME delta;
 
 if [ $? -eq 0 ]
 then
