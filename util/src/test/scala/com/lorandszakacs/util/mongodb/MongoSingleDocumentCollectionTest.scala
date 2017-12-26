@@ -24,7 +24,7 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
 
     override def collectionName: String = "test_entities"
 
-    override protected def uniqueDocumentId: String = "a unique id"
+    override protected def uniqueDocumentId: String = "a_unique_id"
 
     override protected def defaultEntity: Entity = Entity(
       None,
@@ -40,7 +40,7 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
   override protected def withFixture(test: OneArgTest): Outcome = {
     val dbName = Database.testName(this.getClass.getSimpleName, test.text)
     val db = new Database(
-      uri    = """mongodb://localhost""",
+      uri    = """mongodb://localhost:27016""",
       dbName = dbName
     )
     val repo = new SingleEntityRepository(db)(ec)

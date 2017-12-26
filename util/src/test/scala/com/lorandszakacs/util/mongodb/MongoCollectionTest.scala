@@ -39,7 +39,7 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
   override protected def withFixture(test: OneArgTest): Outcome = {
     val dbName = Database.testName(this.getClass.getSimpleName, test.text)
     val db = new Database(
-      uri    = """mongodb://localhost""",
+      uri    = """mongodb://localhost:27016""",
       dbName = dbName
     )
     val repo = new EntityRepository(db)(ec)
