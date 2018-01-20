@@ -14,9 +14,10 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
 
   class SingleEntityRepository(
     override protected val db: Database
-  )(implicit
-    override protected implicit val executionContext: ExecutionContext)
-      extends SingleDocumentMongoCollection[Entity, String, BSONString] {
+  )(
+    implicit
+    override protected implicit val executionContext: ExecutionContext
+  ) extends SingleDocumentMongoCollection[Entity, String, BSONString] {
     protected implicit def objectHandler: BSONDocumentHandler[Entity] = BSONMacros.handler[Entity]
 
     override protected implicit lazy val idHandler: BSONHandler[BSONString, String] =

@@ -205,9 +205,11 @@ final class SGDownloader private[downloader] (
       } yield ()
     }
 
-    private def updateLatestProcessedMarker(indexedMs:           Ms,
-                                            reifiedMs:           Ms,
-                                            lastProcessedMarker: Option[LastProcessedMarker]): Future[Unit] = {
+    private def updateLatestProcessedMarker(
+      indexedMs:           Ms,
+      reifiedMs:           Ms,
+      lastProcessedMarker: Option[LastProcessedMarker]
+    ): Future[Unit] = {
       logger.info(s"delta.UpdateLatestProcessedIndex: old='${lastProcessedMarker.map(_.lastPhotoSetID).mkString("")}'")
       when(reifiedMs.all.nonEmpty) execute {
 

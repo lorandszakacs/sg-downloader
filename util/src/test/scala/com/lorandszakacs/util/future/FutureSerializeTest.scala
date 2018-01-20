@@ -31,8 +31,10 @@ class FutureSerializeTest extends FlatSpec with Matchers {
     val eventualResult: Future[Seq[String]] = Future.serialize(input) { i =>
       val toWaitInMillis: Long = (Math.random() * 1000).toLong % 200
       Future {
-        assert(startedFlag.isEmpty,
-               s"started flag should have been empty at the start of each future but was: $startedFlag")
+        assert(
+          startedFlag.isEmpty,
+          s"started flag should have been empty at the start of each future but was: $startedFlag"
+        )
         previouslyProcessed foreach { previous =>
           assertResult(expected = i - 1, "... the futures were not executed in the correct order.")(actual = previous)
         }
@@ -61,8 +63,10 @@ class FutureSerializeTest extends FlatSpec with Matchers {
     val eventualResult: Future[Seq[String]] = Future.serialize(input) { i =>
       val toWaitInMillis: Long = (Math.random() * 1000).toLong % 200
       Future {
-        assert(startedFlag.isEmpty,
-               s"started flag should have been empty at the start of each future but was: $startedFlag")
+        assert(
+          startedFlag.isEmpty,
+          s"started flag should have been empty at the start of each future but was: $startedFlag"
+        )
         previouslyProcessed foreach { previous =>
           assertResult(expected = i - 1, "... the futures were not executed in the correct order.")(actual = previous)
         }
@@ -90,8 +94,10 @@ class FutureSerializeTest extends FlatSpec with Matchers {
     val eventualResult: Future[Set[String]] = Future.serialize(input) { i =>
       val toWaitInMillis: Long = (Math.random() * 1000).toLong % 200
       Future {
-        assert(startedFlag.isEmpty,
-               s"started flag should have been empty at the start of each future but was: $startedFlag")
+        assert(
+          startedFlag.isEmpty,
+          s"started flag should have been empty at the start of each future but was: $startedFlag"
+        )
         startedFlag = Some(i)
         Thread.sleep(toWaitInMillis)
         startedFlag = None

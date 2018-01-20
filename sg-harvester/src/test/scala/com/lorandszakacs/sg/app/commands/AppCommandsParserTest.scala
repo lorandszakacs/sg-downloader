@@ -33,8 +33,10 @@ class AppCommandsParserTest extends FlatSpec {
     val input  = """download names=nameOne username=someUser password=!@#$sf123AC%^&*()\"/|"""
     val result = parse(input)
     assert(
-      result == Commands.DownloadSpecific(names               = List("nameOne"),
-                                          usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|""")))
+      result == Commands.DownloadSpecific(
+        names               = List("nameOne"),
+        usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|"""))
+      )
     )
   }
 
@@ -47,8 +49,10 @@ class AppCommandsParserTest extends FlatSpec {
     val input  = """download names=nameOne,nameTwo,nameThree username=someUser password=!@#$sf123AC%^&*()\"/|"""
     val result = parse(input)
     assert(
-      result == Commands.DownloadSpecific(names               = List("nameOne", "nameTwo", "nameThree"),
-                                          usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|""")))
+      result == Commands.DownloadSpecific(
+        names               = List("nameOne", "nameTwo", "nameThree"),
+        usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|"""))
+      )
     )
   }
 
@@ -79,8 +83,8 @@ class AppCommandsParserTest extends FlatSpec {
     val input  = """delta username=someUser password=!@#$sf123AC%^&*()\"/|"""
     val result = parse(input)
     assert(
-      result == Commands.DeltaDownload(days                = None,
-                                       usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|""")))
+      result == Commands
+        .DeltaDownload(days = None, usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|""")))
     )
   }
 
@@ -88,8 +92,8 @@ class AppCommandsParserTest extends FlatSpec {
     val input  = """delta days=42 username=someUser password=!@#$sf123AC%^&*()\"/|"""
     val result = parse(input)
     assert(
-      result == Commands.DeltaDownload(days                = Option(42),
-                                       usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|""")))
+      result == Commands
+        .DeltaDownload(days = Option(42), usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|""")))
     )
   }
 

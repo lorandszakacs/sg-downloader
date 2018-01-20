@@ -85,8 +85,7 @@ object Commands {
 
   case class ExportHTML(
     onlyFavorites: Boolean = false
-  ) extends Command {
-  }
+  ) extends Command {}
 
   //====================================================================================
 

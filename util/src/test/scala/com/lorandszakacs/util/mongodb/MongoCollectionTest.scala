@@ -15,9 +15,10 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
 
   class EntityRepository(
     override protected val db: Database
-  )(implicit
-    override protected implicit val executionContext: ExecutionContext)
-      extends MongoCollection[Entity, String, BSONString] {
+  )(
+    implicit
+    override protected implicit val executionContext: ExecutionContext
+  ) extends MongoCollection[Entity, String, BSONString] {
     protected implicit def objectHandler: BSONDocumentHandler[Entity] = BSONMacros.handler[Entity]
 
     override protected implicit lazy val idHandler: BSONHandler[BSONString, String] =

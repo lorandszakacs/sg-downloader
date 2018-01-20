@@ -19,8 +19,10 @@ private[reifier] final class SessionDaoImpl(
     extends SingleDocumentMongoCollection[Session, String, BSONString] with StrictLogging {
 
   private[reifier] implicit val dateTimeHandler
-    : BSONReader[BSONDateTime, DateTime] with BSONWriter[DateTime, BSONDateTime] with BSONHandler[BSONDateTime,
-                                                                                                  DateTime] =
+    : BSONReader[BSONDateTime, DateTime] with BSONWriter[DateTime, BSONDateTime] with BSONHandler[
+      BSONDateTime,
+      DateTime
+    ] =
     new BSONHandler[BSONDateTime, DateTime] {
       override def read(bson: BSONDateTime): DateTime = {
         new DateTime(bson.value, DateTimeZone.UTC)

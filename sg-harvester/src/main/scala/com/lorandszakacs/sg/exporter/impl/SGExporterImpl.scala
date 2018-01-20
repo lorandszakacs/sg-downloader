@@ -118,8 +118,9 @@ private[exporter] class SGExporterImpl(
     } yield ()
   }
 
-  override def exportLatestForDaysWithDelta(nrOfDays: Int,
-                                            delta:    List[M])(implicit ws: ExporterSettings): Future[Unit] = {
+  override def exportLatestForDaysWithDelta(nrOfDays: Int, delta: List[M])(
+    implicit ws:                                      ExporterSettings
+  ): Future[Unit] = {
     val today     = LocalDate.today()
     val inThePast = today.minusDays(nrOfDays)
     for {

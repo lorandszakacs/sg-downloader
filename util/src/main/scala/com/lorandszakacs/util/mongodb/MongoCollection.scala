@@ -34,16 +34,22 @@ object MongoCollection {
   }
 
   private def interpretWriteResult(wr: WriteResult): Future[Unit] = {
-    when(!wr.ok) failWith MongoDBException(code = wr.code.map(_.toString),
-                                           msg  = wr.writeErrors.headOption.map(_.toString))
+    when(!wr.ok) failWith MongoDBException(
+      code = wr.code.map(_.toString),
+      msg  = wr.writeErrors.headOption.map(_.toString)
+    )
   }
 
   private def interpretWriteResult(wr: MultiBulkWriteResult)(implicit ec: ExecutionContext): Future[Unit] = {
     for {
-      _ <- when(!wr.ok) failWith MongoDBException(code = wr.code.map(_.toString),
-                                                  msg = wr.writeErrors.headOption.map(_.toString))
-      _ <- when(wr.writeErrors.nonEmpty) failWith MongoDBException(code = wr.code.map(_.toString),
-                                                                   msg = wr.writeErrors.headOption.map(_.toString))
+      _ <- when(!wr.ok) failWith MongoDBException(
+            code = wr.code.map(_.toString),
+            msg  = wr.writeErrors.headOption.map(_.toString)
+          )
+      _ <- when(wr.writeErrors.nonEmpty) failWith MongoDBException(
+            code = wr.code.map(_.toString),
+            msg  = wr.writeErrors.headOption.map(_.toString)
+          )
     } yield ()
 
   }
