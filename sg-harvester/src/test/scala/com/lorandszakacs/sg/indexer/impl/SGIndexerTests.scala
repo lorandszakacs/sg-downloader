@@ -31,23 +31,25 @@ class SGIndexerTests extends IndexerTest {
 
   /**
     * at the time of writing of this test:
-    * $domain/members/odina/photos/
-    * had only one single set
+    * $domain/members/dalmasca/photos/
+    * has only 4 sets
+    *
+    * N.B. these can actually change through time.
     */
-  it should "... fetch URIs for a page that does not need a subsequent query -- odina" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForM(HFFactory)(Name("odina"))) { h: HF =>
+  it should "... fetch URIs for a page that does not need a subsequent query -- dalmasca" in { indexer =>
+    whenReady(indexer.gatherPhotoSetInformationForM(HFFactory)(Name("dalmasca"))) { h: HF =>
       val sets: List[PhotoSet] = h.photoSets
 
       withClue("size") {
-        sets should have size 1
+        sets should have size 4
       }
 
       withClue("content") {
         sets should contain {
           PhotoSet(
-            url     = s"${core.Domain}/members/odina/album/2745718/do-i-wanna-know/",
-            title   = "DO I WANNA KNOW",
-            date    = LocalDate.parse("2016-07-03"),
+            url     = s"${core.Domain}/members/dalmasca/album/996562/picker-uppers/",
+            title   = "PICKER-UPPERS",
+            date    = LocalDate.parse("2013-03-22"),
             isHFSet = Some(true)
           )
         }
@@ -56,21 +58,21 @@ class SGIndexerTests extends IndexerTest {
     }
   }
 
-  it should "... fetch URIs for a page that does not need a subsequent query -- odina -- generic" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForName(Name("odina"))) { h: M =>
+  it should "... fetch URIs for a page that does not need a subsequent query -- dalmasca -- generic" in { indexer =>
+    whenReady(indexer.gatherPhotoSetInformationForName(Name("dalmasca"))) { h: M =>
       h shouldBe a[HF]
       val sets: List[PhotoSet] = h.photoSets
 
       withClue("size") {
-        sets should have size 1
+        sets should have size 4
       }
 
       withClue("content") {
         sets should contain {
           PhotoSet(
-            url     = s"${core.Domain}/members/odina/album/2745718/do-i-wanna-know/",
-            title   = "DO I WANNA KNOW",
-            date    = LocalDate.parse("2016-07-03"),
+            url     = s"${core.Domain}/members/dalmasca/album/996562/picker-uppers/",
+            title   = "PICKER-UPPERS",
+            date    = LocalDate.parse("2013-03-22"),
             isHFSet = Some(true)
           )
         }

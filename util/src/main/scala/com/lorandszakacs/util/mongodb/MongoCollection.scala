@@ -12,20 +12,20 @@ import scala.util.control.NonFatal
   * @since 26 Jun 2017
   *
   */
-
 object MongoCollection {
 
   def apply[Entity, IdType, BSONTargetType <: BSONValue](collName: String, database: Database)(
-    implicit entityHandlerImpl:                                    BSONDocumentHandler[Entity],
-    idHandlerImpl:                                                 BSONHandler[BSONTargetType, IdType],
-    ec:                                                            ExecutionContext,
-    identifierImpl:                                                Identifier[Entity, IdType]
+    implicit
+    enH: BSONDocumentHandler[Entity],
+    idH: BSONHandler[BSONTargetType, IdType],
+    ec:  ExecutionContext,
+    id:  Identifier[Entity, IdType]
   ): MongoCollection[Entity, IdType, BSONTargetType] = {
     new MongoCollection[Entity, IdType, BSONTargetType] {
       override protected implicit val executionContext: ExecutionContext                    = ec
-      override protected implicit val objectHandler:    BSONDocumentHandler[Entity]         = entityHandlerImpl
-      override protected implicit val idHandler:        BSONHandler[BSONTargetType, IdType] = idHandlerImpl
-      override protected implicit val identifier:       Identifier[Entity, IdType]          = identifierImpl
+      override protected implicit val entityHandler:    BSONDocumentHandler[Entity]         = enH
+      override protected implicit val idHandler:        BSONHandler[BSONTargetType, IdType] = idH
+      override protected implicit val identifier:       Identifier[Entity, IdType]          = id
 
       override val collectionName: String = collName
 
@@ -58,7 +58,7 @@ object MongoCollection {
 trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
   protected implicit def executionContext: ExecutionContext
 
-  protected implicit def objectHandler: BSONDocumentHandler[Entity]
+  protected implicit def entityHandler: BSONDocumentHandler[Entity]
 
   protected implicit def idHandler: BSONHandler[BSONTargetType, IdType]
 
@@ -118,10 +118,8 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
   }
 
   def create(toCreate: List[Entity]): Future[Unit] = {
-    val bulkDocs =
-      toCreate.map(implicitly[collection.ImplicitlyDocumentProducer](_))
     for {
-      wr <- collection.bulkInsert(ordered = false)(bulkDocs: _*)
+      wr <- collection.insert[Entity](ordered = false).many(toCreate)
       _  <- MongoCollection.interpretWriteResult(wr)
     } yield ()
   }
