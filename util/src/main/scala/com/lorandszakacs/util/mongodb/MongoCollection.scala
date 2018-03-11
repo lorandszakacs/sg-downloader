@@ -72,7 +72,7 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] extends LazyL
 
   private lazy val collectionTask: Task[BSONCollection] = db.collection(collectionName)
 
-  private lazy val collection: BSONCollection = collectionTask.unsafeSyncGet()
+  private lazy val collection: BSONCollection = collectionTask.unsafeSyncGet()(dbIOScheduler.scheduler)
 
   def idQuery(id: IdType): BSONDocument = BSONDocument(_id -> id)
 

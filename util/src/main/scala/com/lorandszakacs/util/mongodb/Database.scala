@@ -1,7 +1,7 @@
 package com.lorandszakacs.util.mongodb
 
 import com.lorandszakacs.util.effects._
-
+import com.typesafe.config.Config
 import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
 import com.typesafe.scalalogging.StrictLogging
 
@@ -14,14 +14,16 @@ import scala.language.postfixOps
   * @since 14 Jul 2017
   *
   */
-final case class Database(uri: String, dbName: String)(
+final case class Database(uri: String, dbName: String, config: Option[Config] = None)(
   implicit
   dbIOScheduler: DBIOScheduler
 ) extends StrictLogging {
 
   def collection(colName: String): Task[BSONCollection] = databaseTask.map(_.apply(colName))
 
-  private lazy val mongoDriverTask: Task[MongoDriver] = Task(new MongoDriver()).memoizeOnSuccess
+  private lazy val mongoDriverTask: Task[MongoDriver] = Task(
+    new MongoDriver(config = config, classLoader = None)
+  ).memoizeOnSuccess
 
   private lazy val mongoConnectionTask: Task[MongoConnection] = {
     for {
