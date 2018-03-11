@@ -14,7 +14,7 @@ import com.lorandszakacs.util.math.Identifier
   */
 trait SingleDocumentMongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
-  protected implicit def scheduler: Scheduler
+  protected implicit def scheduler: DBIOScheduler
 
   protected def objectHandler: BSONDocumentHandler[Entity]
 

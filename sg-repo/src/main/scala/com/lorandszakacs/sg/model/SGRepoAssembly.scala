@@ -14,7 +14,7 @@ trait SGRepoAssembly {
 
   def db: Database
 
-  implicit def scheduler: Scheduler
+  implicit def dbIOScheduler: DBIOScheduler
 
   def sgAndHFRepository: SGAndHFRepository = _sgAndHFRepository
 

@@ -1,6 +1,7 @@
 package com.lorandszakacs.sg.app
 
 import com.lorandszakacs.util.effects._
+import com.lorandszakacs.util.mongodb._
 
 import akka.actor.ActorSystem
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
@@ -8,7 +9,7 @@ import com.lorandszakacs.sg.exporter.SGExporterAssembly
 import com.lorandszakacs.sg.indexer.IndexerAssembly
 import com.lorandszakacs.sg.model.SGRepoAssembly
 import com.lorandszakacs.sg.reifier.ReifierAssembly
-import com.lorandszakacs.util.mongodb.Database
+
 import com.typesafe.scalalogging.StrictLogging
 
 /**
@@ -18,8 +19,9 @@ import com.typesafe.scalalogging.StrictLogging
   *
   */
 final class Assembly(
+  implicit
   override val actorSystem:     ActorSystem     = ActorSystem("sg-app"),
-  override val scheduler:       Scheduler       = Scheduler.io(name = "sg-app"),
+  override val dbIOScheduler:   DBIOScheduler   = DBIOScheduler(Scheduler.io(name = "sg-app-dbio")),
   override val httpIOScheduler: HTTPIOScheduler = HTTPIOScheduler(Scheduler.io(name = "sg-app-http"))
 ) extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly
     with StrictLogging {
@@ -27,7 +29,7 @@ final class Assembly(
   override implicit lazy val db: Database = new Database(
     uri    = """mongodb://localhost:27016""",
     dbName = "sgs_repo"
-  )(scheduler)
+  )
 
   lazy val shutdownTask: Task[Unit] = {
     for {

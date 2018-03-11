@@ -10,13 +10,13 @@ import org.scalatest.{fixture, Matchers, OneInstancePerTest, Outcome}
   *
   */
 class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstancePerTest with Matchers {
-  private implicit val sch: Scheduler = Scheduler.global
+  private implicit val sch: DBIOScheduler = DBIOScheduler(Scheduler.global)
 
   class SingleEntityRepository(
     override protected val db: Database
   )(
     implicit
-    override protected implicit val scheduler: Scheduler
+    override protected implicit val scheduler: DBIOScheduler
   ) extends SingleDocumentMongoCollection[Entity, String, BSONString] {
     protected implicit def objectHandler: BSONDocumentHandler[Entity] = BSONMacros.handler[Entity]
 
@@ -44,7 +44,7 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
       uri    = """mongodb://localhost:27016""",
       dbName = dbName
     )
-    val repo = new SingleEntityRepository(db)(sch)
+    val repo = new SingleEntityRepository(db)
     db.drop().unsafeSyncGet()
     val outcome: Outcome = withFixture(test.toNoArgTest(repo))
     val f = if (outcome.isFailed || outcome.isCanceled) {

@@ -17,11 +17,11 @@ object MongoCollection {
     implicit
     enH: BSONDocumentHandler[Entity],
     idH: BSONHandler[BSONTargetType, IdType],
-    sch: Scheduler,
+    sch: DBIOScheduler,
     id:  Identifier[Entity, IdType]
   ): MongoCollection[Entity, IdType, BSONTargetType] = {
     new MongoCollection[Entity, IdType, BSONTargetType] {
-      override protected implicit val scheduler:     Scheduler                           = sch
+      override protected implicit val scheduler:     DBIOScheduler                       = sch
       override protected implicit val entityHandler: BSONDocumentHandler[Entity]         = enH
       override protected implicit val idHandler:     BSONHandler[BSONTargetType, IdType] = idH
       override protected implicit val identifier:    Identifier[Entity, IdType]          = id
@@ -57,7 +57,7 @@ object MongoCollection {
 }
 
 trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] extends LazyLogging {
-  protected implicit def scheduler: Scheduler
+  protected implicit def scheduler: DBIOScheduler
 
   protected implicit def entityHandler: BSONDocumentHandler[Entity]
 

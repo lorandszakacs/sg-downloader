@@ -16,7 +16,7 @@ import com.lorandszakacs.util.time._
 private[model] class SGAndHFRepositoryImpl(
   val db: Database
 )(
-  implicit val sch: Scheduler
+  implicit val sch: DBIOScheduler
 ) extends SGAndHFRepository with StrictLogging {
 
   private val sgsRepo = new RepoSGs(db)

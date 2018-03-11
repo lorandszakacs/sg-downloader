@@ -17,7 +17,7 @@ private[reifier] final class SessionDaoImpl(
   override protected val db: Database
 )(
   implicit
-  override val scheduler: Scheduler
+  override val scheduler: DBIOScheduler
 ) extends SingleDocumentMongoCollection[Session, String, BSONString] with StrictLogging {
 
   private[reifier] implicit val dateTimeHandler

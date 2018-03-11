@@ -15,11 +15,11 @@ import com.lorandszakacs.util.effects._
 trait ReifierAssembly extends SGClientAssembly {
   def db: Database
 
-  implicit def scheduler: Scheduler
+  implicit def dbIOScheduler: DBIOScheduler
 
   def sgReifier: SGReifier = _sgReifierImpl
 
-  private[reifier] lazy val _sessionDao = new SessionDaoImpl(db)(scheduler)
+  private[reifier] lazy val _sessionDao = new SessionDaoImpl(db)(dbIOScheduler)
 
   private[reifier] lazy val _sgReifierImpl = new SGReifierImpl(sgClient, _sessionDao)
 }

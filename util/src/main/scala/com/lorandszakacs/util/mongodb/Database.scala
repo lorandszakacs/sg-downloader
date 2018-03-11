@@ -16,7 +16,7 @@ import scala.language.postfixOps
 final case class Database(
   uri:          String,
   dbName:       String
-)(implicit sch: Scheduler)
+)(implicit sch: DBIOScheduler)
     extends StrictLogging {
 
   def collection(colName: String): Task[BSONCollection] = databaseTask.map(_.apply(colName))
@@ -60,7 +60,7 @@ object Database {
 
   private[mongodb] def getDatabase(mongoConnection: MongoConnection)(name: String)(
     implicit
-    sch: Scheduler
+    sch: DBIOScheduler
   ): Task[DefaultDB] = {
     mongoConnection.database(name).suspendInTask.adaptError {
       case NonFatal(e) => new IllegalStateException(s"Failed to initialize Mongo database. Because: ${e.getMessage}", e)

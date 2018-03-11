@@ -12,7 +12,8 @@ import com.lorandszakacs.util.time.DateTime
   *
   */
 private[impl] class RepoLastProcessedMarker(override protected val db: Database)(
-  implicit override val scheduler:                                     Scheduler
+  implicit
+  override val scheduler: DBIOScheduler
 ) extends IndexSingleDocRepo[LastProcessedMarker] with SGRepoBSON {
 
   override protected def objectHandler: BSONDocumentHandler[LastProcessedMarker] =

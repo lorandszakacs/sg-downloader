@@ -27,11 +27,13 @@ import com.typesafe.scalalogging.StrictLogging
   *
   */
 object Main extends App with StrictLogging {
-  implicit val actorSystem:     ActorSystem     = ActorSystem("sg-app")
-  implicit val scheduler:       Scheduler       = Scheduler.io(name = "sg-app")
-  implicit val httpIOScheduler: HTTPIOScheduler = HTTPIOScheduler(Scheduler.io(name = "sg-app-http"))
+  implicit val actorSystem: ActorSystem = ActorSystem("sg-app")
 
-  val assembly    = new Assembly(actorSystem, scheduler, httpIOScheduler)
+  implicit val mainThreadScheduler: Scheduler       = Scheduler.global
+  implicit val dbIOScheduler:       DBIOScheduler   = DBIOScheduler(Scheduler.io(name = "sg-app"))
+  implicit val httpIOScheduler:     HTTPIOScheduler = HTTPIOScheduler(Scheduler.io(name = "sg-app-http"))
+
+  val assembly    = new Assembly()(actorSystem, dbIOScheduler, httpIOScheduler)
   val interpreter = new CommandLineInterpreter(assembly)
   val repl        = new REPL(interpreter)
 
@@ -55,5 +57,5 @@ object Main extends App with StrictLogging {
     _ <- Task(System.exit(0))
   } yield ()
 
-  program.asIO.unsafeRunSync()
+  program.asIO(mainThreadScheduler).unsafeRunSync()
 }
