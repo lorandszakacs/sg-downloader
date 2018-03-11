@@ -411,7 +411,7 @@ object Favorites {
     ).sorted.distinct
 
   private val _new = List[String](
-  ).filterNot(_.isEmpty).sorted.distinct
+    ).filterNot(_.isEmpty).sorted.distinct
 
   val names: List[Name] = (if (_new.isEmpty) _names else _new) map Name.apply
 

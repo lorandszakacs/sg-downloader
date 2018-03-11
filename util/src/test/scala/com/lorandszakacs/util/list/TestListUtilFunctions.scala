@@ -1,5 +1,7 @@
 package com.lorandszakacs.util.list
 
+import ListUtilFunctions._
+
 import org.scalatest.FlatSpec
 import com.lorandszakacs.util.math._
 

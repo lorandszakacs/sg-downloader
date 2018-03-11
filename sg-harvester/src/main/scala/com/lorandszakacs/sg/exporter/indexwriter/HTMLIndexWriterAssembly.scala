@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.exporter.indexwriter
 
 import com.lorandszakacs.sg.exporter.indexwriter.impl.HTMLIndexWriterImpl
 
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 
 /**
   *

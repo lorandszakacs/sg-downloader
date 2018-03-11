@@ -5,7 +5,7 @@ import com.lorandszakacs.sg.model.M.MFactory
 import com.lorandszakacs.sg.model._
 import org.joda.time.DateTime
 
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 
 /**
   * Represents the first stage of the pipeline of processing

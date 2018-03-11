@@ -5,7 +5,7 @@ import com.lorandszakacs.sg.exporter.SGExporterAssembly
 import com.lorandszakacs.sg.indexer.IndexerAssembly
 import com.lorandszakacs.sg.model.SGRepoAssembly
 import com.lorandszakacs.sg.reifier.ReifierAssembly
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 
 /**
   *

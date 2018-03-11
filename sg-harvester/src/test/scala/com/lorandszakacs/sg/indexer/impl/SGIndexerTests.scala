@@ -6,7 +6,7 @@ import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.indexer.IndexerAssembly
 import com.lorandszakacs.sg.model.M.{HFFactory, SGFactory}
 import com.lorandszakacs.sg.model._
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 import org.joda.time.LocalDate
 import org.scalatest.Outcome
 

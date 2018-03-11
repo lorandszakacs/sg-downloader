@@ -16,6 +16,8 @@
   */
 package com.lorandszakacs.sg.contentparser
 
+import com.lorandszakacs.util.effects._
+
 import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.URLConversions
 import com.lorandszakacs.sg.http.SGURLBuilder
@@ -24,8 +26,6 @@ import com.lorandszakacs.util.html._
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.language.postfixOps
-import scala.util._
-import scala.util.control.NonFatal
 
 object SGContentParser extends SGURLBuilder with StrictLogging with URLConversions {
   private val months = Map(
@@ -127,8 +127,8 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
     def getPhotoSetLink(html: Html): Try[String] = {
       val potentialLink = html filter RetainFirst(Tag("section") && Class("image-section") && HrefLink())
       potentialLink.headOption match {
-        case Some(name) => Success(name)
-        case None       => Failure(HTMLPageDidNotContainAnyPhotoSetLinksException(html))
+        case Some(name) => Try.pure(name)
+        case None       => Try.failThr(HTMLPageDidNotContainAnyPhotoSetLinksException(html))
       }
     }
 
@@ -141,7 +141,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
       val potentialTime = html filter Content(RetainFirst(Tag("time") && Class("time-ago")))
       potentialTime.headOption match {
         case Some(timeRepr) => parseStringToDateTime(timeRepr)
-        case None           => Failure(SetRepresentationDidNotContainTimeTagException(html))
+        case None           => Try.failThr(SetRepresentationDidNotContainTimeTagException(html))
       }
     }
 
@@ -153,8 +153,8 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
     def getPhotoSetTitle(html: Html): Try[PhotoSetTitle] = {
       val potentialTitle = html filter Tag("a") && Class("facebook-share") && Value(Attribute("data-name"))
       potentialTitle.headOption match {
-        case Some(title) => Success(title)
-        case None        => Failure(SetRepresentationDidNotContainTitleException(html))
+        case Some(title) => Try.pure(title)
+        case None        => Try.failThr(SetRepresentationDidNotContainTitleException(html))
       }
     }
 
@@ -172,8 +172,8 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
     def getName(html: Html): Try[Name] = {
       val potentialName = html filter Tag("article") && Tag("header") && Tag("h2") && Content(RetainFirst(Tag("a")))
       potentialName.headOption match {
-        case Some(name) => Success(Name(name))
-        case None       => Failure(SetRepresentationDidNotContainNameException(html))
+        case Some(name) => Try.pure(Name(name))
+        case None       => Try.failThr(SetRepresentationDidNotContainNameException(html))
       }
     }
 
@@ -215,15 +215,15 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
 
   def gatherSGNames(html: Html): Try[List[Name]] = {
     html filter (Class("image-section") && RetainFirst(Tag("a")) && HrefLink()) match {
-      case Nil   => Failure(DidNotFindAnySGProfileLinksException())
-      case links => Success(links.map(s => Name(s.replace("/girls/", "").replace("/", ""))))
+      case Nil   => Try.failThr(DidNotFindAnySGProfileLinksException())
+      case links => Try.pure(links.map(s => Name(s.replace("/girls/", "").replace("/", ""))))
     }
   }
 
   def gatherHFNames(html: Html): Try[List[Name]] = {
     html filter (Class("image-section") && RetainFirst(Tag("a")) && HrefLink()) match {
-      case Nil   => Failure(DidNotFindAnyHFProfileLinksException())
-      case links => Success(links.map(s => Name(s.replace("/members/", "").replace("/", ""))))
+      case Nil   => Try.failThr(DidNotFindAnyHFProfileLinksException())
+      case links => Try.pure(links.map(s => Name(s.replace("/members/", "").replace("/", ""))))
     }
   }
 
@@ -250,7 +250,7 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
   def parsePhotos(albumPage: Html): Try[List[Photo]] = {
     albumPage filter Class("image-section") && Tag("li") && Class("photo-container") match {
       case Nil =>
-        Failure(new Exception(s"Failed to extract any Photo from this document:${albumPage.document.toString}"))
+        Try.failThr(new Exception(s"Failed to extract any Photo from this document:${albumPage.document.toString}"))
       case photosContainers =>
         Try {
           val photos: List[Photo] = photosContainers map { pc =>

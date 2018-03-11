@@ -18,6 +18,8 @@ package com.lorandszakacs.sg.http.impl
   */
 import java.net.URL
 
+import com.lorandszakacs.util.effects._
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl._
 import akka.http.scaladsl.model.HttpMethods._
@@ -28,13 +30,9 @@ import akka.util.ByteString
 import com.lorandszakacs.sg.core
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.util.html._
-import com.lorandszakacs.util.future._
 import org.joda.time.DateTimeZone
 
 import scala.collection.immutable.Seq
-import com.lorandszakacs.util.future._
-
-import scala.util.Try
 
 /**
   *
@@ -59,11 +57,11 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     for {
       response <- http.singleRequest(reqWithAuth).suspendInIO
       body <- if (response.status == StatusCodes.OK || response.status == StatusCodes.NotModified) {
-               response.entityAsString
-             }
-             else {
-               IO.raiseError(FailedToGetPageException(url, req, response))
-             }
+        response.entityAsString
+      }
+      else {
+        IO.raiseError(FailedToGetPageException(url, req, response))
+      }
       html = Html(body)
     } yield html
   }
@@ -150,55 +148,55 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
       for {
         response <- http.singleRequest(getRequest).suspendInIO
         result <- if (response.status != StatusCodes.OK) {
-                   IO.raiseError(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
-                 }
-                 else {
-                   val headers = response._2
+          IO.raiseError(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
+        }
+        else {
+          val headers = response._2
 
-                   /**
-                     * At this point in time the cookies will look like this:
-                     * {{{
-                     *     Set-Cookie=sessionid=gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8
-                     *     Set-Cookie=csrftoken=ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z
-                     * }}}
-                     */
-                   val wrongCookies: Seq[HttpCookie] = headers
-                     .filter(_.is("set-cookie"))
-                     .map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
-                   if (wrongCookies.length != 2) {
-                     IO.raiseError(ExpectedTwoSetCookieHeadersFromHomepage(getRequest.uri, headers))
-                   }
-                   else {
+          /**
+            * At this point in time the cookies will look like this:
+            * {{{
+            *     Set-Cookie=sessionid=gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8
+            *     Set-Cookie=csrftoken=ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z
+            * }}}
+            */
+          val wrongCookies: Seq[HttpCookie] = headers
+            .filter(_.is("set-cookie"))
+            .map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
+          if (wrongCookies.length != 2) {
+            IO.raiseError(ExpectedTwoSetCookieHeadersFromHomepage(getRequest.uri, headers))
+          }
+          else {
 
-                     /**
-                       * Will look like:
-                       * {{{
-                       *   (sessionid, gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8)
-                       *   (csrftoken, ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z)
-                       * }}}
-                       */
-                     val rawCookies: Seq[(String, String)] = wrongCookies flatMap (c => splitAtEqualChar(c.value))
-                     val tokens = for {
-                       csrfToken <- Try(
-                                     rawCookies
-                                       .find(_._1 == "csrftoken")
-                                       .getOrElse(throw ExpectedCSRFTokenOnSGHomepageException(getRequest.uri))
-                                       ._2
-                                   )
-                       sessionId <- Try(
-                                     rawCookies
-                                       .find(_._1 == "sessionid")
-                                       .getOrElse(throw ExpectedSessionIdSGHomepageException(getRequest.uri))
-                                       ._2
-                                   )
-                     } yield
-                       StartPageTokens(
-                         csrfToken = csrfToken,
-                         sessionID = sessionId
-                       )
-                     IO fromTry tokens
-                   }
-                 }
+            /**
+              * Will look like:
+              * {{{
+              *   (sessionid, gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8)
+              *   (csrftoken, ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z)
+              * }}}
+              */
+            val rawCookies: Seq[(String, String)] = wrongCookies flatMap (c => splitAtEqualChar(c.value))
+            val tokens = for {
+              csrfToken <- Try(
+                rawCookies
+                  .find(_._1 == "csrftoken")
+                  .getOrElse(throw ExpectedCSRFTokenOnSGHomepageException(getRequest.uri))
+                  ._2
+              )
+              sessionId <- Try(
+                rawCookies
+                  .find(_._1 == "sessionid")
+                  .getOrElse(throw ExpectedSessionIdSGHomepageException(getRequest.uri))
+                  ._2
+              )
+            } yield
+              StartPageTokens(
+                csrfToken = csrfToken,
+                sessionID = sessionId
+              )
+            IO fromTry tokens
+          }
+        }
       } yield result
     }
 
@@ -224,57 +222,57 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
       for {
         response <- http.singleRequest(DefaultSGAuthentication(loginRequest)).suspendInIO
         tokens <- if (response.status != StatusCodes.Created) {
-                   IO.raiseError(FailedToPostLoginException(loginRequest, response))
-                 }
-                 else {
-                   val headers = response._2
+          IO.raiseError(FailedToPostLoginException(loginRequest, response))
+        }
+        else {
+          val headers = response._2
 
-                   /**
-                     * At this point in time the cookies will look like this:
-                     * {{{
-                     *     Set-Cookie=sessionid=gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8
-                     *     Set-Cookie=csrftoken=ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z
-                     * }}}
-                     */
-                   val wrongCookies: Seq[HttpCookie] = headers
-                     .filter(_.is("set-cookie"))
-                     .map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
-                   if (wrongCookies.length != 2) {
-                     IO.raiseError(ExpectedTwoSetCookieHeadersFromLoginResponseException(loginRequest.uri, headers))
-                   }
-                   else {
+          /**
+            * At this point in time the cookies will look like this:
+            * {{{
+            *     Set-Cookie=sessionid=gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8
+            *     Set-Cookie=csrftoken=ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z
+            * }}}
+            */
+          val wrongCookies: Seq[HttpCookie] = headers
+            .filter(_.is("set-cookie"))
+            .map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
+          if (wrongCookies.length != 2) {
+            IO.raiseError(ExpectedTwoSetCookieHeadersFromLoginResponseException(loginRequest.uri, headers))
+          }
+          else {
 
-                     /**
-                       * Will look like:
-                       * {{{
-                       *   (sessionid, gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8)
-                       *   (csrftoken, ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z)
-                       * }}}
-                       */
-                     val rawCookies: Seq[(String, String)] = wrongCookies flatMap (c => splitAtEqualChar(c.value))
-                     val tokens = for {
-                       csrfToken <- Try(
-                                     rawCookies
-                                       .find(_._1 == "csrftoken")
-                                       .getOrElse(throw ExpectedCSRFTokenOnSGLoginResponseException(loginRequest.uri))
-                                       ._2
-                                   )
-                       sessionId <- Try(
-                                     rawCookies
-                                       .find(_._1 == "sessionid")
-                                       .getOrElse(throw ExpectedSessionIdSGLoginResponseException(loginRequest.uri))
-                                       ._2
-                                   )
-                     } yield
-                       Session(
-                         username  = username,
-                         sessionID = sessionId,
-                         csrfToken = csrfToken,
-                         expiresAt = org.joda.time.DateTime.now(DateTimeZone.UTC).plusDays(13)
-                       )
-                     IO fromTry tokens
-                   }
-                 }
+            /**
+              * Will look like:
+              * {{{
+              *   (sessionid, gAJ9cQEoVQpnZW5lcmljX2FkTlUCYWROdS4:1bKQBZ:4OAMJTBA81esAagrd-pokYdyZq8)
+              *   (csrftoken, ntk89cZcgo7hynvSMpDMdYxW75hIjo1Z)
+              * }}}
+              */
+            val rawCookies: Seq[(String, String)] = wrongCookies flatMap (c => splitAtEqualChar(c.value))
+            val tokens = for {
+              csrfToken <- Try(
+                rawCookies
+                  .find(_._1 == "csrftoken")
+                  .getOrElse(throw ExpectedCSRFTokenOnSGLoginResponseException(loginRequest.uri))
+                  ._2
+              )
+              sessionId <- Try(
+                rawCookies
+                  .find(_._1 == "sessionid")
+                  .getOrElse(throw ExpectedSessionIdSGLoginResponseException(loginRequest.uri))
+                  ._2
+              )
+            } yield
+              Session(
+                username  = username,
+                sessionID = sessionId,
+                csrfToken = csrfToken,
+                expiresAt = org.joda.time.DateTime.now(DateTimeZone.UTC).plusDays(13)
+              )
+            IO fromTry tokens
+          }
+        }
 
       } yield tokens
     }
@@ -340,7 +338,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     for {
       page <- getPage(uri)(newAuthentication)
       loginButton = (page filter Tag("div") && Class("login-form-wrapper")).headOption
-      _ <- when(loginButton.isDefined) failWith FailedToVerifyNewAuthenticationException(uri)
+      _ <- loginButton.isDefined.failOnTrueIOThr(FailedToVerifyNewAuthenticationException(uri))
     } yield ()
   }
 

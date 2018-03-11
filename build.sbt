@@ -82,8 +82,7 @@ lazy val `util` = project
           //required for package com.lorandszakacs.util.logging
           logbackClassic,
           scalaLogging,
-          catsCore,
-          catsEffect,
+          bmcEffects,
           //required for package com.lorandszakacs.util.html
           jsoup,
           scalaTest
@@ -94,6 +93,8 @@ lazy val `util` = project
 //============================================================================================
 //========================================== Misc ============================================
 //============================================================================================
+
+lazy val bmcEffects: ModuleID = "com.busymachines" %% "busymachines-commons-effects" % "0.3.0-RC6" withSources ()
 
 lazy val nScalaJodaTime: ModuleID = "com.github.nscala-time" %% "nscala-time"   % "2.18.0" withSources ()
 lazy val reactiveMongo:  ModuleID = "org.reactivemongo"      %% "reactivemongo" % "0.13.0" withSources ()
@@ -111,17 +112,7 @@ lazy val jsoup: ModuleID = "org.jsoup" % "jsoup" % "1.8.1" withSources ()
 //========================================  typelevel ========================================
 //============================================================================================
 
-lazy val shapeless: ModuleID = "com.chuusai" %% "shapeless" % "2.3.2" withSources ()
-
-lazy val catsVersion: String = "1.0.1"
-
-lazy val catsCore:    ModuleID = "org.typelevel" %% "cats-core"    % catsVersion withSources ()
-lazy val catsMacros:  ModuleID = "org.typelevel" %% "cats-macros"  % catsVersion withSources ()
-lazy val catsKernel:  ModuleID = "org.typelevel" %% "cats-kernel"  % catsVersion withSources ()
-lazy val catsLaws:    ModuleID = "org.typelevel" %% "cats-laws"    % catsVersion withSources ()
-lazy val catsTestkit: ModuleID = "org.typelevel" %% "cats-testkit" % catsVersion withSources ()
-
-lazy val catsEffect: ModuleID = "org.typelevel" %% "cats-effect" % "0.9" withSources ()
+//brough in by bmcEffects
 
 //============================================================================================
 //================================= http://akka.io/docs/ =====================================

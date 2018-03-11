@@ -1,5 +1,7 @@
 package com.lorandszakacs.sg.app
 
+import com.lorandszakacs.util.effects._
+
 import java.util.concurrent.Executors
 
 import akka.actor.ActorSystem
@@ -8,7 +10,6 @@ import com.lorandszakacs.sg.exporter.SGExporterAssembly
 import com.lorandszakacs.sg.indexer.IndexerAssembly
 import com.lorandszakacs.sg.model.SGRepoAssembly
 import com.lorandszakacs.sg.reifier.ReifierAssembly
-import com.lorandszakacs.util.future._
 import com.lorandszakacs.util.mongodb.Database
 import com.typesafe.scalalogging.StrictLogging
 

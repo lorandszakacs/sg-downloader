@@ -1,12 +1,11 @@
 package com.lorandszakacs.sg.exporter.indexwriter.impl
 
+import com.lorandszakacs.util.effects._
+
 import com.lorandszakacs.sg.exporter.html._
 import com.lorandszakacs.sg.exporter.indexwriter.{HTMLIndexWriter, WriterSettings}
 import com.lorandszakacs.util.files.FileUtils
-import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
-
-import scala.util.control.NonFatal
 
 /**
   *
@@ -24,10 +23,10 @@ private[indexwriter] class HTMLIndexWriterImpl()(implicit val ec: ExecutionConte
   override def writeRootMIndex(index: MRootIndex)(implicit ws: WriterSettings): IO[Unit] = {
     for {
       _ <- (if (ws.rewriteEverything) FileUtils.cleanFolderOrCreate(ws.rootFolder) else IO.unit) recover {
-            case NonFatal(e) =>
-              logger.error(s"failed to clean root folder: ${e.getMessage}", e)
-              throw e
-          }
+        case NonFatal(e) =>
+          logger.error(s"failed to clean root folder: ${e.getMessage}", e)
+          throw e
+      }
       _ <- writeRootIndexFile(index)
 
     } yield ()
@@ -77,8 +76,8 @@ private[indexwriter] class HTMLIndexWriterImpl()(implicit val ec: ExecutionConte
     for {
       _ <- FileUtils.createFolders(mFolderPath)
       _ <- IO.serialize(m.photoSets) { ps =>
-            writeMPhotoSetIndex(ps)
-          }
+        writeMPhotoSetIndex(ps)
+      }
       _ <- FileUtils.writeFile(indexPath, m.html.content)
     } yield {
       logger.info(s"wrote entire M entry @ $indexPath")

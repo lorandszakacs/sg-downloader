@@ -1,17 +1,14 @@
 package com.lorandszakacs.sg.reifier.impl
 
+import com.lorandszakacs.util.effects._
 import java.net.URL
 
 import com.lorandszakacs.sg.contentparser.SGContentParser
 import com.lorandszakacs.sg.http._
-import com.lorandszakacs.sg.model.M.{HFFactory, MFactory, SGFactory}
-import com.lorandszakacs.sg.model.{HF, M, Photo, SG}
-import com.lorandszakacs.sg.reifier.{DidNotFindAnyPhotoLinksOnSetPageException, SGReifier}
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.sg.model.M._
+import com.lorandszakacs.sg.model._
+import com.lorandszakacs.sg.reifier._
 import com.typesafe.scalalogging.StrictLogging
-
-import scala.util.Failure
-import scala.util.control.NonFatal
 
 /**
   *
@@ -22,40 +19,42 @@ import scala.util.control.NonFatal
 private[reifier] class SGReifierImpl(
   private val sGClient:   SGClient,
   private val sessionDao: SessionDaoImpl
-)(implicit val ec:        ExecutionContext)
-    extends SGReifier with SGURLBuilder with StrictLogging {
+)(
+  implicit val
+  ec: ExecutionContext
+) extends SGReifier with SGURLBuilder with StrictLogging {
 
   private[this] implicit var _authentication: Authentication = DefaultSGAuthentication
 
   override def authenticateIfNeeded(): IO[Authentication] = {
     if (authentication.needsRefresh) {
-      logger.info("need to authenticate")
       for {
+        _               <- IO(logger.info("need to authenticate"))
         possibleSession <- sessionDao.find
         newAuth <- possibleSession match {
-                    case Some(session) =>
-                      logger.info("attempting to recreate authentication from stored session")
-                      val recreate = for {
-                        auth <- sGClient.createAuthentication(session)
-                      } yield auth
-                      recreate
+          case Some(session) =>
+            val recreate = for {
+              _    <- IO(logger.info("attempting to recreate authentication from stored session"))
+              auth <- sGClient.createAuthentication(session)
+            } yield auth
+            recreate
 
-                    // val result = recreate recoverWith {
-                    //   case e: FailedToVerifyNewAuthenticationException =>
-                    //     logger.error(
-                    //       "failed to verify stored session, defaulting to using username and password",
-                    //       e
-                    //     )
-                    //     authenticateWithUsernameAndPassword(passwordProvider)
-                    // }
-                    //
-                    // result map { r: Authentication =>
-                    //   logger.info("successfully restored authentication")
-                    //   r
-                    // }
+          // val result = recreate recoverWith {
+          //   case e: FailedToVerifyNewAuthenticationException =>
+          //     logger.error(
+          //       "failed to verify stored session, defaulting to using username and password",
+          //       e
+          //     )
+          //     authenticateWithUsernameAndPassword(passwordProvider)
+          // }
+          //
+          // result map { r: Authentication =>
+          //   logger.info("successfully restored authentication")
+          //   r
+          // }
 
-                    case None => IO.raiseError(NoSessionFoundException)
-                  }
+          case None => IO.raiseError(NoSessionFoundException)
+        }
       } yield {
         _authentication = newAuth
         newAuth
@@ -85,49 +84,44 @@ private[reifier] class SGReifierImpl(
   private def gatherAllPhotosFromSetPage(photoSetPageUri: URL): IO[List[Photo]] = {
     for {
       photoSetPageHTML <- sGClient.getPage(photoSetPageUri)
-      photos <- IO fromTry {
-                 SGContentParser.parsePhotos(photoSetPageHTML).recoverWith {
-                   case NonFatal(_) => Failure(DidNotFindAnyPhotoLinksOnSetPageException(photoSetPageUri))
-                 }
-               }
+      photos <- IO.fromTry(SGContentParser.parsePhotos(photoSetPageHTML)).recoverWith {
+        case NonFatal(_) => IO.failThr(DidNotFindAnyPhotoLinksOnSetPageException(photoSetPageUri))
+      }
+
     } yield photos
   }
 
   private def reifyM[T <: M](mf: MFactory[T])(m: T)(implicit pc: PatienceConfig): IO[T] = {
-    logger.info(s"SGReifier --> reifying: ${mf.name} ${m.name.name}. Expecting ${m.photoSets.length} sets")
+    def reifyPhotoSets(photoSet: PhotoSet): IO[PhotoSet] = {
+      pc.throttleQuarterAfter {
+        for {
+          photos <- this.gatherAllPhotosFromSetPage(photoSet.url) recoverWith {
+            case _: DidNotFindAnyPhotoLinksOnSetPageException =>
+              IO(logger.error(s"SGReifier --> reifying: ${photoSet.url} has no photos. `${mf.name} ${m.name.name}`")) >>
+                IO.pure(Nil)
+            case e: Throwable =>
+              IO(
+                logger.error(
+                  s"SGReifier --> reifying: ${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${m.name.name}`",
+                  e
+                )
+              ) >> IO.pure(Nil)
+          }
+          _ <- IO(logger.info(s"SGReifier --> reified: ${mf.name} ${m.name.name} photoset: ${photoSet.url}"))
+        } yield photoSet.copy(photos = photos)
+      }
+    }
     for {
-      reifiedPhotoSets <- IO.serialize(m.photoSets) { photoSet =>
-                           pc.throttleQuarterAfter {
-                             for {
-                               photos <- this.gatherAllPhotosFromSetPage(photoSet.url) recoverWith {
-                                          case _: DidNotFindAnyPhotoLinksOnSetPageException =>
-                                            logger.error(
-                                              s"SGReifier --> reifying: ${photoSet.url} has no photos. `${mf.name} ${m.name.name}`"
-                                            )
-                                            IO.pure(Nil)
-                                          case e: Throwable =>
-                                            logger.error(
-                                              s"SGReifier --> reifying: ${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${m.name.name}`",
-                                              e
-                                            )
-                                            IO.pure(Nil)
-                                        }
-                             } yield {
-                               logger.info(
-                                 s"SGReifier --> reified: ${mf.name} ${m.name.name} photoset: ${photoSet.url}"
-                               )
-                               photoSet.copy(photos = photos)
-                             }
-                           }
-                         }
-    } yield {
-      logger.info(s"reified ${mf.name} ${m.name.name}. Found ${reifiedPhotoSets.length} photo sets.")
+      _      <- IO(logger.info(s"SGReifier --> reifying: ${mf.name} ${m.name.name}. Expecting ${m.photoSets.length} sets"))
+      result <- IO.serialize(m.photoSets)(reifyPhotoSets)
+      _      <- IO(logger.info(s"reified ${mf.name} ${m.name.name}. Found ${result.length} photo sets."))
+    } yield
       mf.apply(
         photoSetURL = m.photoSetURL,
         name        = m.name,
-        photoSets   = reifiedPhotoSets
+        photoSets   = result
       )
-    }
+
   }
 
   override def authentication: Authentication = _authentication

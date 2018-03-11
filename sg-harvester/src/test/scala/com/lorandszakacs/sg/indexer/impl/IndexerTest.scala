@@ -6,7 +6,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Span}
 import org.scalatest.{fixture, Matchers}
 
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 
 /**
   *

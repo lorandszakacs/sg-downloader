@@ -2,7 +2,7 @@ package com.lorandszakacs.util.mongodb
 
 import com.typesafe.scalalogging.StrictLogging
 import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -38,12 +38,12 @@ final case class Database(
   def shutdown(): IO[Unit] = {
     for {
       _ <- IO {
-            logger.info("attempting to close _mongoDriver.close(...)")
-            _mongoDriver.close(1 minute)
-          }
+        logger.info("attempting to close _mongoDriver.close(...)")
+        _mongoDriver.close(1 minute)
+      }
       _ <- _mongoDriver.system.terminate().suspendInIO >> IO(
-            logger.info("terminated -- _mongoDriver.system.terminate()")
-          )
+        logger.info("terminated -- _mongoDriver.system.terminate()")
+      )
     } yield ()
   }
 }

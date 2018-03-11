@@ -3,8 +3,7 @@ package com.lorandszakacs.sg.model.impl
 import com.lorandszakacs.sg.model._
 import com.typesafe.scalalogging.StrictLogging
 import org.joda.time.LocalDate
-import com.lorandszakacs.util.future._
-import com.lorandszakacs.util.list._
+import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.mongodb.Database
 import com.lorandszakacs.util.time._
 
@@ -65,8 +64,8 @@ private[model] class SGAndHFRepositoryImpl(
           )
           _ <- hfiRepo.createOrUpdate(newHFIndex)
           _ <- IO.traverse(hfsThatBecameSGS) { hfName =>
-                hfsRepo.remove(hfName)
-              }
+            hfsRepo.remove(hfName)
+          }
         } yield hfsThatBecameSGS
       }
     }

@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.app.repl
 
 import com.lorandszakacs.sg.app.commands.{Command, CommandParser, Commands}
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 import com.typesafe.scalalogging.StrictLogging
 
 /**
@@ -21,7 +21,7 @@ class CommandLineInterpreter(
     assert(args.nonEmpty, "why did you call the command line evaluator if you have no command line args?")
     val stringArgs = args.mkString(" ")
 
-    this.interpret(stringArgs).discardValue
+    this.interpret(stringArgs).discardContent
   }
 
   def interpret(args: String): IO[Command] = {

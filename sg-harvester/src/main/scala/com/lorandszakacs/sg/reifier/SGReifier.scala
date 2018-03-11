@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.reifier
 
 import com.lorandszakacs.sg.http.{Authentication, PatienceConfig}
 import com.lorandszakacs.sg.model.{HF, M, SG}
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 
 /**
   *

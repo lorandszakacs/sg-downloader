@@ -3,7 +3,7 @@ package com.lorandszakacs.sg.reifier.impl
 import com.lorandszakacs.sg.http.Session
 
 import com.typesafe.scalalogging.StrictLogging
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.mongodb._
 import com.lorandszakacs.util.time._
 
@@ -49,10 +49,12 @@ private[reifier] final class SessionDaoImpl(
   private def onInit(): IO[Unit] = {
     for {
       opt <- this.find
-      _ <- when(opt.isEmpty) execute this.create {
-            logger.info("creating default session info")
-            this.defaultEntity
-          }
+      _ <- opt.isEmpty.effectOnTrueIO {
+        this.create {
+          logger.info("creating default session info")
+          this.defaultEntity
+        }
+      }
     } yield ()
   }
 

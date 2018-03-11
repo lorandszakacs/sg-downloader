@@ -1,10 +1,8 @@
 package com.lorandszakacs.util.mongodb
 
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.math.Identifier
 import reactivemongo.api.commands.{LastError, MultiBulkWriteResult, WriteResult}
-
-import scala.util.control.NonFatal
 
 /**
   *
@@ -34,22 +32,24 @@ object MongoCollection {
   }
 
   private def interpretWriteResult(wr: WriteResult): IO[Unit] = {
-    when(!wr.ok) failWith MongoDBException(
-      code = wr.code.map(_.toString),
-      msg  = wr.writeErrors.headOption.map(_.toString)
+    wr.ok.failOnFalseIOThr(
+      MongoDBException(
+        code = wr.code.map(_.toString),
+        msg  = wr.writeErrors.headOption.map(_.toString)
+      )
     )
   }
 
   private def interpretWriteResult(wr: MultiBulkWriteResult): IO[Unit] = {
     for {
-      _ <- when(!wr.ok) failWith MongoDBException(
-            code = wr.code.map(_.toString),
-            msg  = wr.writeErrors.headOption.map(_.toString)
-          )
-      _ <- when(wr.writeErrors.nonEmpty) failWith MongoDBException(
-            code = wr.code.map(_.toString),
-            msg  = wr.writeErrors.headOption.map(_.toString)
-          )
+      _ <- wr.ok failOnFalseIOThr MongoDBException(
+        code = wr.code.map(_.toString),
+        msg  = wr.writeErrors.headOption.map(_.toString)
+      )
+      _ <- wr.writeErrors.nonEmpty failOnTrueIOThr MongoDBException(
+        code = wr.code.map(_.toString),
+        msg  = wr.writeErrors.headOption.map(_.toString)
+      )
     } yield ()
 
   }
@@ -109,13 +109,13 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def create(toCreate: Entity): IO[Unit] = {
     for {
-      _ <- collection.insert(toCreate).suspendInIO.discardValue.recoverWith {
-            case e: LastError =>
-              MongoCollection.interpretWriteResult(e)
+      _ <- collection.insert(toCreate).suspendInIO.discardContent.recoverWith {
+        case e: LastError =>
+          MongoCollection.interpretWriteResult(e)
 
-            case NonFatal(e) =>
-              IO.raiseError(e)
-          }
+        case NonFatal(e) =>
+          IO.raiseError(e)
+      }
     } yield ()
   }
 
@@ -128,45 +128,49 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def createOrUpdate(query: BSONDocument, toCreate: Entity): IO[Unit] = {
     for {
-      _ <- collection.update(query, toCreate, upsert = true).suspendInIO.discardValue.recoverWith {
-            case e: LastError =>
-              MongoCollection.interpretWriteResult(e)
+      _ <- collection.update(query, toCreate, upsert = true).suspendInIO.discardContent.recoverWith {
+        case e: LastError =>
+          MongoCollection.interpretWriteResult(e)
 
-            case NonFatal(e) =>
-              IO.raiseError(e)
-          }
+        case NonFatal(e) =>
+          IO.raiseError(e)
+      }
     } yield ()
   }
 
   def createOrUpdate(toCreate: Entity): IO[Unit] = {
     for {
-      _ <- collection.update(idQueryByEntity(toCreate), toCreate, upsert = true).suspendInIO.discardValue.recoverWith {
-            case e: LastError =>
-              MongoCollection.interpretWriteResult(e)
+      _ <- collection
+        .update(idQueryByEntity(toCreate), toCreate, upsert = true)
+        .suspendInIO
+        .discardContent
+        .recoverWith {
+          case e: LastError =>
+            MongoCollection.interpretWriteResult(e)
 
-            case NonFatal(e) =>
-              IO.raiseError(e)
-          }
+          case NonFatal(e) =>
+            IO.raiseError(e)
+        }
     } yield ()
   }
 
   def createOrUpdate(toCreateOrUpdate: List[Entity]): IO[Unit] = {
     for {
       _ <- toCreateOrUpdate.traverse[IO, Unit] { entity: Entity =>
-            this.createOrUpdate(entity)
-          }
+        this.createOrUpdate(entity)
+      }
     } yield ()
   }
 
   def remove(q: BSONDocument, firstMatchOnly: Boolean = false): IO[Unit] = {
     for {
-      _ <- collection.remove(q, firstMatchOnly = firstMatchOnly).suspendInIO.discardValue.recoverWith {
-            case e: LastError =>
-              MongoCollection.interpretWriteResult(e)
+      _ <- collection.remove(q, firstMatchOnly = firstMatchOnly).suspendInIO.discardContent.recoverWith {
+        case e: LastError =>
+          MongoCollection.interpretWriteResult(e)
 
-            case NonFatal(e) =>
-              IO.raiseError(e)
-          }
+        case NonFatal(e) =>
+          IO.raiseError(e)
+      }
     } yield ()
   }
 

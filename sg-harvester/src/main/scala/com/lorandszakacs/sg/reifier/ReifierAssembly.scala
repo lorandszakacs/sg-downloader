@@ -3,8 +3,9 @@ package com.lorandszakacs.sg.reifier
 import akka.actor.ActorSystem
 import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.reifier.impl.{SGReifierImpl, SessionDaoImpl}
-import com.lorandszakacs.util.future.ExecutionContext
 import com.lorandszakacs.util.mongodb.Database
+
+import com.lorandszakacs.util.effects._
 
 /**
   *

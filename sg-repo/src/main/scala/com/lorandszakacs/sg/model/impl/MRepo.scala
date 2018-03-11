@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.model.impl
 
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.mongodb._
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.time._
 import SGRepoBSON._
 import com.lorandszakacs.util.math.Identifier

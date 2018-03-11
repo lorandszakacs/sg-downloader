@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.http
 
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.concurrent.duration._

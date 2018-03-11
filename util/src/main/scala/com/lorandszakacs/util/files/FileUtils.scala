@@ -4,11 +4,10 @@ import java.io.{File, FileFilter, IOException, PrintWriter}
 import java.nio.file._
 import java.nio.file.attribute.BasicFileAttributes
 
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.collection.mutable
-import scala.util.{Failure, Success, Try}
 
 /**
   *
@@ -46,9 +45,9 @@ object FileUtils extends StrictLogging {
           }
           else {
             Try(Files.delete(file)) match {
-              case Failure(exception) =>
+              case TryFailure(exception) =>
                 throw RootFolderFileCouldNotBeDeleted(file.toAbsolutePath.toString, exception)
-              case Success(_) => ()
+              case TrySuccess(_) => ()
             }
             FileVisitResult.CONTINUE
           }
@@ -140,7 +139,7 @@ object FileUtils extends StrictLogging {
     val f = fd.toAbsolutePath.toFile
     for {
       result <- IO(f.mkdirs())
-      _      <- when(!result) failWith FailedToCreateFolderException(f.getAbsolutePath)
+      _      <- result.failOnFalseIOThr(FailedToCreateFolderException(f.getAbsolutePath))
     } yield ()
   }
 
@@ -151,9 +150,9 @@ object FileUtils extends StrictLogging {
   def writeFile(fp: Path, content: String): IO[Unit] = IO {
     val writer = new PrintWriter(fp.toAbsolutePath.toFile)
     Try(writer.write(content)) match {
-      case Success(_) =>
+      case TrySuccess(_) =>
         writer.close()
-      case Failure(exception) =>
+      case TryFailure(exception) =>
         writer.close()
         throw exception
     }
@@ -166,9 +165,9 @@ object FileUtils extends StrictLogging {
     }
     val writer = new PrintWriter(fp.toAbsolutePath.toFile)
     Try(writer.write(content)) match {
-      case Success(_) =>
+      case TrySuccess(_) =>
         writer.close()
-      case Failure(exception) =>
+      case TryFailure(exception) =>
         writer.close()
         throw exception
     }

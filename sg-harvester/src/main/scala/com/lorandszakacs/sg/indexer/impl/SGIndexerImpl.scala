@@ -1,5 +1,7 @@
 package com.lorandszakacs.sg.indexer.impl
 
+import com.lorandszakacs.util.effects._
+
 import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.contentparser.SGContentParser
 import com.lorandszakacs.sg.core
@@ -7,13 +9,10 @@ import com.lorandszakacs.sg.indexer.{FailedToRepeatedlyLoadPageException, SGInde
 import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.M.{HFFactory, MFactory, SGFactory}
 import com.lorandszakacs.sg.model._
-import com.lorandszakacs.util.future._
-import com.lorandszakacs.util.list._
 import com.lorandszakacs.util.html.Html
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.collection.mutable.ListBuffer
-import scala.util.{Failure, Success, Try}
 
 /**
   *
@@ -94,11 +93,11 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     val pageURL = photoSetsPageURL(name)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
-               uri             = pageURL,
-               offsetStep      = 9,
-               parsingFunction = SGContentParser.gatherPhotoSetsForM,
-               isEndPage       = isEndPageForMIndexing
-             )
+        uri             = pageURL,
+        offsetStep      = 9,
+        parsingFunction = SGContentParser.gatherPhotoSetsForM,
+        isEndPage       = isEndPageForMIndexing
+      )
     } yield {
       logger.info(s"gathered all sets for ${mf.name} ${name.name}. #sets: ${sets.length}")
       mf(photoSetURL = pageURL, name = name, photoSets = sets)
@@ -109,11 +108,11 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     val pageURL = photoSetsPageURL(name)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
-               uri             = pageURL,
-               offsetStep      = 9,
-               parsingFunction = SGContentParser.gatherPhotoSetsForM,
-               isEndPage       = isEndPageForMIndexing
-             )
+        uri             = pageURL,
+        offsetStep      = 9,
+        parsingFunction = SGContentParser.gatherPhotoSetsForM,
+        isEndPage       = isEndPageForMIndexing
+      )
       isHF = sets.exists(_.isHFSet.contains(true))
       mf   = if (isHF) HFFactory else SGFactory
     } yield {
@@ -190,15 +189,15 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
       msWithOnlyOneSet <- gatherAllNewMsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
       sgHF = msWithOnlyOneSet.distinctById.group
       sgs <- IO.serialize(sgHF.sgs) { sg =>
-              pc.throttleAfter {
-                this.gatherPhotoSetInformationForM(M.SGFactory)(sg.name)
-              }
-            }
+        pc.throttleAfter {
+          this.gatherPhotoSetInformationForM(M.SGFactory)(sg.name)
+        }
+      }
       hfs <- IO.serialize(sgHF.hfs) { hf =>
-              pc.throttleAfter {
-                this.gatherPhotoSetInformationForM(M.HFFactory)(hf.name)
-              }
-            }
+        pc.throttleAfter {
+          this.gatherPhotoSetInformationForM(M.HFFactory)(hf.name)
+        }
+      }
     } yield sgs ++ hfs
   }
 
@@ -253,12 +252,12 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
           logger.info(s"load repeatedly: step=$offsetStep [$newURI]")
           pc.throttleThread()
           parsingFunction(newPage) match {
-            case Success(s) =>
+            case TrySuccess(s) =>
               result ++= s
               if (isEndInput(s)) {
                 stop = true
               }
-            case Failure(e) =>
+            case TryFailure(e) =>
               throw FailedToRepeatedlyLoadPageException(offset, e)
           }
         }

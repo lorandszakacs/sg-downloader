@@ -3,7 +3,7 @@ package com.lorandszakacs.sg.indexer
 import akka.actor.ActorSystem
 import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.indexer.impl.SGIndexerImpl
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 
 /**
   *

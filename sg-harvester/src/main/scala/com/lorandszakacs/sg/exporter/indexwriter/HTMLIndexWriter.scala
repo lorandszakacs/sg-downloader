@@ -3,7 +3,7 @@ package com.lorandszakacs.sg.exporter.indexwriter
 import java.nio.file.Path
 
 import com.lorandszakacs.sg.exporter.html._
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 
 /**
   *

@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.exporter.html
 
 import com.lorandszakacs.sg.exporter.html.impl.HTMLGeneratorImpl
 
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 
 /**
   *

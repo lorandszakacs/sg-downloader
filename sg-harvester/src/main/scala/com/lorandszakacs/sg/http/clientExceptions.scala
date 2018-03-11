@@ -5,8 +5,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 
-import com.lorandszakacs.util.future._
-import scala.util.Try
+import com.lorandszakacs.util.effects._
 
 /**
   *

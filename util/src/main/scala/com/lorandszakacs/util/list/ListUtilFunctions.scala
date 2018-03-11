@@ -10,6 +10,8 @@ import scala.annotation.tailrec
   * @since 12 Jul 2017
   *
   */
+object ListUtilFunctions extends ListUtilFunctions
+
 trait ListUtilFunctions {
 
   implicit class BuffedList[T](thisList: List[T]) {

@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
 import com.lorandszakacs.sg.core
 import com.lorandszakacs.util.html.Html
 import org.joda.time.DateTime
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 
 /**
   *

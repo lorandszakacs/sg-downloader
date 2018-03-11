@@ -6,7 +6,7 @@ import com.lorandszakacs.sg.exporter.html.{HTMLGenerator, HtmlSettings}
 import com.lorandszakacs.sg.exporter.indexwriter.{HTMLIndexWriter, WriterSettings}
 import com.lorandszakacs.sg.exporter.{ExporterSettings, NameNotFoundException, SGExporter}
 import com.lorandszakacs.sg.model._
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 import com.typesafe.scalalogging.StrictLogging
 
 /**

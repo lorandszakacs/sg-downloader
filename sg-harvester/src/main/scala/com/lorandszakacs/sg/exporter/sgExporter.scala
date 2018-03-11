@@ -4,7 +4,7 @@ import java.nio.file.{Path, Paths}
 
 import com.lorandszakacs.sg.model.{M, Name}
 import com.lorandszakacs.util.files.FileUtils
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 
 /**
   *

@@ -1,7 +1,7 @@
 package com.lorandszakacs.sg.model
 
 import com.lorandszakacs.sg.model.impl.SGAndHFRepositoryImpl
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.mongodb.Database
 
 /**

@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg._
 import com.lorandszakacs.sg.http.impl.SGClientImpl
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 import org.scalatest.FlatSpec
 
 /**

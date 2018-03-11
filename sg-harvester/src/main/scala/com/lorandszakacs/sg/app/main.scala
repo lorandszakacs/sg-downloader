@@ -17,10 +17,8 @@
 package com.lorandszakacs.sg.app
 
 import com.lorandszakacs.sg.app.repl.{CommandLineInterpreter, REPL}
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 import com.typesafe.scalalogging.StrictLogging
-
-import scala.util.control.NonFatal
 
 /**
   * @author Lorand Szakacs, lsz@lorandszakacs.com

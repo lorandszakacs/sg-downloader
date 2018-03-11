@@ -6,7 +6,7 @@ import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.indexer.SGIndexer
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.sg.reifier.SGReifier
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.concurrent.duration._
@@ -97,10 +97,10 @@ final class SGDownloader private[downloader] (
       logger.info(s"index.specific --> ${names.stringify}")
       for {
         newMs <- IO.serialize(names) { name =>
-                  patienceConfig.throttleAfter {
-                    indexer.gatherPhotoSetInformationForName(name)
-                  }
-                }
+          patienceConfig.throttleAfter {
+            indexer.gatherPhotoSetInformationForName(name)
+          }
+        }
         ms = newMs.group
         _ = {
           logger.info(s"finished indexing specific entries. Total: #${ms.all.length}")
@@ -162,9 +162,9 @@ final class SGDownloader private[downloader] (
       logger.info(s"export.all --> onlyFavorites=$onlyFavorites --> to: ${settings.allMsRootFolderPath}")
       for {
         all <- if (onlyFavorites)
-                repo.find(Favorites.names)
-              else
-                repo.findAll.map(_.filterNot(_.photoSets.isEmpty))
+          repo.find(Favorites.names)
+        else
+          repo.findAll.map(_.filterNot(_.photoSets.isEmpty))
         _ <- IO.pure(logger.info(s"export.all --> delegating to export.specific"))
         _ <- this.specific(daysToExport, all)
       } yield ()
@@ -210,26 +210,24 @@ final class SGDownloader private[downloader] (
       reifiedMs:           Ms,
       lastProcessedMarker: Option[LastProcessedMarker]
     ): IO[Unit] = {
-      logger.info(s"delta.UpdateLatestProcessedIndex: old='${lastProcessedMarker.map(_.lastPhotoSetID).mkString("")}'")
-      when(reifiedMs.all.nonEmpty) execute {
 
-        val optNewestM: Option[M] = for {
-          newestIndexed <- indexedMs.newestM
-          newestReified <- reifiedMs.ml(newestIndexed.name)
-        } yield newestReified
+      IO(
+        logger
+          .info(s"delta.UpdateLatestProcessedIndex: old='${lastProcessedMarker.map(_.lastPhotoSetID).mkString("")}'")
+      ) >>
+        (reifiedMs.all.nonEmpty).effectOnTrueIO {
+          val optNewestM: Option[M] = for {
+            newestIndexed <- indexedMs.newestM
+            newestReified <- reifiedMs.ml(newestIndexed.name)
+          } yield newestReified
 
-        for {
-          _ <- when(optNewestM.isEmpty) failWith new IllegalArgumentException(
-                "... should have at least one newest gathered"
-              )
-          newestM   = optNewestM.get
-          newMarker = indexer.createLastProcessedIndex(newestM)
-          _         = logger.info(s"delta.UpdateLatestProcessedIndex: new='${newMarker.lastPhotoSetID}'")
-          _ <- repo.createOrUpdateLastProcessed(newMarker)
-        } yield ()
-
-        IO.unit
-      }
+          for {
+            newestM <- optNewestM.asIOThr(new IllegalArgumentException("... should have at least one newest gathered"))
+            newMarker = indexer.createLastProcessedIndex(newestM)
+            _ <- IO(logger.info(s"delta.UpdateLatestProcessedIndex: new='${newMarker.lastPhotoSetID}'"))
+            _ <- repo.createOrUpdateLastProcessed(newMarker)
+          } yield ()
+        }
     }
   }
 

@@ -1,11 +1,10 @@
 package com.lorandszakacs.sg.app.repl
 
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 import com.lorandszakacs.sg.app.commands.Commands
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.io.StdIn
-import scala.util.control.NonFatal
 
 /**
   *
@@ -21,8 +20,8 @@ class REPL(
     for {
       _ <- IO(println("type help for instructions"))
       _ <- loop(stop = false).recoverWith {
-            case NonFatal(e) => IO(logger.error("the loop somehow broke. terminating", e))
-          }
+        case NonFatal(e) => IO(logger.error("the loop somehow broke. terminating", e))
+      }
     } yield ()
   }
 
@@ -35,13 +34,13 @@ class REPL(
         _     <- IO(print("> "))
         input <- IO(StdIn.readLine().trim())
         _ <- interpreter.interpret(input).attempt.flatMap {
-              case Left(thr) =>
-                IO(logger.error(s"failed to interpret command: '$input'", withFilteredStackTrace(thr))) >>
-                  IO(print("\n")) >>
-                  loop(stop = false)
-              case Right(c) =>
-                if (c == Commands.Exit) loop(stop = true) else loop(stop = false)
-            }
+          case Left(thr) =>
+            IO(logger.error(s"failed to interpret command: '$input'", withFilteredStackTrace(thr))) >>
+              IO(print("\n")) >>
+              loop(stop = false)
+          case Right(c) =>
+            if (c == Commands.Exit) loop(stop = true) else loop(stop = false)
+        }
       } yield ()
     }
   }

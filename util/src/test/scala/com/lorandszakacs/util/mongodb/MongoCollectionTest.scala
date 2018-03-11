@@ -1,6 +1,6 @@
 package com.lorandszakacs.util.mongodb
 
-import com.lorandszakacs.util.future._
+import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.math.Identifier
 import org.scalatest.{fixture, Matchers, OneInstancePerTest, Outcome}
 
