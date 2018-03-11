@@ -68,9 +68,9 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def collectionName: String
 
-  lazy val collectionIO: IO[BSONCollection] = db(collectionName)
+  private lazy val collectionIO: IO[BSONCollection] = db(collectionName)
 
-  lazy val collection: BSONCollection = collectionIO.unsafeRunSync()
+  private lazy val collection: BSONCollection = collectionIO.unsafeRunSync()
 
   def idQuery(id: IdType): BSONDocument = BSONDocument(_id -> id)
 
