@@ -2,7 +2,6 @@ package com.lorandszakacs.sg.app.repl
 
 import com.lorandszakacs.sg.app.commands.{Command, CommandParser, Commands}
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
-import com.lorandszakacs.sg.http.PasswordProvider
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
@@ -59,15 +58,13 @@ class CommandLineInterpreter(
     command match {
 
       //=======================================================================
-      case Commands.DeltaDownload(days, usernameAndPassword) =>
-        implicit val ppProvider: PasswordProvider = optionalPasswordParams(usernameAndPassword)
+      case Commands.DeltaDownload(days, _) =>
         downloader.download.delta(
           daysToExport       = days.getOrElse(defaultDays),
           includeProblematic = true
         )
       //=======================================================================
-      case Commands.DownloadSpecific(names, usernameAndPassword) =>
-        implicit val ppProvider: PasswordProvider = optionalPasswordParams(usernameAndPassword)
+      case Commands.DownloadSpecific(names, _) =>
         downloader.download.specific(
           names        = names,
           daysToExport = defaultDays
@@ -102,12 +99,6 @@ class CommandLineInterpreter(
           print("\n-------- exiting --------\n")
         }
       //=======================================================================
-    }
-  }
-
-  private def optionalPasswordParams(opt: Option[(String, String)]): PasswordProvider = PasswordProvider { () =>
-    Future fromTry scala.util.Try {
-      opt.getOrElse(throw new RuntimeException(".... in the end needed to use password, but none was provided"))
     }
   }
 

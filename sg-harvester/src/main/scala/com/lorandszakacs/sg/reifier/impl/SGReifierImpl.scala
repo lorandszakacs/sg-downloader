@@ -27,7 +27,7 @@ private[reifier] class SGReifierImpl(
 
   private[this] implicit var _authentication: Authentication = DefaultSGAuthentication
 
-  override def authenticateIfNeeded()(implicit passwordProvider: PasswordProvider): Future[Authentication] = {
+  override def authenticateIfNeeded(): Future[Authentication] = {
     if (authentication.needsRefresh) {
       logger.info("need to authenticate")
       for {
@@ -38,23 +38,23 @@ private[reifier] class SGReifierImpl(
                       val recreate = for {
                         auth <- sGClient.createAuthentication(session)
                       } yield auth
+                      recreate
 
-                      val result = recreate recoverWith {
-                        case e: FailedToVerifyNewAuthenticationException =>
-                          logger.error(
-                            "failed to verify stored session, defaulting to using username and password",
-                            e
-                          )
-                          authenticateWithUsernameAndPassword(passwordProvider)
-                      }
+                    // val result = recreate recoverWith {
+                    //   case e: FailedToVerifyNewAuthenticationException =>
+                    //     logger.error(
+                    //       "failed to verify stored session, defaulting to using username and password",
+                    //       e
+                    //     )
+                    //     authenticateWithUsernameAndPassword(passwordProvider)
+                    // }
+                    //
+                    // result map { r: Authentication =>
+                    //   logger.info("successfully restored authentication")
+                    //   r
+                    // }
 
-                      result map { r: Authentication =>
-                        logger.info("successfully restored authentication")
-                        r
-                      }
-
-                    case None =>
-                      authenticateWithUsernameAndPassword(passwordProvider)
+                    case None => Future.failed(NoSessionFoundException)
                   }
       } yield {
         _authentication = newAuth
@@ -64,14 +64,6 @@ private[reifier] class SGReifierImpl(
     else {
       Future.successful(authentication)
     }
-  }
-
-  private def authenticateWithUsernameAndPassword(passwordProvider: PasswordProvider): Future[Authentication] = {
-    for {
-      (username, plainTextPassword) <- passwordProvider.usernamePassword()
-      newAuthentication             <- sGClient.authenticate(username, plainTextPassword)
-      _                             <- sessionDao.create(newAuthentication.session)
-    } yield newAuthentication
   }
 
   override def reifySG(sg: SG)(implicit pc: PatienceConfig): Future[SG] = {

@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.reifier
 
-import com.lorandszakacs.sg.http.{Authentication, PasswordProvider, PatienceConfig}
+import com.lorandszakacs.sg.http.{Authentication, PatienceConfig}
 import com.lorandszakacs.sg.model.{HF, M, SG}
 import com.lorandszakacs.util.future._
 
@@ -21,7 +21,7 @@ trait SGReifier {
     * will be false
     *
     */
-  def authenticateIfNeeded()(implicit passwordProvider: PasswordProvider): Future[Authentication]
+  def authenticateIfNeeded(): Future[Authentication]
 
   def reifySG(sg: SG)(implicit pc: PatienceConfig): Future[SG]
 

@@ -109,7 +109,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     *   Cookie: sessionid=``$FinalSessionID``; csrftoken=``$FinalCSRFToken``
     * }}}
     */
-  def authenticate(username: String, plainTextPassword: String): Future[Authentication] = {
+  def brokenAuthenticate(username: String, plainTextPassword: String): Future[Authentication] = {
     case class StartPageTokens(
       csrfToken: String,
       sessionID: String

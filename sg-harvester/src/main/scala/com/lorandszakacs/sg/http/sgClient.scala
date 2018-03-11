@@ -20,20 +20,22 @@ trait SGClient {
   /**
     * @param authentication
     * the function that adds some authentication or another to requests.
-    * the [[authenticate()]] method can be used to create such a function, based
+    * the [[createAuthentication]] method can be used to create such a function, based
     * on username, password authentication
     *
     */
   def getPage(uri: URL)(implicit authentication: Authentication): Future[Html]
 
-  def authenticate(username: String, plainTextPassword: String): Future[Authentication]
-
   def createAuthentication(session: Session): Future[Authentication]
-}
 
-case class PasswordProvider(
-  usernamePassword: () => Future[(String, String)]
-)
+  /**
+    * Website now has google reCAPTCHA, so it's hard to logon, but you can manually create
+    * an [[Authentication]] from a [[Session]] using [[createAuthentication]] by pasting
+    * the tokens from the browser.
+    */
+  @scala.deprecated("use createAuthentication", "2018")
+  def brokenAuthenticate(username: String, plainTextPassword: String): Future[Authentication]
+}
 
 trait Authentication {
   def apply(req: HttpRequest): HttpRequest

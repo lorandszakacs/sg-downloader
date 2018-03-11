@@ -94,6 +94,9 @@ final case class FailedToVerifyNewAuthenticationException(uri: Uri)
       s"All login steps were completed successfully, but failed to validate new authentication. GET $uri had a login button when it should not have had one."
     )
 
+case object NoSessionFoundException
+    extends Exception(s"Could not find sesssion in Database. Please fill in manually and try again.")
+
 final case class FailedToPostLoginException(request: HttpRequest, response: HttpResponse)(
   implicit mat:                                      ActorMaterializer,
   ec:                                                ExecutionContext

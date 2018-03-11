@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.downloader
 
 import com.lorandszakacs.sg.Favorites
 import com.lorandszakacs.sg.exporter._
-import com.lorandszakacs.sg.http.{PasswordProvider, PatienceConfig}
+import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.indexer.SGIndexer
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.sg.reifier.SGReifier
@@ -248,9 +248,9 @@ final class SGDownloader private[downloader] (
       *
       */
     def delta(
-      daysToExport:              Int,
-      includeProblematic:        Boolean
-    )(implicit passwordProvider: PasswordProvider): Future[Unit] = {
+      daysToExport:       Int,
+      includeProblematic: Boolean
+    ): Future[Unit] = {
       logger.info(
         "---------------------------------------------- starting download.delta --------------------------------------------"
       )
@@ -283,9 +283,9 @@ final class SGDownloader private[downloader] (
     }
 
     def specific(
-      names:                     List[Name],
-      daysToExport:              Int
-    )(implicit passwordProvider: PasswordProvider): Future[Unit] = {
+      names:        List[Name],
+      daysToExport: Int
+    ): Future[Unit] = {
       logger.info(
         "---------------------------------------------- starting download.specific --------------------------------------------"
       )
