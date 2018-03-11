@@ -1,8 +1,9 @@
 package com.lorandszakacs.util.mongodb
 
-import com.typesafe.scalalogging.StrictLogging
-import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
 import com.lorandszakacs.util.effects._
+
+import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
+import com.typesafe.scalalogging.StrictLogging
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -13,11 +14,10 @@ import scala.language.postfixOps
   * @since 14 Jul 2017
   *
   */
-final case class Database(
-  uri:          String,
-  dbName:       String
-)(implicit sch: DBIOScheduler)
-    extends StrictLogging {
+final case class Database(uri: String, dbName: String)(
+  implicit
+  dbIOScheduler: DBIOScheduler
+) extends StrictLogging {
 
   def collection(colName: String): Task[BSONCollection] = databaseTask.map(_.apply(colName))
 

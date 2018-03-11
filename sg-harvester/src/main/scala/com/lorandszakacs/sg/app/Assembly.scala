@@ -20,9 +20,9 @@ import com.typesafe.scalalogging.StrictLogging
   */
 final class Assembly(
   implicit
-  override val actorSystem:     ActorSystem     = ActorSystem("sg-app"),
-  override val dbIOScheduler:   DBIOScheduler   = DBIOScheduler(Scheduler.io(name = "sg-app-dbio")),
-  override val httpIOScheduler: HTTPIOScheduler = HTTPIOScheduler(Scheduler.io(name = "sg-app-http"))
+  override val actorSystem:     ActorSystem,
+  override val dbIOScheduler:   DBIOScheduler,
+  override val httpIOScheduler: HTTPIOScheduler
 ) extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly
     with StrictLogging {
 

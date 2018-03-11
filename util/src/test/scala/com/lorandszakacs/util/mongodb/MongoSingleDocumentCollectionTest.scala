@@ -10,13 +10,13 @@ import org.scalatest.{fixture, Matchers, OneInstancePerTest, Outcome}
   *
   */
 class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstancePerTest with Matchers {
-  private implicit val sch: DBIOScheduler = DBIOScheduler(Scheduler.global)
+  private implicit val dbIOScheduler: DBIOScheduler = DBIOScheduler(Scheduler.global)
 
   class SingleEntityRepository(
     override protected val db: Database
   )(
     implicit
-    override protected implicit val scheduler: DBIOScheduler
+    override protected implicit val dbIOScheduler: DBIOScheduler
   ) extends SingleDocumentMongoCollection[Entity, String, BSONString] {
     protected implicit def objectHandler: BSONDocumentHandler[Entity] = BSONMacros.handler[Entity]
 

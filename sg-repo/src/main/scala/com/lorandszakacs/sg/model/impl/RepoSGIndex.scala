@@ -11,7 +11,8 @@ import com.lorandszakacs.util.mongodb._
   *
   */
 private[impl] class RepoSGIndex(override protected val db: Database)(
-  implicit override val scheduler:                         DBIOScheduler
+  implicit
+  override val dbIOScheduler: DBIOScheduler
 ) extends IndexSingleDocRepo[SGIndex] with SGRepoBSON {
 
   override protected def objectHandler: BSONDocumentHandler[SGIndex] = BSONMacros.handler[SGIndex]
