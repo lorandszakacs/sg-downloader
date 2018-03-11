@@ -19,7 +19,7 @@ private[impl] abstract class MRepo[Content <: M](override protected val identifi
   override protected implicit val idHandler: BSONHandler[BSONString, Name] =
     nameBSON
 
-  final def findBetweenDays(start: LocalDate, end: LocalDate): Future[List[Content]] = {
+  final def findBetweenDays(start: LocalDate, end: LocalDate): IO[List[Content]] = {
     val q = document(
       "photoSets.date" -> document($gte -> start),
       "photoSets.date" -> document($lte -> end)

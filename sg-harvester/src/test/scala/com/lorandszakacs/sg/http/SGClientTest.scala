@@ -30,9 +30,9 @@ class SGClientTest extends FlatSpec with URLConversions {
       expiresAt = DateTime.now(DateTimeZone.forID("GMT"))
     )
 
-    implicit val authentication: Authentication = client.createAuthentication(session).await()
+    implicit val authentication: Authentication = client.createAuthentication(session).unsafeRunSync()
 
-    val html = client.getPage(s"${core.Domain}/members/odina/album/2745718/do-i-wanna-know/").await()
+    val html = client.getPage(s"${core.Domain}/members/odina/album/2745718/do-i-wanna-know/").unsafeRunSync()
     println {
       s"""
          |

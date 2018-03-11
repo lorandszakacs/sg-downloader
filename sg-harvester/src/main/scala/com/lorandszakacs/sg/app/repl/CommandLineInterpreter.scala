@@ -36,12 +36,12 @@ class CommandLineInterpreter(
         logger.error(s"Failed to evaluate command: $args", e)
         None
     }
-    ecx.await(24 hours)
+    ecx.unsafeRunSync()
   }
 
   private val downloader = assembly.sgDownloader
 
-  private def eventualInterpretation(args: String): Future[Command] = {
+  private def eventualInterpretation(args: String): IO[Command] = {
     val triedCommand = CommandParser.parseCommand(args) recoverWith {
       case NonFatal(e) =>
         logger.error(s"failed to parse command: '$args'", e)
@@ -49,12 +49,12 @@ class CommandLineInterpreter(
     }
 
     for {
-      command <- Future fromTry triedCommand
+      command <- IO fromTry triedCommand
       _       <- interpretCommand(command)
     } yield command
   }
 
-  private def interpretCommand(command: Command): Future[Unit] = {
+  private def interpretCommand(command: Command): IO[Unit] = {
     command match {
 
       //=======================================================================
@@ -87,7 +87,7 @@ class CommandLineInterpreter(
         downloader.show.favorites.map(s => println(s))
       //=======================================================================
       case Commands.Help =>
-        Future.successful {
+        IO.pure {
           val string = Commands.descriptions.map { c =>
             c.fullDescription
           } mkString "\n\n----------------\n\n"
@@ -95,7 +95,7 @@ class CommandLineInterpreter(
         }
       //=======================================================================
       case Commands.Exit =>
-        Future.successful {
+        IO.pure {
           print("\n-------- exiting --------\n")
         }
       //=======================================================================

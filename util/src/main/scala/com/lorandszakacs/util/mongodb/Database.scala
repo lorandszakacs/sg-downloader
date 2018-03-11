@@ -6,7 +6,6 @@ import com.lorandszakacs.util.future._
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.Try
 
 /**
   *
@@ -20,50 +19,47 @@ final case class Database(
 )(implicit ec: ExecutionContext)
     extends StrictLogging {
 
-  def value(): DefaultDB = _db
-
-  def apply(colName: String): BSONCollection = this.value().apply(colName)
+  def apply(colName: String): IO[BSONCollection] = _dataBase.map(_.apply(colName))
 
   private lazy val _mongoDriver:     MongoDriver     = new MongoDriver()
   private lazy val _mongoConnection: MongoConnection = _mongoDriver.connection(MongoConnection.parseURI(uri).get)
-  private lazy val _dataBase: Try[DefaultDB] = {
-    Try(Database.getDatabase(_mongoConnection)(dbName).await())
-  }
-  private lazy val _db = _dataBase.get
-
-  def drop(): Future[Unit] = {
-    logger.info(s"attempting to drop database: ${_db.name}")
-    _db.drop() map { _ =>
-      logger.info(s"dropped database: ${_db.name}")
-    }
+  private lazy val _dataBase: IO[DefaultDB] = {
+    Database.getDatabase(_mongoConnection)(dbName)
   }
 
-  def shutdown(): Future[Unit] = {
+  def drop(): IO[Unit] = {
     for {
-      _ <- Future fromTry Try {
+      db <- _dataBase
+      _  <- IO(logger.info(s"attempting to drop database: ${db.name}"))
+      _  <- db.drop().suspendInIO >> IO(logger.info(s"dropped database: ${db.name}"))
+    } yield ()
+  }
+
+  def shutdown(): IO[Unit] = {
+    for {
+      _ <- IO {
             logger.info("attempting to close _mongoDriver.close(...)")
             _mongoDriver.close(1 minute)
           }
-      _ <- _mongoDriver.system.terminate() map { _ =>
+      _ <- _mongoDriver.system.terminate().suspendInIO >> IO(
             logger.info("terminated -- _mongoDriver.system.terminate()")
-          }
+          )
     } yield ()
   }
 }
 
 object Database {
-  private[mongodb] def getDatabase(
-    _mongoConnection: MongoConnection
-  )(
-    name:        String
-  )(implicit ec: ExecutionContext): Future[DefaultDB] = {
-    val future = {
-      _mongoConnection.database(name)
+  private[mongodb] def getDatabase(_mongoConnection: MongoConnection)(name: String)(
+    implicit
+    ec: ExecutionContext
+  ): IO[DefaultDB] = {
+    val io = {
+      _mongoConnection.database(name).suspendInIO
     } recover {
       case e: Throwable =>
         throw new IllegalStateException(s"Failed to initialize Mongo database. Because: ${e.getMessage}", e)
     }
-    future
+    io
   }
 
   /**

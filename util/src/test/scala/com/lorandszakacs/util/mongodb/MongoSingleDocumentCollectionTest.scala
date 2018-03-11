@@ -45,7 +45,7 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
       dbName = dbName
     )
     val repo = new SingleEntityRepository(db)(ec)
-    db.drop().await()
+    db.drop().unsafeRunSync()
     val outcome: Outcome = withFixture(test.toNoArgTest(repo))
     val f = if (outcome.isFailed || outcome.isCanceled) {
       db.shutdown()
@@ -56,7 +56,7 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
         _ <- db.shutdown()
       } yield ()
     }
-    f.await()
+    f.unsafeRunSync()
     outcome
   }
 
@@ -72,24 +72,24 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
       actual = "ACTUAL"
     )
     withClue("create single doc") {
-      repo.create(e).await()
+      repo.create(e).unsafeRunSync()
     }
 
     withClue("read after create") {
-      val read = repo.get.await()
+      val read = repo.get.unsafeRunSync()
       assert(read == e)
     }
 
     val eu = e.copy(opt = Some("NEW VALUE"))
     withClue("update") {
-      repo.createOrUpdate(eu).await()
-      val read = repo.get.await()
+      repo.createOrUpdate(eu).unsafeRunSync()
+      val read = repo.get.unsafeRunSync()
       assert(eu == read)
     }
 
     withClue("remove") {
-      repo.remove().await()
-      val read = repo.find.await()
+      repo.remove().unsafeRunSync()
+      val read = repo.find.unsafeRunSync()
       assert(read.isEmpty)
     }
   }
@@ -103,17 +103,17 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
       actual = "ACTUAL"
     )
     withClue("create single doc") {
-      repo.create(e).await()
+      repo.create(e).unsafeRunSync()
     }
 
     withClue("create second time doc") {
       the[MongoDBException] thrownBy {
-        repo.create(e).await()
+        repo.create(e).unsafeRunSync()
       }
     }
 
     withClue("read after create") {
-      val read = repo.get.await()
+      val read = repo.get.unsafeRunSync()
       assert(read == e)
     }
   }

@@ -35,13 +35,13 @@ private[http] object ExceptionHelpers {
   }
 
   def stringifyEntity(e: ResponseEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
-    val f: Future[String] = e.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))
-    Try(f.await()).toOption
+    val f: IO[String] = (e.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))).suspendInIO
+    Try(f.unsafeRunSync()).toOption
   }
 
   def stringifyEntity(e: RequestEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
-    val f: Future[String] = e.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))
-    Try(f.await()).toOption
+    val f: IO[String] = (e.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))).suspendInIO
+    Try(f.unsafeRunSync()).toOption
   }
 
   implicit class BuffedResponse(response: HttpResponse)(implicit mat: ActorMaterializer, ec: ExecutionContext) {

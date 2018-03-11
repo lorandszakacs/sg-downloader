@@ -37,7 +37,7 @@ object Main extends App with StrictLogging {
         () //intentionally doing nothing, let it terminate gracefully
       case None =>
         logger.error("—— something went wrong during interpretation —— exiting")
-        assembly.shutdown().await()
+        assembly.shutdown().unsafeRunSync()
         System.exit(1)
     }
 
@@ -47,7 +47,7 @@ object Main extends App with StrictLogging {
     repl.run()
   }
 
-  assembly.shutdown().await()
+  assembly.shutdown().unsafeRunSync()
   println("... finished gracefully")
   System.exit(0)
 }

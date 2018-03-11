@@ -46,7 +46,7 @@ private[reifier] final class SessionDaoImpl(
 
   override def collectionName: String = "sg_sessions"
 
-  private def onInit(): Future[Unit] = {
+  private def onInit(): IO[Unit] = {
     for {
       opt <- this.find
       _ <- when(opt.isEmpty) execute this.create {

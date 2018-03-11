@@ -33,14 +33,14 @@ object MongoCollection {
     }
   }
 
-  private def interpretWriteResult(wr: WriteResult): Future[Unit] = {
+  private def interpretWriteResult(wr: WriteResult): IO[Unit] = {
     when(!wr.ok) failWith MongoDBException(
       code = wr.code.map(_.toString),
       msg  = wr.writeErrors.headOption.map(_.toString)
     )
   }
 
-  private def interpretWriteResult(wr: MultiBulkWriteResult)(implicit ec: ExecutionContext): Future[Unit] = {
+  private def interpretWriteResult(wr: MultiBulkWriteResult)(implicit ec: ExecutionContext): IO[Unit] = {
     for {
       _ <- when(!wr.ok) failWith MongoDBException(
             code = wr.code.map(_.toString),
@@ -68,32 +68,34 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def collectionName: String
 
-  lazy val collection: BSONCollection = db(collectionName)
+  lazy val collectionIO: IO[BSONCollection] = db(collectionName)
+
+  lazy val collection: BSONCollection = collectionIO.unsafeRunSync()
 
   def idQuery(id: IdType): BSONDocument = BSONDocument(_id -> id)
 
   def idQueryByEntity(id: Entity): BSONDocument = BSONDocument(_id -> identifier.id(id))
 
-  def findOne(query: BSONDocument): Future[Option[Entity]] = {
-    collection.find(query).one[Entity]
+  def findOne(query: BSONDocument): IO[Option[Entity]] = {
+    collection.find(query).one[Entity].suspendInIO
   }
 
-  def findMany(query: BSONDocument, maxDocs: Int = Int.MaxValue): Future[List[Entity]] = {
+  def findMany(query: BSONDocument, maxDocs: Int = Int.MaxValue): IO[List[Entity]] = {
     val cursor: Cursor[Entity] = collection.find(query).cursor[Entity]()
-    cursor.collect[List](maxDocs = maxDocs, err = Cursor.FailOnError[List[Entity]]())
+    cursor.collect[List](maxDocs = maxDocs, err = Cursor.FailOnError[List[Entity]]()).suspendInIO
   }
 
-  def findAll: Future[List[Entity]] = {
+  def findAll: IO[List[Entity]] = {
     this.findMany(BSONDocument.empty)
   }
 
-  def find(id: IdType): Future[Option[Entity]] = {
+  def find(id: IdType): IO[Option[Entity]] = {
     this.findOne(idQuery(id))
   }
 
-  def findManyById(ids: Seq[IdType]): Future[List[Entity]] = {
+  def findManyById(ids: Seq[IdType]): IO[List[Entity]] = {
     if (ids.isEmpty) {
-      Future.successful(Nil)
+      IO.pure(Nil)
     }
     else {
       val q = BSONDocument(
@@ -105,70 +107,70 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
     }
   }
 
-  def create(toCreate: Entity): Future[Unit] = {
+  def create(toCreate: Entity): IO[Unit] = {
     for {
-      _ <- collection.insert(toCreate) recoverWith {
+      _ <- collection.insert(toCreate).suspendInIO.discardValue.recoverWith {
             case e: LastError =>
               MongoCollection.interpretWriteResult(e)
 
             case NonFatal(e) =>
-              Future.failed(e)
+              IO.raiseError(e)
           }
     } yield ()
   }
 
-  def create(toCreate: List[Entity]): Future[Unit] = {
+  def create(toCreate: List[Entity]): IO[Unit] = {
     for {
-      wr <- collection.insert[Entity](ordered = false).many(toCreate)
+      wr <- collection.insert[Entity](ordered = false).many(toCreate).suspendInIO
       _  <- MongoCollection.interpretWriteResult(wr)
     } yield ()
   }
 
-  def createOrUpdate(query: BSONDocument, toCreate: Entity): Future[Unit] = {
+  def createOrUpdate(query: BSONDocument, toCreate: Entity): IO[Unit] = {
     for {
-      _ <- collection.update(query, toCreate, upsert = true) recoverWith {
+      _ <- collection.update(query, toCreate, upsert = true).suspendInIO.discardValue.recoverWith {
             case e: LastError =>
               MongoCollection.interpretWriteResult(e)
 
             case NonFatal(e) =>
-              Future.failed(e)
+              IO.raiseError(e)
           }
     } yield ()
   }
 
-  def createOrUpdate(toCreate: Entity): Future[Unit] = {
+  def createOrUpdate(toCreate: Entity): IO[Unit] = {
     for {
-      _ <- collection.update(idQueryByEntity(toCreate), toCreate, upsert = true) recoverWith {
+      _ <- collection.update(idQueryByEntity(toCreate), toCreate, upsert = true).suspendInIO.discardValue.recoverWith {
             case e: LastError =>
               MongoCollection.interpretWriteResult(e)
 
             case NonFatal(e) =>
-              Future.failed(e)
+              IO.raiseError(e)
           }
     } yield ()
   }
 
-  def createOrUpdate(toCreateOrUpdate: List[Entity]): Future[Unit] = {
+  def createOrUpdate(toCreateOrUpdate: List[Entity]): IO[Unit] = {
     for {
-      _ <- Future.traverse(toCreateOrUpdate) { entity =>
+      _ <- toCreateOrUpdate.traverse[IO, Unit] { entity: Entity =>
             this.createOrUpdate(entity)
           }
     } yield ()
   }
 
-  def remove(q: BSONDocument, firstMatchOnly: Boolean = false): Future[Unit] = {
+  def remove(q: BSONDocument, firstMatchOnly: Boolean = false): IO[Unit] = {
     for {
-      _ <- collection.remove(q, firstMatchOnly = firstMatchOnly) recoverWith {
+      _ <- collection.remove(q, firstMatchOnly = firstMatchOnly).suspendInIO.discardValue.recoverWith {
             case e: LastError =>
               MongoCollection.interpretWriteResult(e)
 
             case NonFatal(e) =>
-              Future.failed(e)
+              IO.raiseError(e)
           }
     } yield ()
   }
 
-  def remove(id: IdType): Future[Unit] = {
+  def remove(id: IdType): IO[Unit] = {
     this.remove(idQuery(id), firstMatchOnly = true)
   }
 

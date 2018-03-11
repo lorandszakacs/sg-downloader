@@ -27,7 +27,7 @@ private[reifier] class SGReifierImpl(
 
   private[this] implicit var _authentication: Authentication = DefaultSGAuthentication
 
-  override def authenticateIfNeeded(): Future[Authentication] = {
+  override def authenticateIfNeeded(): IO[Authentication] = {
     if (authentication.needsRefresh) {
       logger.info("need to authenticate")
       for {
@@ -54,7 +54,7 @@ private[reifier] class SGReifierImpl(
                     //   r
                     // }
 
-                    case None => Future.failed(NoSessionFoundException)
+                    case None => IO.raiseError(NoSessionFoundException)
                   }
       } yield {
         _authentication = newAuth
@@ -62,19 +62,19 @@ private[reifier] class SGReifierImpl(
       }
     }
     else {
-      Future.successful(authentication)
+      IO.pure(authentication)
     }
   }
 
-  override def reifySG(sg: SG)(implicit pc: PatienceConfig): Future[SG] = {
+  override def reifySG(sg: SG)(implicit pc: PatienceConfig): IO[SG] = {
     reifyM(SGFactory)(sg)
   }
 
-  override def reifyHF(hf: HF)(implicit pc: PatienceConfig): Future[HF] = {
+  override def reifyHF(hf: HF)(implicit pc: PatienceConfig): IO[HF] = {
     reifyM(HFFactory)(hf)
   }
 
-  override def reifyM(m: M)(implicit pc: PatienceConfig): Future[M] = {
+  override def reifyM(m: M)(implicit pc: PatienceConfig): IO[M] = {
     m match {
       case sg: SG => reifyM(SGFactory)(sg)
       case hf: HF => reifyM(HFFactory)(hf)
@@ -82,10 +82,10 @@ private[reifier] class SGReifierImpl(
 
   }
 
-  private def gatherAllPhotosFromSetPage(photoSetPageUri: URL): Future[List[Photo]] = {
+  private def gatherAllPhotosFromSetPage(photoSetPageUri: URL): IO[List[Photo]] = {
     for {
       photoSetPageHTML <- sGClient.getPage(photoSetPageUri)
-      photos <- Future fromTry {
+      photos <- IO fromTry {
                  SGContentParser.parsePhotos(photoSetPageHTML).recoverWith {
                    case NonFatal(_) => Failure(DidNotFindAnyPhotoLinksOnSetPageException(photoSetPageUri))
                  }
@@ -93,10 +93,10 @@ private[reifier] class SGReifierImpl(
     } yield photos
   }
 
-  private def reifyM[T <: M](mf: MFactory[T])(m: T)(implicit pc: PatienceConfig): Future[T] = {
+  private def reifyM[T <: M](mf: MFactory[T])(m: T)(implicit pc: PatienceConfig): IO[T] = {
     logger.info(s"SGReifier --> reifying: ${mf.name} ${m.name.name}. Expecting ${m.photoSets.length} sets")
     for {
-      reifiedPhotoSets <- Future.serialize(m.photoSets) { photoSet =>
+      reifiedPhotoSets <- IO.serialize(m.photoSets) { photoSet =>
                            pc.throttleQuarterAfter {
                              for {
                                photos <- this.gatherAllPhotosFromSetPage(photoSet.url) recoverWith {
@@ -104,13 +104,13 @@ private[reifier] class SGReifierImpl(
                                             logger.error(
                                               s"SGReifier --> reifying: ${photoSet.url} has no photos. `${mf.name} ${m.name.name}`"
                                             )
-                                            Future.successful(Nil)
+                                            IO.pure(Nil)
                                           case e: Throwable =>
                                             logger.error(
                                               s"SGReifier --> reifying: ${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${m.name.name}`",
                                               e
                                             )
-                                            Future.successful(Nil)
+                                            IO.pure(Nil)
                                         }
                              } yield {
                                logger.info(

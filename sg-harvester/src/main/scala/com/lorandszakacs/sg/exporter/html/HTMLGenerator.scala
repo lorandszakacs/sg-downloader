@@ -11,11 +11,11 @@ import org.joda.time.LocalDate
   *
   */
 private[exporter] trait HTMLGenerator {
-  def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): Future[MRootIndex]
+  def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): IO[MRootIndex]
 
-  def createRootIndex(names: List[Name])(implicit settings: HtmlSettings): Future[Html]
+  def createRootIndex(names: List[Name])(implicit settings: HtmlSettings): IO[Html]
 
-  def createNewestPage(ms: List[(LocalDate, List[M])]): Future[Html]
+  def createNewestPage(ms: List[(LocalDate, List[M])]): IO[Html]
 }
 
 case class HtmlSettings(

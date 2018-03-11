@@ -6,7 +6,7 @@ package com.lorandszakacs.util.future
   * @since 26 Jun 2017
   *
   */
-trait FutureTypes {
+trait AsyncTypes {
 
   /**
     * convenience aliases, so that you don't have to import this package and [[scala.concurrent.Future]]
@@ -17,6 +17,6 @@ trait FutureTypes {
   val ExecutionContext: concurrent.ExecutionContext.type = concurrent.ExecutionContext
   type ExecutionContext = concurrent.ExecutionContext
 
-  type IO[+A] = cats.effect.IO[A]
+  type IO[A] = cats.effect.IO[A]
   val IO: cats.effect.IO.type = cats.effect.IO
 }

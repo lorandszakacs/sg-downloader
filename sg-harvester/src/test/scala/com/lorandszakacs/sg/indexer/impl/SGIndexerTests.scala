@@ -37,7 +37,7 @@ class SGIndexerTests extends IndexerTest {
     * N.B. these can actually change through time.
     */
   it should "... fetch URIs for a page that does not need a subsequent query -- dalmasca" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForM(HFFactory)(Name("dalmasca"))) { h: HF =>
+    whenReady(indexer.gatherPhotoSetInformationForM(HFFactory)(Name("dalmasca")).unsafeToFuture()) { h: HF =>
       val sets: List[PhotoSet] = h.photoSets
 
       withClue("size") {
@@ -59,7 +59,7 @@ class SGIndexerTests extends IndexerTest {
   }
 
   it should "... fetch URIs for a page that does not need a subsequent query -- dalmasca -- generic" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForName(Name("dalmasca"))) { h: M =>
+    whenReady(indexer.gatherPhotoSetInformationForName(Name("dalmasca")).unsafeToFuture()) { h: M =>
       h shouldBe a[HF]
       val sets: List[PhotoSet] = h.photoSets
 
@@ -90,7 +90,7 @@ class SGIndexerTests extends IndexerTest {
     * had 22 sets. And has not published a new set in ages.
     */
   it should "... fetch URIs for a page that needs several queries -- zoli" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForM(SGFactory)(Name("zoli"))) { sg: SG =>
+    whenReady(indexer.gatherPhotoSetInformationForM(SGFactory)(Name("zoli")).unsafeToFuture()) { sg: SG =>
       val sets: List[PhotoSet] = sg.photoSets
 
       withClue("... size") {
@@ -124,7 +124,7 @@ class SGIndexerTests extends IndexerTest {
     * had 22 sets. And has not published a new set in ages.
     */
   it should "... fetch URIs for a page that needs several queries -- zoli -- generic" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForName(Name("zoli"))) { sg: M =>
+    whenReady(indexer.gatherPhotoSetInformationForName(Name("zoli")).unsafeToFuture()) { sg: M =>
       sg shouldBe a[SG]
       val sets: List[PhotoSet] = sg.photoSets
 
@@ -166,7 +166,7 @@ class SGIndexerTests extends IndexerTest {
     * this test might fail. Therefore one must always be vigilant.
     */
   it should "... gather the first 48 SG names by followers" in { indexer =>
-    whenReady(indexer.gatherSGNames(48)) { names: List[Name] =>
+    whenReady(indexer.gatherSGNames(48).unsafeToFuture()) { names: List[Name] =>
       withClue("... size") {
         names should have size 48
       }
@@ -192,7 +192,7 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
 
   it should "... gather the first 48 HF names by followers" in { indexer =>
-    whenReady(indexer.gatherHFNames(48)) { names: List[Name] =>
+    whenReady(indexer.gatherHFNames(48).unsafeToFuture()) { names: List[Name] =>
       print {
         s"""
            |HF names:
@@ -216,7 +216,7 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
 
   it should "... gather the first 48 new sets" in { indexer =>
-    whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None)) { ms: List[M] =>
+    whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None).unsafeToFuture()) { ms: List[M] =>
       withClue("... size") {
         ms should have size 48
       }
@@ -232,7 +232,7 @@ class SGIndexerTests extends IndexerTest {
 
   it should "... gather the first 48 new sets, then use one in the middle as the latest processed, and return only the ones before it" in {
     indexer =>
-      val previousMs = whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None)) { ms: List[M] =>
+      val previousMs = whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None).unsafeToFuture()) { ms: List[M] =>
         withClue("... size") {
           ms should have size 48
         }
@@ -247,7 +247,7 @@ class SGIndexerTests extends IndexerTest {
       val lastProcessed: LastProcessedMarker = indexer.createLastProcessedIndex(latest)
 
       withClue("... now gathering only a part of the processed sets") {
-        whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, Option(lastProcessed))) { ms: List[M] =>
+        whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, Option(lastProcessed)).unsafeToFuture()) { ms: List[M] =>
           withClue("... size") {
             ms should have size index.toLong
           }
@@ -266,7 +266,7 @@ class SGIndexerTests extends IndexerTest {
 
   it should "... gather the first 48 new sets, then use first one as latest. No subsequent MS should be returned" in {
     indexer =>
-      val previousMs = whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None)) { ms: List[M] =>
+      val previousMs = whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None).unsafeToFuture()) { ms: List[M] =>
         withClue("... size") {
           ms should have size 48
         }
@@ -281,7 +281,7 @@ class SGIndexerTests extends IndexerTest {
       val lastProcessed: LastProcessedMarker = indexer.createLastProcessedIndex(latest)
 
       withClue("... now gathering only a part of the processed sets") {
-        whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, Option(lastProcessed))) { ms: List[M] =>
+        whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, Option(lastProcessed)).unsafeToFuture()) { ms: List[M] =>
           withClue("... size") {
             ms should have size index.toLong
           }

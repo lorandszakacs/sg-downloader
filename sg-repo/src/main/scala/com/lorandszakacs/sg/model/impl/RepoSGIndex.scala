@@ -42,15 +42,15 @@ private[impl] class RepoSGIndex(override protected val db: Database)(
     )
   }
 
-  override def create(sg: SGIndex): Future[Unit] = {
+  override def create(sg: SGIndex): IO[Unit] = {
     super.create(sanitize(sg))
   }
 
-  override def createOrUpdate(sg: SGIndex): Future[Unit] = {
+  override def createOrUpdate(sg: SGIndex): IO[Unit] = {
     super.createOrUpdate(sanitize(sg))
   }
 
-  def rewriteIndex(names: List[Name]): Future[Unit] = {
+  def rewriteIndex(names: List[Name]): IO[Unit] = {
     this.createOrUpdate(sanitize(names))
   }
 

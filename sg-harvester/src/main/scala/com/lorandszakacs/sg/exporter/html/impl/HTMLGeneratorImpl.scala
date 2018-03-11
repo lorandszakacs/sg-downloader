@@ -35,15 +35,15 @@ private[html] class HTMLGeneratorImpl()(
   private val RootPath2 = "../.."
   private val RootPath3 = "../../.."
 
-  override def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): Future[MRootIndex] = {
-    def serialized(ms: List[M]): Future[List[MIndex]] = {
-      Future.serialize(ms) { m: M =>
-        Future(mIndex(m))
+  override def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): IO[MRootIndex] = {
+    def serialized(ms: List[M]): IO[List[MIndex]] = {
+      IO.serialize(ms) { m: M =>
+        IO(mIndex(m))
       }
     }
     val grouped = ms.grouped(100)
     for {
-      mIndexes <- Future.traverse(grouped) { batch =>
+      mIndexes <- IO.traverse(grouped) { batch =>
                    serialized(batch)
                  }
     } yield {
@@ -55,8 +55,8 @@ private[html] class HTMLGeneratorImpl()(
     }
   }
 
-  override def createRootIndex(ms: List[Name])(implicit settings: HtmlSettings): Future[Html] = {
-    Future.successful(rootIndexPageForNames(ms))
+  override def createRootIndex(ms: List[Name])(implicit settings: HtmlSettings): IO[Html] = {
+    IO.pure(rootIndexPageForNames(ms))
   }
 
   /**
@@ -77,7 +77,7 @@ private[html] class HTMLGeneratorImpl()(
     *       └── loading_gif.gif
     * }}}
     */
-  def createNewestPage(ms: List[(LocalDate, List[M])]): Future[Html] = {
+  def createNewestPage(ms: List[(LocalDate, List[M])]): IO[Html] = {
     def newestPageElementForDay(date: LocalDate, ms: List[M]): String = {
       val elements = ms.sortBy(_.name.name).map { m =>
         val latestSet   = m.photoSets.maxBy(_.date)
@@ -94,7 +94,7 @@ private[html] class HTMLGeneratorImpl()(
 
     }
 
-    Future {
+    IO {
       val eachDay = ms.map { p =>
         newestPageElementForDay(p._1, p._2)
       }

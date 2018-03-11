@@ -12,11 +12,11 @@ import com.lorandszakacs.util.future._
   *
   */
 private[exporter] trait HTMLIndexWriter {
-  def writeRootMIndex(index: MRootIndex)(implicit ws: WriterSettings): Future[Unit]
+  def writeRootMIndex(index: MRootIndex)(implicit ws: WriterSettings): IO[Unit]
 
-  def rewriteRootIndexFile(indexFile: Html)(implicit ws: WriterSettings): Future[Unit]
+  def rewriteRootIndexFile(indexFile: Html)(implicit ws: WriterSettings): IO[Unit]
 
-  def rewriteNewestMPage(indexFile: Html)(implicit ws: WriterSettings): Future[Unit]
+  def rewriteNewestMPage(indexFile: Html)(implicit ws: WriterSettings): IO[Unit]
 }
 
 case class WriterSettings(

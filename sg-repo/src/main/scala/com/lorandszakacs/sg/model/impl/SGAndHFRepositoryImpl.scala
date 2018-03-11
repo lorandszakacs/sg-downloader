@@ -25,31 +25,31 @@ private[model] class SGAndHFRepositoryImpl(
   private val hfiRepo = new RepoHFIndex(db)
   private val lpmRepo = new RepoLastProcessedMarker(db)
 
-  override def reindexSGs(names: List[Name]): Future[Unit] = {
+  override def reindexSGs(names: List[Name]): IO[Unit] = {
     sgiRepo.rewriteIndex(names)
   }
 
-  override def reindexHFs(names: List[Name]): Future[Unit] = {
+  override def reindexHFs(names: List[Name]): IO[Unit] = {
     hfiRepo.rewriteIndex(names)
   }
 
-  override def markAsIndexed(newHFs: List[HF], newSGs: List[SG]): Future[Unit] = {
+  override def markAsIndexed(newHFs: List[HF], newSGs: List[SG]): IO[Unit] = {
     markAsIndexedForNames(
       newHFs = newHFs.map(_.name),
       newSGs = newSGs.map(_.name)
     )
   }
 
-  override def markAsIndexedForNames(newHFs: List[Name], newSGs: List[Name]): Future[Unit] = {
+  override def markAsIndexedForNames(newHFs: List[Name], newSGs: List[Name]): IO[Unit] = {
 
     /**
       *
       * @return
       * HFs that became SGS
       */
-    def updateHF(newHFs: List[Name]): Future[List[Name]] = {
+    def updateHF(newHFs: List[Name]): IO[List[Name]] = {
       if (newHFs.isEmpty) {
-        Future.successful(Nil)
+        IO.pure(Nil)
       }
       else {
         for {
@@ -64,16 +64,16 @@ private[model] class SGAndHFRepositoryImpl(
               ikdHFs.needsReindexing.diff(newHFs).filterNot(n => hfsThatBecameSGS.contains(n.stripUnderscore))
           )
           _ <- hfiRepo.createOrUpdate(newHFIndex)
-          _ <- Future.traverse(hfsThatBecameSGS) { hfName =>
+          _ <- IO.traverse(hfsThatBecameSGS) { hfName =>
                 hfsRepo.remove(hfName)
               }
         } yield hfsThatBecameSGS
       }
     }
 
-    def updateSGs(newSGs: List[Name]): Future[Unit] = {
+    def updateSGs(newSGs: List[Name]): IO[Unit] = {
       if (newSGs.isEmpty) {
-        Future.unit
+        IO.unit
       }
       else {
         for {
@@ -98,15 +98,15 @@ private[model] class SGAndHFRepositoryImpl(
     }
   }
 
-  override def createOrUpdateLastProcessed(l: LastProcessedMarker): Future[Unit] = {
+  override def createOrUpdateLastProcessed(l: LastProcessedMarker): IO[Unit] = {
     lpmRepo.createOrUpdate(l)
   }
 
-  override def lastProcessedIndex: Future[Option[LastProcessedMarker]] = {
+  override def lastProcessedIndex: IO[Option[LastProcessedMarker]] = {
     lpmRepo.find
   }
 
-  def completeIndex: Future[CompleteIndex] = {
+  def completeIndex: IO[CompleteIndex] = {
     for {
       hfIndex <- hfiRepo.get
       sgIndex <- sgiRepo.get
@@ -121,14 +121,14 @@ private[model] class SGAndHFRepositoryImpl(
     }
   }
 
-  override def createOrUpdateSGs(sgs: List[SG]): Future[Unit] = {
+  override def createOrUpdateSGs(sgs: List[SG]): IO[Unit] = {
     for {
       _ <- sgsRepo.createOrUpdate(sgs)
       _ <- this.markAsIndexed(newHFs = Nil, newSGs = sgs)
     } yield ()
   }
 
-  override def createOrUpdateHFs(hfs: List[HF]): Future[Unit] = {
+  override def createOrUpdateHFs(hfs: List[HF]): IO[Unit] = {
     for {
       _ <- hfsRepo.createOrUpdate(hfs)
       _ <- this.markAsIndexed(newHFs = hfs, newSGs = Nil)
@@ -147,7 +147,7 @@ private[model] class SGAndHFRepositoryImpl(
     start: LocalDate,
     end:   LocalDate,
     ms:    List[M]
-  ): Future[List[(LocalDate, List[M])]] = {
+  ): IO[List[(LocalDate, List[M])]] = {
     for {
       sgs <- sgsRepo.findBetweenDays(start, end)
       hfs <- hfsRepo.findBetweenDays(start, end)
@@ -158,21 +158,21 @@ private[model] class SGAndHFRepositoryImpl(
     } yield result
   }
 
-  override def find(name: Name): Future[Option[M]] = {
+  override def find(name: Name): IO[Option[M]] = {
     for {
       sg <- sgsRepo.find(name)
       hf <- hfsRepo.find(name)
     } yield if (sg.isDefined) sg else hf
   }
 
-  override def find(names: Seq[Name]): Future[List[M]] = {
+  override def find(names: Seq[Name]): IO[List[M]] = {
     for {
       sgs <- sgsRepo.findManyById(names)
       hfs <- hfsRepo.findManyById(names)
     } yield (sgs ++ hfs).sortBy(_.name)
   }
 
-  override def findAll: Future[List[M]] = {
+  override def findAll: IO[List[M]] = {
     for {
       sgs <- sgsRepo.findAll
       hfs <- hfsRepo.findAll

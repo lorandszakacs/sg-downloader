@@ -52,7 +52,7 @@ final class SGDownloader private[downloader] (
 
   object index {
 
-    def allSGs(implicit patienceConfig: PatienceConfig = patienceConfig): Future[Unit] = {
+    def allSGs(implicit patienceConfig: PatienceConfig = patienceConfig): IO[Unit] = {
       logger.info("... starting index.allSGs")
       for {
         all <- indexer.gatherSGNames(Int.MaxValue)
@@ -61,7 +61,7 @@ final class SGDownloader private[downloader] (
       } yield ()
     }
 
-    def allHFs(implicit patienceConfig: PatienceConfig = patienceConfig): Future[Unit] = {
+    def allHFs(implicit patienceConfig: PatienceConfig = patienceConfig): IO[Unit] = {
       logger.info("... starting index.allHFs")
       for {
         all <- indexer.gatherHFNames(Int.MaxValue)
@@ -70,7 +70,7 @@ final class SGDownloader private[downloader] (
       } yield ()
     }
 
-    def all(implicit patienceConfig: PatienceConfig = patienceConfig): Future[Unit] = {
+    def all(implicit patienceConfig: PatienceConfig = patienceConfig): IO[Unit] = {
       logger.info("... starting index.all, composite of index.allSGs && index.allHFs")
       for {
         _ <- allSGs
@@ -80,7 +80,7 @@ final class SGDownloader private[downloader] (
 
     def deltaPure(
       lastProcessedOpt:        Option[LastProcessedMarker]
-    )(implicit patienceConfig: PatienceConfig): Future[Ms] = {
+    )(implicit patienceConfig: PatienceConfig): IO[Ms] = {
       logger.info(s"index.delta --> starting from ${lastProcessedOpt.map(_.lastPhotoSetID).getOrElse("")}")
       for {
         newMs <- indexer.gatherAllNewMsAndAllTheirPhotoSets(Int.MaxValue, lastProcessedOpt)
@@ -93,10 +93,10 @@ final class SGDownloader private[downloader] (
       } yield ms
     }
 
-    def specificPure(names: List[Name])(implicit patienceConfig: PatienceConfig): Future[Ms] = {
+    def specificPure(names: List[Name])(implicit patienceConfig: PatienceConfig): IO[Ms] = {
       logger.info(s"index.specific --> ${names.stringify}")
       for {
-        newMs <- Future.serialize(names) { name =>
+        newMs <- IO.serialize(names) { name =>
                   patienceConfig.throttleAfter {
                     indexer.gatherPhotoSetInformationForName(name)
                   }
@@ -113,11 +113,11 @@ final class SGDownloader private[downloader] (
 
   object reify {
 
-    def deltaPure(indexedMs: Ms): Future[Ms] = {
+    def deltaPure(indexedMs: Ms): IO[Ms] = {
       logger.info(s"reify.delta --> reifying indexed Ms # ${indexedMs.all.size}: ${indexedMs.allNames.stringify}")
       for {
-        reifiedSGs <- Future.serialize(indexedMs.sgs)(reifier.reifySG)
-        reifiedHFs <- Future.serialize(indexedMs.hfs)(reifier.reifyHF)
+        reifiedSGs <- IO.serialize(indexedMs.sgs)(reifier.reifySG)
+        reifiedHFs <- IO.serialize(indexedMs.hfs)(reifier.reifyHF)
         reifiedMs = (reifiedSGs, reifiedHFs).group
 
         _ = {
@@ -129,7 +129,7 @@ final class SGDownloader private[downloader] (
       } yield (reifiedSGs, reifiedHFs).group
     }
 
-    def specificPure(indexedMs: Ms): Future[Ms] = {
+    def specificPure(indexedMs: Ms): IO[Ms] = {
       logger.info(s"reify.specific --> delegating to reify.delta")
       this.deltaPure(indexedMs)
     }
@@ -137,7 +137,7 @@ final class SGDownloader private[downloader] (
 
   object export {
 
-    def delta(daysToExport: Int, delta: List[M])(implicit settings: ExporterSettings): Future[Unit] = {
+    def delta(daysToExport: Int, delta: List[M])(implicit settings: ExporterSettings): IO[Unit] = {
       logger.info(s"export.delta --> export. Days to export: $daysToExport. #Ms: ${delta.length}")
       for {
         _ <- exporter.exportDeltaHTMLOfMs(delta)(settings)
@@ -151,21 +151,21 @@ final class SGDownloader private[downloader] (
       } yield ()
     }
 
-    def specific(daysToExport: Int, specific: List[M])(implicit settings: ExporterSettings): Future[Unit] = {
+    def specific(daysToExport: Int, specific: List[M])(implicit settings: ExporterSettings): IO[Unit] = {
       logger.info(s"export.specific --> delegating to export.delta")
       this.delta(daysToExport, specific)(settings)
     }
 
     def all(daysToExport: Int, onlyFavorites: Boolean)(
       implicit settings:  ExporterSettings = exporterSettings
-    ): Future[Unit] = {
+    ): IO[Unit] = {
       logger.info(s"export.all --> onlyFavorites=$onlyFavorites --> to: ${settings.allMsRootFolderPath}")
       for {
         all <- if (onlyFavorites)
                 repo.find(Favorites.names)
               else
                 repo.findAll.map(_.filterNot(_.photoSets.isEmpty))
-        _ <- Future.successful(logger.info(s"export.all --> delegating to export.specific"))
+        _ <- IO.pure(logger.info(s"export.all --> delegating to export.specific"))
         _ <- this.specific(daysToExport, all)
       } yield ()
     }
@@ -179,7 +179,7 @@ final class SGDownloader private[downloader] (
       * assumes that indexedMs are in the order that they were gathered in initially
       * @return
       */
-    def delta(indexedMs: Ms, reifiedMs: Ms, oldLastProcessedMarker: Option[LastProcessedMarker]): Future[Unit] = {
+    def delta(indexedMs: Ms, reifiedMs: Ms, oldLastProcessedMarker: Option[LastProcessedMarker]): IO[Unit] = {
       logger.info(s"write.delta --> writing state to DB. # of fully reified Ms: ${reifiedMs.all.length}")
       logger.info(s"write.delta --> delegating to write.specific")
       for {
@@ -191,7 +191,7 @@ final class SGDownloader private[downloader] (
       } yield ()
     }
 
-    def specific(indexedMs: Ms, reifiedMs: Ms): Future[Unit] = {
+    def specific(indexedMs: Ms, reifiedMs: Ms): IO[Unit] = {
       logger.info(s"write.specific --> writing state to DB. # of fully reified Ms: ${reifiedMs.all.length}")
       for {
         _ <- repo.markAsIndexed(indexedMs.hfs, indexedMs.sgs)
@@ -209,7 +209,7 @@ final class SGDownloader private[downloader] (
       indexedMs:           Ms,
       reifiedMs:           Ms,
       lastProcessedMarker: Option[LastProcessedMarker]
-    ): Future[Unit] = {
+    ): IO[Unit] = {
       logger.info(s"delta.UpdateLatestProcessedIndex: old='${lastProcessedMarker.map(_.lastPhotoSetID).mkString("")}'")
       when(reifiedMs.all.nonEmpty) execute {
 
@@ -228,7 +228,7 @@ final class SGDownloader private[downloader] (
           _ <- repo.createOrUpdateLastProcessed(newMarker)
         } yield ()
 
-        Future.unit
+        IO.unit
       }
     }
   }
@@ -250,7 +250,7 @@ final class SGDownloader private[downloader] (
     def delta(
       daysToExport:       Int,
       includeProblematic: Boolean
-    ): Future[Unit] = {
+    ): IO[Unit] = {
       logger.info(
         "---------------------------------------------- starting download.delta --------------------------------------------"
       )
@@ -285,7 +285,7 @@ final class SGDownloader private[downloader] (
     def specific(
       names:        List[Name],
       daysToExport: Int
-    ): Future[Unit] = {
+    ): IO[Unit] = {
       logger.info(
         "---------------------------------------------- starting download.specific --------------------------------------------"
       )
@@ -317,12 +317,12 @@ final class SGDownloader private[downloader] (
 
   object show {
 
-    def apply(name: Name): Future[String] = {
+    def apply(name: Name): IO[String] = {
       exporter.prettyPrint(name)
     }
 
-    def favorites: Future[String] = {
-      Future.successful(Favorites.codeFriendlyDisplay)
+    def favorites: IO[String] = {
+      IO.pure(Favorites.codeFriendlyDisplay)
     }
   }
 

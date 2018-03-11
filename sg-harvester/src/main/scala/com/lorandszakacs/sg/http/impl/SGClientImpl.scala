@@ -52,17 +52,17 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
   private val http:                  HttpExt           = Http()
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
 
-  override def getPage(url: URL)(implicit authentication: Authentication): Future[Html] = {
+  override def getPage(url: URL)(implicit authentication: Authentication): IO[Html] = {
     val req         = get(url)
     val reqWithAuth = authentication(req)
 
     for {
-      response <- http.singleRequest(reqWithAuth)
+      response <- http.singleRequest(reqWithAuth).suspendInIO
       body <- if (response.status == StatusCodes.OK || response.status == StatusCodes.NotModified) {
                response.entityAsString
              }
              else {
-               Future.failed(FailedToGetPageException(url, req, response))
+               IO.raiseError(FailedToGetPageException(url, req, response))
              }
       html = Html(body)
     } yield html
@@ -109,7 +109,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     *   Cookie: sessionid=``$FinalSessionID``; csrftoken=``$FinalCSRFToken``
     * }}}
     */
-  def brokenAuthenticate(username: String, plainTextPassword: String): Future[Authentication] = {
+  def brokenAuthenticate(username: String, plainTextPassword: String): IO[Authentication] = {
     case class StartPageTokens(
       csrfToken: String,
       sessionID: String
@@ -142,15 +142,15 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
         }
     }
 
-    def getTokensFromStartPage: Future[StartPageTokens] = {
+    def getTokensFromStartPage: IO[StartPageTokens] = {
       val getRequest = HttpRequest(
         method = GET,
         uri    = s"${core.Domain}/"
       )
       for {
-        response <- http.singleRequest(getRequest)
+        response <- http.singleRequest(getRequest).suspendInIO
         result <- if (response.status != StatusCodes.OK) {
-                   Future.failed(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
+                   IO.raiseError(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
                  }
                  else {
                    val headers = response._2
@@ -166,7 +166,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
                      .filter(_.is("set-cookie"))
                      .map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
                    if (wrongCookies.length != 2) {
-                     Future.failed(ExpectedTwoSetCookieHeadersFromHomepage(getRequest.uri, headers))
+                     IO.raiseError(ExpectedTwoSetCookieHeadersFromHomepage(getRequest.uri, headers))
                    }
                    else {
 
@@ -196,13 +196,13 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
                          csrfToken = csrfToken,
                          sessionID = sessionId
                        )
-                     Future fromTry tokens
+                     IO fromTry tokens
                    }
                  }
       } yield result
     }
 
-    def postLoginAndGetTokens(tokens: StartPageTokens): Future[Session] = {
+    def postLoginAndGetTokens(tokens: StartPageTokens): IO[Session] = {
       val headers: Seq[HttpHeader] = Seq(
         tokens.toCookieHeader,
         RawHeader("X-CSRFToken", tokens.csrfToken)
@@ -222,9 +222,9 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
       )
 
       for {
-        response <- http.singleRequest(DefaultSGAuthentication(loginRequest))
+        response <- http.singleRequest(DefaultSGAuthentication(loginRequest)).suspendInIO
         tokens <- if (response.status != StatusCodes.Created) {
-                   Future.failed(FailedToPostLoginException(loginRequest, response))
+                   IO.raiseError(FailedToPostLoginException(loginRequest, response))
                  }
                  else {
                    val headers = response._2
@@ -240,7 +240,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
                      .filter(_.is("set-cookie"))
                      .map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
                    if (wrongCookies.length != 2) {
-                     Future.failed(ExpectedTwoSetCookieHeadersFromLoginResponseException(loginRequest.uri, headers))
+                     IO.raiseError(ExpectedTwoSetCookieHeadersFromLoginResponseException(loginRequest.uri, headers))
                    }
                    else {
 
@@ -272,7 +272,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
                          csrfToken = csrfToken,
                          expiresAt = org.joda.time.DateTime.now(DateTimeZone.UTC).plusDays(13)
                        )
-                     Future fromTry tokens
+                     IO fromTry tokens
                    }
                  }
 
@@ -287,7 +287,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     } yield newAuthentication
   }
 
-  override def createAuthentication(newSession: Session): Future[Authentication] = {
+  override def createAuthentication(newSession: Session): IO[Authentication] = {
     val newAuthentication = authenticationFromSession(newSession)
     for {
       _ <- verifyAuthentication(newAuthentication)
@@ -335,7 +335,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     *      </div>
     * }}}
     */
-  private def verifyAuthentication(newAuthentication: Authentication): Future[Unit] = {
+  private def verifyAuthentication(newAuthentication: Authentication): IO[Unit] = {
     val uri: Uri = s"${core.Domain}/members/${newAuthentication.session.username}/"
     for {
       page <- getPage(uri)(newAuthentication)
@@ -367,8 +367,8 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
 
   implicit class BuffedHttpResponse(val r: HttpResponse)(implicit val ec: ExecutionContext) {
 
-    def entityAsString: Future[String] =
-      r.entity.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))
+    def entityAsString: IO[String] =
+      (r.entity.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))).suspendInIO
   }
 
 }

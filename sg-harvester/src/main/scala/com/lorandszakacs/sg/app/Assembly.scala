@@ -32,18 +32,13 @@ class Assembly
   override implicit lazy val executionContext: ExecutionContext =
     ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
 
-  def shutdown(): Future[Unit] = {
-    logger.info("attempting to shutdown and close all resources")
+  def shutdown(): IO[Unit] = {
     for {
-      _ <- db.shutdown() map { _ =>
-            logger.info("terminated -- database.shutdown()")
-          }
-      _ <- actorSystem.terminate() map { _ =>
-            logger.info("terminated -- actorSystem.terminate()")
-          }
-    } yield {
-      logger.info("terminated -- completed assembly.shutdown()")
-    }
+      _ <- IO(logger.info("attempting to shutdown and close all resources"))
+      _ <- db.shutdown() >> IO(logger.info("terminated -- database.shutdown()"))
+      _ <- actorSystem.terminate().suspendInIO >> IO(logger.info("terminated -- actorSystem.terminate()"))
+      _ <- IO(logger.info("terminated -- completed assembly.shutdown()"))
+    } yield ()
   }
 
 }

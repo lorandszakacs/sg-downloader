@@ -38,7 +38,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
   /**
     * Gathers the names of all available [[SG]]s
     */
-  override def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): Future[List[Name]] = {
+  override def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): IO[List[Name]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -56,7 +56,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
   /**
     * Gathers the names of all available [[HF]]s
     */
-  override def gatherHFNames(limit: Int)(implicit pc: PatienceConfig): Future[List[Name]] = {
+  override def gatherHFNames(limit: Int)(implicit pc: PatienceConfig): IO[List[Name]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -90,7 +90,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     */
   override def gatherPhotoSetInformationForM[T <: M](
     mf:   MFactory[T]
-  )(name: Name)(implicit pc: PatienceConfig): Future[T] = {
+  )(name: Name)(implicit pc: PatienceConfig): IO[T] = {
     val pageURL = photoSetsPageURL(name)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
@@ -105,7 +105,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     }
   }
 
-  override def gatherPhotoSetInformationForName(name: Name)(implicit pc: PatienceConfig): Future[M] = {
+  override def gatherPhotoSetInformationForName(name: Name)(implicit pc: PatienceConfig): IO[M] = {
     val pageURL = photoSetsPageURL(name)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
@@ -134,7 +134,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     */
   private[impl] def gatherAllNewMsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(
     implicit pc:                                               PatienceConfig
-  ): Future[List[M]] = {
+  ): IO[List[M]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -185,16 +185,16 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     */
   override def gatherAllNewMsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(
     implicit pc:                                         PatienceConfig
-  ): Future[List[M]] = {
+  ): IO[List[M]] = {
     for {
       msWithOnlyOneSet <- gatherAllNewMsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
       sgHF = msWithOnlyOneSet.distinctById.group
-      sgs <- Future.serialize(sgHF.sgs) { sg =>
+      sgs <- IO.serialize(sgHF.sgs) { sg =>
               pc.throttleAfter {
                 this.gatherPhotoSetInformationForM(M.SGFactory)(sg.name)
               }
             }
-      hfs <- Future.serialize(sgHF.hfs) { hf =>
+      hfs <- IO.serialize(sgHF.hfs) { hf =>
               pc.throttleAfter {
                 this.gatherPhotoSetInformationForM(M.HFFactory)(hf.name)
               }
@@ -225,7 +225,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
     isEndInput: List[T] => Boolean = { ls: List[T] =>
       false
     }
-  )(implicit pc: PatienceConfig): Future[List[T]] = {
+  )(implicit pc: PatienceConfig): IO[List[T]] = {
 
     def offsetUri(uri: Uri, offset: Int) =
       Uri(s"$uri?partial=true&offset=$offset")
@@ -244,7 +244,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
 
       while (!stop) {
         val newURI  = offsetUri(uri, offset)
-        val newPage = sGClient.getPage(newURI).await()
+        val newPage = sGClient.getPage(newURI).unsafeRunSync() //FIXME: write in a pure way
         offset += offsetStep
         if (isEndPage(newPage) || offset > cutOffLimit) {
           stop = true

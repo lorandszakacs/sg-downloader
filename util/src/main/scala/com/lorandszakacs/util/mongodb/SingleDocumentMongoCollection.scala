@@ -47,18 +47,18 @@ trait SingleDocumentMongoCollection[Entity, IdType, BSONTargetType <: BSONValue]
 
   def idQuery: BSONDocument = repo.idQuery(uniqueDocumentId)
 
-  def create(e: Entity): Future[Unit] =
+  def create(e: Entity): IO[Unit] =
     repo.create(e)
 
-  def createOrUpdate(e: Entity): Future[Unit] =
+  def createOrUpdate(e: Entity): IO[Unit] =
     repo.createOrUpdate(e)
 
-  def remove(): Future[Unit] =
+  def remove(): IO[Unit] =
     repo.remove(idQuery)
 
-  def find: Future[Option[Entity]] =
+  def find: IO[Option[Entity]] =
     repo.findOne(idQuery)
 
-  def get: Future[Entity] = this.find.map(_.getOrElse(defaultEntity))
+  def get: IO[Entity] = this.find.map(_.getOrElse(defaultEntity))
 
 }

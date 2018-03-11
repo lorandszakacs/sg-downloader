@@ -12,30 +12,30 @@ import com.lorandszakacs.util.time._
   *
   */
 trait SGAndHFRepository {
-  def reindexSGs(names: List[Name]): Future[Unit]
+  def reindexSGs(names: List[Name]): IO[Unit]
 
-  def reindexHFs(names: List[Name]): Future[Unit]
+  def reindexHFs(names: List[Name]): IO[Unit]
 
-  def markAsIndexed(newHFs: List[HF], newSGs: List[SG]): Future[Unit]
+  def markAsIndexed(newHFs: List[HF], newSGs: List[SG]): IO[Unit]
 
-  def markAsIndexedForNames(newHFs: List[Name], newSGs: List[Name]): Future[Unit]
+  def markAsIndexedForNames(newHFs: List[Name], newSGs: List[Name]): IO[Unit]
 
-  def createOrUpdateLastProcessed(l: LastProcessedMarker): Future[Unit]
+  def createOrUpdateLastProcessed(l: LastProcessedMarker): IO[Unit]
 
-  def lastProcessedIndex: Future[Option[LastProcessedMarker]]
+  def lastProcessedIndex: IO[Option[LastProcessedMarker]]
 
-  def completeIndex: Future[CompleteIndex]
+  def completeIndex: IO[CompleteIndex]
 
   /**
     * Updates or creates [[SG]], removes the name from [[SGIndex.needsReindexing]]
     */
-  def createOrUpdateSGs(sgs: List[SG]): Future[Unit]
+  def createOrUpdateSGs(sgs: List[SG]): IO[Unit]
 
   /**
     * Updates or creates [[HF]], removes the name from [[HFIndex.needsReindexing]]
     *
     */
-  def createOrUpdateHFs(hfs: List[HF]): Future[Unit]
+  def createOrUpdateHFs(hfs: List[HF]): IO[Unit]
 
   /**
     * Returns the Ms which had a on any given day between the two dates given as parameters
@@ -44,13 +44,13 @@ trait SGAndHFRepository {
     *
     * i.e. Ms parameter is a delta of sorts
     */
-  def aggregateBetweenDays(start: LocalDate, end: LocalDate, ms: List[M] = Nil): Future[List[(LocalDate, List[M])]]
+  def aggregateBetweenDays(start: LocalDate, end: LocalDate, ms: List[M] = Nil): IO[List[(LocalDate, List[M])]]
 
-  def find(name: Name): Future[Option[M]]
+  def find(name: Name): IO[Option[M]]
 
-  def find(names: Seq[Name]): Future[List[M]]
+  def find(names: Seq[Name]): IO[List[M]]
 
-  def findAll: Future[List[M]]
+  def findAll: IO[List[M]]
 
 }
 
