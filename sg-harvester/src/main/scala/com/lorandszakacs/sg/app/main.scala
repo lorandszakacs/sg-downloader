@@ -28,7 +28,7 @@ import com.typesafe.scalalogging.StrictLogging
 object Main extends App with StrictLogging {
   val assembly    = new Assembly
   val interpreter = new CommandLineInterpreter(assembly)
-  val repl        = new REPL(interpreter)
+  val repl        = new REPL(interpreter, assembly)
 
   val interpretArgsIO: IO[Unit] = IO(logger.info(s"Received args: ${args.mkString(",")}    --> executing command")) >>
     interpreter.interpretArgs(args).onError {

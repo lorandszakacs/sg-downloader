@@ -2,6 +2,7 @@ package com.lorandszakacs.util.mongodb
 
 import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.math.Identifier
+import com.typesafe.scalalogging.LazyLogging
 import reactivemongo.api.commands.{LastError, MultiBulkWriteResult, WriteResult}
 
 /**
@@ -55,7 +56,7 @@ object MongoCollection {
   }
 }
 
-trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
+trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] extends LazyLogging {
   protected implicit def executionContext: ExecutionContext
 
   protected implicit def entityHandler: BSONDocumentHandler[Entity]
@@ -68,7 +69,7 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def collectionName: String
 
-  private lazy val collectionIO: IO[BSONCollection] = db(collectionName)
+  private lazy val collectionIO: IO[BSONCollection] = db.collection(collectionName)
 
   private lazy val collection: BSONCollection = collectionIO.unsafeRunSync()
 

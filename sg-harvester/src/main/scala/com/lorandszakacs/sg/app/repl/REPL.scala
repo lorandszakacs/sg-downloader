@@ -13,7 +13,9 @@ import scala.io.StdIn
   *
   */
 class REPL(
-  interpreter: CommandLineInterpreter
+  private val interpreter: CommandLineInterpreter,
+  @scala.deprecated("use only for testing", "now")
+  private val assembly: com.lorandszakacs.sg.app.Assembly
 ) extends StrictLogging {
 
   def runIO: IO[Unit] = {
@@ -39,13 +41,18 @@ class REPL(
               IO(print("\n")) >>
               loop(stop = false)
           case Right(c) =>
-            if (c == Commands.Exit) loop(stop = true) else loop(stop = false)
+            import com.lorandszakacs.util.mongodb.Database
+            assembly.db.connections
+              .map(s => logger.info(s"gc=${Database.connectionCounter.get};; connections=\n$s")) >> {
+              if (c == Commands.Exit) loop(stop = true) else loop(stop = false)
+            }
+
         }
       } yield ()
     }
   }
   private lazy val banned = Set[String](
-    "cats.effect",
+    "cats",
     "java.util.concurrent",
     "java.lang",
     "scala.",
