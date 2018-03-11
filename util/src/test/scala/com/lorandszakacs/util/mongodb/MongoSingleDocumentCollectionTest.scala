@@ -10,13 +10,13 @@ import org.scalatest.{fixture, Matchers, OneInstancePerTest, Outcome}
   *
   */
 class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstancePerTest with Matchers {
-  private implicit val ec: ExecutionContext = ExecutionContext.global
+  private implicit val sch: Scheduler = Scheduler.global
 
   class SingleEntityRepository(
     override protected val db: Database
   )(
     implicit
-    override protected implicit val executionContext: ExecutionContext
+    override protected implicit val scheduler: Scheduler
   ) extends SingleDocumentMongoCollection[Entity, String, BSONString] {
     protected implicit def objectHandler: BSONDocumentHandler[Entity] = BSONMacros.handler[Entity]
 
@@ -44,8 +44,8 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
       uri    = """mongodb://localhost:27016""",
       dbName = dbName
     )
-    val repo = new SingleEntityRepository(db)(ec)
-    db.drop().unsafeRunSync()
+    val repo = new SingleEntityRepository(db)(sch)
+    db.drop().unsafeSyncGet()
     val outcome: Outcome = withFixture(test.toNoArgTest(repo))
     val f = if (outcome.isFailed || outcome.isCanceled) {
       db.shutdown()
@@ -56,7 +56,7 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
         _ <- db.shutdown()
       } yield ()
     }
-    f.unsafeRunSync()
+    f.unsafeSyncGet()
     outcome
   }
 
@@ -72,24 +72,24 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
       actual = "ACTUAL"
     )
     withClue("create single doc") {
-      repo.create(e).unsafeRunSync()
+      repo.create(e).unsafeSyncGet()
     }
 
     withClue("read after create") {
-      val read = repo.get.unsafeRunSync()
+      val read = repo.get.unsafeSyncGet()
       assert(read == e)
     }
 
     val eu = e.copy(opt = Some("NEW VALUE"))
     withClue("update") {
-      repo.createOrUpdate(eu).unsafeRunSync()
-      val read = repo.get.unsafeRunSync()
+      repo.createOrUpdate(eu).unsafeSyncGet()
+      val read = repo.get.unsafeSyncGet()
       assert(eu == read)
     }
 
     withClue("remove") {
-      repo.remove().unsafeRunSync()
-      val read = repo.find.unsafeRunSync()
+      repo.remove().unsafeSyncGet()
+      val read = repo.find.unsafeSyncGet()
       assert(read.isEmpty)
     }
   }
@@ -103,17 +103,17 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
       actual = "ACTUAL"
     )
     withClue("create single doc") {
-      repo.create(e).unsafeRunSync()
+      repo.create(e).unsafeSyncGet()
     }
 
     withClue("create second time doc") {
       the[MongoDBException] thrownBy {
-        repo.create(e).unsafeRunSync()
+        repo.create(e).unsafeSyncGet()
       }
     }
 
     withClue("read after create") {
-      val read = repo.get.unsafeRunSync()
+      val read = repo.get.unsafeSyncGet()
       assert(read == e)
     }
   }

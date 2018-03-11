@@ -28,22 +28,22 @@ import com.github.nscala_time.time.Imports._
   *
   */
 private[html] class HTMLGeneratorImpl()(
-  implicit val ec: ExecutionContext
+  implicit val sch: Scheduler
 ) extends HTMLGenerator {
 
   private val RootPath1 = ".."
   private val RootPath2 = "../.."
   private val RootPath3 = "../../.."
 
-  override def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): IO[MRootIndex] = {
-    def serialized(ms: List[M]): IO[List[MIndex]] = {
-      IO.serialize(ms) { m: M =>
-        IO(mIndex(m))
+  override def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): Task[MRootIndex] = {
+    def serialized(ms: List[M]): Task[List[MIndex]] = {
+      Task.serialize(ms) { m: M =>
+        Task(mIndex(m))
       }
     }
     val grouped = ms.grouped(100)
     for {
-      mIndexes <- IO.traverse(grouped) { batch =>
+      mIndexes <- Task.traverse(grouped) { batch =>
         serialized(batch)
       }
     } yield {
@@ -55,8 +55,8 @@ private[html] class HTMLGeneratorImpl()(
     }
   }
 
-  override def createRootIndex(ms: List[Name])(implicit settings: HtmlSettings): IO[Html] = {
-    IO.pure(rootIndexPageForNames(ms))
+  override def createRootIndex(ms: List[Name])(implicit settings: HtmlSettings): Task[Html] = {
+    Task.pure(rootIndexPageForNames(ms))
   }
 
   /**
@@ -77,7 +77,7 @@ private[html] class HTMLGeneratorImpl()(
     *       └── loading_gif.gif
     * }}}
     */
-  def createNewestPage(ms: List[(LocalDate, List[M])]): IO[Html] = {
+  def createNewestPage(ms: List[(LocalDate, List[M])]): Task[Html] = {
     def newestPageElementForDay(date: LocalDate, ms: List[M]): String = {
       val elements = ms.sortBy(_.name.name).map { m =>
         val latestSet   = m.photoSets.maxBy(_.date)
@@ -94,7 +94,7 @@ private[html] class HTMLGeneratorImpl()(
 
     }
 
-    IO {
+    Task {
       val eachDay = ms.map { p =>
         newestPageElementForDay(p._1, p._2)
       }

@@ -18,7 +18,7 @@ trait SGDownloaderAssembly {
 
   implicit def actorSystem: ActorSystem
 
-  implicit def executionContext: ExecutionContext
+  implicit def scheduler: Scheduler
 
   def sgDownloader: SGDownloader = _sgDownloader
 
@@ -27,6 +27,6 @@ trait SGDownloaderAssembly {
     indexer  = sgIndexer,
     reifier  = sgReifier,
     exporter = sgExporter
-  )(executionContext)
+  )(scheduler)
 
 }

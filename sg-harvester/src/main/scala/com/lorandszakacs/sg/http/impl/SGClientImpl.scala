@@ -41,26 +41,26 @@ import scala.collection.immutable.Seq
   *
   */
 private[http] object SGClientImpl {
-  private[http] def apply()(implicit actorSystem: ActorSystem, ec: ExecutionContext) = new SGClientImpl()
+  private[http] def apply()(implicit actorSystem: ActorSystem, sch: Scheduler) = new SGClientImpl()
 }
 
-private[impl] final class SGClientImpl private ()(implicit val actorSystem: ActorSystem, val ec: ExecutionContext)
+private[impl] final class SGClientImpl private ()(implicit val actorSystem: ActorSystem, val sch: Scheduler)
     extends SGClient {
 
   private val http:                  HttpExt           = Http()
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
 
-  override def getPage(url: URL)(implicit authentication: Authentication): IO[Html] = {
+  override def getPage(url: URL)(implicit authentication: Authentication): Task[Html] = {
     val req         = get(url)
     val reqWithAuth = authentication(req)
 
     for {
-      response <- http.singleRequest(reqWithAuth).suspendInIO
+      response <- http.singleRequest(reqWithAuth).suspendInTask
       body <- if (response.status == StatusCodes.OK || response.status == StatusCodes.NotModified) {
         response.entityAsString
       }
       else {
-        IO.raiseError(FailedToGetPageException(url, req, response))
+        Task.raiseError(FailedToGetPageException(url, req, response))
       }
       html = Html(body)
     } yield html
@@ -107,7 +107,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     *   Cookie: sessionid=``$FinalSessionID``; csrftoken=``$FinalCSRFToken``
     * }}}
     */
-  def brokenAuthenticate(username: String, plainTextPassword: String): IO[Authentication] = {
+  def brokenAuthenticate(username: String, plainTextPassword: String): Task[Authentication] = {
     case class StartPageTokens(
       csrfToken: String,
       sessionID: String
@@ -140,15 +140,15 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
         }
     }
 
-    def getTokensFromStartPage: IO[StartPageTokens] = {
+    def getTokensFromStartPage: Task[StartPageTokens] = {
       val getRequest = HttpRequest(
         method = GET,
         uri    = s"${core.Domain}/"
       )
       for {
-        response <- http.singleRequest(getRequest).suspendInIO
+        response <- http.singleRequest(getRequest).suspendInTask
         result <- if (response.status != StatusCodes.OK) {
-          IO.raiseError(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
+          Task.raiseError(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
         }
         else {
           val headers = response._2
@@ -164,7 +164,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
             .filter(_.is("set-cookie"))
             .map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
           if (wrongCookies.length != 2) {
-            IO.raiseError(ExpectedTwoSetCookieHeadersFromHomepage(getRequest.uri, headers))
+            Task.raiseError(ExpectedTwoSetCookieHeadersFromHomepage(getRequest.uri, headers))
           }
           else {
 
@@ -194,13 +194,13 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
                 csrfToken = csrfToken,
                 sessionID = sessionId
               )
-            IO fromTry tokens
+            Task fromTry tokens
           }
         }
       } yield result
     }
 
-    def postLoginAndGetTokens(tokens: StartPageTokens): IO[Session] = {
+    def postLoginAndGetTokens(tokens: StartPageTokens): Task[Session] = {
       val headers: Seq[HttpHeader] = Seq(
         tokens.toCookieHeader,
         RawHeader("X-CSRFToken", tokens.csrfToken)
@@ -220,9 +220,9 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
       )
 
       for {
-        response <- http.singleRequest(DefaultSGAuthentication(loginRequest)).suspendInIO
+        response <- http.singleRequest(DefaultSGAuthentication(loginRequest)).suspendInTask
         tokens <- if (response.status != StatusCodes.Created) {
-          IO.raiseError(FailedToPostLoginException(loginRequest, response))
+          Task.raiseError(FailedToPostLoginException(loginRequest, response))
         }
         else {
           val headers = response._2
@@ -238,7 +238,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
             .filter(_.is("set-cookie"))
             .map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
           if (wrongCookies.length != 2) {
-            IO.raiseError(ExpectedTwoSetCookieHeadersFromLoginResponseException(loginRequest.uri, headers))
+            Task.raiseError(ExpectedTwoSetCookieHeadersFromLoginResponseException(loginRequest.uri, headers))
           }
           else {
 
@@ -270,7 +270,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
                 csrfToken = csrfToken,
                 expiresAt = org.joda.time.DateTime.now(DateTimeZone.UTC).plusDays(13)
               )
-            IO fromTry tokens
+            Task fromTry tokens
           }
         }
 
@@ -285,7 +285,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     } yield newAuthentication
   }
 
-  override def createAuthentication(newSession: Session): IO[Authentication] = {
+  override def createAuthentication(newSession: Session): Task[Authentication] = {
     val newAuthentication = authenticationFromSession(newSession)
     for {
       _ <- verifyAuthentication(newAuthentication)
@@ -333,12 +333,12 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     *      </div>
     * }}}
     */
-  private def verifyAuthentication(newAuthentication: Authentication): IO[Unit] = {
+  private def verifyAuthentication(newAuthentication: Authentication): Task[Unit] = {
     val uri: Uri = s"${core.Domain}/members/${newAuthentication.session.username}/"
     for {
       page <- getPage(uri)(newAuthentication)
       loginButton = (page filter Tag("div") && Class("login-form-wrapper")).headOption
-      _ <- loginButton.isDefined.failOnTrueIOThr(FailedToVerifyNewAuthenticationException(uri))
+      _ <- loginButton.isDefined.failOnTrueTaskThr(FailedToVerifyNewAuthenticationException(uri))
     } yield ()
   }
 
@@ -363,10 +363,10 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     }
   }
 
-  implicit class BuffedHttpResponse(val r: HttpResponse)(implicit val ec: ExecutionContext) {
+  implicit class BuffedHttpResponse(val r: HttpResponse)(implicit val sch: Scheduler) {
 
-    def entityAsString: IO[String] =
-      (r.entity.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))).suspendInIO
+    def entityAsString: Task[String] =
+      (r.entity.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))).suspendInTask
   }
 
 }

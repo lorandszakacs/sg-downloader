@@ -14,8 +14,8 @@ import com.lorandszakacs.util.time._
   *
   */
 private[reifier] final class SessionDaoImpl(
-  override protected val db:              Database
-)(implicit override val executionContext: ExecutionContext)
+  override protected val db:       Database
+)(implicit override val scheduler: Scheduler)
     extends SingleDocumentMongoCollection[Session, String, BSONString] with StrictLogging {
 
   private[reifier] implicit val dateTimeHandler
@@ -46,10 +46,10 @@ private[reifier] final class SessionDaoImpl(
 
   override def collectionName: String = "sg_sessions"
 
-  private def onInit(): IO[Unit] = {
+  private def onInit(): Task[Unit] = {
     for {
       opt <- this.find
-      _ <- opt.isEmpty.effectOnTrueIO {
+      _ <- opt.isEmpty.effectOnTrueTask {
         this.create {
           logger.info("creating default session info")
           this.defaultEntity

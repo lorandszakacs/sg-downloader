@@ -17,27 +17,27 @@ class CommandLineInterpreter(
 
   private val defaultDays = 160
 
-  def interpretArgs(args: Array[String]): IO[Unit] = {
+  def interpretArgs(args: Array[String]): Task[Unit] = {
     assert(args.nonEmpty, "why did you call the command line evaluator if you have no command line args?")
     val stringArgs = args.mkString(" ")
 
     this.interpret(stringArgs).discardContent
   }
 
-  def interpret(args: String): IO[Command] = {
+  def interpret(args: String): Task[Command] = {
     eventualInterpretation(args)
   }
 
   private val downloader = assembly.sgDownloader
 
-  private def eventualInterpretation(args: String): IO[Command] = {
+  private def eventualInterpretation(args: String): Task[Command] = {
     for {
-      command <- IO fromTry CommandParser.parseCommand(args)
+      command <- Task fromTry CommandParser.parseCommand(args)
       _       <- interpretCommand(command)
     } yield command
   }
 
-  private def interpretCommand(command: Command): IO[Unit] = {
+  private def interpretCommand(command: Command): Task[Unit] = {
     command match {
 
       //=======================================================================
@@ -61,21 +61,21 @@ class CommandLineInterpreter(
 
       //=======================================================================
       case Commands.Show(name) =>
-        IO(print("\n***************\n")) >>
+        Task(print("\n***************\n")) >>
           downloader.show(name).map(s => println(s))
       //=======================================================================
       case Commands.Favorites =>
-        IO(print("\n***************\n")) >>
+        Task(print("\n***************\n")) >>
           downloader.show.favorites.map(s => println(s))
       //=======================================================================
       case Commands.Help =>
         val string = Commands.descriptions.map { c =>
           c.fullDescription
         } mkString "\n\n----------------\n\n"
-        IO(print(s"----------------\n$string\n"))
+        Task(print(s"----------------\n$string\n"))
       //=======================================================================
       case Commands.Exit =>
-        IO(print("\n-------- exiting --------\n"))
+        Task(print("\n-------- exiting --------\n"))
       //=======================================================================
     }
   }

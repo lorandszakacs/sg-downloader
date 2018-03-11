@@ -31,7 +31,7 @@ final case class PatienceConfig(
     Thread.sleep(throttle.toMillis)
   }
 
-  def throttleAfter[T](thunk: => IO[T]): IO[T] = {
+  def throttleAfter[T](thunk: => Task[T]): Task[T] = {
     val f = thunk
     f.map { r =>
       this.throttleThread()
@@ -39,7 +39,7 @@ final case class PatienceConfig(
     }
   }
 
-  def throttleHalfAfter[T](thunk: => IO[T]): IO[T] = {
+  def throttleHalfAfter[T](thunk: => Task[T]): Task[T] = {
     val f = thunk
     f.map { r =>
       this.halfThrottle()
@@ -47,7 +47,7 @@ final case class PatienceConfig(
     }
   }
 
-  def throttleQuarterAfter[T](thunk: => IO[T]): IO[T] = {
+  def throttleQuarterAfter[T](thunk: => Task[T]): Task[T] = {
     val f = thunk
     f.map { r =>
       this.quarterThrottle()

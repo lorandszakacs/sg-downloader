@@ -16,6 +16,7 @@
   */
 package com.lorandszakacs.sg.app
 
+import akka.actor.ActorSystem
 import com.lorandszakacs.sg.app.repl.{CommandLineInterpreter, REPL}
 import com.lorandszakacs.util.effects._
 import com.typesafe.scalalogging.StrictLogging
@@ -26,27 +27,31 @@ import com.typesafe.scalalogging.StrictLogging
   *
   */
 object Main extends App with StrictLogging {
-  val assembly    = new Assembly
+  implicit val actorSystem: ActorSystem = ActorSystem("sg-app")
+  implicit val scheduler:   Scheduler   = Scheduler.io(name = "sg-app")
+
+  val assembly    = new Assembly(actorSystem, scheduler)
   val interpreter = new CommandLineInterpreter(assembly)
   val repl        = new REPL(interpreter, assembly)
 
-  val interpretArgsIO: IO[Unit] = IO(logger.info(s"Received args: ${args.mkString(",")}    --> executing command")) >>
+  val interpretArgsIO
+    : Task[Unit] = Task(logger.info(s"Received args: ${args.mkString(",")}    --> executing command")) >>
     interpreter.interpretArgs(args).onError {
       case NonFatal(e) =>
-        IO(logger.error("—— something went wrong during interpretation —— exiting", e)) >>
+        Task(logger.error("—— something went wrong during interpretation —— exiting", e)) >>
           assembly.shutdown() >>
-          IO(System.exit(1))
+          Task(System.exit(1))
     }
 
-  val startReplIO = IO(logger.info(s"Did not receive any arguments, going into REPL mode")) >>
+  val startReplIO = Task(logger.info(s"Did not receive any arguments, going into REPL mode")) >>
     repl.runIO
 
   val program = for {
     _ <- if (args.isEmpty) startReplIO else interpretArgsIO
     _ <- assembly.shutdown()
-    _ <- IO(println("... finished gracefully"))
-    _ <- IO(System.exit(0))
+    _ <- Task(println("... finished gracefully"))
+    _ <- Task(System.exit(0))
   } yield ()
 
-  program.unsafeRunSync()
+  program.unsafeSyncGet()
 }

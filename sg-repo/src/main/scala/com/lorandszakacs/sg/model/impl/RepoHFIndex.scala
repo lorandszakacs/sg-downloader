@@ -11,7 +11,7 @@ import com.lorandszakacs.util.mongodb._
   *
   */
 private[impl] class RepoHFIndex(override protected val db: Database)(
-  implicit override val executionContext:                  ExecutionContext
+  implicit override val scheduler:                         Scheduler
 ) extends IndexSingleDocRepo[HFIndex] with SGRepoBSON {
 
   override protected def objectHandler: BSONDocumentHandler[HFIndex] = BSONMacros.handler[HFIndex]
@@ -42,15 +42,15 @@ private[impl] class RepoHFIndex(override protected val db: Database)(
     )
   }
 
-  override def create(sg: HFIndex): IO[Unit] = {
+  override def create(sg: HFIndex): Task[Unit] = {
     super.create(sanitize(sg))
   }
 
-  override def createOrUpdate(sg: HFIndex): IO[Unit] = {
+  override def createOrUpdate(sg: HFIndex): Task[Unit] = {
     super.createOrUpdate(sanitize(sg))
   }
 
-  def rewriteIndex(names: List[Name]): IO[Unit] = {
+  def rewriteIndex(names: List[Name]): Task[Unit] = {
     this.createOrUpdate(sanitize(names))
   }
 

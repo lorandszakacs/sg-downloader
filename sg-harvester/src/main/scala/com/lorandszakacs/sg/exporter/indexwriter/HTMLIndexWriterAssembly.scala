@@ -12,7 +12,7 @@ import com.lorandszakacs.util.effects._
   */
 private[exporter] trait HTMLIndexWriterAssembly {
 
-  implicit def executionContext: ExecutionContext
+  implicit def scheduler: Scheduler
 
   def htmlIndexWriter: HTMLIndexWriterImpl = _htmlIndexWriter
 

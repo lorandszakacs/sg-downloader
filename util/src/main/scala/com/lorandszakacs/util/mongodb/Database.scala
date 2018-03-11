@@ -3,8 +3,6 @@ package com.lorandszakacs.util.mongodb
 import com.typesafe.scalalogging.StrictLogging
 import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
 import com.lorandszakacs.util.effects._
-import cats.Eval
-import monix.execution.atomic.AtomicInt
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -16,68 +14,55 @@ import scala.language.postfixOps
   *
   */
 final case class Database(
-  uri:         String,
-  dbName:      String
-)(implicit ec: ExecutionContext)
+  uri:          String,
+  dbName:       String
+)(implicit sch: Scheduler)
     extends StrictLogging {
 
-  def collection(colName: String): IO[BSONCollection] = databaseIO.map(_.apply(colName))
+  def collection(colName: String): Task[BSONCollection] = databaseTask.map(_.apply(colName))
 
-  private lazy val mongoDriverIO: IO[MongoDriver] = IO(new MongoDriver())
+  private lazy val mongoDriverTask: Task[MongoDriver] = Task(new MongoDriver()).memoizeOnSuccess
 
-  private lazy val mongoConnectionIO: IO[MongoConnection] = for {
-    parsedURI   <- IO.fromTry(MongoConnection.parseURI(uri))
-    mongoDriver <- mongoDriverIO
-    connection <- IO(mongoDriver.connection(parsedURI)).map { c =>
-      logger.info(s"have connection — ${Database.connectionCounter.getAndAdd(1)} —: ${c.name} ")
-      c
-    }
-  } yield connection
-
-  private lazy val databaseIO: IO[DefaultDB] = {
+  private lazy val mongoConnectionTask: Task[MongoConnection] = {
     for {
-      connection <- mongoConnectionIO
+      parsedURI   <- Task.fromTry(MongoConnection.parseURI(uri))
+      mongoDriver <- mongoDriverTask
+      connection  <- Task(mongoDriver.connection(parsedURI))
+    } yield connection
+  }.memoizeOnSuccess
+
+  private lazy val databaseTask: Task[DefaultDB] = {
+    for {
+      connection <- mongoConnectionTask
       db         <- Database.getDatabase(connection)(dbName)
     } yield db
+  }.memoizeOnSuccess
 
-  }
-
-  @scala.deprecated("use only for testing", "now")
-  def connections: IO[String] = {
+  def drop(): Task[Unit] = {
     for {
-      driver <- mongoDriverIO
-      cs     <- IO.pure(driver.connections.toList)
-    } yield cs.map(c => s"${c.supervisor} -> ${c.actorSystem} -> ${c.name}").mkString("\n\n")
-  }
-
-  def drop(): IO[Unit] = {
-    for {
-      db <- databaseIO
-      _  <- IO(logger.info(s"attempting to drop database: ${db.name}"))
-      _  <- db.drop().suspendInIO >> IO(logger.info(s"dropped database: ${db.name}"))
+      db <- databaseTask
+      _  <- Task(logger.info(s"attempting to drop database: ${db.name}"))
+      _  <- db.drop().suspendInTask >> Task(logger.info(s"dropped database: ${db.name}"))
     } yield ()
   }
 
-  def shutdown(): IO[Unit] = {
+  def shutdown(): Task[Unit] = {
     for {
-      _      <- IO(logger.info("attempting to close _mongoDriver.close(...)"))
-      driver <- mongoDriverIO
-      _      <- IO(driver.close(1 minute))
-      _      <- driver.system.terminate().suspendInIO >> IO(logger.info("terminated -- _mongoDriver.system.terminate()"))
+      _      <- Task(logger.info("attempting to close _mongoDriver.close(...)"))
+      driver <- mongoDriverTask
+      _      <- Task(driver.close(1 minute))
+      _      <- driver.system.terminate().suspendInTask >> Task(logger.info("terminated -- _mongoDriver.system.terminate()"))
     } yield ()
   }
 }
 
 object Database {
 
-  @scala.deprecated("use only to count stuff", "2018")
-  val connectionCounter: AtomicInt = monix.execution.atomic.AtomicInt(0)
-
   private[mongodb] def getDatabase(mongoConnection: MongoConnection)(name: String)(
     implicit
-    ec: ExecutionContext
-  ): IO[DefaultDB] = {
-    mongoConnection.database(name).suspendInIO.adaptError {
+    sch: Scheduler
+  ): Task[DefaultDB] = {
+    mongoConnection.database(name).suspendInTask.adaptError {
       case NonFatal(e) => new IllegalStateException(s"Failed to initialize Mongo database. Because: ${e.getMessage}", e)
     }
   }

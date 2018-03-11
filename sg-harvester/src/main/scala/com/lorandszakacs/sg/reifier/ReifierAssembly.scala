@@ -18,11 +18,11 @@ trait ReifierAssembly extends SGClientAssembly {
 
   implicit def actorSystem: ActorSystem
 
-  implicit def executionContext: ExecutionContext
+  implicit def scheduler: Scheduler
 
   def sgReifier: SGReifier = _sgReifierImpl
 
-  private[reifier] lazy val _sessionDao = new SessionDaoImpl(db)(executionContext)
+  private[reifier] lazy val _sessionDao = new SessionDaoImpl(db)(scheduler)
 
   private[reifier] lazy val _sgReifierImpl = new SGReifierImpl(sgClient, _sessionDao)
 }

@@ -25,32 +25,32 @@ private[http] object ExceptionHelpers {
     *
     * It's a bug, not a feature.
     */
-  def consumeEntity(e: ResponseEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
-    Try(e.dataBytes.runWith(Sink.ignore).suspendInIO.unsafeRunSync()).toOption.map(_ => "ignored-content")
+  def consumeEntity(e: ResponseEntity)(implicit mat: ActorMaterializer, sch: Scheduler): Option[String] = {
+    Try(e.dataBytes.runWith(Sink.ignore).suspendInTask.unsafeSyncGet()).toOption.map(_ => "ignored-content")
   }
 
-  def consumeEntity(e: RequestEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
-    Try(e.dataBytes.runWith(Sink.ignore).suspendInIO.unsafeRunSync()).toOption.map(_ => "ignored-content")
+  def consumeEntity(e: RequestEntity)(implicit mat: ActorMaterializer, sch: Scheduler): Option[String] = {
+    Try(e.dataBytes.runWith(Sink.ignore).suspendInTask.unsafeSyncGet()).toOption.map(_ => "ignored-content")
   }
 
-  def stringifyEntity(e: ResponseEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
-    val f: IO[String] = (e.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))).suspendInIO
-    Try(f.unsafeRunSync()).toOption
+  def stringifyEntity(e: ResponseEntity)(implicit mat: ActorMaterializer, sch: Scheduler): Option[String] = {
+    val f: Task[String] = (e.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))).suspendInTask
+    Try(f.unsafeSyncGet()).toOption
   }
 
-  def stringifyEntity(e: RequestEntity)(implicit mat: ActorMaterializer, ec: ExecutionContext): Option[String] = {
-    val f: IO[String] = (e.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))).suspendInIO
-    Try(f.unsafeRunSync()).toOption
+  def stringifyEntity(e: RequestEntity)(implicit mat: ActorMaterializer, sch: Scheduler): Option[String] = {
+    val f: Task[String] = (e.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))).suspendInTask
+    Try(f.unsafeSyncGet()).toOption
   }
 
-  implicit class BuffedResponse(response: HttpResponse)(implicit mat: ActorMaterializer, ec: ExecutionContext) {
+  implicit class BuffedResponse(response: HttpResponse)(implicit mat: ActorMaterializer, sch: Scheduler) {
 
     def stringify: String =
       s"Status: ${response._1}. \nHeaders:\n${stringifyHeaders(response.headers)}.\nEntity:\n${if (response.status != StatusCodes.NotFound) stringifyEntity(response._3)
       else consumeEntity(response._3)}"
   }
 
-  implicit class BuffedRequest(req: HttpRequest)(implicit mat: ActorMaterializer, ec: ExecutionContext) {
+  implicit class BuffedRequest(req: HttpRequest)(implicit mat: ActorMaterializer, sch: Scheduler) {
 
     def stringify: String =
       s"Uri: ${req.uri}\nMethod: ${req.method}\nHeaders:\n${stringifyHeaders(req.headers)}.\nEntity:\n${stringifyEntity(req._4)
@@ -63,7 +63,7 @@ import com.lorandszakacs.sg.http.ExceptionHelpers._
 
 final case class FailedToGetPageException(uri: Uri, req: HttpRequest, response: HttpResponse)(
   implicit mat:                                ActorMaterializer,
-  ec:                                          ExecutionContext
+  sch:                                          Scheduler
 ) extends Exception(
       s"Failed to get page from `${uri.toString}`. Response: ${response.stringify}\nRequest Headers:\n${stringifyHeaders(req.headers)}"
     )
@@ -98,7 +98,7 @@ case object NoSessionFoundException
 
 final case class FailedToPostLoginException(request: HttpRequest, response: HttpResponse)(
   implicit mat:                                      ActorMaterializer,
-  ec:                                                ExecutionContext
+  sch:                                                Scheduler
 ) extends Exception(
       s"Failed at the second step of the login process. Request:\n${request.stringify}Response:\n${response.stringify}\n\n"
     )

@@ -46,7 +46,7 @@ private[exporter] class SGExporterImpl(
     rootIndexTitle = "All SGs"
   )
 
-  private def updateFavoritesHTML(deltaFavorites: List[M])(implicit ws: ExporterSettings): IO[Unit] = {
+  private def updateFavoritesHTML(deltaFavorites: List[M])(implicit ws: ExporterSettings): Task[Unit] = {
     if (deltaFavorites.nonEmpty) {
       for {
         favoritesIndexDelta       <- html.createHTMLPageForMs(deltaFavorites)(FavoritesHtmlSettings)
@@ -61,11 +61,11 @@ private[exporter] class SGExporterImpl(
     }
     else {
       logger.info("-- no delta for favorite")
-      IO.unit
+      Task.unit
     }
   }
 
-  private def updateAllHTML(delta: List[M])(implicit ws: ExporterSettings): IO[Unit] = {
+  private def updateAllHTML(delta: List[M])(implicit ws: ExporterSettings): Task[Unit] = {
     if (delta.nonEmpty) {
       for {
         completeIndex <- repo.completeIndex
@@ -79,11 +79,11 @@ private[exporter] class SGExporterImpl(
     }
     else {
       logger.info("-- no delta for normal ms")
-      IO.unit
+      Task.unit
     }
   }
 
-  override def exportHTMLOfOnlyGivenSubsetOfMs(names: List[Name])(implicit ws: ExporterSettings): IO[Unit] = {
+  override def exportHTMLOfOnlyGivenSubsetOfMs(names: List[Name])(implicit ws: ExporterSettings): Task[Unit] = {
     for {
       ms <- repo.find(names)
       favorites: List[M] = ms.filter(m => Favorites.names.contains(m.name))
@@ -93,7 +93,7 @@ private[exporter] class SGExporterImpl(
     } yield ()
   }
 
-  override def exportDeltaHTMLOfMs(ms: List[M])(implicit ws: ExporterSettings): IO[Unit] = {
+  override def exportDeltaHTMLOfMs(ms: List[M])(implicit ws: ExporterSettings): Task[Unit] = {
     val favorites: List[M] = ms.filter(m => Favorites.names.contains(m.name))
     for {
       _ <- updateFavoritesHTML(favorites)
@@ -101,7 +101,7 @@ private[exporter] class SGExporterImpl(
     } yield ()
   }
 
-  override def exportHTMLIndexOfFavorites(implicit ws: ExporterSettings): IO[Unit] = {
+  override def exportHTMLIndexOfFavorites(implicit ws: ExporterSettings): Task[Unit] = {
     for {
       ms       <- repo.find(Favorites.names)
       favIndex <- html.createHTMLPageForMs(ms)(FavoritesHtmlSettings)
@@ -109,7 +109,7 @@ private[exporter] class SGExporterImpl(
     } yield ()
   }
 
-  override def exportHTMLIndexOfAllMs(implicit ws: ExporterSettings): IO[Unit] = {
+  override def exportHTMLIndexOfAllMs(implicit ws: ExporterSettings): Task[Unit] = {
     for {
       ms         <- repo.findAll
       allMsIndex <- html.createHTMLPageForMs(ms)(AllHtmlSettings)
@@ -119,7 +119,7 @@ private[exporter] class SGExporterImpl(
 
   override def exportLatestForDaysWithDelta(nrOfDays: Int, delta: List[M])(
     implicit ws:                                      ExporterSettings
-  ): IO[Unit] = {
+  ): Task[Unit] = {
     val today     = LocalDate.today()
     val inThePast = today.minusDays(nrOfDays)
     for {
@@ -130,7 +130,7 @@ private[exporter] class SGExporterImpl(
     } yield ()
   }
 
-  override def exportLatestForDays(nrOfDays: Int)(implicit ws: ExporterSettings): IO[Unit] = {
+  override def exportLatestForDays(nrOfDays: Int)(implicit ws: ExporterSettings): Task[Unit] = {
     val today     = LocalDate.today()
     val inThePast = today.minusDays(nrOfDays)
     for {
@@ -141,7 +141,7 @@ private[exporter] class SGExporterImpl(
     } yield ()
   }
 
-  override def prettyPrint(name: Name): IO[String] = {
+  override def prettyPrint(name: Name): Task[String] = {
     for {
       m <- repo.find(name) map (_.getOrElse(throw NameNotFoundException(name)))
     } yield m.setsByNewestFirst.toString

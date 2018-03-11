@@ -2,8 +2,6 @@ package com.lorandszakacs.sg.app
 
 import com.lorandszakacs.util.effects._
 
-import java.util.concurrent.Executors
-
 import akka.actor.ActorSystem
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
 import com.lorandszakacs.sg.exporter.SGExporterAssembly
@@ -19,26 +17,23 @@ import com.typesafe.scalalogging.StrictLogging
   * @since 01 Jul 2017
   *
   */
-class Assembly
-    extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly
+final class Assembly(
+  override val actorSystem: ActorSystem = ActorSystem("sg-app"),
+  override val scheduler:   Scheduler   = Scheduler.io(name = "sg-app")
+) extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly
     with StrictLogging {
 
   override implicit lazy val db: Database = new Database(
     uri    = """mongodb://localhost:27016""",
     dbName = "sgs_repo"
-  )
+  )(scheduler)
 
-  override implicit lazy val actorSystem: ActorSystem = ActorSystem("sg-app")
-
-  override implicit lazy val executionContext: ExecutionContext =
-    ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
-
-  def shutdown(): IO[Unit] = {
+  def shutdown(): Task[Unit] = {
     for {
-      _ <- IO(logger.info("attempting to shutdown and close all resources"))
-      _ <- db.shutdown() >> IO(logger.info("terminated -- database.shutdown()"))
-      _ <- actorSystem.terminate().suspendInIO >> IO(logger.info("terminated -- actorSystem.terminate()"))
-      _ <- IO(logger.info("terminated -- completed assembly.shutdown()"))
+      _ <- Task(logger.info("attempting to shutdown and close all resources"))
+      _ <- db.shutdown() >> Task(logger.info("terminated -- database.shutdown()"))
+//      _ <- actorSystem.terminate().suspendInTask >> Task(logger.info("terminated -- actorSystem.terminate()"))
+      _ <- Task(logger.info("terminated -- completed assembly.shutdown()"))
     } yield ()
   }
 

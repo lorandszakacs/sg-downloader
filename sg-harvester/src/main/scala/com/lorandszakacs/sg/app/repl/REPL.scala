@@ -18,35 +18,30 @@ class REPL(
   private val assembly: com.lorandszakacs.sg.app.Assembly
 ) extends StrictLogging {
 
-  def runIO: IO[Unit] = {
+  def runIO: Task[Unit] = {
     for {
-      _ <- IO(println("type help for instructions"))
+      _ <- Task(println("type help for instructions"))
       _ <- loop(stop = false).recoverWith {
-        case NonFatal(e) => IO(logger.error("the loop somehow broke. terminating", e))
+        case NonFatal(e) => Task(logger.error("the loop somehow broke. terminating", e))
       }
     } yield ()
   }
 
-  private def loop(stop: Boolean): IO[Unit] = {
+  private def loop(stop: Boolean): Task[Unit] = {
     if (stop) {
-      IO.unit
+      Task.unit
     }
     else {
       for {
-        _     <- IO(print("> "))
-        input <- IO(StdIn.readLine().trim())
+        _     <- Task(print("> "))
+        input <- Task(StdIn.readLine().trim())
         _ <- interpreter.interpret(input).attempt.flatMap {
           case Left(thr) =>
-            IO(logger.error(s"failed to interpret command: '$input'", withFilteredStackTrace(thr))) >>
-              IO(print("\n")) >>
+            Task(logger.error(s"failed to interpret command: '$input'", withFilteredStackTrace(thr))) >>
+              Task(print("\n")) >>
               loop(stop = false)
           case Right(c) =>
-            import com.lorandszakacs.util.mongodb.Database
-            assembly.db.connections
-              .map(s => logger.info(s"gc=${Database.connectionCounter.get};; connections=\n$s")) >> {
-              if (c == Commands.Exit) loop(stop = true) else loop(stop = false)
-            }
-
+            if (c == Commands.Exit) loop(stop = true) else loop(stop = false)
         }
       } yield ()
     }

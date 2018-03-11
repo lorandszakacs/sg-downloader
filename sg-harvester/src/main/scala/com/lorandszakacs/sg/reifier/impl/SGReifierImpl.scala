@@ -21,20 +21,20 @@ private[reifier] class SGReifierImpl(
   private val sessionDao: SessionDaoImpl
 )(
   implicit val
-  ec: ExecutionContext
+  sch: Scheduler
 ) extends SGReifier with SGURLBuilder with StrictLogging {
 
   private[this] implicit var _authentication: Authentication = DefaultSGAuthentication
 
-  override def authenticateIfNeeded(): IO[Authentication] = {
+  override def authenticateIfNeeded(): Task[Authentication] = {
     if (authentication.needsRefresh) {
       for {
-        _               <- IO(logger.info("need to authenticate"))
+        _               <- Task(logger.info("need to authenticate"))
         possibleSession <- sessionDao.find
         newAuth <- possibleSession match {
           case Some(session) =>
             val recreate = for {
-              _    <- IO(logger.info("attempting to recreate authentication from stored session"))
+              _    <- Task(logger.info("attempting to recreate authentication from stored session"))
               auth <- sGClient.createAuthentication(session)
             } yield auth
             recreate
@@ -53,7 +53,7 @@ private[reifier] class SGReifierImpl(
           //   r
           // }
 
-          case None => IO.raiseError(NoSessionFoundException)
+          case None => Task.raiseError(NoSessionFoundException)
         }
       } yield {
         _authentication = newAuth
@@ -61,19 +61,19 @@ private[reifier] class SGReifierImpl(
       }
     }
     else {
-      IO.pure(authentication)
+      Task.pure(authentication)
     }
   }
 
-  override def reifySG(sg: SG)(implicit pc: PatienceConfig): IO[SG] = {
+  override def reifySG(sg: SG)(implicit pc: PatienceConfig): Task[SG] = {
     reifyM(SGFactory)(sg)
   }
 
-  override def reifyHF(hf: HF)(implicit pc: PatienceConfig): IO[HF] = {
+  override def reifyHF(hf: HF)(implicit pc: PatienceConfig): Task[HF] = {
     reifyM(HFFactory)(hf)
   }
 
-  override def reifyM(m: M)(implicit pc: PatienceConfig): IO[M] = {
+  override def reifyM(m: M)(implicit pc: PatienceConfig): Task[M] = {
     m match {
       case sg: SG => reifyM(SGFactory)(sg)
       case hf: HF => reifyM(HFFactory)(hf)
@@ -81,40 +81,40 @@ private[reifier] class SGReifierImpl(
 
   }
 
-  private def gatherAllPhotosFromSetPage(photoSetPageUri: URL): IO[List[Photo]] = {
+  private def gatherAllPhotosFromSetPage(photoSetPageUri: URL): Task[List[Photo]] = {
     for {
       photoSetPageHTML <- sGClient.getPage(photoSetPageUri)
-      photos <- IO.fromTry(SGContentParser.parsePhotos(photoSetPageHTML)).recoverWith {
-        case NonFatal(_) => IO.failThr(DidNotFindAnyPhotoLinksOnSetPageException(photoSetPageUri))
+      photos <- Task.fromTry(SGContentParser.parsePhotos(photoSetPageHTML)).recoverWith {
+        case NonFatal(_) => Task.failThr(DidNotFindAnyPhotoLinksOnSetPageException(photoSetPageUri))
       }
 
     } yield photos
   }
 
-  private def reifyM[T <: M](mf: MFactory[T])(m: T)(implicit pc: PatienceConfig): IO[T] = {
-    def reifyPhotoSets(photoSet: PhotoSet): IO[PhotoSet] = {
+  private def reifyM[T <: M](mf: MFactory[T])(m: T)(implicit pc: PatienceConfig): Task[T] = {
+    def reifyPhotoSets(photoSet: PhotoSet): Task[PhotoSet] = {
       pc.throttleQuarterAfter {
         for {
           photos <- this.gatherAllPhotosFromSetPage(photoSet.url) recoverWith {
             case _: DidNotFindAnyPhotoLinksOnSetPageException =>
-              IO(logger.error(s"SGReifier --> reifying: ${photoSet.url} has no photos. `${mf.name} ${m.name.name}`")) >>
-                IO.pure(Nil)
+              Task(logger.error(s"SGReifier --> reifying: ${photoSet.url} has no photos. `${mf.name} ${m.name.name}`")) >>
+                Task.pure(Nil)
             case e: Throwable =>
-              IO(
+              Task(
                 logger.error(
                   s"SGReifier --> reifying: ${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${m.name.name}`",
                   e
                 )
-              ) >> IO.pure(Nil)
+              ) >> Task.pure(Nil)
           }
-          _ <- IO(logger.info(s"SGReifier --> reified: ${mf.name} ${m.name.name} photoset: ${photoSet.url}"))
+          _ <- Task(logger.info(s"SGReifier --> reified: ${mf.name} ${m.name.name} photoset: ${photoSet.url}"))
         } yield photoSet.copy(photos = photos)
       }
     }
     for {
-      _      <- IO(logger.info(s"SGReifier --> reifying: ${mf.name} ${m.name.name}. Expecting ${m.photoSets.length} sets"))
-      result <- IO.serialize(m.photoSets)(reifyPhotoSets)
-      _      <- IO(logger.info(s"reified ${mf.name} ${m.name.name}. Found ${result.length} photo sets."))
+      _      <- Task(logger.info(s"SGReifier --> reifying: ${mf.name} ${m.name.name}. Expecting ${m.photoSets.length} sets"))
+      result <- Task.serialize(m.photoSets)(reifyPhotoSets)
+      _      <- Task(logger.info(s"reified ${mf.name} ${m.name.name}. Found ${result.length} photo sets."))
     } yield
       mf.apply(
         photoSetURL = m.photoSetURL,

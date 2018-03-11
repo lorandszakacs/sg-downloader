@@ -15,8 +15,8 @@ import org.scalatest.FlatSpec
   */
 class SGClientTest extends FlatSpec with URLConversions {
 
-  implicit lazy val as: ActorSystem      = ActorSystem("test-actor-system")
-  implicit lazy val ec: ExecutionContext = as.dispatcher
+  implicit lazy val as: ActorSystem = ActorSystem("test-actor-system")
+  implicit lazy val sch: Scheduler   = Scheduler.global
 
   lazy val client = SGClientImpl()
 
@@ -30,9 +30,9 @@ class SGClientTest extends FlatSpec with URLConversions {
       expiresAt = DateTime.now(DateTimeZone.forID("GMT"))
     )
 
-    implicit val authentication: Authentication = client.createAuthentication(session).unsafeRunSync()
+    implicit val authentication: Authentication = client.createAuthentication(session).unsafeSyncGet()
 
-    val html = client.getPage(s"${core.Domain}/members/odina/album/2745718/do-i-wanna-know/").unsafeRunSync()
+    val html = client.getPage(s"${core.Domain}/members/odina/album/2745718/do-i-wanna-know/").unsafeSyncGet()
     println {
       s"""
          |

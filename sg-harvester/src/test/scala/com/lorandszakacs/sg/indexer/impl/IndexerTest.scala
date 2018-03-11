@@ -16,7 +16,7 @@ import com.lorandszakacs.util.effects._
   */
 trait IndexerTest extends fixture.FlatSpec with ScalaFutures with Matchers {
   implicit val actorSystem:           ActorSystem         = ActorSystem(s"${super.getClass.getSimpleName}")
-  implicit val ec:                    ExecutionContext    = actorSystem.dispatcher
+  implicit val sch:                    Scheduler           = Scheduler.global
   implicit val crawlerPatienceConfig: http.PatienceConfig = http.PatienceConfig()
 
   implicit override def patienceConfig: PatienceConfig =

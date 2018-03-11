@@ -11,13 +11,13 @@ import org.scalatest.{fixture, Matchers, OneInstancePerTest, Outcome}
   *
   */
 class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with Matchers {
-  private implicit val ec: ExecutionContext = ExecutionContext.global
+  private implicit val sch: Scheduler = Scheduler.global
 
   class EntityRepository(
     override protected val db: Database
   )(
     implicit
-    override protected implicit val executionContext: ExecutionContext
+    override protected implicit val scheduler: Scheduler
   ) extends MongoCollection[Entity, String, BSONString] {
     protected implicit def entityHandler: BSONDocumentHandler[Entity] = BSONMacros.handler[Entity]
 
@@ -43,8 +43,8 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
       uri    = """mongodb://localhost:27016""",
       dbName = dbName
     )
-    val repo = new EntityRepository(db)(ec)
-    db.drop().unsafeRunSync()
+    val repo = new EntityRepository(db)(sch)
+    db.drop().unsafeSyncGet()
     val outcome: Outcome = withFixture(test.toNoArgTest(repo))
     val f = if (outcome.isFailed || outcome.isCanceled) {
       db.shutdown()
@@ -55,7 +55,7 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
         _ <- db.shutdown()
       } yield ()
     }
-    f.unsafeRunSync()
+    f.unsafeSyncGet()
     outcome
   }
 
@@ -73,13 +73,13 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     )
 
     withClue("we create") {
-      repo.create(original).unsafeRunSync()
+      repo.create(original).unsafeSyncGet()
     }
 
     withClue("we read") {
       val read = repo
         .find(original.id)
-        .unsafeRunSync()
+        .unsafeSyncGet()
         .getOrElse(
           fail("... expected entity")
         )
@@ -89,13 +89,13 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     val updateNoOpt = original.copy(opt = None)
 
     withClue("we createOrUpdate") {
-      repo.createOrUpdate(updateNoOpt).unsafeRunSync()
+      repo.createOrUpdate(updateNoOpt).unsafeSyncGet()
     }
 
     withClue("we read after update") {
       val read = repo
         .find(updateNoOpt.id)
-        .unsafeRunSync()
+        .unsafeSyncGet()
         .getOrElse(
           fail("... expected entity")
         )
@@ -103,11 +103,11 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     }
 
     withClue("we remove") {
-      repo.remove(original.id).unsafeRunSync()
+      repo.remove(original.id).unsafeSyncGet()
     }
 
     withClue("we read after remove") {
-      val read = repo.find(original.id).unsafeRunSync()
+      val read = repo.find(original.id).unsafeSyncGet()
       assert(read.isEmpty)
     }
   }
@@ -123,12 +123,12 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     )
 
     withClue("we create") {
-      repo.create(original).unsafeRunSync()
+      repo.create(original).unsafeSyncGet()
     }
 
     withClue("we create... again, should get exception") {
       the[MongoDBException] thrownBy {
-        repo.create(original).unsafeRunSync()
+        repo.create(original).unsafeSyncGet()
       }
     }
   }
@@ -156,11 +156,11 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     )
 
     withClue("we create all") {
-      repo.create(List(e1, e2, e3)).unsafeRunSync()
+      repo.create(List(e1, e2, e3)).unsafeSyncGet()
     }
 
     withClue("we get all") {
-      val all = repo.findAll.unsafeRunSync()
+      val all = repo.findAll.unsafeSyncGet()
       assert(List(e1, e2, e3) === all.sortBy(_.id))
     }
 
@@ -170,23 +170,23 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
           $in -> array(e1.id, e2.id)
         )
       )
-      val found = repo.findMany(q).unsafeRunSync()
+      val found = repo.findMany(q).unsafeSyncGet()
       assert(List(e1, e2) == found.sortBy(_.id))
     }
 
     withClue("we get only ones with IDS 1, 2 -- id method") {
-      val found = repo.findManyById(List(e1.id, e2.id)).unsafeRunSync()
+      val found = repo.findManyById(List(e1.id, e2.id)).unsafeSyncGet()
       assert(List(e1, e2) == found.sortBy(_.id))
     }
 
     val e1U = e1.copy(opt = None)
     val e2U = e2.copy(opt = None)
     withClue("bulk update two") {
-      repo.createOrUpdate(List(e1U, e2U)).unsafeRunSync()
+      repo.createOrUpdate(List(e1U, e2U)).unsafeSyncGet()
     }
 
     withClue("get all after bulk update of two") {
-      val all = repo.findAll.unsafeRunSync()
+      val all = repo.findAll.unsafeSyncGet()
       assert(List(e1U, e2U, e3) == all.sortBy(_.id))
     }
   }
@@ -213,11 +213,11 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     )
 
     withClue("we create all") {
-      repo.create(List(e1, e2, e3)).unsafeRunSync()
+      repo.create(List(e1, e2, e3)).unsafeSyncGet()
     }
 
     withClue("we get all") {
-      val all = repo.findAll.unsafeRunSync()
+      val all = repo.findAll.unsafeSyncGet()
       assert(List(e1, e2, e3) === all.sortBy(_.id))
     }
 
@@ -225,13 +225,13 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     val e2U = e2.copy(opt = None)
     withClue("bulk update two") {
       the[MongoDBException] thrownBy {
-        repo.create(List(e1U, e2U)).unsafeRunSync()
+        repo.create(List(e1U, e2U)).unsafeSyncGet()
       }
 
     }
 
     withClue("get all after failed bulk update, they should be ok") {
-      val all = repo.findAll.unsafeRunSync()
+      val all = repo.findAll.unsafeSyncGet()
       assert(List(e1, e2, e3) == all.sortBy(_.id))
     }
   }

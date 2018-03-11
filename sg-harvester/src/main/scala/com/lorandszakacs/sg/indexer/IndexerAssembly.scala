@@ -14,7 +14,7 @@ import com.lorandszakacs.util.effects._
 trait IndexerAssembly extends SGClientAssembly {
   implicit def actorSystem: ActorSystem
 
-  implicit def executionContext: ExecutionContext
+  implicit def scheduler: Scheduler
 
   def sgIndexer: SGIndexer = _sgIndexerImpl
 

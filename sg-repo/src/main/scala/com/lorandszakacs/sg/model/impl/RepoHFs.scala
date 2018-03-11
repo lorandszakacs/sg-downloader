@@ -10,9 +10,8 @@ import com.lorandszakacs.util.effects._
   * @since 14 Jul 2017
   *
   */
-private[impl] class RepoHFs(override protected val db: Database)(
-  implicit override val executionContext:              ExecutionContext
-) extends MRepo[HF](hfIdentifier) with SGRepoBSON {
+private[impl] class RepoHFs(override protected val db: Database)(implicit override val scheduler: Scheduler)
+    extends MRepo[HF](hfIdentifier) with SGRepoBSON {
 
   override val collectionName: String = "hfs"
   override protected implicit val entityHandler: BSONDocumentHandler[HF] =

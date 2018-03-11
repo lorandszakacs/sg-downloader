@@ -24,9 +24,9 @@ trait SGClient {
     * on username, password authentication
     *
     */
-  def getPage(uri: URL)(implicit authentication: Authentication): IO[Html]
+  def getPage(uri: URL)(implicit authentication: Authentication): Task[Html]
 
-  def createAuthentication(session: Session): IO[Authentication]
+  def createAuthentication(session: Session): Task[Authentication]
 
   /**
     * Website now has google reCAPTCHA, so it's hard to logon, but you can manually create
@@ -34,7 +34,7 @@ trait SGClient {
     * the tokens from the browser.
     */
   @scala.deprecated("use createAuthentication", "2018")
-  def brokenAuthenticate(username: String, plainTextPassword: String): IO[Authentication]
+  def brokenAuthenticate(username: String, plainTextPassword: String): Task[Authentication]
 }
 
 trait Authentication {

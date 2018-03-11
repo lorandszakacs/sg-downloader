@@ -12,30 +12,30 @@ import com.lorandszakacs.util.time._
   *
   */
 trait SGAndHFRepository {
-  def reindexSGs(names: List[Name]): IO[Unit]
+  def reindexSGs(names: List[Name]): Task[Unit]
 
-  def reindexHFs(names: List[Name]): IO[Unit]
+  def reindexHFs(names: List[Name]): Task[Unit]
 
-  def markAsIndexed(newHFs: List[HF], newSGs: List[SG]): IO[Unit]
+  def markAsIndexed(newHFs: List[HF], newSGs: List[SG]): Task[Unit]
 
-  def markAsIndexedForNames(newHFs: List[Name], newSGs: List[Name]): IO[Unit]
+  def markAsIndexedForNames(newHFs: List[Name], newSGs: List[Name]): Task[Unit]
 
-  def createOrUpdateLastProcessed(l: LastProcessedMarker): IO[Unit]
+  def createOrUpdateLastProcessed(l: LastProcessedMarker): Task[Unit]
 
-  def lastProcessedIndex: IO[Option[LastProcessedMarker]]
+  def lastProcessedIndex: Task[Option[LastProcessedMarker]]
 
-  def completeIndex: IO[CompleteIndex]
+  def completeIndex: Task[CompleteIndex]
 
   /**
     * Updates or creates [[SG]], removes the name from [[SGIndex.needsReindexing]]
     */
-  def createOrUpdateSGs(sgs: List[SG]): IO[Unit]
+  def createOrUpdateSGs(sgs: List[SG]): Task[Unit]
 
   /**
     * Updates or creates [[HF]], removes the name from [[HFIndex.needsReindexing]]
     *
     */
-  def createOrUpdateHFs(hfs: List[HF]): IO[Unit]
+  def createOrUpdateHFs(hfs: List[HF]): Task[Unit]
 
   /**
     * Returns the Ms which had a on any given day between the two dates given as parameters
@@ -44,13 +44,13 @@ trait SGAndHFRepository {
     *
     * i.e. Ms parameter is a delta of sorts
     */
-  def aggregateBetweenDays(start: LocalDate, end: LocalDate, ms: List[M] = Nil): IO[List[(LocalDate, List[M])]]
+  def aggregateBetweenDays(start: LocalDate, end: LocalDate, ms: List[M] = Nil): Task[List[(LocalDate, List[M])]]
 
-  def find(name: Name): IO[Option[M]]
+  def find(name: Name): Task[Option[M]]
 
-  def find(names: Seq[Name]): IO[List[M]]
+  def find(names: Seq[Name]): Task[List[M]]
 
-  def findAll: IO[List[M]]
+  def findAll: Task[List[M]]
 
 }
 

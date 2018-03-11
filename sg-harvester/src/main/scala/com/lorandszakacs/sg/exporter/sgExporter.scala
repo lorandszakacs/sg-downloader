@@ -13,7 +13,7 @@ import com.lorandszakacs.util.effects._
   *
   */
 trait SGExporter {
-  def prettyPrint(name: Name): IO[String]
+  def prettyPrint(name: Name): Task[String]
 
   /**
     * Only exports the given [[Name]]s. with the data
@@ -30,7 +30,7 @@ trait SGExporter {
     *
     * @return
     */
-  def exportHTMLOfOnlyGivenSubsetOfMs(ms: List[Name])(implicit ws: ExporterSettings): IO[Unit]
+  def exportHTMLOfOnlyGivenSubsetOfMs(ms: List[Name])(implicit ws: ExporterSettings): Task[Unit]
 
   /**
     * Only exports the given [[M]]s.
@@ -46,30 +46,30 @@ trait SGExporter {
     *
     * @return
     */
-  def exportDeltaHTMLOfMs(ms: List[M])(implicit ws: ExporterSettings): IO[Unit]
+  def exportDeltaHTMLOfMs(ms: List[M])(implicit ws: ExporterSettings): Task[Unit]
 
   /**
     * Create a navigable HTML webpage at [[ExporterSettings.favoritesRootFolderPath]]
     *
     */
-  def exportHTMLIndexOfFavorites(implicit ws: ExporterSettings): IO[Unit]
+  def exportHTMLIndexOfFavorites(implicit ws: ExporterSettings): Task[Unit]
 
   /**
     * Create a navigable HTML webpage at [[ExporterSettings.allMsRootFolderPath]]
     */
-  def exportHTMLIndexOfAllMs(implicit ws: ExporterSettings): IO[Unit]
+  def exportHTMLIndexOfAllMs(implicit ws: ExporterSettings): Task[Unit]
 
   /**
     * Creates and HTML webpage at [[ExporterSettings.newestRootFolderPath]] containing
     * the newest sets, grouped per days, for the past ``nrOfDays``.
     */
-  def exportLatestForDays(nrOfDays: Int)(implicit ws: ExporterSettings): IO[Unit]
+  def exportLatestForDays(nrOfDays: Int)(implicit ws: ExporterSettings): Task[Unit]
 
   /**
     * Same as [[exportLatestForDays]] but adds in to the already existing Ms
     * the delta passed as parameter
     */
-  def exportLatestForDaysWithDelta(nrOfDays: Int, delta: List[M])(implicit ws: ExporterSettings): IO[Unit]
+  def exportLatestForDaysWithDelta(nrOfDays: Int, delta: List[M])(implicit ws: ExporterSettings): Task[Unit]
 
 }
 

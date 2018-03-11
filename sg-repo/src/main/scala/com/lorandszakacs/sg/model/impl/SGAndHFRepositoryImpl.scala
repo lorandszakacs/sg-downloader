@@ -14,8 +14,8 @@ import com.lorandszakacs.util.time._
   *
   */
 private[model] class SGAndHFRepositoryImpl(
-  val db:          Database
-)(implicit val ec: ExecutionContext)
+  val db:           Database
+)(implicit val sch: Scheduler)
     extends SGAndHFRepository with StrictLogging {
 
   private val sgsRepo = new RepoSGs(db)
@@ -24,31 +24,31 @@ private[model] class SGAndHFRepositoryImpl(
   private val hfiRepo = new RepoHFIndex(db)
   private val lpmRepo = new RepoLastProcessedMarker(db)
 
-  override def reindexSGs(names: List[Name]): IO[Unit] = {
+  override def reindexSGs(names: List[Name]): Task[Unit] = {
     sgiRepo.rewriteIndex(names)
   }
 
-  override def reindexHFs(names: List[Name]): IO[Unit] = {
+  override def reindexHFs(names: List[Name]): Task[Unit] = {
     hfiRepo.rewriteIndex(names)
   }
 
-  override def markAsIndexed(newHFs: List[HF], newSGs: List[SG]): IO[Unit] = {
+  override def markAsIndexed(newHFs: List[HF], newSGs: List[SG]): Task[Unit] = {
     markAsIndexedForNames(
       newHFs = newHFs.map(_.name),
       newSGs = newSGs.map(_.name)
     )
   }
 
-  override def markAsIndexedForNames(newHFs: List[Name], newSGs: List[Name]): IO[Unit] = {
+  override def markAsIndexedForNames(newHFs: List[Name], newSGs: List[Name]): Task[Unit] = {
 
     /**
       *
       * @return
       * HFs that became SGS
       */
-    def updateHF(newHFs: List[Name]): IO[List[Name]] = {
+    def updateHF(newHFs: List[Name]): Task[List[Name]] = {
       if (newHFs.isEmpty) {
-        IO.pure(Nil)
+        Task.pure(Nil)
       }
       else {
         for {
@@ -63,16 +63,16 @@ private[model] class SGAndHFRepositoryImpl(
               ikdHFs.needsReindexing.diff(newHFs).filterNot(n => hfsThatBecameSGS.contains(n.stripUnderscore))
           )
           _ <- hfiRepo.createOrUpdate(newHFIndex)
-          _ <- IO.traverse(hfsThatBecameSGS) { hfName =>
+          _ <- Task.traverse(hfsThatBecameSGS) { hfName =>
             hfsRepo.remove(hfName)
           }
         } yield hfsThatBecameSGS
       }
     }
 
-    def updateSGs(newSGs: List[Name]): IO[Unit] = {
+    def updateSGs(newSGs: List[Name]): Task[Unit] = {
       if (newSGs.isEmpty) {
-        IO.unit
+        Task.unit
       }
       else {
         for {
@@ -97,15 +97,15 @@ private[model] class SGAndHFRepositoryImpl(
     }
   }
 
-  override def createOrUpdateLastProcessed(l: LastProcessedMarker): IO[Unit] = {
+  override def createOrUpdateLastProcessed(l: LastProcessedMarker): Task[Unit] = {
     lpmRepo.createOrUpdate(l)
   }
 
-  override def lastProcessedIndex: IO[Option[LastProcessedMarker]] = {
+  override def lastProcessedIndex: Task[Option[LastProcessedMarker]] = {
     lpmRepo.find
   }
 
-  def completeIndex: IO[CompleteIndex] = {
+  def completeIndex: Task[CompleteIndex] = {
     for {
       hfIndex <- hfiRepo.get
       sgIndex <- sgiRepo.get
@@ -120,14 +120,14 @@ private[model] class SGAndHFRepositoryImpl(
     }
   }
 
-  override def createOrUpdateSGs(sgs: List[SG]): IO[Unit] = {
+  override def createOrUpdateSGs(sgs: List[SG]): Task[Unit] = {
     for {
       _ <- sgsRepo.createOrUpdate(sgs)
       _ <- this.markAsIndexed(newHFs = Nil, newSGs = sgs)
     } yield ()
   }
 
-  override def createOrUpdateHFs(hfs: List[HF]): IO[Unit] = {
+  override def createOrUpdateHFs(hfs: List[HF]): Task[Unit] = {
     for {
       _ <- hfsRepo.createOrUpdate(hfs)
       _ <- this.markAsIndexed(newHFs = hfs, newSGs = Nil)
@@ -146,7 +146,7 @@ private[model] class SGAndHFRepositoryImpl(
     start: LocalDate,
     end:   LocalDate,
     ms:    List[M]
-  ): IO[List[(LocalDate, List[M])]] = {
+  ): Task[List[(LocalDate, List[M])]] = {
     for {
       sgs <- sgsRepo.findBetweenDays(start, end)
       hfs <- hfsRepo.findBetweenDays(start, end)
@@ -157,21 +157,21 @@ private[model] class SGAndHFRepositoryImpl(
     } yield result
   }
 
-  override def find(name: Name): IO[Option[M]] = {
+  override def find(name: Name): Task[Option[M]] = {
     for {
       sg <- sgsRepo.find(name)
       hf <- hfsRepo.find(name)
     } yield if (sg.isDefined) sg else hf
   }
 
-  override def find(names: Seq[Name]): IO[List[M]] = {
+  override def find(names: Seq[Name]): Task[List[M]] = {
     for {
       sgs <- sgsRepo.findManyById(names)
       hfs <- hfsRepo.findManyById(names)
     } yield (sgs ++ hfs).sortBy(_.name)
   }
 
-  override def findAll: IO[List[M]] = {
+  override def findAll: Task[List[M]] = {
     for {
       sgs <- sgsRepo.findAll
       hfs <- hfsRepo.findAll

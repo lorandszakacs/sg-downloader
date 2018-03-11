@@ -12,7 +12,7 @@ import com.lorandszakacs.util.effects._
   */
 private[exporter] trait HTMLGeneratorAssembly {
 
-  implicit def executionContext: ExecutionContext
+  implicit def scheduler: Scheduler
 
   private[exporter] def htmlGenerator: HTMLGenerator = _htmlGenerator
 
