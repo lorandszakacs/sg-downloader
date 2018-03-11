@@ -27,36 +27,29 @@ import com.github.nscala_time.time.Imports._
   * @since 17 Jul 2016
   *
   */
-private[html] class HTMLGeneratorImpl()(
-  implicit val sch: Scheduler
-) extends HTMLGenerator {
+private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
 
   private val RootPath1 = ".."
   private val RootPath2 = "../.."
   private val RootPath3 = "../../.."
 
   override def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): Task[MRootIndex] = {
-    def serialized(ms: List[M]): Task[List[MIndex]] = {
-      Task.serialize(ms) { m: M =>
-        Task(mIndex(m))
-      }
-    }
     val grouped = ms.grouped(100)
     for {
       mIndexes <- Task.traverse(grouped) { batch =>
-        serialized(batch)
+        Task.traverse(batch)(m => Task(mIndex(m)))
       }
-    } yield {
-      val flattened = mIndexes.flatten.toList
+      flattened = mIndexes.flatten.toList
+      html <- Task(rootIndexPage(flattened))
+    } yield
       MRootIndex(
-        html = rootIndexPage(flattened),
+        html = html,
         ms   = flattened
       )
-    }
   }
 
   override def createRootIndex(ms: List[Name])(implicit settings: HtmlSettings): Task[Html] = {
-    Task.pure(rootIndexPageForNames(ms))
+    Task(rootIndexPageForNames(ms))
   }
 
   /**

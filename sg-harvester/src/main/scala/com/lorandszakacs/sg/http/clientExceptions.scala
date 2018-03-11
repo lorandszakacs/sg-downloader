@@ -62,8 +62,9 @@ private[http] object ExceptionHelpers {
 import com.lorandszakacs.sg.http.ExceptionHelpers._
 
 final case class FailedToGetPageException(uri: Uri, req: HttpRequest, response: HttpResponse)(
-  implicit mat:                                ActorMaterializer,
-  sch:                                          Scheduler
+  implicit
+  mat: ActorMaterializer,
+  sch: Scheduler
 ) extends Exception(
       s"Failed to get page from `${uri.toString}`. Response: ${response.stringify}\nRequest Headers:\n${stringifyHeaders(req.headers)}"
     )
@@ -98,7 +99,7 @@ case object NoSessionFoundException
 
 final case class FailedToPostLoginException(request: HttpRequest, response: HttpResponse)(
   implicit mat:                                      ActorMaterializer,
-  sch:                                                Scheduler
+  sch:                                               Scheduler
 ) extends Exception(
       s"Failed at the second step of the login process. Request:\n${request.stringify}Response:\n${response.stringify}\n\n"
     )

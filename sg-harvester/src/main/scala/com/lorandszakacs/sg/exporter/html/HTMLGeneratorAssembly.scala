@@ -2,8 +2,6 @@ package com.lorandszakacs.sg.exporter.html
 
 import com.lorandszakacs.sg.exporter.html.impl.HTMLGeneratorImpl
 
-import com.lorandszakacs.util.effects._
-
 /**
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com
@@ -11,8 +9,6 @@ import com.lorandszakacs.util.effects._
   *
   */
 private[exporter] trait HTMLGeneratorAssembly {
-
-  implicit def scheduler: Scheduler
 
   private[exporter] def htmlGenerator: HTMLGenerator = _htmlGenerator
 

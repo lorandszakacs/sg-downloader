@@ -25,8 +25,7 @@ final class SGDownloader private[downloader] (
   private[this] val indexer:  SGIndexer,
   private[this] val reifier:  SGReifier,
   private[this] val exporter: SGExporter
-)(implicit val scheduler:     Scheduler)
-    extends StrictLogging {
+) extends StrictLogging {
 
   /**
     * Used for commands that act on the entire repository

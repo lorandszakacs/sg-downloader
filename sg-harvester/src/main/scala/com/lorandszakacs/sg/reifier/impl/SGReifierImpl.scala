@@ -19,9 +19,6 @@ import com.typesafe.scalalogging.StrictLogging
 private[reifier] class SGReifierImpl(
   private val sGClient:   SGClient,
   private val sessionDao: SessionDaoImpl
-)(
-  implicit val
-  sch: Scheduler
 ) extends SGReifier with SGURLBuilder with StrictLogging {
 
   private[this] implicit var _authentication: Authentication = DefaultSGAuthentication

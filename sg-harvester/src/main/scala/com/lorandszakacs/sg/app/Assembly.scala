@@ -28,7 +28,7 @@ final class Assembly(
     dbName = "sgs_repo"
   )(scheduler)
 
-  def shutdown(): Task[Unit] = {
+  lazy val shutdownTask: Task[Unit] = {
     for {
       _ <- Task(logger.info("attempting to shutdown and close all resources"))
       _ <- db.shutdown() >> Task(logger.info("terminated -- database.shutdown()"))

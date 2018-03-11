@@ -2,8 +2,6 @@ package com.lorandszakacs.sg.exporter.indexwriter
 
 import com.lorandszakacs.sg.exporter.indexwriter.impl.HTMLIndexWriterImpl
 
-import com.lorandszakacs.util.effects._
-
 /**
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com
@@ -11,8 +9,6 @@ import com.lorandszakacs.util.effects._
   *
   */
 private[exporter] trait HTMLIndexWriterAssembly {
-
-  implicit def scheduler: Scheduler
 
   def htmlIndexWriter: HTMLIndexWriterImpl = _htmlIndexWriter
 

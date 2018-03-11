@@ -18,7 +18,7 @@ class REPL(
   private val assembly: com.lorandszakacs.sg.app.Assembly
 ) extends StrictLogging {
 
-  def runIO: Task[Unit] = {
+  def runTask: Task[Unit] = {
     for {
       _ <- Task(println("type help for instructions"))
       _ <- loop(stop = false).recoverWith {

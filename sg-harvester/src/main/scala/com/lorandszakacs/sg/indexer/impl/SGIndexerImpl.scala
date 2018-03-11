@@ -25,7 +25,7 @@ import scala.collection.mutable.ListBuffer
   * @since 03 Jul 2016
   *
   */
-private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val sch: Scheduler)
+private[indexer] final class SGIndexerImpl(val sGClient: SGClient)
     extends SGIndexer with SGURLBuilder with StrictLogging {
 
   private[this] implicit val Authentication: Authentication = DefaultSGAuthentication
@@ -243,7 +243,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)(implicit val 
 
       while (!stop) {
         val newURI  = offsetUri(uri, offset)
-        val newPage = sGClient.getPage(newURI).unsafeSyncGet() //FIXME: write in a pure way
+        val newPage = sGClient.getPage(newURI).unsafeSyncGet()(Scheduler.global) //FIXME: write in a pure way
         offset += offsetStep
         if (isEndPage(newPage) || offset > cutOffLimit) {
           stop = true

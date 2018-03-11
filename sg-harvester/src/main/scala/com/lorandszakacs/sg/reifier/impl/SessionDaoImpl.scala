@@ -14,9 +14,11 @@ import com.lorandszakacs.util.time._
   *
   */
 private[reifier] final class SessionDaoImpl(
-  override protected val db:       Database
-)(implicit override val scheduler: Scheduler)
-    extends SingleDocumentMongoCollection[Session, String, BSONString] with StrictLogging {
+  override protected val db: Database
+)(
+  implicit
+  override val scheduler: Scheduler
+) extends SingleDocumentMongoCollection[Session, String, BSONString] with StrictLogging {
 
   private[reifier] implicit val dateTimeHandler
     : BSONReader[BSONDateTime, DateTime] with BSONWriter[DateTime, BSONDateTime] with BSONHandler[

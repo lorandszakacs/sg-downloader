@@ -17,7 +17,7 @@ import com.typesafe.scalalogging.StrictLogging
   * @since 17 Jul 2016
   *
   */
-private[indexwriter] class HTMLIndexWriterImpl()(implicit val sch: Scheduler)
+private[indexwriter] class HTMLIndexWriterImpl()
     extends HTMLIndexWriter with StrictLogging {
 
   override def writeRootMIndex(index: MRootIndex)(implicit ws: WriterSettings): Task[Unit] = {

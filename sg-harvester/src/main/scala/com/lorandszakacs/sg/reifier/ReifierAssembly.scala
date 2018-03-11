@@ -1,6 +1,5 @@
 package com.lorandszakacs.sg.reifier
 
-import akka.actor.ActorSystem
 import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.reifier.impl.{SGReifierImpl, SessionDaoImpl}
 import com.lorandszakacs.util.mongodb.Database
@@ -15,8 +14,6 @@ import com.lorandszakacs.util.effects._
   */
 trait ReifierAssembly extends SGClientAssembly {
   def db: Database
-
-  implicit def actorSystem: ActorSystem
 
   implicit def scheduler: Scheduler
 

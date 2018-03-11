@@ -304,7 +304,7 @@ class SGIndexerTests extends IndexerTest {
 
   override protected def withFixture(test: OneArgTest): Outcome = {
     val assembly = new IndexerAssembly with SGClientAssembly {
-      override implicit def actorSystem: ActorSystem = SGIndexerTests.this.actorSystem
+      override implicit def actorSystem: ActorSystem = SGIndexerTests.this.as
 
       override implicit def scheduler: Scheduler = SGIndexerTests.this.sch
     }
