@@ -2,10 +2,6 @@ package com.lorandszakacs.util.future
 
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-import scala.language.postfixOps
-
 /**
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com
@@ -46,7 +42,7 @@ class FutureSerializeTest extends FlatSpec with Matchers {
       }
     }
 
-    val result = Await.result(eventualResult, 1 minute)
+    val result = eventualResult.await()
     assertResult(expected = expected, "unequal lists")(actual = result)
   }
 
@@ -78,7 +74,7 @@ class FutureSerializeTest extends FlatSpec with Matchers {
       }
     }
 
-    val result = Await.result(eventualResult, 1 minute)
+    val result = eventualResult.await()
     assertResult(expected = expected, "unequal lists")(actual = result)
   }
 
@@ -105,7 +101,7 @@ class FutureSerializeTest extends FlatSpec with Matchers {
       }
     }
 
-    val result = Await.result(eventualResult, 1 minute)
+    val result = eventualResult.await()
     assertResult(expected = expected, "unequal lists")(actual = result)
   }
 

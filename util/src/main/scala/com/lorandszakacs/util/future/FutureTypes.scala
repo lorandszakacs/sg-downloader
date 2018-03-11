@@ -17,11 +17,6 @@ trait FutureTypes {
   val ExecutionContext: concurrent.ExecutionContext.type = concurrent.ExecutionContext
   type ExecutionContext = concurrent.ExecutionContext
 
-  val `Any => Unit`: Any => Unit = { _ =>
-    ()
-  }
-
-  val `Any => Future[Unit]` : Any => Future[Unit] = { _ =>
-    Future.unit
-  }
+  type IO[+A] = cats.effect.IO[A]
+  val IO: cats.effect.IO.type = cats.effect.IO
 }

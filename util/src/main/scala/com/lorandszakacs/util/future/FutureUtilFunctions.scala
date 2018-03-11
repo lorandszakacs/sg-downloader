@@ -2,8 +2,6 @@ package com.lorandszakacs.util.future
 
 import scala.collection.generic.CanBuildFrom
 import scala.collection.mutable
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
 /**
@@ -81,6 +79,8 @@ trait FutureUtilFunctions {
     * like a REPL, should be used with care
     */
   implicit class FutureAwait[T](f: Future[T]) {
+    import scala.concurrent.Await
+    import scala.concurrent.duration._
     def await(duration: FiniteDuration = 2 minutes): T = Await.result(f, duration)
   }
 }
