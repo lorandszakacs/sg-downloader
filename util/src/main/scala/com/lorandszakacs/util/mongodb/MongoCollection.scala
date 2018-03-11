@@ -40,7 +40,7 @@ object MongoCollection {
     )
   }
 
-  private def interpretWriteResult(wr: MultiBulkWriteResult)(implicit ec: ExecutionContext): IO[Unit] = {
+  private def interpretWriteResult(wr: MultiBulkWriteResult): IO[Unit] = {
     for {
       _ <- when(!wr.ok) failWith MongoDBException(
             code = wr.code.map(_.toString),

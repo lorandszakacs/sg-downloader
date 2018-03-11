@@ -19,8 +19,7 @@ private[exporter] class SGExporterImpl(
   val repo:       SGAndHFRepository,
   val html:       HTMLGenerator,
   val fileWriter: HTMLIndexWriter
-)(implicit ec:    ExecutionContext)
-    extends SGExporter with StrictLogging {
+) extends SGExporter with StrictLogging {
 
   private val FavoritesHtmlSettings = HtmlSettings(
     indexFileName  = "index.html",

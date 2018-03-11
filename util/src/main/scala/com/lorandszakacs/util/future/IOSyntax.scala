@@ -44,13 +44,13 @@ trait IOSyntax {
 
   final class FailWithWordIO private[IOSyntax] (val ioCondition: IO[Boolean]) {
 
-    def failWith(exn: => Throwable)(implicit ec: ExecutionContext): IO[Unit] = {
+    def failWith(exn: => Throwable): IO[Unit] = {
       ioCondition flatMap { condition =>
         if (condition) IO.raiseError(exn) else IO.unit
       }
     }
 
-    def execute(exn: => IO[Unit])(implicit ec: ExecutionContext): IO[Unit] = {
+    def execute(exn: => IO[Unit]): IO[Unit] = {
       ioCondition flatMap { condition =>
         if (condition) exn else IO.unit
       }

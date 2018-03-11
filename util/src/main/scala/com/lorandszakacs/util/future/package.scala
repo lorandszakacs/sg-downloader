@@ -6,4 +6,4 @@ package com.lorandszakacs.util
   * @since 26 Jun 2017
   *
   */
-package object future extends AsyncTypes with FutureUtilFunctions with IOSyntax with cats.syntax.AllSyntax with cats.instances.AllInstances
+package object future extends AsyncTypes with IOUtilFunctions with IOSyntax with cats.syntax.AllSyntax with cats.instances.AllInstances

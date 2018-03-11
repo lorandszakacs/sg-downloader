@@ -5,8 +5,6 @@ import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
-import scala.concurrent.duration._
-import scala.language.postfixOps
 import scala.util.control.NonFatal
 
 /**
@@ -18,8 +16,6 @@ import scala.util.control.NonFatal
 class CommandLineInterpreter(
   assembly: SGDownloaderAssembly
 ) extends StrictLogging {
-
-  private implicit val executionContext: ExecutionContext = assembly.executionContext
 
   private val defaultDays = 160
 

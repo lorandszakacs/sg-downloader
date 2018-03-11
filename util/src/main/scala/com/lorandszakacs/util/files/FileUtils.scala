@@ -25,7 +25,7 @@ object FileUtils extends StrictLogging {
   /**
     * recursively deletes everything in the specified folder
     */
-  def cleanFolderOrCreate(fd: Path)(implicit ec: ExecutionContext): IO[Unit] = IO {
+  def cleanFolderOrCreate(fd: Path): IO[Unit] = IO {
     fd.toAbsolutePath.toFile.mkdirs()
     Files.walkFileTree(
       fd,
@@ -85,7 +85,7 @@ object FileUtils extends StrictLogging {
     }
   }
 
-  def findPotentialDuplicates(fd: Path)(implicit ec: ExecutionContext): IO[Set[Set[String]]] = IO {
+  def findPotentialDuplicates(fd: Path): IO[Set[Set[String]]] = IO {
     def tailsMatch(s1: String, s2: String): Boolean = {
       fileMatchInEverythingButDate(s1, s2)
     }
@@ -136,7 +136,7 @@ object FileUtils extends StrictLogging {
     acc.toSet
   }
 
-  def createFolders(fd: Path)(implicit ec: ExecutionContext): IO[Unit] = {
+  def createFolders(fd: Path): IO[Unit] = {
     val f = fd.toAbsolutePath.toFile
     for {
       result <- IO(f.mkdirs())
@@ -148,7 +148,7 @@ object FileUtils extends StrictLogging {
     * Does NOT overwrite file!
     *
     */
-  def writeFile(fp: Path, content: String)(implicit ec: ExecutionContext): IO[Unit] = IO {
+  def writeFile(fp: Path, content: String): IO[Unit] = IO {
     val writer = new PrintWriter(fp.toAbsolutePath.toFile)
     Try(writer.write(content)) match {
       case Success(_) =>
@@ -159,7 +159,7 @@ object FileUtils extends StrictLogging {
     }
   }
 
-  def overwriteFile(fp: Path, content: String)(implicit ec: ExecutionContext): IO[Unit] = IO {
+  def overwriteFile(fp: Path, content: String): IO[Unit] = IO {
     val file = fp.toAbsolutePath.toFile
     if (file.exists()) {
       file.delete()
