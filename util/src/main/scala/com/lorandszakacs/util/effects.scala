@@ -15,7 +15,8 @@ object effects
     with TrySyntax.Implicits with TrySyntaxAsync.Implcits with EitherSyntax.Implicits with EitherSyntaxAsync.Implcits
     with ResultTypeDefinitions with ResultCompanionAliases with ResultSyntax.Implicits with ResultSyntaxAsync.Implcits
     with FutureTypeDefinitions with FutureSyntax.Implicits with IOTypeDefinitions with IOSyntax.Implicits
-    with cats.instances.AllInstances with cats.syntax.AllSyntax with ListUtilFunctions {
+    with TaskTypeDefinitions with TaskSyntax.Implicits with cats.instances.AllInstances with cats.syntax.AllSyntax
+    with ListUtilFunctions {
 
   val NonFatal: scala.util.control.NonFatal.type = scala.util.control.NonFatal
 }
