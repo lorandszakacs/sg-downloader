@@ -26,7 +26,7 @@ object CommandParser extends JavaTokenParsers {
           )
         }
       case _: NoSuccess =>
-        scala.util.Failure[Command](new IllegalArgumentException(s"failed to parse command: $s"))
+        scala.util.Failure[Command](new IllegalArgumentException(s"failed to parse command: '$s'"))
     }
   }
 

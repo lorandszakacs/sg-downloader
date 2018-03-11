@@ -5,8 +5,6 @@ import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
-import scala.util.control.NonFatal
-
 /**
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
@@ -19,33 +17,22 @@ class CommandLineInterpreter(
 
   private val defaultDays = 160
 
-  def interpretArgs(args: Array[String]): Option[Command] = {
+  def interpretArgs(args: Array[String]): IO[Unit] = {
     assert(args.nonEmpty, "why did you call the command line evaluator if you have no command line args?")
     val stringArgs = args.mkString(" ")
 
-    this.interpret(stringArgs)
+    this.interpret(stringArgs).discardValue
   }
 
-  def interpret(args: String): Option[Command] = {
-    val ecx = eventualInterpretation(args).map(Option.apply) recover {
-      case NonFatal(e) =>
-        logger.error(s"Failed to evaluate command: $args", e)
-        None
-    }
-    ecx.unsafeRunSync()
+  def interpret(args: String): IO[Command] = {
+    eventualInterpretation(args)
   }
 
   private val downloader = assembly.sgDownloader
 
   private def eventualInterpretation(args: String): IO[Command] = {
-    val triedCommand = CommandParser.parseCommand(args) recoverWith {
-      case NonFatal(e) =>
-        logger.error(s"failed to parse command: '$args'", e)
-        scala.util.Failure(e)
-    }
-
     for {
-      command <- IO fromTry triedCommand
+      command <- IO fromTry CommandParser.parseCommand(args)
       _       <- interpretCommand(command)
     } yield command
   }
@@ -74,26 +61,21 @@ class CommandLineInterpreter(
 
       //=======================================================================
       case Commands.Show(name) =>
-        print("\n***************\n")
-
-        downloader.show(name).map(s => println(s))
+        IO(print("\n***************\n")) >>
+          downloader.show(name).map(s => println(s))
       //=======================================================================
       case Commands.Favorites =>
-        print("\n***************\n")
-        downloader.show.favorites.map(s => println(s))
+        IO(print("\n***************\n")) >>
+          downloader.show.favorites.map(s => println(s))
       //=======================================================================
       case Commands.Help =>
-        IO.pure {
-          val string = Commands.descriptions.map { c =>
-            c.fullDescription
-          } mkString "\n\n----------------\n\n"
-          print(s"----------------\n$string\n")
-        }
+        val string = Commands.descriptions.map { c =>
+          c.fullDescription
+        } mkString "\n\n----------------\n\n"
+        IO(print(s"----------------\n$string\n"))
       //=======================================================================
       case Commands.Exit =>
-        IO.pure {
-          print("\n-------- exiting --------\n")
-        }
+        IO(print("\n-------- exiting --------\n"))
       //=======================================================================
     }
   }

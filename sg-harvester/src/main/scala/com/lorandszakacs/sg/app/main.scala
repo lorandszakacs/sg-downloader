@@ -20,6 +20,8 @@ import com.lorandszakacs.sg.app.repl.{CommandLineInterpreter, REPL}
 import com.lorandszakacs.util.future._
 import com.typesafe.scalalogging.StrictLogging
 
+import scala.util.control.NonFatal
+
 /**
   * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 16 Mar 2015
@@ -30,24 +32,23 @@ object Main extends App with StrictLogging {
   val interpreter = new CommandLineInterpreter(assembly)
   val repl        = new REPL(interpreter)
 
-  if (args.nonEmpty) {
-    logger.info(s"Received args: ${args.mkString(",")}    --> executing command")
-    interpreter.interpretArgs(args) match {
-      case Some(_) =>
-        () //intentionally doing nothing, let it terminate gracefully
-      case None =>
-        logger.error("—— something went wrong during interpretation —— exiting")
-        assembly.shutdown().unsafeRunSync()
-        System.exit(1)
+  val interpretArgsIO: IO[Unit] = IO(logger.info(s"Received args: ${args.mkString(",")}    --> executing command")) >>
+    interpreter.interpretArgs(args).onError {
+      case NonFatal(e) =>
+        IO(logger.error("—— something went wrong during interpretation —— exiting", e)) >>
+          assembly.shutdown() >>
+          IO(System.exit(1))
     }
 
-  }
-  else {
-    logger.info(s"Did not receive any arguments, going into REPL mode")
-    repl.run()
-  }
+  val startReplIO = IO(logger.info(s"Did not receive any arguments, going into REPL mode")) >>
+    repl.runIO
 
-  assembly.shutdown().unsafeRunSync()
-  println("... finished gracefully")
-  System.exit(0)
+  val program = for {
+    _ <- if (args.isEmpty) startReplIO else interpretArgsIO
+    _ <- assembly.shutdown()
+    _ <- IO(println("... finished gracefully"))
+    _ <- IO(System.exit(0))
+  } yield ()
+
+  program.unsafeRunSync()
 }
