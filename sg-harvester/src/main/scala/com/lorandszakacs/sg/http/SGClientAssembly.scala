@@ -15,7 +15,7 @@ trait SGClientAssembly {
 
   implicit def actorSystem: ActorSystem
 
-  implicit def scheduler: Scheduler
+  implicit def httpIOScheduler: HTTPIOScheduler
 
   lazy val sgClient: SGClient = SGClientImpl()
 

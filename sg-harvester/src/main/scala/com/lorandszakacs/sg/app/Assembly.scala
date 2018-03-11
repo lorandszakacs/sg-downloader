@@ -18,8 +18,9 @@ import com.typesafe.scalalogging.StrictLogging
   *
   */
 final class Assembly(
-  override val actorSystem: ActorSystem = ActorSystem("sg-app"),
-  override val scheduler:   Scheduler   = Scheduler.io(name = "sg-app")
+  override val actorSystem:     ActorSystem     = ActorSystem("sg-app"),
+  override val scheduler:       Scheduler       = Scheduler.io(name = "sg-app"),
+  override val httpIOScheduler: HTTPIOScheduler = HTTPIOScheduler(Scheduler.io(name = "sg-app-http"))
 ) extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly
     with StrictLogging {
 

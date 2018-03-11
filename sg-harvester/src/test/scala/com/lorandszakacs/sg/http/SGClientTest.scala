@@ -15,10 +15,10 @@ import org.scalatest.FlatSpec
   */
 class SGClientTest extends FlatSpec with URLConversions {
 
-  implicit lazy val as: ActorSystem = ActorSystem("test-actor-system")
+  implicit lazy val as:  ActorSystem = ActorSystem("test-actor-system")
   implicit lazy val sch: Scheduler   = Scheduler.global
 
-  lazy val client = SGClientImpl()
+  lazy val client = SGClientImpl()(as, HTTPIOScheduler(sch))
 
   behavior of "SG client"
 

@@ -27,12 +27,13 @@ import com.typesafe.scalalogging.StrictLogging
   *
   */
 object Main extends App with StrictLogging {
-  implicit val actorSystem: ActorSystem = ActorSystem("sg-app")
-  implicit val scheduler:   Scheduler   = Scheduler.io(name = "sg-app")
+  implicit val actorSystem:     ActorSystem     = ActorSystem("sg-app")
+  implicit val scheduler:       Scheduler       = Scheduler.io(name = "sg-app")
+  implicit val httpIOScheduler: HTTPIOScheduler = HTTPIOScheduler(Scheduler.io(name = "sg-app-http"))
 
-  val assembly    = new Assembly(actorSystem, scheduler)
+  val assembly    = new Assembly(actorSystem, scheduler, httpIOScheduler)
   val interpreter = new CommandLineInterpreter(assembly)
-  val repl        = new REPL(interpreter, assembly)
+  val repl        = new REPL(interpreter)
 
   val interpretArgsTask: Task[Unit] = Task(
     logger.info(s"Received args: ${args.mkString(",")} --> executing command")

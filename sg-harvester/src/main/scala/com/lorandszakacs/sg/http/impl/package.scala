@@ -1,6 +1,7 @@
 package com.lorandszakacs.sg.http
 
 import com.lorandszakacs.sg.URLConversions
+import com.lorandszakacs.util.effects._
 
 /**
   *
@@ -8,4 +9,6 @@ import com.lorandszakacs.sg.URLConversions
   * @since 11 Jul 2016
   *
   */
-package object impl extends URLConversions {}
+package object impl extends URLConversions {
+  implicit def convertHTTPIOSchedulerToScheduler(implicit httpSch: HTTPIOScheduler): Scheduler = httpSch.scheduler
+}

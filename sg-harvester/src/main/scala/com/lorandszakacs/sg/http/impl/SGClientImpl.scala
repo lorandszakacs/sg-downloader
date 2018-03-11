@@ -41,10 +41,10 @@ import scala.collection.immutable.Seq
   *
   */
 private[http] object SGClientImpl {
-  private[http] def apply()(implicit actorSystem: ActorSystem, sch: Scheduler) = new SGClientImpl()
+  private[http] def apply()(implicit actorSystem: ActorSystem, httpIOSch: HTTPIOScheduler) = new SGClientImpl()
 }
 
-private[impl] final class SGClientImpl private ()(implicit val actorSystem: ActorSystem, val sch: Scheduler)
+private[impl] final class SGClientImpl private ()(implicit val actorSystem: ActorSystem, val httpIOSch: HTTPIOScheduler)
     extends SGClient {
 
   private val http:                  HttpExt           = Http()
@@ -363,7 +363,7 @@ private[impl] final class SGClientImpl private ()(implicit val actorSystem: Acto
     }
   }
 
-  implicit class BuffedHttpResponse(val r: HttpResponse)(implicit val sch: Scheduler) {
+  implicit class BuffedHttpResponse(val r: HttpResponse) {
 
     def entityAsString: Task[String] =
       (r.entity.dataBytes.runFold(ByteString(""))(_ ++ _) map (_.decodeString("UTF-8"))).suspendInTask

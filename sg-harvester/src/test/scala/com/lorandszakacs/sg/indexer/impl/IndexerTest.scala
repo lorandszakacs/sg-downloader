@@ -17,8 +17,9 @@ import com.lorandszakacs.util.effects._
 trait IndexerTest extends fixture.FlatSpec with ScalaFutures with Matchers {
   implicit val crawlerPatienceConfig: http.PatienceConfig = http.PatienceConfig()
 
-  implicit val as:  ActorSystem = ActorSystem(s"${super.getClass.getSimpleName}")
-  implicit val sch: Scheduler   = Scheduler.global
+  implicit val as:        ActorSystem     = ActorSystem(s"${super.getClass.getSimpleName}")
+  implicit val sch:       Scheduler       = Scheduler.global
+  implicit val httpIOSch: HTTPIOScheduler = HTTPIOScheduler(sch)
 
   implicit override def patienceConfig: PatienceConfig =
     PatienceConfig(timeout = scaled(Span(10000, Millis)), interval = scaled(Span(100, Millis)))

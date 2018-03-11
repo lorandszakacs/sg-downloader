@@ -19,4 +19,23 @@ object effects
     with ListUtilFunctions {
 
   val NonFatal: scala.util.control.NonFatal.type = scala.util.control.NonFatal
+
+  /**
+    *
+    * This is an alias for Scheduler that is used to denote that you have blocking IO
+    *
+    * There is an implicit conversionn from [[DBIOScheduler]] to [[Scheduler]] in the
+    * appropriate package
+    *
+    * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+    * @since 11 Mar 2018
+    *
+    */
+  final case class DBIOScheduler(val scheduler: Scheduler)
+
+  /**
+    * Analogous to the [[DBIOScheduler]], but for HTTP requests
+    *
+    */
+  final case class HTTPIOScheduler(val scheduler: Scheduler)
 }

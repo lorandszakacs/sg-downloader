@@ -306,7 +306,7 @@ class SGIndexerTests extends IndexerTest {
     val assembly = new IndexerAssembly with SGClientAssembly {
       override implicit def actorSystem: ActorSystem = SGIndexerTests.this.as
 
-      override implicit def scheduler: Scheduler = SGIndexerTests.this.sch
+      override implicit def httpIOScheduler: HTTPIOScheduler = SGIndexerTests.this.httpIOSch
     }
 
     test.apply(assembly._sgIndexerImpl)

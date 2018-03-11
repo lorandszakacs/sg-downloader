@@ -13,9 +13,7 @@ import scala.io.StdIn
   *
   */
 class REPL(
-  private val interpreter: CommandLineInterpreter,
-  @scala.deprecated("use only for testing", "now")
-  private val assembly: com.lorandszakacs.sg.app.Assembly
+  private val interpreter: CommandLineInterpreter
 ) extends StrictLogging {
 
   def runTask: Task[Unit] = {
