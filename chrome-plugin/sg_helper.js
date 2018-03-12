@@ -27,9 +27,9 @@ window.addEventListener("unload", () => {
 });
 
 /*
- * This thing accumulates all the requests that are to be displayed.
+ * This thing accumulates all the requestDivs that are to be displayed.
  */
-var requests = {};
+var requestDivs = {};
 
 function onEvent(target, message, params) {
   if (targetTabId != target.tabId)
@@ -43,11 +43,11 @@ function onEvent(target, message, params) {
 }
 
 function createRequestDivAndPushToMap(params) {
-  var requestDiv = requests[params.requestId];
+  var requestDiv = requestDivs[params.requestId];
   if (!requestDiv) {
     var requestDiv = document.createElement("div");
     requestDiv.className = "requestResponsePair";
-    requests[params.requestId] = requestDiv;
+    requestDivs[params.requestId] = requestDiv;
     var urlLine = document.createElement("div");
     urlLine.textContent = params.request.url;
     requestDiv.appendChild(urlLine);
@@ -61,7 +61,7 @@ function createRequestDivAndPushToMap(params) {
 
 function addRequestAndResponseHeadersToDivsInQueue(params) {
   var response = params.response;
-  var requestDiv = requests[params.requestId];
+  var requestDiv = requestDivs[params.requestId];
   requestDiv.appendChild(formatHeaders(response.requestHeaders));
 
   var statusLine = document.createElement("div");
