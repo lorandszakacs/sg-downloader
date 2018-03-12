@@ -178,7 +178,7 @@ object Favorites {
       "janedoe",
       "janesinner",
       "janette",
-      "jefcokkie",
+      "jef",
       "jessi",
       "jessi77",
       "jessicalou",
