@@ -21,6 +21,7 @@ import com.typesafe.scalalogging.StrictLogging
 final class Assembly(
   implicit
   override val actorSystem:     ActorSystem,
+  val computationScheduler:     Scheduler,
   override val dbIOScheduler:   DBIOScheduler,
   override val httpIOScheduler: HTTPIOScheduler
 ) extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly
