@@ -7,7 +7,7 @@ import com.lorandszakacs.util.math._
 
 /**
   *
-  * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 12 Jul 2017
   *
   */

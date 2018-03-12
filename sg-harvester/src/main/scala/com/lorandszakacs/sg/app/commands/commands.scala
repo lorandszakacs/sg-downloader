@@ -4,7 +4,7 @@ import com.lorandszakacs.sg.model.Name
 
 /**
   *
-  * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 01 Jul 2017
   *
   */

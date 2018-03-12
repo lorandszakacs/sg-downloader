@@ -4,7 +4,7 @@ import com.lorandszakacs.sg.URLConversions
 
 /**
   *
-  * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 02 Jul 2017
   *
   */

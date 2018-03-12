@@ -6,7 +6,7 @@ package com.lorandszakacs.util.math
   * Basically meant to compare things by "id". Useful when you have deep
   * case class hierarchies, and don't want to do deep equality
   *
-  * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 12 Jul 2017
   *
   */

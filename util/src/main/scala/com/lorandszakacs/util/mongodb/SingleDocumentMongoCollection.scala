@@ -8,7 +8,7 @@ import com.lorandszakacs.util.math.Identifier
   * A convenience trait for collections that have one single document
   * with a unique, and stable ID.
   *
-  * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 14 Jul 2017
   *
   */

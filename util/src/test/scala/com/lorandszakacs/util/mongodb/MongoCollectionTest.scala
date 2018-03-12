@@ -34,7 +34,7 @@ import org.scalatest._
   *   [info]   at java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:157)
   *}}}
   *
-  * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 15 Jul 2017
   *
   */

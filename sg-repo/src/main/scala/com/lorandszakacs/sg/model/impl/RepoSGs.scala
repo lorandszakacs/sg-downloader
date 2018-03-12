@@ -6,7 +6,7 @@ import com.lorandszakacs.util.effects._
 
 /**
   *
-  * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 14 Jul 2017
   *
   */

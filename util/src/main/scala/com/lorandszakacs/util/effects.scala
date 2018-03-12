@@ -6,7 +6,7 @@ import com.lorandszakacs.util.list.ListUtilFunctions
 
 /**
   *
-  * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 11 Mar 2018
   *
   */
@@ -27,7 +27,7 @@ object effects
     * There is an implicit conversionn from [[DBIOScheduler]] to [[Scheduler]] in the
     * appropriate package
     *
-    * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+    * @author Lorand Szakacs, lsz@lorandszakacs.com
     * @since 11 Mar 2018
     *
     */

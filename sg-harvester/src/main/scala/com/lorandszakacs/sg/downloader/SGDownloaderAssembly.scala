@@ -7,7 +7,7 @@ import com.lorandszakacs.sg.reifier.ReifierAssembly
 
 /**
   *
-  * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 01 Jul 2017
   *
   */

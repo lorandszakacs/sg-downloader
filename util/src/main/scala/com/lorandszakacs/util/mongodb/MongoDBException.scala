@@ -2,7 +2,7 @@ package com.lorandszakacs.util.mongodb
 
 /**
   *
-  * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 01 Jul 2017
   *
   */

@@ -16,7 +16,7 @@ import scala.language.postfixOps
   *
   * Contains an expression of all full end-to-end features that are usable from the command line
   *
-  * @author Lorand Szakacs, lsz@lorandszakacs.com, lorand.szakacs@busymachines.com
+  * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 01 Jul 2017
   *
   */
