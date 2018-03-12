@@ -1,0 +1,16 @@
+{
+  "name": "SG Helper",
+  "description": "Displays the cookies from the SG website in such a way that you can drop them into mongodb",
+  "version": "0.1",
+  "permissions": [
+    "debugger"
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "browser_action": {
+    "default_title": "SG Helper"
+  },
+  "manifest_version": 2
+}
+
