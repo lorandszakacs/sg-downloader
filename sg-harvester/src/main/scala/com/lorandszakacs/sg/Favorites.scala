@@ -105,6 +105,7 @@ object Favorites {
       "dimples",
       "discordia",
       "dollyd",
+      "donyx",
       "douxreves",
       "dread",
       "drew",
