@@ -36,7 +36,7 @@ final class Assembly(
     for {
       _ <- Task(logger.info("attempting to shutdown and close all resources"))
       _ <- db.shutdown() >> Task(logger.info("terminated -- database.shutdown()"))
-//      _ <- actorSystem.terminate().suspendInTask >> Task(logger.info("terminated -- actorSystem.terminate()"))
+      _ <- actorSystem.terminate().suspendInTask >> Task(logger.info("terminated -- actorSystem.terminate()"))
       _ <- Task(logger.info("terminated -- completed assembly.shutdown()"))
     } yield ()
   }
