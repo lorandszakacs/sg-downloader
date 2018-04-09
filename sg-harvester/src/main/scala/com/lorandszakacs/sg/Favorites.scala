@@ -16,6 +16,7 @@ object Favorites {
       "aeterna",
       "agatha",
       "ailiqueen",
+      "ainoa",
       "aisline",
       "ajilee",
       "akilina",
@@ -51,8 +52,10 @@ object Favorites {
       "attycus",
       "aubrey",
       "aurorah",
+      "aurralee",
       "avrora",
       "aymi",
+      "azalea",
       "bae",
       "bambu",
       "bandit",
@@ -83,6 +86,7 @@ object Favorites {
       "cartoon",
       "casanova",
       "cecylia",
+      "celine",
       "ceriz",
       "chad",
       "charm",
@@ -210,6 +214,7 @@ object Favorites {
       "leetattar",
       "lego",
       "lelly",
+      "lerahon",
       "lexiexj",
       "leza",
       "lillianrose",
@@ -450,7 +455,7 @@ object Favorites {
     ).sorted.distinct
 
   private val _new = List[String](
-  ).filterNot(_.isEmpty).sorted.distinct
+    ).filterNot(_.isEmpty).sorted.distinct
 
   val names: List[Name] = (if (_new.isEmpty) _names else _new) map Name.apply
 
