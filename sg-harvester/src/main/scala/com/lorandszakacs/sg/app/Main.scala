@@ -37,15 +37,14 @@ object Main extends App with StrictLogging {
   val interpreter = new CommandLineInterpreter(assembly)
   val repl        = new REPL(interpreter)
 
-  val interpretArgsTask: Task[Unit] = Task(
-    logger.info(s"Received args: ${args.mkString(",")} --> executing command")
-  ) >>
-    interpreter.interpretArgs(args).onError {
-      case NonFatal(e) =>
-        Task(logger.error("—— something went wrong during interpretation —— exiting", e)) >>
-          assembly.shutdownTask >>
-          Task(System.exit(1))
-    }
+  val interpretArgsTask: Task[Unit] =
+    Task(logger.info(s"Received args: ${args.mkString(",")} --> executing command")) >>
+      interpreter.interpretArgs(args).onError {
+        case NonFatal(e) =>
+          Task(logger.error("—— something went wrong during interpretation —— exiting", e)) >>
+            assembly.shutdownTask >>
+            Task(System.exit(1))
+      }
 
   val startReplTask = Task(logger.info(s"Did not receive any arguments, going into REPL mode")) >>
     repl.runTask

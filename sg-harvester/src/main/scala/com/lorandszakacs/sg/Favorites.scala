@@ -174,6 +174,7 @@ object Favorites {
       "illusion",
       "indaco",
       "indi",
+      "inngrin",
       "ivory",
       "ivylina",
       "jackye",
