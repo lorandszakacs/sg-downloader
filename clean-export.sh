@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MEMORY='-Xmx8G -Xms4G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xss64M'
+JVM_ARGS='-Xmx8G -Xms4G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xss64M -XX:+UseStringDeduplication -XX:+PrintStringDeduplicationStatistics'
 
 #the path to the AWS S3 instance where to sync the files that are in $AWS_ROOT
 AWS_CLOUD_LOC=$1
@@ -113,9 +113,9 @@ then
 fi
 
 
-info "executing: 'java $MEMORY -jar $JAR_NAME delta'";
+info "executing: 'java $JVM_ARGS -jar $JAR_NAME delta'";
 
-java -jar $MEMORY $JAR_NAME export-html;
+java -jar $JVM_ARGS $JAR_NAME export-html;
 
 if [ $? -eq 0 ]
 then
