@@ -95,7 +95,7 @@ lazy val `util` = project
 //========================================== Misc ============================================
 //============================================================================================
 
-lazy val bmcEffects: ModuleID = "com.busymachines" %% "busymachines-commons-effects" % "0.3.0-RC6" withSources ()
+lazy val bmcEffects: ModuleID = "com.busymachines" %% "busymachines-commons-effects" % "0.3.0-RC7" withSources ()
 
 lazy val nScalaJodaTime: ModuleID = "com.github.nscala-time" %% "nscala-time"   % "2.18.0" withSources ()
 lazy val reactiveMongo:  ModuleID = "org.reactivemongo"      %% "reactivemongo" % "0.13.0" withSources ()
