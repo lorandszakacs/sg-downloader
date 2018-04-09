@@ -221,10 +221,11 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)
     parsingFunction: Html => Try[List[T]],
     isEndPage:       Html => Boolean,
     cutOffLimit:     Int = Int.MaxValue,
-    isEndInput: List[T] => Boolean = { ls: List[T] =>
-      false
-    }
-  )(implicit pc: PatienceConfig): Task[List[T]] = {
+    isEndInput:      List[T] => Boolean = (ls: List[T]) => false
+  )(
+    implicit
+    pc: PatienceConfig
+  ): Task[List[T]] = {
 
     def offsetUri(uri: Uri, offset: Int) =
       Uri(s"$uri?partial=true&offset=$offset")
