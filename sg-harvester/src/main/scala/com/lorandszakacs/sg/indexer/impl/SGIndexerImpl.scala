@@ -1,7 +1,6 @@
 package com.lorandszakacs.sg.indexer.impl
 
 import com.lorandszakacs.util.effects._
-
 import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.contentparser.SGContentParser
 import com.lorandszakacs.sg.core
@@ -11,8 +10,8 @@ import com.lorandszakacs.sg.model.M.{HFFactory, MFactory, SGFactory}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html.Html
 import com.typesafe.scalalogging.StrictLogging
-
-import scala.collection.mutable.ListBuffer
+import monix.execution.atomic.AtomicBoolean
+import monix.reactive.Observable
 
 /**
   *
@@ -46,9 +45,9 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)
     loadPageRepeatedly[Name](
       uri             = SGsSortedByFollowers,
       offsetStep      = 12,
+      cutOffLimit     = limit,
       parsingFunction = SGContentParser.gatherSGNames,
-      isEndPage       = isEndPage,
-      cutOffLimit     = limit
+      isFinalPage     = isEndPage
     )
   }
 
@@ -64,9 +63,9 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)
     loadPageRepeatedly[Name](
       uri             = HFsSortedByFollowers,
       offsetStep      = 12,
+      cutOffLimit     = limit,
       parsingFunction = SGContentParser.gatherHFNames,
-      isEndPage       = isEndPage,
-      cutOffLimit     = limit
+      isFinalPage     = isEndPage
     )
   }
 
@@ -95,8 +94,9 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)
       sets <- loadPageRepeatedly[PhotoSet](
         uri             = pageURL,
         offsetStep      = 9,
+        cutOffLimit     = Int.MaxValue,
         parsingFunction = SGContentParser.gatherPhotoSetsForM,
-        isEndPage       = isEndPageForMIndexing
+        isFinalPage     = isEndPageForMIndexing
       )
     } yield {
       logger.info(s"gathered all sets for ${mf.name} ${name.name}. #sets: ${sets.length}")
@@ -110,8 +110,9 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)
       sets <- loadPageRepeatedly[PhotoSet](
         uri             = pageURL,
         offsetStep      = 9,
+        cutOffLimit     = Int.MaxValue,
         parsingFunction = SGContentParser.gatherPhotoSetsForM,
-        isEndPage       = isEndPageForMIndexing
+        isFinalPage     = isEndPageForMIndexing
       )
       isHF = sets.exists(_.isHFSet.contains(true))
       mf   = if (isHF) HFFactory else SGFactory
@@ -131,15 +132,19 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)
     *
     * Returns a [[M]] with only one [[M.photoSets]], the one that shows up on the page.
     */
-  private[impl] def gatherAllNewMsAndOnlyTheirLatestSet(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(
-    implicit pc:                                               PatienceConfig
+  private[impl] def gatherAllNewMsAndOnlyTheirLatestSet(
+    limit:              Int,
+    lastProcessedIndex: Option[LastProcessedMarker]
+  )(
+    implicit
+    pc: PatienceConfig
   ): Task[List[M]] = {
-    def isEndPage(html: Html) = {
+    def isFinalPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
     }
 
-    def isEndInput(ms: List[M]): Boolean = {
+    def isLastPageVisted(ms: List[M]): Boolean = {
       lastProcessedIndex match {
         case None => false
         case Some(lpi) =>
@@ -151,10 +156,10 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)
     loadPageRepeatedly[M](
       uri             = NewestSets,
       offsetStep      = 24,
+      cutOffLimit     = limit,
       parsingFunction = SGContentParser.gatherNewestPhotoSets,
-      isEndPage       = isEndPage,
-      isEndInput      = isEndInput,
-      cutOffLimit     = limit
+      isFinalPage     = isFinalPage,
+      stopOnPage      = isLastPageVisted
     ) map { ms =>
       if (lastProcessedIndex.isEmpty)
         ms
@@ -209,6 +214,15 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)
     * and offset of zero, and increment it until ``isEndPage``, or
     * ``isEndInput`` are true, or when we hit the ``cutOffLimit``
     *
+    * @param stopOnPage
+    *   Predicate to decide if loading should stop based on the results
+    *   of a successful ``parsingFunction``
+    *   If this function returns true, then loading stops and results gathered so far are returned
+    *
+    * @param isFinalPage
+    *   Determines if the loaded page is the "last page".
+    *   If this function returns true, then loading stops and results gathered so far are returned
+    *
     * @param uri
     * Assumed to not have any ``offset`` HTTP parameters
     * when passed to this function. i.e.
@@ -218,53 +232,68 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)
   private def loadPageRepeatedly[T](
     uri:             Uri,
     offsetStep:      Int,
+    cutOffLimit:     Int,
     parsingFunction: Html => Try[List[T]],
-    isEndPage:       Html => Boolean,
-    cutOffLimit:     Int = Int.MaxValue,
-    isEndInput:      List[T] => Boolean = (ls: List[T]) => false
+    isFinalPage:     Html => Boolean,
+    stopOnPage:      List[T] => Boolean = (ls: List[T]) => false,
   )(
     implicit
     pc: PatienceConfig
   ): Task[List[T]] = {
 
-    def offsetUri(uri: Uri, offset: Int) =
+    def offsetUri(uri: Uri, offset: Int): Uri =
       Uri(s"$uri?partial=true&offset=$offset")
 
-    sGClient.getPage(offsetUri(uri, 0)) map { firstHtml =>
-      val result     = ListBuffer[T]()
-      val firstBatch = parsingFunction(firstHtml).get
-      var offset     = offsetStep
+    /*
+     * We want to express something like:
+     * observable.takeWhile(predicate).takeOneMore
+     *
+     * Because the `stopOnInput` function is inclusive.
+     * While the other two metrics of reaching the offset,
+     * and the end of the world are exclusive.
+     *
+     * So if the latter are met, then we can just do
+     * with a simple takeWhile, but if it happens
+     * that we actually have to stop based on the
+     * contents of a page, we have to also keep that page,
+     * therefore we simulate the takeWhile+1 with
+     * this localized mutable state here.
+     *
+     * !!! take care !!!
+     */
+    val stopOnNextPage: AtomicBoolean = AtomicBoolean(false)
+    def keepThisPage(t: (Int, Html, List[T])): Boolean = {
+      val (offset, html, list) = t
 
-      var stop = false
-      result ++= firstBatch
-
-      if (isEndInput(firstBatch)) {
-        stop = true
-      }
-
-      while (!stop) {
-        val newURI  = offsetUri(uri, offset)
-        val newPage = sGClient.getPage(newURI).unsafeSyncGet()(Scheduler.global) //FIXME: write in a pure way
-        offset += offsetStep
-        if (isEndPage(newPage) || offset > cutOffLimit) {
-          stop = true
-        }
-        else {
-          logger.info(s"load repeatedly: step=$offsetStep [$newURI]")
-          pc.throttleThread()
-          parsingFunction(newPage) match {
-            case TrySuccess(s) =>
-              result ++= s
-              if (isEndInput(s)) {
-                stop = true
-              }
-            case TryFailure(e) =>
-              throw FailedToRepeatedlyLoadPageException(offset, e)
-          }
-        }
-      }
-
-      result.toList
+      !stopOnNextPage.getAndSet(stopOnPage(list)) &&
+      (offset <= cutOffLimit) && !isFinalPage(html)
     }
+
+    val htmlPages: Observable[(Int, Html)] = Observable
+      .range(from = 0L, until = cutOffLimit.toLong, step = offsetStep.toLong)
+      .mapTask { offset =>
+        for {
+          newURI <- Task.pure(offsetUri(uri, offset.toInt))
+          _      <- Task(logger.info(s"load repeatedly: step=$offsetStep [$newURI]"))
+          html   <- pc.throttleAfter(sGClient.getPage(newURI))
+        } yield (offset.toInt, html)
+      }
+
+    val parsedPages: Observable[(Int, Html, List[T])] =
+      htmlPages.mapTask { p =>
+        val (offset, html) = p
+        Task
+          .fromTry(parsingFunction(html))
+          .adaptError {
+            case NonFatal(e) => FailedToRepeatedlyLoadPageException(offset, e)
+          }
+          .map(ts => (offset, html, ts))
+      }
+
+    val relevantPages = parsedPages.takeWhile(keepThisPage)
+
+    val result = relevantPages.map(_._3)
+
+    result.toListL.map(_.flatten)
   }
 }

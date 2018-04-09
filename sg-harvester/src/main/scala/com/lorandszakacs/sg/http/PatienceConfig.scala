@@ -14,6 +14,7 @@ import scala.language.postfixOps
   */
 object PatienceConfig {
   val defaultDuration: FiniteDuration = 200 millis
+  val doubleDefault:   FiniteDuration = defaultDuration.mul(2)
 }
 
 final case class PatienceConfig(

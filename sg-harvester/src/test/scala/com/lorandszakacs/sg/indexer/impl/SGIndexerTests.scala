@@ -219,6 +219,21 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
   //===============================================================================================
 
+  it should "... gather the first 24 new sets" in { indexer =>
+    whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(24, None).r) { ms: List[M] =>
+      withClue("... size") {
+        ms should have size 24
+      }
+      withClue("... distribution") {
+        assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+        assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
+      }
+    }
+  }
+
+  //===============================================================================================
+  //===============================================================================================
+
   it should "... gather the first 48 new sets" in { indexer =>
     whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None).r) { ms: List[M] =>
       withClue("... size") {
@@ -238,7 +253,7 @@ class SGIndexerTests extends IndexerTest {
     indexer =>
       val previousMs = whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None).r) { ms: List[M] =>
         withClue("... size") {
-          ms should have size 48
+          assert(ms.length >= 48)
         }
         withClue("... distribution") {
           assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
@@ -246,23 +261,53 @@ class SGIndexerTests extends IndexerTest {
         }
         ms
       }
-      val index  = 13
-      val latest = previousMs(index)
-      val lastProcessed: LastProcessedMarker = indexer.createLastProcessedIndex(latest)
 
-      withClue("... now gathering only a part of the processed sets") {
-        whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, Option(lastProcessed)).r) { ms: List[M] =>
-          withClue("... size") {
-            ms should have size index.toLong
+      println("-------------------------------------")
+
+      withClue("... lastProcessed marker is on 1st page") {
+        val index  = 13
+        val latest = previousMs(index)
+        val lastProcessed: LastProcessedMarker = indexer.createLastProcessedIndex(latest)
+        println(s"---> LPM: ${lastProcessed.lastPhotoSetID}")
+
+        withClue("... now gathering only a part of the processed sets") {
+          whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(Int.MaxValue, Option(lastProcessed)).r) { ms: List[M] =>
+            withClue("... size") {
+              ms should have size index.toLong
+            }
+            withClue("... distribution") {
+              assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
+              assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+              assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
+            }
+            ms
           }
-          withClue("... distribution") {
-            assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
-            assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
-            assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
-          }
-          ms
         }
       }
+
+      println("-------------------------------------")
+
+      withClue("... lastProcessed marker is on 2nd page") {
+        val index  = 28
+        val latest = previousMs(index)
+        val lastProcessed: LastProcessedMarker = indexer.createLastProcessedIndex(latest)
+        println(s"---> LPM: ${lastProcessed.lastPhotoSetID}")
+
+        withClue("... now gathering only a part of the processed sets") {
+          whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(Int.MaxValue, Option(lastProcessed)).r) { ms: List[M] =>
+            withClue("... size") {
+              assert(ms.length == index, "... models returned ought to be 28")
+            }
+            withClue("... distribution") {
+              assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
+              assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+              assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
+            }
+            ms
+          }
+        }
+      }
+
   }
 
   //===============================================================================================
@@ -285,7 +330,7 @@ class SGIndexerTests extends IndexerTest {
       val lastProcessed: LastProcessedMarker = indexer.createLastProcessedIndex(latest)
 
       withClue("... now gathering only a part of the processed sets") {
-        whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, Option(lastProcessed)).r) { ms: List[M] =>
+        whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(Int.MaxValue, Option(lastProcessed)).r) { ms: List[M] =>
           withClue("... size") {
             ms should have size index.toLong
           }
