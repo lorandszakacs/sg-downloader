@@ -63,13 +63,22 @@ trait SGExporter {
     * Creates and HTML webpage at [[ExporterSettings.newestRootFolderPath]] containing
     * the newest sets, grouped per days, for the past ``nrOfDays``.
     */
-  def exportLatestForDays(nrOfDays: Int)(implicit ws: ExporterSettings): Task[Unit]
+  def exportLatestForDays(
+    nrOfDays:    Int,
+    favorites:   Set[Name]
+  )(implicit ws: ExporterSettings): Task[Unit]
 
   /**
     * Same as [[exportLatestForDays]] but adds in to the already existing Ms
     * the delta passed as parameter
     */
-  def exportLatestForDaysWithDelta(nrOfDays: Int, delta: List[M])(implicit ws: ExporterSettings): Task[Unit]
+  def exportLatestForDaysWithDelta(
+    nrOfDays:  Int,
+    delta:     List[M],
+    favorites: Set[Name]
+  )(
+    implicit ws: ExporterSettings
+  ): Task[Unit]
 
 }
 

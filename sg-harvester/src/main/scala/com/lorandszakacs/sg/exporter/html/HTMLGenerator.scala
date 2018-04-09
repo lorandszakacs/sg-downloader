@@ -15,7 +15,7 @@ private[exporter] trait HTMLGenerator {
 
   def createRootIndex(names: List[Name])(implicit settings: HtmlSettings): Task[Html]
 
-  def createNewestPage(ms: List[(LocalDate, List[M])]): Task[Html]
+  def createNewestPage(ms: List[(LocalDate, List[M])], favorites: Set[Name]): Task[Html]
 }
 
 case class HtmlSettings(

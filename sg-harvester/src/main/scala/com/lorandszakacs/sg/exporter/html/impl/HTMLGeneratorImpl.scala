@@ -70,13 +70,14 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
     *       └── loading_gif.gif
     * }}}
     */
-  def createNewestPage(ms: List[(LocalDate, List[M])]): Task[Html] = {
+  def createNewestPage(ms: List[(LocalDate, List[M])], favorites: Set[Name]): Task[Html] = {
     def newestPageElementForDay(date: LocalDate, ms: List[M]): String = {
       val elements = ms.sortBy(_.name.name).map { m =>
         val latestSet   = m.photoSets.maxBy(_.date)
         val link        = photoSetPageRelativePathFromCurrentDirectory(m.name, latestSet)
+        val favText     = if (favorites.contains(m.name)) " - fav" else ""
         val displayText = s"${m.name.externalForm} - ${latestSet.title.externalForm}"
-        s"""<li><a href="all/$link" target="_blank">$displayText</a></li>"""
+        s"""<li><a href="all/$link" target="_blank">$displayText</a>$favText</li>"""
       }
       s"""
          |<h3> ${date.toString("YYYY-MM-dd")} </h3>

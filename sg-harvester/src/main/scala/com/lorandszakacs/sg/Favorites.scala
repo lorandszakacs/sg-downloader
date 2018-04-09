@@ -457,7 +457,9 @@ object Favorites {
   private val _new = List[String](
     ).filterNot(_.isEmpty).sorted.distinct
 
-  val names: List[Name] = (if (_new.isEmpty) _names else _new) map Name.apply
+  lazy val names: List[Name] = (if (_new.isEmpty) _names else _new) map Name.apply
+
+  lazy val namesSet: Set[Name] = _names.toSet.map(Name.apply)
 
   def codeFriendlyDisplay: String =
     (_names ++ _new)

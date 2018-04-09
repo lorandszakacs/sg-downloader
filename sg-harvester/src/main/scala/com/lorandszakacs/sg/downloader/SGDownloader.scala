@@ -143,7 +143,7 @@ final class SGDownloader private[downloader] (
         _ = logger.info(
           s"export.delta --IMPURE--> finished exporting HTML to ${settings.newestRootFolderPath}."
         )
-        _ <- exporter.exportLatestForDaysWithDelta(daysToExport, delta)(settings)
+        _ <- exporter.exportLatestForDaysWithDelta(daysToExport, delta, Favorites.namesSet)(settings)
         _ = logger.info(
           s"export.delta --IMPURE--> finished newest HTML to ${settings.newestRootFolderPath}."
         )

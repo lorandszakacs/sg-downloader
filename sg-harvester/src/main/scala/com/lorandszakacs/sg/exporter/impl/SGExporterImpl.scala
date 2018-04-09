@@ -117,26 +117,35 @@ private[exporter] class SGExporterImpl(
     } yield ()
   }
 
-  override def exportLatestForDaysWithDelta(nrOfDays: Int, delta: List[M])(
-    implicit ws:                                      ExporterSettings
+  override def exportLatestForDaysWithDelta(
+    nrOfDays:  Int,
+    delta:     List[M],
+    favorites: Set[Name]
+  )(
+    implicit ws: ExporterSettings
   ): Task[Unit] = {
     val today     = LocalDate.today()
     val inThePast = today.minusDays(nrOfDays)
     for {
       ms <- repo.aggregateBetweenDays(inThePast, today, delta)
       sortedLatestToEarliest = ms.sortBy(_._1).reverse
-      newestMsPage <- html.createNewestPage(sortedLatestToEarliest)
+      newestMsPage <- html.createNewestPage(sortedLatestToEarliest, favorites)
       _            <- fileWriter.rewriteNewestMPage(newestMsPage)(newestWriterSettings)
     } yield ()
   }
 
-  override def exportLatestForDays(nrOfDays: Int)(implicit ws: ExporterSettings): Task[Unit] = {
+  override def exportLatestForDays(
+    nrOfDays:  Int,
+    favorites: Set[Name]
+  )(
+    implicit ws: ExporterSettings
+  ): Task[Unit] = {
     val today     = LocalDate.today()
     val inThePast = today.minusDays(nrOfDays)
     for {
       ms <- repo.aggregateBetweenDays(inThePast, today)
       sortedLatestToEarliest = ms.sortBy(_._1).reverse
-      newestMsPage <- html.createNewestPage(sortedLatestToEarliest)
+      newestMsPage <- html.createNewestPage(sortedLatestToEarliest, favorites)
       _            <- fileWriter.rewriteNewestMPage(newestMsPage)(newestWriterSettings)
     } yield ()
   }
