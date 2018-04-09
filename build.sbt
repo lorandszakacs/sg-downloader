@@ -125,7 +125,7 @@ lazy val akkaVersion: String = "2.5.11"
 lazy val akkaActor:  ModuleID = "com.typesafe.akka" %% "akka-actor"  % akkaVersion withSources ()
 lazy val akkaStream: ModuleID = "com.typesafe.akka" %% "akka-stream" % akkaVersion withSources ()
 
-lazy val akkaHttpVersion: String   = "10.1.0"
+lazy val akkaHttpVersion: String   = "10.1.1"
 lazy val akkaHttp:        ModuleID = "com.typesafe.akka" %% "akka-http" % akkaHttpVersion withSources ()
 
 //============================================================================================
