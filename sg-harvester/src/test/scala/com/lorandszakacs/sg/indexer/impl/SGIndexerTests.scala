@@ -30,7 +30,7 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
 
   implicit private class TestInterop[T](value: Task[T]) {
-    def r: Future[T] = value.asFutureUnsafe()
+    def r: T = value.unsafeSyncGet()
   }
 
   /**
@@ -41,45 +41,42 @@ class SGIndexerTests extends IndexerTest {
     * N.B. these can actually change through time.
     */
   it should "... fetch URIs for a page that does not need a subsequent query -- dalmasca" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForM(HFFactory)(Name("dalmasca")).r) { h: HF =>
-      val sets: List[PhotoSet] = h.photoSets
+    val h: HF = indexer.gatherPhotoSetInformationForM(HFFactory)(Name("dalmasca")).r
 
-      withClue("size") {
-        sets should have size 4
+    val sets: List[PhotoSet] = h.photoSets
+    withClue("size") {
+      sets should have size 4
+    }
+
+    withClue("content") {
+      sets should contain {
+        PhotoSet(
+          url     = s"${core.Domain}/members/dalmasca/album/996562/picker-uppers/",
+          title   = "PICKER-UPPERS",
+          date    = LocalDate.parse("2013-03-22"),
+          isHFSet = Some(true)
+        )
       }
-
-      withClue("content") {
-        sets should contain {
-          PhotoSet(
-            url     = s"${core.Domain}/members/dalmasca/album/996562/picker-uppers/",
-            title   = "PICKER-UPPERS",
-            date    = LocalDate.parse("2013-03-22"),
-            isHFSet = Some(true)
-          )
-        }
-      }
-
     }
   }
 
   it should "... fetch URIs for a page that does not need a subsequent query -- dalmasca -- generic" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForName(Name("dalmasca")).r) { h: M =>
-      h shouldBe a[HF]
-      val sets: List[PhotoSet] = h.photoSets
+    val h: M = indexer.gatherPhotoSetInformationForName(Name("dalmasca")).r
+    h shouldBe a[HF]
+    val sets: List[PhotoSet] = h.photoSets
 
-      withClue("size") {
-        sets should have size 4
-      }
+    withClue("size") {
+      sets should have size 4
+    }
 
-      withClue("content") {
-        sets should contain {
-          PhotoSet(
-            url     = s"${core.Domain}/members/dalmasca/album/996562/picker-uppers/",
-            title   = "PICKER-UPPERS",
-            date    = LocalDate.parse("2013-03-22"),
-            isHFSet = Some(true)
-          )
-        }
+    withClue("content") {
+      sets should contain {
+        PhotoSet(
+          url     = s"${core.Domain}/members/dalmasca/album/996562/picker-uppers/",
+          title   = "PICKER-UPPERS",
+          date    = LocalDate.parse("2013-03-22"),
+          isHFSet = Some(true)
+        )
       }
 
     }
@@ -94,31 +91,30 @@ class SGIndexerTests extends IndexerTest {
     * had 22 sets. And has not published a new set in ages.
     */
   it should "... fetch URIs for a page that needs several queries -- zoli" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForM(SGFactory)(Name("zoli")).r) { sg: SG =>
-      val sets: List[PhotoSet] = sg.photoSets
+    val sg: SG = indexer.gatherPhotoSetInformationForM(SGFactory)(Name("zoli")).r
 
-      withClue("... size") {
-        sets should have size 22
+    val sets: List[PhotoSet] = sg.photoSets
+
+    withClue("... size") {
+      sets should have size 22
+    }
+
+    withClue("... content") {
+      sets should contain {
+        PhotoSet(
+          url   = s"${core.Domain}/girls/zoli/album/996153/lounge-act/",
+          title = "lounge act",
+          date  = LocalDate.parse("2012-10-17")
+        )
       }
 
-      withClue("... content") {
-        sets should contain {
-          PhotoSet(
-            url   = s"${core.Domain}/girls/zoli/album/996153/lounge-act/",
-            title = "lounge act",
-            date  = LocalDate.parse("2012-10-17")
-          )
-        }
-
-        sets should contain {
-          PhotoSet(
-            url   = s"${core.Domain}/girls/zoli/album/969351/the-beat/",
-            title = "THE BEAT",
-            date  = LocalDate.parse("2006-05-03")
-          )
-        }
+      sets should contain {
+        PhotoSet(
+          url   = s"${core.Domain}/girls/zoli/album/969351/the-beat/",
+          title = "THE BEAT",
+          date  = LocalDate.parse("2006-05-03")
+        )
       }
-
     }
   }
 
@@ -128,33 +124,32 @@ class SGIndexerTests extends IndexerTest {
     * had 22 sets. And has not published a new set in ages.
     */
   it should "... fetch URIs for a page that needs several queries -- zoli -- generic" in { indexer =>
-    whenReady(indexer.gatherPhotoSetInformationForName(Name("zoli")).r) { sg: M =>
-      sg shouldBe a[SG]
-      val sets: List[PhotoSet] = sg.photoSets
+    val sg: M = indexer.gatherPhotoSetInformationForName(Name("zoli")).r
+    sg shouldBe a[SG]
+    val sets: List[PhotoSet] = sg.photoSets
 
-      withClue("... size") {
-        sets should have size 22
-      }
-
-      withClue("... content") {
-        sets should contain {
-          PhotoSet(
-            url   = s"${core.Domain}/girls/zoli/album/996153/lounge-act/",
-            title = "lounge act",
-            date  = LocalDate.parse("2012-10-17")
-          )
-        }
-
-        sets should contain {
-          PhotoSet(
-            url   = s"${core.Domain}/girls/zoli/album/969351/the-beat/",
-            title = "THE BEAT",
-            date  = LocalDate.parse("2006-05-03")
-          )
-        }
-      }
-
+    withClue("... size") {
+      sets should have size 22
     }
+
+    withClue("... content") {
+      sets should contain {
+        PhotoSet(
+          url   = s"${core.Domain}/girls/zoli/album/996153/lounge-act/",
+          title = "lounge act",
+          date  = LocalDate.parse("2012-10-17")
+        )
+      }
+
+      sets should contain {
+        PhotoSet(
+          url   = s"${core.Domain}/girls/zoli/album/969351/the-beat/",
+          title = "THE BEAT",
+          date  = LocalDate.parse("2006-05-03")
+        )
+      }
+    }
+
   }
 
   //===============================================================================================
@@ -170,25 +165,23 @@ class SGIndexerTests extends IndexerTest {
     * this test might fail. Therefore one must always be vigilant.
     */
   it should "... gather the first 48 SG names by followers" in { indexer =>
-    whenReady(indexer.gatherSGNames(48).r) { names: List[Name] =>
-      withClue("... size") {
-        names should have size 48
-      }
+    val names: List[Name] = indexer.gatherSGNames(48).r
+    withClue("... size") {
+      names should have size 48
+    }
 
-      print {
-        s"""
-           |SG names:
-           |${names.mkString("\n")}
-           |
+    print {
+      s"""
+         |SG names:
+         |${names.mkString("\n")}
+         |
         """.stripMargin
-      }
+    }
 
-      withClue("... content") {
-        names should contain("Sash".toName)
-        names should contain("Kemper".toName)
-        names should contain("Gogo".toName)
-      }
-
+    withClue("... content") {
+      names should contain("Sash".toName)
+      names should contain("Kemper".toName)
+      names should contain("Gogo".toName)
     }
   }
 
@@ -196,18 +189,17 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
 
   it should "... gather the first 48 HF names by followers" in { indexer =>
-    whenReady(indexer.gatherHFNames(48).r) { names: List[Name] =>
-      print {
-        s"""
-           |HF names:
-           |${names.mkString("\n")}
-           |
+    val names: List[Name] = indexer.gatherHFNames(48).r
+    print {
+      s"""
+         |HF names:
+         |${names.mkString("\n")}
+         |
         """.stripMargin
-      }
+    }
 
-      withClue("... size") {
-        names should have size 48
-      }
+    withClue("... size") {
+      names should have size 48
     }
   }
 
@@ -220,14 +212,13 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
 
   it should "... gather the first 24 new sets" in { indexer =>
-    whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(24, None).r) { ms: List[M] =>
-      withClue("... size") {
-        ms should have size 24
-      }
-      withClue("... distribution") {
-        assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
-        assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
-      }
+    val ms: List[M] = indexer.gatherAllNewMsAndOnlyTheirLatestSet(24, None).r
+    withClue("... size") {
+      ms should have size 24
+    }
+    withClue("... distribution") {
+      assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+      assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
     }
   }
 
@@ -235,14 +226,13 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
 
   it should "... gather the first 48 new sets" in { indexer =>
-    whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None).r) { ms: List[M] =>
-      withClue("... size") {
-        ms should have size 48
-      }
-      withClue("... distribution") {
-        assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
-        assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
-      }
+    val ms: List[M] = indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None).r
+    withClue("... size") {
+      ms should have size 48
+    }
+    withClue("... distribution") {
+      assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+      assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
     }
   }
 
@@ -251,7 +241,8 @@ class SGIndexerTests extends IndexerTest {
 
   it should "... gather the first 48 new sets, then use one in the middle as the latest processed, and return only the ones before it" in {
     indexer =>
-      val previousMs = whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None).r) { ms: List[M] =>
+      val previousMs = {
+        val ms: List[M] = indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None).r
         withClue("... size") {
           assert(ms.length >= 48)
         }
@@ -271,17 +262,16 @@ class SGIndexerTests extends IndexerTest {
         println(s"---> LPM: ${lastProcessed.lastPhotoSetID}")
 
         withClue("... now gathering only a part of the processed sets") {
-          whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(Int.MaxValue, Option(lastProcessed)).r) { ms: List[M] =>
-            withClue("... size") {
-              ms should have size index.toLong
-            }
-            withClue("... distribution") {
-              assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
-              assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
-              assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
-            }
-            ms
+          val ms: List[M] = indexer.gatherAllNewMsAndOnlyTheirLatestSet(Int.MaxValue, Option(lastProcessed)).r
+          withClue("... size") {
+            ms should have size index.toLong
           }
+          withClue("... distribution") {
+            assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
+            assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+            assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
+          }
+          ms
         }
       }
 
@@ -294,17 +284,16 @@ class SGIndexerTests extends IndexerTest {
         println(s"---> LPM: ${lastProcessed.lastPhotoSetID}")
 
         withClue("... now gathering only a part of the processed sets") {
-          whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(Int.MaxValue, Option(lastProcessed)).r) { ms: List[M] =>
-            withClue("... size") {
-              assert(ms.length == index, "... models returned ought to be 28")
-            }
-            withClue("... distribution") {
-              assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
-              assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
-              assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
-            }
-            ms
+          val ms: List[M] = indexer.gatherAllNewMsAndOnlyTheirLatestSet(Int.MaxValue, Option(lastProcessed)).r
+          withClue("... size") {
+            assert(ms.length == index, "... models returned ought to be 28")
           }
+          withClue("... distribution") {
+            assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
+            assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+            assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
+          }
+          ms
         }
       }
 
@@ -315,7 +304,8 @@ class SGIndexerTests extends IndexerTest {
 
   it should "... gather the first 48 new sets, then use first one as latest. No subsequent MS should be returned" in {
     indexer =>
-      val previousMs = whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None).r) { ms: List[M] =>
+      val previousMs = {
+        val ms: List[M] = indexer.gatherAllNewMsAndOnlyTheirLatestSet(48, None).r
         withClue("... size") {
           ms should have size 48
         }
@@ -330,15 +320,14 @@ class SGIndexerTests extends IndexerTest {
       val lastProcessed: LastProcessedMarker = indexer.createLastProcessedIndex(latest)
 
       withClue("... now gathering only a part of the processed sets") {
-        whenReady(indexer.gatherAllNewMsAndOnlyTheirLatestSet(Int.MaxValue, Option(lastProcessed)).r) { ms: List[M] =>
-          withClue("... size") {
-            ms should have size index.toLong
-          }
-          withClue("... distribution") {
-            assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
-          }
-          ms
+        val ms: List[M] = indexer.gatherAllNewMsAndOnlyTheirLatestSet(Int.MaxValue, Option(lastProcessed)).r
+        withClue("... size") {
+          ms should have size index.toLong
         }
+        withClue("... distribution") {
+          assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
+        }
+        ms
       }
   }
 

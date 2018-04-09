@@ -24,5 +24,5 @@ trait IndexerTest extends fixture.FlatSpec with ScalaFutures with Matchers with 
   implicit override def patienceConfig: PatienceConfig =
     PatienceConfig(timeout = scaled(Span(10000, Millis)), interval = scaled(Span(100, Millis)))
 
-  override protected def afterAll(): Unit = as.terminate().unsafeSyncGet()
+  override protected def afterAll(): Unit = as.terminate().map(_ => ()).unsafeSyncGet()
 }
