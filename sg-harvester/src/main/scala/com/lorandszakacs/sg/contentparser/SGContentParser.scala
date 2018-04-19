@@ -283,27 +283,22 @@ object SGContentParser extends SGURLBuilder with StrictLogging with URLConversio
     }
     else if (t.contains("hrs")) {
       val nrOfHours = t.replace(" hrs", "")
-      Try(DateTime.now.minusHours(nrOfHours.toInt)) map {
-        _.toLocalDate
-      }
+      Try(DateTime.now.minusHours(nrOfHours.toInt)) map (_.toLocalDate)
     }
     else if (t.contains("hr")) {
       val nrOfHours = t.replace(" hr", "")
-      Try(DateTime.now.minusHours(nrOfHours.toInt)) map {
-        _.toLocalDate
-      }
+      Try(DateTime.now.minusHours(nrOfHours.toInt)) map (_.toLocalDate)
     }
     else if (t.contains("mins")) {
       val nrOfMinutes = t.replace(" mins", "")
-      Try(DateTime.now.minusMinutes(nrOfMinutes.toInt)) map {
-        _.toLocalDate
-      }
+      Try(DateTime.now.minusMinutes(nrOfMinutes.toInt)) map (_.toLocalDate)
     }
     else if (t.contains("min")) {
       val nrOfMinutes = t.replace(" min", "")
-      Try(DateTime.now.minusMinutes(nrOfMinutes.toInt)) map {
-        _.toLocalDate
-      }
+      Try(DateTime.now.minusMinutes(nrOfMinutes.toInt)) map (_.toLocalDate)
+    }
+    else if (t.contains("now")) {
+      Try(DateTime.now) map (_.toLocalDate)
     }
     else {
       Try {
