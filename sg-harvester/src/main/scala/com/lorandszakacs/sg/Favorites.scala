@@ -45,6 +45,7 @@ object Favorites {
       "aonbheannach",
       "arabella",
       "arielscout",
+      "arriane",
       "arwen",
       "asami",
       "astraia",
@@ -96,6 +97,7 @@ object Favorites {
       "chrisrayn",
       "circa",
       "clareon",
+      "clemm8",
       "cleoo",
       "conrada",
       "coolicio",
@@ -341,6 +343,7 @@ object Favorites {
       "ripley",
       "riversong",
       "rjen",
+      "romaica",
       "rouge",
       "rourke",
       "sabbbre",
@@ -426,6 +429,7 @@ object Favorites {
       "vehera",
       "veive",
       "velour",
+      "venera",
       "venom",
       "verde",
       "vice",
@@ -436,6 +440,7 @@ object Favorites {
       "wednesdaya",
       "whiskey",
       "wilhelmine",
+      "wingsweak",
       "wolf",
       "xuxa",
       "yesenia",
@@ -456,7 +461,7 @@ object Favorites {
     ).sorted.distinct
 
   private val _new = List[String](
-    ).filterNot(_.isEmpty).sorted.distinct
+  ).filterNot(_.isEmpty).sorted.distinct
 
   lazy val names: List[Name] = (if (_new.isEmpty) _names else _new) map Name.apply
 
