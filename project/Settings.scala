@@ -55,6 +55,14 @@ object Settings {
       "-Ypartial-unification", // Enable partial unification in type constructor inference
 
       //"-Xfatal-warnings",
+
+      /*
+       * These are flags specific to the "better-monadic-for" plugin:
+       * https://github.com/oleg-py/better-monadic-for
+       */
+      "-P:bm4:no-filtering:y", // see https://github.com/oleg-py/better-monadic-for#desugaring-for-patterns-without-withfilters--pbm4no-filteringy
+      "-P:bm4:no-map-id:y", // see https://github.com/oleg-py/better-monadic-for#final-map-optimization--pbm4no-map-idy
+      "-P:bm4:no-tupling:y" // see https://github.com/oleg-py/better-monadic-for#desugar-bindings-as-vals-instead-of-tuples--pbm4no-tuplingy
     )
   )
 }
