@@ -4,7 +4,7 @@ import sbt.Keys._
 lazy val `scala_2.12`:     String = "2.12.6"
 lazy val mainScalaVersion: String = `scala_2.12`
 
-addCommandAlias("build", ";compile;test:compile")
+addCommandAlias("build",   ";compile;test:compile")
 addCommandAlias("rebuild", ";clean;update;compile;test:compile")
 
 addCommandAlias("ci", ";rebuild;test")
@@ -14,28 +14,24 @@ addCommandAlias("mkJar", ";rebuild;sg-harvester / assembly")
 lazy val root = Project(
   "sg-downloader",
   base = file(".")
-).settings(
-    commonSettings
-  )
-  .aggregate(
-    `sg-harvester`
-  )
+).settings(commonSettings)
+  .aggregate(`sg-harvester`)
 
 lazy val `sg-harvester` = project
+  .settings(commonSettings)
   .settings(
-    commonSettings ++
-      Seq(
-        mainClass in (Compile, run) in ThisBuild := Some("com.lorandszakacs.sg.app.Main"),
-        mainClass in assembly                    := Some("com.lorandszakacs.sg.app.Main"),
-        suppressSbtShellNotification             := true,
-        fork in run                              := true,
-        libraryDependencies ++= Seq(
-          akkaActor,
-          akkaStream,
-          akkaHttp,
-          scalaTest
-        )
+    Seq(
+      mainClass in (Compile, run) in ThisBuild := Some("com.lorandszakacs.sg.app.Main"),
+      mainClass in assembly        := Some("com.lorandszakacs.sg.app.Main"),
+      suppressSbtShellNotification := true,
+      fork in run                  := true,
+      libraryDependencies ++= Seq(
+        akkaActor,
+        akkaStream,
+        akkaHttp,
+        scalaTest
       )
+    )
   )
   .aggregate(
     `sg-core`,
@@ -48,13 +44,13 @@ lazy val `sg-harvester` = project
   )
 
 lazy val `sg-repo` = project
+  .settings(commonSettings)
   .settings(
-    commonSettings ++
-      Seq(
-        libraryDependencies ++= Seq(
-          scalaTest
-        )
+    Seq(
+      libraryDependencies ++= Seq(
+        scalaTest
       )
+    )
   )
   .aggregate(
     `sg-core`,
@@ -66,28 +62,26 @@ lazy val `sg-repo` = project
   )
 
 lazy val `sg-core` = project
-  .settings(
-    commonSettings
-  )
+  .settings(commonSettings)
 
 lazy val `util` = project
+  .settings(commonSettings)
   .settings(
-    commonSettings ++
-      Seq(
-        libraryDependencies ++= Seq(
-          akkaActor,
-          //required for package com.lorandszakacs.util.mongodb
-          reactiveMongo,
-          //required for package com.lorandszakacs.util.time
-          nScalaJodaTime,
-          logbackClassic,
-          iolog4s,
-          bmcEffects,
-          //required for package com.lorandszakacs.util.html
-          jsoup,
-          scalaTest
-        )
+    Seq(
+      libraryDependencies ++= Seq(
+        akkaActor,
+        //required for package com.lorandszakacs.util.mongodb
+        reactiveMongo,
+        //required for package com.lorandszakacs.util.time
+        nScalaJodaTime,
+        logbackClassic,
+        iolog4s,
+        bmcEffects,
+        //required for package com.lorandszakacs.util.html
+        jsoup,
+        scalaTest
       )
+    )
   )
 
 //============================================================================================
@@ -98,9 +92,10 @@ lazy val bmcEffects: ModuleID = "com.busymachines" %% "busymachines-commons-effe
 
 lazy val nScalaJodaTime: ModuleID = "com.github.nscala-time" %% "nscala-time"   % "2.18.0" withSources ()
 lazy val reactiveMongo:  ModuleID = "org.reactivemongo"      %% "reactivemongo" % "0.13.0" withSources ()
-lazy val typeSafeConfig: ModuleID = "com.typesafe"           % "config"         % "1.3.3" withSources ()
+lazy val typeSafeConfig: ModuleID = "com.typesafe"           % "config"         % "1.3.3"  withSources ()
 
 lazy val logbackClassic: ModuleID = "ch.qos.logback" % "logback-classic" % "1.2.3" withSources ()
+lazy val iolog4s:        ModuleID = "org.iolog4s"    %% "iolog4s"        % "0.0.3" withSources ()
 
 lazy val pprint: ModuleID = "com.lihaoyi" %% "pprint" % "0.4.3" withSources ()
 
@@ -112,8 +107,6 @@ lazy val jsoup: ModuleID = "org.jsoup" % "jsoup" % "1.8.1" withSources ()
 //============================================================================================
 
 //brough in by bmcEffects
-
-lazy val iolog4s: ModuleID = "org.iolog4s" %% "iolog4s" % "0.0.2"
 
 //============================================================================================
 //================================= http://akka.io/docs/ =====================================

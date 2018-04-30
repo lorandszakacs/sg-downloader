@@ -6,7 +6,7 @@ addSbtPlugin("com.eed3si9n"   % "sbt-assembly" % "0.14.6")
 /**
   * https://github.com/scalameta/scalafmt
   */
-addSbtPlugin("com.geirsson"   % "sbt-scalafmt" % "1.4.0")
+addSbtPlugin("com.geirsson"   % "sbt-scalafmt" % "1.5.1")
 
 /**
   * https://github.com/jrudolph/sbt-dependency-graph
