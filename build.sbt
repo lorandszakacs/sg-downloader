@@ -1,7 +1,7 @@
 import sbt._
 import sbt.Keys._
 
-lazy val `scala_2.12`:     String = "2.12.5"
+lazy val `scala_2.12`:     String = "2.12.6"
 lazy val mainScalaVersion: String = `scala_2.12`
 
 addCommandAlias("build", ";compile;test:compile")
