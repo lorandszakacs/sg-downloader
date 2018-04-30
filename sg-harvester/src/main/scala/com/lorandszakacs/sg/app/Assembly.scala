@@ -10,7 +10,7 @@ import com.lorandszakacs.sg.indexer.IndexerAssembly
 import com.lorandszakacs.sg.model.SGRepoAssembly
 import com.lorandszakacs.sg.reifier.ReifierAssembly
 
-import com.typesafe.scalalogging.StrictLogging
+import org.iolog4s._
 
 /**
   *
@@ -24,8 +24,9 @@ final class Assembly(
   val computationScheduler:     Scheduler,
   override val dbIOScheduler:   DBIOScheduler,
   override val httpIOScheduler: HTTPIOScheduler
-) extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly
-    with StrictLogging {
+) extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly {
+
+  private implicit val logger: Logger[Task] = Logger.create[Task]
 
   override implicit lazy val db: Database = new Database(
     uri    = """mongodb://localhost:27016""",
@@ -34,11 +35,13 @@ final class Assembly(
 
   lazy val shutdownTask: Task[Unit] = {
     for {
-      _ <- Task(logger.info("attempting to shutdown and close all resources"))
-      _ <- db.shutdown() >> Task(logger.info("terminated -- database.shutdown()"))
-      _ <- actorSystem.terminate().suspendInTask >> Task(logger.info("terminated -- actorSystem.terminate()"))
-      _ <- Task(logger.info("terminated -- completed assembly.shutdown()"))
+      _ <- logger.info("attempting to shutdown and close all resources")
+      _ <- db.shutdown() >> logger.info("terminated -- database.shutdown()")
+      _ <- actorSystem.terminate().suspendInTask >> logger.info("terminated -- actorSystem.terminate()")
+      _ <- logger.info("terminated -- completed assembly.shutdown()")
     } yield ()
   }
+
+  lazy val initTask: Task[Unit] = initReifierAssembly >> logger.info("initialized assembly")
 
 }

@@ -5,7 +5,8 @@ import java.nio.file._
 import java.nio.file.attribute.BasicFileAttributes
 
 import com.lorandszakacs.util.effects._
-import com.typesafe.scalalogging.StrictLogging
+
+import org.iolog4s._
 
 import scala.collection.mutable
 
@@ -15,7 +16,8 @@ import scala.collection.mutable
   * @since 17 Jul 2016
   *
   */
-object FileUtils extends StrictLogging {
+object FileUtils {
+  private implicit val logger: Logger[Task] = Logger.create[Task]
 
   def normalizeHomePath(path: String): String = {
     path.replaceFirst("^~", System.getProperty("user.home"))
@@ -24,53 +26,53 @@ object FileUtils extends StrictLogging {
   /**
     * recursively deletes everything in the specified folder
     */
-  def cleanFolderOrCreate(fd: Path): Task[Unit] = Task {
-    fd.toAbsolutePath.toFile.mkdirs()
-    Files.walkFileTree(
-      fd,
-      new FileVisitor[Path] {
-        override def visitFileFailed(file: Path, exc: IOException): FileVisitResult = {
-          if (file.toAbsolutePath == fd.toAbsolutePath) {
-            throw RootFolderCouldNotBeOpenedException(fd.toAbsolutePath.toString, exc)
-          }
-          else {
-            FileVisitResult.CONTINUE
-          }
-        }
-
-        override def visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult = {
-          if (Files.isDirectory(file)) {
-            //in this case, the folder will be deleted in the postVisitDirectory, once the folder is deleted.
-            FileVisitResult.CONTINUE
-          }
-          else {
-            Try(Files.delete(file)) match {
-              case TryFailure(exception) =>
-                throw RootFolderFileCouldNotBeDeleted(file.toAbsolutePath.toString, exception)
-              case TrySuccess(_) => ()
+  def cleanFolderOrCreate(fd: Path): Task[Unit] =
+    Task {
+      fd.toAbsolutePath.toFile.mkdirs()
+      Files.walkFileTree(
+        fd,
+        new FileVisitor[Path] {
+          override def visitFileFailed(file: Path, exc: IOException): FileVisitResult = {
+            if (file.toAbsolutePath == fd.toAbsolutePath) {
+              throw RootFolderCouldNotBeOpenedException(fd.toAbsolutePath.toString, exc)
             }
+            else {
+              FileVisitResult.CONTINUE
+            }
+          }
+
+          override def visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult = {
+            if (Files.isDirectory(file)) {
+              //in this case, the folder will be deleted in the postVisitDirectory, once the folder is deleted.
+              FileVisitResult.CONTINUE
+            }
+            else {
+              Try(Files.delete(file)) match {
+                case TryFailure(exception) =>
+                  throw RootFolderFileCouldNotBeDeleted(file.toAbsolutePath.toString, exception)
+                case TrySuccess(_) => ()
+              }
+              FileVisitResult.CONTINUE
+            }
+          }
+
+          override def preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult = {
             FileVisitResult.CONTINUE
+
+          }
+
+          override def postVisitDirectory(dir: Path, exc: IOException): FileVisitResult = {
+            if (dir.toAbsolutePath != fd.toAbsolutePath) {
+              Files.deleteIfExists(dir)
+              FileVisitResult.CONTINUE
+            }
+            else {
+              FileVisitResult.CONTINUE
+            }
           }
         }
-
-        override def preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult = {
-          FileVisitResult.CONTINUE
-
-        }
-
-        override def postVisitDirectory(dir: Path, exc: IOException): FileVisitResult = {
-          if (dir.toAbsolutePath != fd.toAbsolutePath) {
-            Files.deleteIfExists(dir)
-            FileVisitResult.CONTINUE
-          }
-          else {
-            FileVisitResult.CONTINUE
-          }
-        }
-      }
-    )
-    logger.info(s"successfully cleaned: ${fd.toAbsolutePath}")
-  }
+      )
+    } >> logger.info(s"successfully cleaned: ${fd.toAbsolutePath}")
 
   def fileMatchInEverythingButDate(s1: String, s2: String): Boolean = {
     if (s1.length != s2.length)
@@ -100,7 +102,6 @@ object FileUtils extends StrictLogging {
             throw RootFolderCouldNotBeOpenedException(fd.toAbsolutePath.toString, exc)
           }
           else {
-            logger.error(s"visit failed @$file", exc)
             FileVisitResult.CONTINUE
           }
         }

@@ -3,7 +3,6 @@ package com.lorandszakacs.sg.app.repl
 import com.lorandszakacs.sg.app.commands.{Command, CommandParser, Commands}
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
 import com.lorandszakacs.util.effects._
-import com.typesafe.scalalogging.StrictLogging
 
 /**
   *
@@ -11,10 +10,7 @@ import com.typesafe.scalalogging.StrictLogging
   * @since 01 Jul 2017
   *
   */
-class CommandLineInterpreter(
-  assembly: SGDownloaderAssembly
-) extends StrictLogging {
-
+class CommandLineInterpreter(assembly: SGDownloaderAssembly) {
   private val defaultDays = 160
 
   def interpretArgs(args: Array[String]): Task[Unit] = {

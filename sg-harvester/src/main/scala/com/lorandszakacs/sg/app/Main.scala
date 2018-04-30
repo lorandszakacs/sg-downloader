@@ -19,15 +19,16 @@ package com.lorandszakacs.sg.app
 import akka.actor.ActorSystem
 import com.lorandszakacs.sg.app.repl.{CommandLineInterpreter, REPL}
 import com.lorandszakacs.util.effects._
-import com.typesafe.scalalogging.StrictLogging
+import org.iolog4s.Logger
 
 /**
   * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 16 Mar 2015
   *
   */
-object Main extends App with StrictLogging {
-  implicit val actorSystem: ActorSystem = ActorSystem("sg-app")
+object Main extends App {
+  private implicit val logger: Logger[Task] = Logger.create[Task]
+  implicit val actorSystem:    ActorSystem  = ActorSystem("sg-app")
 
   implicit val computationScheduler: Scheduler       = Scheduler.computation(name = "sg-app-computation")
   implicit val dbIOScheduler:        DBIOScheduler   = DBIOScheduler(Scheduler.io(name = "sg-app-dbio"))
@@ -38,18 +39,19 @@ object Main extends App with StrictLogging {
   val repl        = new REPL(interpreter)
 
   val interpretArgsTask: Task[Unit] =
-    Task(logger.info(s"Received args: ${args.mkString(",")} --> executing command")) >>
+    logger.info(s"Received args: ${args.mkString(",")} --> executing command") >>
       interpreter.interpretArgs(args).onError {
         case NonFatal(e) =>
-          Task(logger.error("—— something went wrong during interpretation —— exiting", e)) >>
+          logger.error(e)("—— something went wrong during interpretation —— exiting") >>
             assembly.shutdownTask >>
             Task(System.exit(1))
       }
 
-  val startReplTask = Task(logger.info(s"Did not receive any arguments, going into REPL mode")) >>
+  val startReplTask = logger.info(s"Did not receive any arguments, going into REPL mode") >>
     repl.runTask
 
   val program = for {
+    _ <- assembly.initTask
     _ <- if (args.isEmpty) startReplTask else interpretArgsTask
     _ <- assembly.shutdownTask
     _ <- Task(println("... finished gracefully"))

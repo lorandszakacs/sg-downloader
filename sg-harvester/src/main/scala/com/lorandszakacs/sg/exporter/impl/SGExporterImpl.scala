@@ -7,7 +7,7 @@ import com.lorandszakacs.sg.exporter.indexwriter.{HTMLIndexWriter, WriterSetting
 import com.lorandszakacs.sg.exporter.{ExporterSettings, NameNotFoundException, SGExporter}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.effects._
-import com.typesafe.scalalogging.StrictLogging
+import org.iolog4s.Logger
 
 /**
   *
@@ -19,7 +19,9 @@ private[exporter] class SGExporterImpl(
   val repo:       SGAndHFRepository,
   val html:       HTMLGenerator,
   val fileWriter: HTMLIndexWriter
-) extends SGExporter with StrictLogging {
+) extends SGExporter {
+
+  private implicit val logger: Logger[Task] = Logger.create[Task]
 
   private val FavoritesHtmlSettings = HtmlSettings(
     indexFileName  = "index.html",
@@ -53,15 +55,13 @@ private[exporter] class SGExporterImpl(
         _                         <- fileWriter.writeRootMIndex(favoritesIndexDelta)(favoritesWriterSettings)
         completeFavoriteRootIndex <- html.createRootIndex(Favorites.names)(FavoritesHtmlSettings)
         _                         <- fileWriter.rewriteRootIndexFile(completeFavoriteRootIndex)(favoritesWriterSettings)
-      } yield {
-        logger.info(
+        _ <- logger.info(
           s"-- successfully updated DELTA favorites index ${deltaFavorites.length}: @ ${completeFavoriteRootIndex.relativePathAndName}"
         )
-      }
+      } yield ()
     }
     else {
       logger.info("-- no delta for favorite")
-      Task.unit
     }
   }
 
@@ -73,13 +73,11 @@ private[exporter] class SGExporterImpl(
         _             <- fileWriter.writeRootMIndex(allIndexDelta)(allWriterSettings)
         allRootIndex  <- html.createRootIndex(completeIndex.names)(AllHtmlSettings)
         _             <- fileWriter.rewriteRootIndexFile(allRootIndex)(allWriterSettings)
-      } yield {
-        logger.info(s"--- successfully updated DELTA all M index of: ${delta.length}")
-      }
+        _             <- logger.info(s"--- successfully updated DELTA all M index of: ${delta.length}")
+      } yield ()
     }
     else {
       logger.info("-- no delta for normal ms")
-      Task.unit
     }
   }
 

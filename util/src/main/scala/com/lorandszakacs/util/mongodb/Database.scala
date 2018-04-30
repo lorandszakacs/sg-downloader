@@ -2,8 +2,8 @@ package com.lorandszakacs.util.mongodb
 
 import com.lorandszakacs.util.effects._
 import com.typesafe.config.Config
+import org.iolog4s.Logger
 import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
-import com.typesafe.scalalogging.StrictLogging
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -17,7 +17,9 @@ import scala.language.postfixOps
 final case class Database(uri: String, dbName: String, config: Option[Config] = None)(
   implicit
   dbIOScheduler: DBIOScheduler
-) extends StrictLogging {
+) {
+
+  private implicit val logger: Logger[Task] = Logger.create[Task]
 
   def collection(colName: String): Task[BSONCollection] = databaseTask.map(_.apply(colName))
 
@@ -43,17 +45,19 @@ final case class Database(uri: String, dbName: String, config: Option[Config] = 
   def drop(): Task[Unit] = {
     for {
       db <- databaseTask
-      _  <- Task(logger.info(s"attempting to drop database: ${db.name}"))
-      _  <- db.drop().suspendInTask >> Task(logger.info(s"dropped database: ${db.name}"))
+      _  <- logger.info(s"attempting to drop database: ${db.name}")
+      _  <- db.drop().suspendInTask
+      _  <- logger.info(s"dropped database: ${db.name}")
     } yield ()
   }
 
   def shutdown(): Task[Unit] = {
     for {
-      _      <- Task(logger.info("attempting to close _mongoDriver.close(...)"))
+      _      <- logger.info("attempting to close _mongoDriver.close(...)")
       driver <- mongoDriverTask
       _      <- Task(driver.close(1 minute))
-      _      <- driver.system.terminate().suspendInTask >> Task(logger.info("terminated -- _mongoDriver.system.terminate()"))
+      _      <- driver.system.terminate().suspendInTask
+      _      <- logger.info("terminated -- _mongoDriver.system.terminate()")
     } yield ()
   }
 }

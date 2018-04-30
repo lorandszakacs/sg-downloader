@@ -23,11 +23,10 @@ import com.lorandszakacs.sg.URLConversions
 import com.lorandszakacs.sg.http.SGURLBuilder
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html._
-import com.typesafe.scalalogging.StrictLogging
 
 import scala.language.postfixOps
 
-object SGContentParser extends SGURLBuilder with StrictLogging with URLConversions {
+object SGContentParser extends SGURLBuilder with URLConversions {
   private val months = Map(
     1  -> "Jan",
     2  -> "Feb",

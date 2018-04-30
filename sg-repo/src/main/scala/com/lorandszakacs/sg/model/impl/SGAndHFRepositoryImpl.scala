@@ -1,11 +1,11 @@
 package com.lorandszakacs.sg.model.impl
 
 import com.lorandszakacs.sg.model._
-import com.typesafe.scalalogging.StrictLogging
 import org.joda.time.LocalDate
 import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.mongodb.Database
 import com.lorandszakacs.util.time._
+import org.iolog4s.Logger
 
 /**
   *
@@ -17,7 +17,9 @@ private[model] class SGAndHFRepositoryImpl(
   val db: Database
 )(
   implicit val sch: DBIOScheduler
-) extends SGAndHFRepository with StrictLogging {
+) extends SGAndHFRepository {
+
+  private implicit val logger: Logger[Task] = Logger.create[Task]
 
   private val sgsRepo = new RepoSGs(db)
   private val sgiRepo = new RepoSGIndex(db)
@@ -91,11 +93,10 @@ private[model] class SGAndHFRepositoryImpl(
     for {
       hfsThatBecameSGs <- updateHF(newHFs)
       _                <- updateSGs(newSGs)
-    } yield {
-      logger.info(s"new SGs: ${newSGs.stringify}")
-      logger.info(s"new HFs: ${newHFs.stringify}")
-      logger.info(s"HFs that became SGs: ${hfsThatBecameSGs.stringify}")
-    }
+      _ <- logger.info(s"new SGs: ${newSGs.stringify}") >>
+        logger.info(s"new HFs: ${newHFs.stringify}") >>
+        logger.info(s"HFs that became SGs: ${hfsThatBecameSGs.stringify}")
+    } yield ()
   }
 
   override def createOrUpdateLastProcessed(l: LastProcessedMarker): Task[Unit] = {

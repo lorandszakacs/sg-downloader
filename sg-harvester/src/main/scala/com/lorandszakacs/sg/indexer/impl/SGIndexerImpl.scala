@@ -9,9 +9,9 @@ import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.M.{HFFactory, MFactory, SGFactory}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html.Html
-import com.typesafe.scalalogging.StrictLogging
 import monix.execution.atomic.AtomicBoolean
 import monix.reactive.Observable
+import org.iolog4s.Logger
 
 /**
   *
@@ -24,8 +24,8 @@ import monix.reactive.Observable
   * @since 03 Jul 2016
   *
   */
-private[indexer] final class SGIndexerImpl(val sGClient: SGClient)
-    extends SGIndexer with SGURLBuilder with StrictLogging {
+private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGIndexer with SGURLBuilder {
+  private implicit val logger: Logger[Task] = Logger.create[Task]
 
   private[this] implicit val Authentication: Authentication = DefaultSGAuthentication
 
@@ -98,10 +98,8 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)
         parsingFunction = SGContentParser.gatherPhotoSetsForM,
         isFinalPage     = isEndPageForMIndexing
       )
-    } yield {
-      logger.info(s"gathered all sets for ${mf.name} ${name.name}. #sets: ${sets.length}")
-      mf(photoSetURL = pageURL, name = name, photoSets = sets)
-    }
+      _ <- logger.info(s"gathered all sets for ${mf.name} ${name.name}. #sets: ${sets.length}")
+    } yield mf(photoSetURL = pageURL, name = name, photoSets = sets)
   }
 
   override def gatherPhotoSetInformationForName(name: Name)(implicit pc: PatienceConfig): Task[M] = {
@@ -116,10 +114,8 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)
       )
       isHF = sets.exists(_.isHFSet.contains(true))
       mf   = if (isHF) HFFactory else SGFactory
-    } yield {
-      logger.info(s"gathered all sets for ${mf.name} ${name.name}. #sets: ${sets.length}")
-      mf(photoSetURL = pageURL, name = name, photoSets = sets)
-    }
+      _ <- logger.info(s"gathered all sets for ${mf.name} ${name.name}. #sets: ${sets.length}")
+    } yield mf(photoSetURL = pageURL, name = name, photoSets = sets)
   }
 
   /**
@@ -274,7 +270,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient)
       .mapTask { offset =>
         for {
           newURI <- Task.pure(offsetUri(uri, offset.toInt))
-          _      <- Task(logger.info(s"load repeatedly: step=$offsetStep [$newURI]"))
+          _      <- logger.info(s"load repeatedly: step=$offsetStep [$newURI]")
           html   <- pc.throttleAfter(sGClient.getPage(newURI))
         } yield (offset.toInt, html)
       }

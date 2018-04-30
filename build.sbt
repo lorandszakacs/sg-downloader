@@ -80,9 +80,8 @@ lazy val `util` = project
           reactiveMongo,
           //required for package com.lorandszakacs.util.time
           nScalaJodaTime,
-          //required for package com.lorandszakacs.util.logging
           logbackClassic,
-          scalaLogging,
+          iolog4s,
           bmcEffects,
           //required for package com.lorandszakacs.util.html
           jsoup,
@@ -101,8 +100,7 @@ lazy val nScalaJodaTime: ModuleID = "com.github.nscala-time" %% "nscala-time"   
 lazy val reactiveMongo:  ModuleID = "org.reactivemongo"      %% "reactivemongo" % "0.13.0" withSources ()
 lazy val typeSafeConfig: ModuleID = "com.typesafe"           % "config"         % "1.3.3" withSources ()
 
-lazy val scalaLogging:   ModuleID = "com.typesafe.scala-logging" %% "scala-logging"  % "3.9.0" withSources ()
-lazy val logbackClassic: ModuleID = "ch.qos.logback"             % "logback-classic" % "1.1.7" withSources ()
+lazy val logbackClassic: ModuleID = "ch.qos.logback" % "logback-classic" % "1.2.3" withSources ()
 
 lazy val pprint: ModuleID = "com.lihaoyi" %% "pprint" % "0.4.3" withSources ()
 
@@ -114,6 +112,8 @@ lazy val jsoup: ModuleID = "org.jsoup" % "jsoup" % "1.8.1" withSources ()
 //============================================================================================
 
 //brough in by bmcEffects
+
+lazy val iolog4s: ModuleID = "org.iolog4s" %% "iolog4s" % "0.0.2"
 
 //============================================================================================
 //================================= http://akka.io/docs/ =====================================

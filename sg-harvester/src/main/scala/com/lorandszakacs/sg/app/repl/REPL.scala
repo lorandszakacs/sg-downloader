@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.app.repl
 
 import com.lorandszakacs.util.effects._
 import com.lorandszakacs.sg.app.commands.Commands
-import com.typesafe.scalalogging.StrictLogging
+import org.iolog4s.Logger
 
 import scala.io.StdIn
 
@@ -12,15 +12,14 @@ import scala.io.StdIn
   * @since 04 Jul 2016
   *
   */
-class REPL(
-  private val interpreter: CommandLineInterpreter
-) extends StrictLogging {
+class REPL(private val interpreter: CommandLineInterpreter) {
+  private implicit val logger: Logger[Task] = Logger.create[Task]
 
   def runTask: Task[Unit] = {
     for {
       _ <- Task(println("type help for instructions"))
       _ <- loop(stop = false).recoverWith {
-        case NonFatal(e) => Task(logger.error("the loop somehow broke. terminating", e))
+        case NonFatal(e) => logger.error(e)("the loop somehow broke. terminating")
       }
     } yield ()
   }
@@ -35,7 +34,7 @@ class REPL(
         input <- Task(StdIn.readLine().trim())
         _ <- interpreter.interpret(input).attempt.flatMap {
           case Left(thr) =>
-            Task(logger.error(s"failed to interpret command: '$input'", withFilteredStackTrace(thr))) >>
+            logger.error(withFilteredStackTrace(thr))(s"failed to interpret command: '$input'") >>
               Task(print("\n")) >>
               loop(stop = false)
           case Right(c) =>

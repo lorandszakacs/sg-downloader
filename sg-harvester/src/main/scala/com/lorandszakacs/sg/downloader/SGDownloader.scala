@@ -7,7 +7,7 @@ import com.lorandszakacs.sg.indexer.SGIndexer
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.sg.reifier.SGReifier
 import com.lorandszakacs.util.effects._
-import com.typesafe.scalalogging.StrictLogging
+import org.iolog4s._
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -25,7 +25,8 @@ final class SGDownloader private[downloader] (
   private[this] val indexer:  SGIndexer,
   private[this] val reifier:  SGReifier,
   private[this] val exporter: SGExporter
-) extends StrictLogging {
+) {
+  private implicit val logger: Logger[Task] = Logger.create[Task]
 
   /**
     * Used for commands that act on the entire repository
@@ -52,26 +53,27 @@ final class SGDownloader private[downloader] (
   object index {
 
     def allSGs(implicit patienceConfig: PatienceConfig = patienceConfig): Task[Unit] = {
-      logger.info("... starting index.allSGs")
       for {
+        _   <- logger.info("... starting index.allSGs")
         all <- indexer.gatherSGNames(Int.MaxValue)
-        _ = logger.info(s"index.allSGs --> finished gathering ${all.length} SGs")
-        _ <- repo.reindexSGs(all)
+        _   <- logger.info(s"index.allSGs --> finished gathering ${all.length} SGs")
+        _   <- repo.reindexSGs(all)
       } yield ()
     }
 
     def allHFs(implicit patienceConfig: PatienceConfig = patienceConfig): Task[Unit] = {
-      logger.info("... starting index.allHFs")
+
       for {
+        _   <- logger.info("... starting index.allHFs")
         all <- indexer.gatherHFNames(Int.MaxValue)
-        _ = logger.info(s"index.allHFs --> finished gathering ${all.length} SGs")
-        _ <- repo.reindexHFs(all)
+        _   <- logger.info(s"index.allHFs --> finished gathering ${all.length} SGs")
+        _   <- repo.reindexHFs(all)
       } yield ()
     }
 
     def all(implicit patienceConfig: PatienceConfig = patienceConfig): Task[Unit] = {
-      logger.info("... starting index.all, composite of index.allSGs && index.allHFs")
       for {
+        _ <- logger.info("... starting index.all, composite of index.allSGs && index.allHFs")
         _ <- allSGs
         _ <- allHFs
       } yield ()
@@ -80,32 +82,28 @@ final class SGDownloader private[downloader] (
     def deltaPure(
       lastProcessedOpt:        Option[LastProcessedMarker]
     )(implicit patienceConfig: PatienceConfig): Task[Ms] = {
-      logger.info(s"index.delta --> starting from ${lastProcessedOpt.map(_.lastPhotoSetID).getOrElse("")}")
       for {
+        _     <- logger.info(s"index.delta --> starting from ${lastProcessedOpt.map(_.lastPhotoSetID).getOrElse("")}")
         newMs <- indexer.gatherAllNewMsAndAllTheirPhotoSets(Int.MaxValue, lastProcessedOpt)
         ms = newMs.group
-        _ = {
-          logger.info(s"finished indexing new entries. Total: #${ms.all.length}")
-          logger.info(s"# of new SGs indexed: ${ms.sgs.length}. Names: ${ms.sgNames.stringify}")
+        _ <- logger.info(s"finished indexing new entries. Total: #${ms.all.length}") >>
+          logger.info(s"# of new SGs indexed: ${ms.sgs.length}. Names: ${ms.sgNames.stringify}") >>
           logger.info(s"# of new HFs indexed: ${ms.hfs.length}. Names: ${ms.hfNames.stringify}")
-        }
       } yield ms
     }
 
     def specificPure(names: List[Name])(implicit patienceConfig: PatienceConfig): Task[Ms] = {
-      logger.info(s"index.specific --> ${names.stringify}")
       for {
+        _ <- logger.info(s"index.specific --> ${names.stringify}")
         newMs <- Task.serialize(names) { name =>
           patienceConfig.throttleAfter {
             indexer.gatherPhotoSetInformationForName(name)
           }
         }
         ms = newMs.group
-        _ = {
-          logger.info(s"finished indexing specific entries. Total: #${ms.all.length}")
-          logger.info(s"# of SGs indexed: ${ms.sgs.length}. Names: ${ms.sgNames.stringify}")
+        _ <- logger.info(s"finished indexing specific entries. Total: #${ms.all.length}") >>
+          logger.info(s"# of SGs indexed: ${ms.sgs.length}. Names: ${ms.sgNames.stringify}") >>
           logger.info(s"# of HFs indexed: ${ms.hfs.length}. Names: ${ms.hfNames.stringify}")
-        }
       } yield ms
     }
   }
@@ -113,58 +111,57 @@ final class SGDownloader private[downloader] (
   object reify {
 
     def deltaPure(indexedMs: Ms): Task[Ms] = {
-      logger.info(s"reify.delta --> reifying indexed Ms # ${indexedMs.all.size}: ${indexedMs.allNames.stringify}")
       for {
+        _ <- logger.info(
+          s"reify.delta --> reifying indexed Ms # ${indexedMs.all.size}: ${indexedMs.allNames.stringify}"
+        )
         reifiedSGs <- Task.serialize(indexedMs.sgs)(reifier.reifySG)
         reifiedHFs <- Task.serialize(indexedMs.hfs)(reifier.reifyHF)
         reifiedMs = (reifiedSGs, reifiedHFs).group
 
-        _ = {
-          logger.info(s"finished reifying new entries. Total: #${reifiedMs.all.length}")
-          logger.info(s"# of new SGs reified: ${reifiedSGs.length}")
+        _ <- logger.info(s"finished reifying new entries. Total: #${reifiedMs.all.length}") >>
+          logger.info(s"# of new SGs reified: ${reifiedSGs.length}") >>
           logger.info(s"# of new HFs reified: ${reifiedHFs.length}")
-        }
 
       } yield (reifiedSGs, reifiedHFs).group
     }
 
     def specificPure(indexedMs: Ms): Task[Ms] = {
-      logger.info(s"reify.specific --> delegating to reify.delta")
-      this.deltaPure(indexedMs)
+      logger.info(s"reify.specific --> delegating to reify.delta") >> this.deltaPure(indexedMs)
     }
   }
 
   object export {
 
     def delta(daysToExport: Int, delta: List[M])(implicit settings: ExporterSettings): Task[Unit] = {
-      logger.info(s"export.delta --> export. Days to export: $daysToExport. #Ms: ${delta.length}")
+
       for {
+        _ <- logger.info(s"export.delta --> export. Days to export: $daysToExport. #Ms: ${delta.length}")
         _ <- exporter.exportDeltaHTMLOfMs(delta)(settings)
-        _ = logger.info(
+        _ <- logger.info(
           s"export.delta --IMPURE--> finished exporting HTML to ${settings.newestRootFolderPath}."
         )
         _ <- exporter.exportLatestForDaysWithDelta(daysToExport, delta, Favorites.namesSet)(settings)
-        _ = logger.info(
+        _ <- logger.info(
           s"export.delta --IMPURE--> finished newest HTML to ${settings.newestRootFolderPath}."
         )
       } yield ()
     }
 
     def specific(daysToExport: Int, specific: List[M])(implicit settings: ExporterSettings): Task[Unit] = {
-      logger.info(s"export.specific --> delegating to export.delta")
-      this.delta(daysToExport, specific)(settings)
+      logger.info(s"export.specific --> delegating to export.delta") >> this.delta(daysToExport, specific)(settings)
     }
 
     def all(daysToExport: Int, onlyFavorites: Boolean)(
       implicit settings:  ExporterSettings = exporterSettings
     ): Task[Unit] = {
-      logger.info(s"export.all --> onlyFavorites=$onlyFavorites --> to: ${settings.allMsRootFolderPath}")
       for {
+        _ <- logger.info(s"export.all --> onlyFavorites=$onlyFavorites --> to: ${settings.allMsRootFolderPath}")
         all <- if (onlyFavorites)
           repo.find(Favorites.names)
         else
           repo.findAll.map(_.filterNot(_.photoSets.isEmpty))
-        _ <- Task.pure(logger.info(s"export.all --> delegating to export.specific"))
+        _ <- logger.info(s"export.all --> delegating to export.specific")
         _ <- this.specific(daysToExport, all)
       } yield ()
     }
@@ -179,28 +176,28 @@ final class SGDownloader private[downloader] (
       * @return
       */
     def delta(indexedMs: Ms, reifiedMs: Ms, oldLastProcessedMarker: Option[LastProcessedMarker]): Task[Unit] = {
-      logger.info(s"write.delta --> writing state to DB. # of fully reified Ms: ${reifiedMs.all.length}")
-      logger.info(s"write.delta --> delegating to write.specific")
       for {
+        _ <- logger.info(s"write.delta --> writing state to DB. # of fully reified Ms: ${reifiedMs.all.length}")
+        _ <- logger.info(s"write.delta --> delegating to write.specific")
         _ <- this.specific(indexedMs, reifiedMs)
-        _ = logger.info(s"write.delta --> finished doing write.specific")
+        _ <- logger.info(s"write.delta --> finished doing write.specific")
 
         _ <- updateLatestProcessedMarker(indexedMs, reifiedMs, oldLastProcessedMarker)
-        _ = logger.info(s"update.delta --IMPURE--> finished writing last processed market to repository")
+        _ <- logger.info(s"update.delta --IMPURE--> finished writing last processed market to repository")
       } yield ()
     }
 
     def specific(indexedMs: Ms, reifiedMs: Ms): Task[Unit] = {
-      logger.info(s"write.specific --> writing state to DB. # of fully reified Ms: ${reifiedMs.all.length}")
       for {
+        _ <- logger.info(s"write.specific --> writing state to DB. # of fully reified Ms: ${reifiedMs.all.length}")
         _ <- repo.markAsIndexed(indexedMs.hfs, indexedMs.sgs)
-        _ = logger.info(s"write.specific --IMPURE--> finished writing SG and HF indexes to repository")
+        _ <- logger.info(s"write.specific --IMPURE--> finished writing SG and HF indexes to repository")
 
         _ <- repo.createOrUpdateSGs(reifiedMs.sgs)
-        _ = logger.info(s"write.specific --IMPURE--> finished writing reified SGs to repository")
+        _ <- logger.info(s"write.specific --IMPURE--> finished writing reified SGs to repository")
 
         _ <- repo.createOrUpdateHFs(reifiedMs.hfs)
-        _ = logger.info(s"write.specific --IMPURE--> finished writing reified HFs to repository")
+        _ <- logger.info(s"write.specific --IMPURE--> finished writing reified HFs to repository")
       } yield ()
     }
 
@@ -210,10 +207,7 @@ final class SGDownloader private[downloader] (
       lastProcessedMarker: Option[LastProcessedMarker]
     ): Task[Unit] = {
 
-      Task(
-        logger
-          .info(s"delta.UpdateLatestProcessedIndex: old='${lastProcessedMarker.map(_.lastPhotoSetID).mkString("")}'")
-      ) >>
+      logger.info(s"delta.UpdateLatestProcessedIndex: old='${lastProcessedMarker.map(_.lastPhotoSetID).mkString("")}'") >>
         (reifiedMs.all.nonEmpty).effectOnTrueTask {
           val optNewestM: Option[M] = for {
             newestIndexed <- indexedMs.newestM
@@ -225,7 +219,7 @@ final class SGDownloader private[downloader] (
               new IllegalArgumentException("... should have at least one newest gathered")
             )
             newMarker = indexer.createLastProcessedIndex(newestM)
-            _ <- Task(logger.info(s"delta.UpdateLatestProcessedIndex: new='${newMarker.lastPhotoSetID}'"))
+            _ <- logger.info(s"delta.UpdateLatestProcessedIndex: new='${newMarker.lastPhotoSetID}'")
             _ <- repo.createOrUpdateLastProcessed(newMarker)
           } yield ()
         }
@@ -250,32 +244,35 @@ final class SGDownloader private[downloader] (
       daysToExport:       Int,
       includeProblematic: Boolean
     ): Task[Unit] = {
-      logger.info(
-        "---------------------------------------------- starting download.delta --------------------------------------------"
-      )
-      logger.info(s"download.delta --> IMPURE --> daysToExport: $daysToExport includeProblematic: $includeProblematic")
+
       for {
+        _ <- logger.info(
+          "---------------------------------------------- starting download.delta --------------------------------------------"
+        )
+        _ <- logger.info(
+          s"download.delta --> IMPURE --> daysToExport: $daysToExport includeProblematic: $includeProblematic"
+        )
         _                <- reifier.authenticateIfNeeded()
         lastProcessedOpt <- repo.lastProcessedIndex
-        _ = logger.info(s"the last processed set was: ${lastProcessedOpt.map(_.lastPhotoSetID)}")
+        _                <- logger.info(s"the last processed set was: ${lastProcessedOpt.map(_.lastPhotoSetID)}")
 
-        _ = logger.info(
+        _ <- logger.info(
           "---------------------------------------------- starting delta.indexing --------------------------------------------"
         )
         indexedMs <- This.index.deltaPure(lastProcessedOpt)
-        _ = logger.info(
+        _ <- logger.info(
           "---------------------------------------------- starting delta.reifying --------------------------------------------"
         )
         reifiedMs <- This.reify.deltaPure(indexedMs)
-        _ = logger.info(
+        _ <- logger.info(
           "---------------------------------------------- starting delta.export ----------------------------------------------"
         )
         _ <- This.export.delta(daysToExport, reifiedMs.all)(deltaExporterSettings)
-        _ = logger.info(
+        _ <- logger.info(
           "---------------------------------------------- starting delta.write in DB -----------------------------------------"
         )
         _ <- This.write.delta(indexedMs, reifiedMs, lastProcessedOpt)
-        _ = logger.info(
+        _ <- logger.info(
           "---------------------------------------------- finished download.delta -----------------------------------------"
         )
       } yield ()
@@ -285,29 +282,29 @@ final class SGDownloader private[downloader] (
       names:        List[Name],
       daysToExport: Int
     ): Task[Unit] = {
-      logger.info(
-        "---------------------------------------------- starting download.specific --------------------------------------------"
-      )
-      logger.info(s"download.specific --> IMPURE --> daysToExport: $daysToExport models: ${names.stringify}")
       for {
+        _ <- logger.info(
+          "---------------------------------------------- starting download.specific --------------------------------------------"
+        )
+        _ <- logger.info(s"download.specific --> IMPURE --> daysToExport: $daysToExport models: ${names.stringify}")
         _ <- reifier.authenticateIfNeeded()
-        _ = logger.info(
+        _ <- logger.info(
           "---------------------------------------------- starting specific.indexing --------------------------------------------"
         )
         indexedMs <- This.index.specificPure(names)
-        _ = logger.info(
+        _ <- logger.info(
           "---------------------------------------------- starting specific.reifying --------------------------------------------"
         )
         reifiedMs <- This.reify.deltaPure(indexedMs)
-        _ = logger.info(
+        _ <- logger.info(
           "---------------------------------------------- starting specific.export ----------------------------------------------"
         )
         _ <- This.export.specific(daysToExport, reifiedMs.all)(deltaExporterSettings)
-        _ = logger.info(
+        _ <- logger.info(
           "---------------------------------------------- starting specific.write in DB -----------------------------------------"
         )
         _ <- This.write.specific(indexedMs, reifiedMs)
-        _ = logger.info(
+        _ <- logger.info(
           "---------------------------------------------- finished download.specific -----------------------------------------"
         )
       } yield ()

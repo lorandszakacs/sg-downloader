@@ -1,11 +1,10 @@
 package com.lorandszakacs.sg.reifier.impl
 
 import com.lorandszakacs.sg.http.Session
-
-import com.typesafe.scalalogging.StrictLogging
 import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.mongodb._
 import com.lorandszakacs.util.time._
+import org.iolog4s.Logger
 
 /**
   *
@@ -18,10 +17,12 @@ private[reifier] final class SessionDaoImpl(
 )(
   implicit
   override val dbIOScheduler: DBIOScheduler
-) extends SingleDocumentMongoCollection[Session, String, BSONString] with StrictLogging {
+) extends SingleDocumentMongoCollection[Session, String, BSONString] {
 
-  private[reifier] implicit val dateTimeHandler
-    : BSONReader[BSONDateTime, DateTime] with BSONWriter[DateTime, BSONDateTime] with BSONHandler[
+  private implicit val logger: Logger[Task] = Logger.create[Task]
+
+  private[reifier] implicit val dateTimeHandler: BSONReader[BSONDateTime, DateTime]
+    with BSONWriter[DateTime, BSONDateTime] with BSONHandler[
       BSONDateTime,
       DateTime
     ] =
@@ -48,17 +49,12 @@ private[reifier] final class SessionDaoImpl(
 
   override def collectionName: String = "sg_sessions"
 
-  private def onInit(): Task[Unit] = {
+  private[reifier] def init: Task[Unit] = {
     for {
       opt <- this.find
       _ <- opt.isEmpty.effectOnTrueTask {
-        this.create {
-          logger.info("creating default session info")
-          this.defaultEntity
-        }
+        logger.info("creating default session info") >> this.create(this.defaultEntity)
       }
     } yield ()
   }
-
-  onInit()
 }

@@ -1,7 +1,7 @@
 package com.lorandszakacs.sg.http
 
 import com.lorandszakacs.util.effects._
-import com.typesafe.scalalogging.StrictLogging
+import org.iolog4s.Logger
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -19,41 +19,24 @@ object PatienceConfig {
 
 final case class PatienceConfig(
   throttle: FiniteDuration = PatienceConfig.defaultDuration
-) extends StrictLogging {
+) {
+  private implicit val logger: Logger[Task] = Logger.create[Task]
 
-  def throttleThread(): Unit = throttleAmount(throttle)
+  def throttleThread: Task[Unit] = throttleAmount(throttle)
 
-  def halfThrottle(): Unit = throttleAmount(throttle.div(2))
+  def halfThrottle: Task[Unit] = throttleAmount(throttle.div(2))
 
-  def quarterThrottle(): Unit = throttleAmount(throttle.div(4))
+  def quarterThrottle: Task[Unit] = throttleAmount(throttle.div(4))
 
-  private def throttleAmount(duration: FiniteDuration): Unit = {
-    logger.info(s"waiting: ${duration.toString}")
-    Thread.sleep(throttle.toMillis)
+  private def throttleAmount(duration: FiniteDuration): Task[Unit] = {
+    logger.info(s"waiting: ${duration.toString}") >>
+      Task(Thread.sleep(throttle.toMillis))
   }
 
-  def throttleAfter[T](thunk: => Task[T]): Task[T] = {
-    val f = thunk
-    f.map { r =>
-      this.throttleThread()
-      r
-    }
-  }
+  def throttleAfter[T](t: Task[T]): Task[T] = t <* this.throttleThread
 
-  def throttleHalfAfter[T](thunk: => Task[T]): Task[T] = {
-    val f = thunk
-    f.map { r =>
-      this.halfThrottle()
-      r
-    }
-  }
+  def throttleHalfAfter[T](t: Task[T]): Task[T] = t <* this.halfThrottle
 
-  def throttleQuarterAfter[T](thunk: => Task[T]): Task[T] = {
-    val f = thunk
-    f.map { r =>
-      this.quarterThrottle()
-      r
-    }
-  }
+  def throttleQuarterAfter[T](t: Task[T]): Task[T] = t <* this.quarterThrottle
 
 }
