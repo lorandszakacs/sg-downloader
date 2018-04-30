@@ -37,8 +37,8 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
     val grouped = ms.grouped(100)
     for {
       mIndexes <- Task.traverse(grouped) { batch =>
-        Task.traverse(batch)(m => Task(mIndex(m)))
-      }
+                   Task.traverse(batch)(m => Task(mIndex(m)))
+                 }
       flattened = mIndexes.flatten.toList
       html <- Task(rootIndexPage(flattened))
     } yield

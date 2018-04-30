@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.http
 
 import java.net.URL
 
-import akka.http.scaladsl.model.headers.{HttpOrigin, Origin, RawHeader, Referer}
+import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
 import com.lorandszakacs.sg.core
 import com.lorandszakacs.util.html.Html

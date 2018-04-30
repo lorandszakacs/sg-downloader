@@ -39,18 +39,18 @@ import org.scalatest._
   *
   */
 class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with Matchers {
-  private implicit val dbIOScheduler: DBIOScheduler = DBIOScheduler(Scheduler.global)
+  implicit private val dbIOScheduler: DBIOScheduler = DBIOScheduler(Scheduler.global)
 
   class EntityRepository(override protected val db: Database)(
     implicit
-    override protected implicit val dbIOScheduler: DBIOScheduler
+    implicit override protected val dbIOScheduler: DBIOScheduler
   ) extends MongoCollection[Entity, String, BSONString] {
-    protected implicit def entityHandler: BSONDocumentHandler[Entity] = BSONMacros.handler[Entity]
+    implicit protected def entityHandler: BSONDocumentHandler[Entity] = BSONMacros.handler[Entity]
 
-    override protected implicit lazy val idHandler: BSONHandler[BSONString, String] =
+    implicit override protected lazy val idHandler: BSONHandler[BSONString, String] =
       BSONStringHandler
 
-    override protected implicit lazy val identifier: Identifier[Entity, String] = Identifier { e =>
+    implicit override protected lazy val identifier: Identifier[Entity, String] = Identifier { e =>
       e.id
     }
 

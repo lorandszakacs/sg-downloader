@@ -41,7 +41,7 @@ trait ListUtilFunctions {
       }
       else {
         val (toReplace, toAdd) = that.partition(p => thisList.exists(e => id.identifiesAs(e, p)))
-        val replaced           = this.replace(toReplace)
+        val replaced = this.replace(toReplace)
         replaced ++ toAdd
       }
     }

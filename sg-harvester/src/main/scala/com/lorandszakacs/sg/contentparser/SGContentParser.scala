@@ -301,7 +301,7 @@ object SGContentParser extends SGURLBuilder with URLConversions {
     }
     else {
       Try {
-        val datePattern                   = """(\w\w\w) (\d*), (\d\d\d\d)""".r
+        val datePattern = """(\w\w\w) (\d*), (\d\d\d\d)""".r
         val datePattern(month, day, year) = time
 
         val monthAsInt = months(month)
@@ -311,9 +311,9 @@ object SGContentParser extends SGURLBuilder with URLConversions {
       } recoverWith {
         case NonFatal(_) =>
           Try {
-            val simplifiedDatePattern             = """(\w\w\w) (\d*)""".r
+            val simplifiedDatePattern = """(\w\w\w) (\d*)""".r
             val simplifiedDatePattern(month, day) = time
-            val monthAsInt                        = months(month)
+            val monthAsInt = months(month)
             new LocalDate(DateTime.now.getYear, monthAsInt, day.toInt)
           }
       }

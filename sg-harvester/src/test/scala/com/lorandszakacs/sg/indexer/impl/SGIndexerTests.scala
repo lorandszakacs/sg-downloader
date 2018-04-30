@@ -268,8 +268,8 @@ class SGIndexerTests extends IndexerTest {
           }
           withClue("... distribution") {
             assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
-            assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
-            assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
+            assert(ms.exists(_.isHF),                 "... there should be at least one HF in the past 48 new sets")
+            assert(ms.exists(_.isSG),                 "... there should be at least one SG in the past 48 new sets")
           }
           ms
         }
@@ -290,8 +290,8 @@ class SGIndexerTests extends IndexerTest {
           }
           withClue("... distribution") {
             assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
-            assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
-            assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
+            assert(ms.exists(_.isHF),                 "... there should be at least one HF in the past 48 new sets")
+            assert(ms.exists(_.isSG),                 "... there should be at least one SG in the past 48 new sets")
           }
           ms
         }
@@ -338,9 +338,9 @@ class SGIndexerTests extends IndexerTest {
 
   override protected def withFixture(test: OneArgTest): Outcome = {
     val assembly = new IndexerAssembly with SGClientAssembly {
-      override implicit def actorSystem: ActorSystem = SGIndexerTests.this.as
+      implicit override def actorSystem: ActorSystem = SGIndexerTests.this.as
 
-      override implicit def httpIOScheduler: HTTPIOScheduler = SGIndexerTests.this.httpIOSch
+      implicit override def httpIOScheduler: HTTPIOScheduler = SGIndexerTests.this.httpIOSch
     }
 
     test.apply(assembly._sgIndexerImpl)

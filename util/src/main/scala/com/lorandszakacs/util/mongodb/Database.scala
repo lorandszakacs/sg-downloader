@@ -19,7 +19,7 @@ final case class Database(uri: String, dbName: String, config: Option[Config] = 
   dbIOScheduler: DBIOScheduler
 ) {
 
-  private implicit val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.create[Task]
 
   def collection(colName: String): Task[BSONCollection] = databaseTask.map(_.apply(colName))
 

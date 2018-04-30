@@ -14,17 +14,17 @@ import com.lorandszakacs.util.math.Identifier
   */
 trait SingleDocumentMongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
-  protected implicit def dbIOScheduler: DBIOScheduler
+  implicit protected def dbIOScheduler: DBIOScheduler
 
   protected def objectHandler: BSONDocumentHandler[Entity]
 
-  protected implicit def idHandler: BSONHandler[BSONTargetType, IdType]
+  implicit protected def idHandler: BSONHandler[BSONTargetType, IdType]
 
-  protected implicit def identifier: Identifier[Entity, IdType] = new Identifier[Entity, IdType] {
+  implicit protected def identifier: Identifier[Entity, IdType] = new Identifier[Entity, IdType] {
     override def id(t: Entity): IdType = uniqueDocumentId
   }
 
-  protected implicit def objectHandlerWithUniqueId: BSONDocumentHandler[Entity] = {
+  implicit protected def objectHandlerWithUniqueId: BSONDocumentHandler[Entity] = {
     new BSONDocumentReader[Entity] with BSONDocumentWriter[Entity] with BSONHandler[BSONDocument, Entity] {
       override def write(t: Entity): BSONDocument =
         objectHandler.write(t).++(_id -> idHandler.write(uniqueDocumentId))

@@ -19,9 +19,9 @@ private[reifier] final class SessionDaoImpl(
   override val dbIOScheduler: DBIOScheduler
 ) extends SingleDocumentMongoCollection[Session, String, BSONString] {
 
-  private implicit val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.create[Task]
 
-  private[reifier] implicit val dateTimeHandler: BSONReader[BSONDateTime, DateTime]
+  implicit private[reifier] val dateTimeHandler: BSONReader[BSONDateTime, DateTime]
     with BSONWriter[DateTime, BSONDateTime] with BSONHandler[
       BSONDateTime,
       DateTime
@@ -36,7 +36,7 @@ private[reifier] final class SessionDaoImpl(
 
   override protected val objectHandler: BSONDocumentHandler[Session] = BSONMacros.handler[Session]
 
-  override protected implicit val idHandler: BSONHandler[BSONString, String] = BSONStringHandler
+  implicit override protected val idHandler: BSONHandler[BSONString, String] = BSONStringHandler
 
   override protected val uniqueDocumentId: String = "sg-session"
 
@@ -53,8 +53,8 @@ private[reifier] final class SessionDaoImpl(
     for {
       opt <- this.find
       _ <- opt.isEmpty.effectOnTrueTask {
-        logger.info("creating default session info") >> this.create(this.defaultEntity)
-      }
+            logger.info("creating default session info") >> this.create(this.defaultEntity)
+          }
     } yield ()
   }
 }

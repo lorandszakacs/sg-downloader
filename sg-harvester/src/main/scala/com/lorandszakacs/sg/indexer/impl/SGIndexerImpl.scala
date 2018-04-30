@@ -25,9 +25,9 @@ import org.iolog4s.Logger
   *
   */
 private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGIndexer with SGURLBuilder {
-  private implicit val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.create[Task]
 
-  private[this] implicit val Authentication: Authentication = DefaultSGAuthentication
+  implicit private[this] val Authentication: Authentication = DefaultSGAuthentication
 
   private val SGsSortedByFollowers = s"${core.Domain}/profiles/girl/followers/"
   private val HFsSortedByFollowers = s"${core.Domain}/profiles/hopeful/followers/"
@@ -92,12 +92,12 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGInd
     val pageURL = photoSetsPageURL(name)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
-        uri             = pageURL,
-        offsetStep      = 9,
-        cutOffLimit     = Int.MaxValue,
-        parsingFunction = SGContentParser.gatherPhotoSetsForM,
-        isFinalPage     = isEndPageForMIndexing
-      )
+               uri             = pageURL,
+               offsetStep      = 9,
+               cutOffLimit     = Int.MaxValue,
+               parsingFunction = SGContentParser.gatherPhotoSetsForM,
+               isFinalPage     = isEndPageForMIndexing
+             )
       _ <- logger.info(s"gathered all sets for ${mf.name} ${name.name}. #sets: ${sets.length}")
     } yield mf(photoSetURL = pageURL, name = name, photoSets = sets)
   }
@@ -106,12 +106,12 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGInd
     val pageURL = photoSetsPageURL(name)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
-        uri             = pageURL,
-        offsetStep      = 9,
-        cutOffLimit     = Int.MaxValue,
-        parsingFunction = SGContentParser.gatherPhotoSetsForM,
-        isFinalPage     = isEndPageForMIndexing
-      )
+               uri             = pageURL,
+               offsetStep      = 9,
+               cutOffLimit     = Int.MaxValue,
+               parsingFunction = SGContentParser.gatherPhotoSetsForM,
+               isFinalPage     = isEndPageForMIndexing
+             )
       isHF = sets.exists(_.isHFSet.contains(true))
       mf   = if (isHF) HFFactory else SGFactory
       _ <- logger.info(s"gathered all sets for ${mf.name} ${name.name}. #sets: ${sets.length}")
@@ -190,15 +190,15 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGInd
       msWithOnlyOneSet <- gatherAllNewMsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
       sgHF = msWithOnlyOneSet.distinctById.group
       sgs <- Task.serialize(sgHF.sgs) { sg =>
-        pc.throttleAfter {
-          this.gatherPhotoSetInformationForM(M.SGFactory)(sg.name)
-        }
-      }
+              pc.throttleAfter {
+                this.gatherPhotoSetInformationForM(M.SGFactory)(sg.name)
+              }
+            }
       hfs <- Task.serialize(sgHF.hfs) { hf =>
-        pc.throttleAfter {
-          this.gatherPhotoSetInformationForM(M.HFFactory)(hf.name)
-        }
-      }
+              pc.throttleAfter {
+                this.gatherPhotoSetInformationForM(M.HFFactory)(hf.name)
+              }
+            }
     } yield sgs ++ hfs
   }
 

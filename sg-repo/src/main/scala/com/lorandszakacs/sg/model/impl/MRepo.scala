@@ -16,7 +16,7 @@ import com.lorandszakacs.util.math.Identifier
 private[impl] abstract class MRepo[Content <: M](override protected val identifier: Identifier[Content, Name])
     extends MongoCollection[Content, Name, BSONString] {
 
-  override protected implicit val idHandler: BSONHandler[BSONString, Name] =
+  implicit override protected val idHandler: BSONHandler[BSONString, Name] =
     nameBSON
 
   final def findBetweenDays(start: LocalDate, end: LocalDate): Task[List[Content]] = {

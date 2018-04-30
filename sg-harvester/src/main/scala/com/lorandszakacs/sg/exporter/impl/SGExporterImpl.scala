@@ -2,9 +2,9 @@ package com.lorandszakacs.sg.exporter.impl
 
 import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.Favorites
-import com.lorandszakacs.sg.exporter.html.{HTMLGenerator, HtmlSettings}
+import com.lorandszakacs.sg.exporter.html._
 import com.lorandszakacs.sg.exporter.indexwriter.{HTMLIndexWriter, WriterSettings}
-import com.lorandszakacs.sg.exporter.{ExporterSettings, NameNotFoundException, SGExporter}
+import com.lorandszakacs.sg.exporter._
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.effects._
 import org.iolog4s.Logger
@@ -21,7 +21,7 @@ private[exporter] class SGExporterImpl(
   val fileWriter: HTMLIndexWriter
 ) extends SGExporter {
 
-  private implicit val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.create[Task]
 
   private val FavoritesHtmlSettings = HtmlSettings(
     indexFileName  = "index.html",
@@ -56,8 +56,8 @@ private[exporter] class SGExporterImpl(
         completeFavoriteRootIndex <- html.createRootIndex(Favorites.names)(FavoritesHtmlSettings)
         _                         <- fileWriter.rewriteRootIndexFile(completeFavoriteRootIndex)(favoritesWriterSettings)
         _ <- logger.info(
-          s"-- successfully updated DELTA favorites index ${deltaFavorites.length}: @ ${completeFavoriteRootIndex.relativePathAndName}"
-        )
+              s"-- successfully updated DELTA favorites index ${deltaFavorites.length}: @ ${completeFavoriteRootIndex.relativePathAndName}"
+            )
       } yield ()
     }
     else {

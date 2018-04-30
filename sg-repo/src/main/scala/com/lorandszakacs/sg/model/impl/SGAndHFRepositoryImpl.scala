@@ -19,7 +19,7 @@ private[model] class SGAndHFRepositoryImpl(
   implicit val sch: DBIOScheduler
 ) extends SGAndHFRepository {
 
-  private implicit val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.create[Task]
 
   private val sgsRepo = new RepoSGs(db)
   private val sgiRepo = new RepoSGIndex(db)
@@ -67,8 +67,8 @@ private[model] class SGAndHFRepositoryImpl(
           )
           _ <- hfiRepo.createOrUpdate(newHFIndex)
           _ <- Task.traverse(hfsThatBecameSGS) { hfName =>
-            hfsRepo.remove(hfName)
-          }
+                hfsRepo.remove(hfName)
+              }
         } yield hfsThatBecameSGS
       }
     }
@@ -94,8 +94,8 @@ private[model] class SGAndHFRepositoryImpl(
       hfsThatBecameSGs <- updateHF(newHFs)
       _                <- updateSGs(newSGs)
       _ <- logger.info(s"new SGs: ${newSGs.stringify}") >>
-        logger.info(s"new HFs: ${newHFs.stringify}") >>
-        logger.info(s"HFs that became SGs: ${hfsThatBecameSGs.stringify}")
+            logger.info(s"new HFs: ${newHFs.stringify}") >>
+            logger.info(s"HFs that became SGs: ${hfsThatBecameSGs.stringify}")
     } yield ()
   }
 

@@ -20,7 +20,7 @@ object PatienceConfig {
 final case class PatienceConfig(
   throttle: FiniteDuration = PatienceConfig.defaultDuration
 ) {
-  private implicit val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.create[Task]
 
   def throttleThread: Task[Unit] = throttleAmount(throttle)
 

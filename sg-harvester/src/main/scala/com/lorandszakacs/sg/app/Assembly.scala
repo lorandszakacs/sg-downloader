@@ -26,9 +26,9 @@ final class Assembly(
   override val httpIOScheduler: HTTPIOScheduler
 ) extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly {
 
-  private implicit val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.create[Task]
 
-  override implicit lazy val db: Database = new Database(
+  implicit override lazy val db: Database = new Database(
     uri    = """mongodb://localhost:27016""",
     dbName = "sgs_repo"
   )

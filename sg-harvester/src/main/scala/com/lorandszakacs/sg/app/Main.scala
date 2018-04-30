@@ -27,7 +27,7 @@ import org.iolog4s.Logger
   *
   */
 object Main extends App {
-  private implicit val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.create[Task]
   implicit val actorSystem:    ActorSystem  = ActorSystem("sg-app")
 
   implicit val computationScheduler: Scheduler       = Scheduler.computation(name = "sg-app-computation")

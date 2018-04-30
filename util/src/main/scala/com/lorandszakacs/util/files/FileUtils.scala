@@ -17,7 +17,7 @@ import scala.collection.mutable
   *
   */
 object FileUtils {
-  private implicit val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.create[Task]
 
   def normalizeHomePath(path: String): String = {
     path.replaceFirst("^~", System.getProperty("user.home"))

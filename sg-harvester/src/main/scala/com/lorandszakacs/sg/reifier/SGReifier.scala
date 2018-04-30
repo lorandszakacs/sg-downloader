@@ -1,7 +1,7 @@
 package com.lorandszakacs.sg.reifier
 
 import com.lorandszakacs.sg.http.{Authentication, PatienceConfig}
-import com.lorandszakacs.sg.model.{HF, M, SG}
+import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.effects._
 
 /**
@@ -15,9 +15,9 @@ trait SGReifier {
   /**
     * Warning, this is a stateful method!
     *
-    * It will only be applied if [[authentication.needsRefresh]] is true.
+    * It will only be applied if [[Authentication.needsRefresh]] is true.
     *
-    * Its result is that a new [[Authentication]] is recreated where [[authentication.needsRefresh]]
+    * Its result is that a new [[Authentication]] is recreated where [[Authentication.needsRefresh]]
     * will be false
     *
     */

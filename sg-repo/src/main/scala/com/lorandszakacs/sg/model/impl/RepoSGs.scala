@@ -16,6 +16,6 @@ private[impl] class RepoSGs(override protected val db: Database)(
 ) extends MRepo[SG](sgIdentifier) with SGRepoBSON {
 
   override val collectionName: String = "sgs"
-  override protected implicit val entityHandler: BSONDocumentHandler[SG] =
+  implicit override protected val entityHandler: BSONDocumentHandler[SG] =
     BSONMacros.handler[SG]
 }
