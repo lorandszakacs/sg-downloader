@@ -257,7 +257,7 @@ object Favorites {
       "maokiz",
       "marajade",
       "margarette",
-      "marialauriejupiter",
+      "mariajupiter",
       "marlene",
       "marquise",
       "mars",
