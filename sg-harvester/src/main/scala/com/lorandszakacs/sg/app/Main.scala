@@ -16,7 +16,6 @@
   */
 package com.lorandszakacs.sg.app
 
-import akka.actor.ActorSystem
 import com.lorandszakacs.sg.app.repl.{CommandLineInterpreter, REPL}
 import com.lorandszakacs.util.effects._
 import org.iolog4s.Logger
@@ -28,13 +27,12 @@ import org.iolog4s.Logger
   */
 object Main extends App {
   implicit private val logger: Logger[Task] = Logger.create[Task]
-  implicit val actorSystem:    ActorSystem  = ActorSystem("sg-app")
 
   implicit val computationScheduler: Scheduler       = Scheduler.computation(name = "sg-app-computation")
   implicit val dbIOScheduler:        DBIOScheduler   = DBIOScheduler(Scheduler.io(name = "sg-app-dbio"))
   implicit val httpIOScheduler:      HTTPIOScheduler = HTTPIOScheduler(Scheduler.io(name = "sg-app-http"))
 
-  val assembly    = new Assembly()(actorSystem, computationScheduler, dbIOScheduler, httpIOScheduler)
+  val assembly    = new Assembly()(computationScheduler, dbIOScheduler, httpIOScheduler)
   val interpreter = new CommandLineInterpreter(assembly)
   val repl        = new REPL(interpreter)
 

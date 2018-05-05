@@ -70,7 +70,6 @@ lazy val `util` = project
   .settings(
     Seq(
       libraryDependencies ++= Seq(
-        akkaActor,
         //required for package com.lorandszakacs.util.mongodb
         reactiveMongo,
         //required for package com.lorandszakacs.util.time
@@ -108,21 +107,13 @@ lazy val parserCombinators: ModuleID = "org.scala-lang.modules" %% "scala-parser
 //================================= http://typelevel.org/scala/ ==============================
 //========================================  typelevel ========================================
 //============================================================================================
+
 lazy val http4sVersion = "0.18.9"
 lazy val http4sDSL     = "org.http4s" %% "http4s-dsl" % http4sVersion
 lazy val http4sServer  = "org.http4s" %% "http4s-blaze-server" % http4sVersion
 lazy val http4sClient  = "org.http4s" %% "http4s-blaze-client" % http4sVersion
 
 //cats, cats-effect, monix brough in by bmcEffects
-
-//============================================================================================
-//================================= http://akka.io/docs/ =====================================
-//======================================== akka ==============================================
-//============================================================================================
-
-lazy val akkaVersion: String = "2.5.11"
-
-lazy val akkaActor: ModuleID = "com.typesafe.akka" %% "akka-actor" % akkaVersion withSources ()
 
 //============================================================================================
 //=========================================  testing =========================================

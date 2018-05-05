@@ -3,7 +3,6 @@ package com.lorandszakacs.sg.app
 import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.mongodb._
 
-import akka.actor.ActorSystem
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
 import com.lorandszakacs.sg.exporter.SGExporterAssembly
 import com.lorandszakacs.sg.indexer.IndexerAssembly
@@ -20,7 +19,6 @@ import org.iolog4s._
   */
 final class Assembly(
   implicit
-  override val actorSystem:     ActorSystem,
   val computationScheduler:     Scheduler,
   override val dbIOScheduler:   DBIOScheduler,
   override val httpIOScheduler: HTTPIOScheduler
@@ -39,7 +37,6 @@ final class Assembly(
       _ <- sgClient.cleanup
       _ <- logger.info("finished sgClient cleanup")
       _ <- db.shutdown() >> logger.info("terminated -- database.shutdown()")
-      _ <- actorSystem.terminate().suspendInTask >> logger.info("terminated -- actorSystem.terminate()")
       _ <- logger.info("terminated -- completed assembly.shutdown()")
     } yield ()
   }

@@ -1,6 +1,5 @@
 package com.lorandszakacs.sg.indexer.impl
 
-import akka.actor.ActorSystem
 import com.lorandszakacs.sg.core
 import com.lorandszakacs.sg.http.SGClientAssembly
 import com.lorandszakacs.sg.indexer.IndexerAssembly
@@ -338,8 +337,6 @@ class SGIndexerTests extends IndexerTest {
 
   override protected def withFixture(test: OneArgTest): Outcome = {
     val assembly = new IndexerAssembly with SGClientAssembly {
-      implicit override def actorSystem: ActorSystem = SGIndexerTests.this.as
-
       implicit override def httpIOScheduler: HTTPIOScheduler = SGIndexerTests.this.httpIOSch
     }
 

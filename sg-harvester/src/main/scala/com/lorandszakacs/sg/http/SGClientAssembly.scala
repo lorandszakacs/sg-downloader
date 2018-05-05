@@ -1,6 +1,5 @@
 package com.lorandszakacs.sg.http
 
-import akka.actor.ActorSystem
 import com.lorandszakacs.sg.http.impl.SGClientImpl
 
 import com.lorandszakacs.util.effects._
@@ -12,8 +11,6 @@ import com.lorandszakacs.util.effects._
   *
   */
 trait SGClientAssembly {
-
-  implicit def actorSystem: ActorSystem
 
   implicit def httpIOScheduler: HTTPIOScheduler
 
