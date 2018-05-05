@@ -17,8 +17,8 @@
 package com.lorandszakacs.sg.contentparser
 
 import com.lorandszakacs.util.effects._
+import com.lorandszakacs.util.time._
 
-import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg.URLConversions
 import com.lorandszakacs.sg.http.SGURLBuilder
 import com.lorandszakacs.sg.model._

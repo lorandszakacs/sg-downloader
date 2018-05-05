@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.contentparser.data
 
-import com.github.nscala_time.time.Imports._
+import com.lorandszakacs.util.time._
 import com.lorandszakacs.sg.URLConversions
 import com.lorandszakacs.sg._
 import com.lorandszakacs.sg.model._

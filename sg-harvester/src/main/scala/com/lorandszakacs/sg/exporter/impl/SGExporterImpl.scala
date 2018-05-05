@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.exporter.impl
 
-import com.github.nscala_time.time.Imports._
+import com.lorandszakacs.util.time._
 import com.lorandszakacs.sg.Favorites
 import com.lorandszakacs.sg.exporter.html._
 import com.lorandszakacs.sg.exporter.indexwriter.{HTMLIndexWriter, WriterSettings}

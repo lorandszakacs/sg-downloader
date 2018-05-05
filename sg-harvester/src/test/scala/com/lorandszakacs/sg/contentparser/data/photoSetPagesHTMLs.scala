@@ -18,7 +18,7 @@ package com.lorandszakacs.sg.contentparser.data
 
 import org.http4s.Uri
 
-import com.github.nscala_time.time.Imports._
+import com.lorandszakacs.util.time._
 import com.lorandszakacs.sg.core
 import com.lorandszakacs.sg.model.PhotoSetTitle
 import com.lorandszakacs.util.html._

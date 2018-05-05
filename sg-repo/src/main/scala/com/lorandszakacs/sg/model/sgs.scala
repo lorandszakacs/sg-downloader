@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.model
 
 import java.net.URL
 
-import com.github.nscala_time.time.Imports._
+import com.lorandszakacs.util.time._
 import org.joda.time.format.DateTimeFormatter
 import com.lorandszakacs.util.mongodb.Annotations
 

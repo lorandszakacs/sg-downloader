@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.model.impl
 
 import java.net.URL
 
-import com.github.nscala_time.time.Imports._
+import com.lorandszakacs.util.time._
 import com.lorandszakacs.sg.model._
 import org.joda.time.LocalDate
 import com.lorandszakacs.util.mongodb._

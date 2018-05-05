@@ -16,7 +16,7 @@
   */
 package com.lorandszakacs.sg.contentparser.data
 
-import com.github.nscala_time.time.Imports.DateTime
+import com.lorandszakacs.util.time._
 import com.lorandszakacs.sg._
 import com.lorandszakacs.sg.model.PhotoSet
 import com.lorandszakacs.util.html.Html

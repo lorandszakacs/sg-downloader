@@ -3,7 +3,7 @@ package com.lorandszakacs.sg.exporter.html.impl
 import com.lorandszakacs.sg.exporter.html._
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.effects._
-import com.github.nscala_time.time.Imports._
+import com.lorandszakacs.util.time._
 
 /**
   *

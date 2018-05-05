@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.http
 
-import com.github.nscala_time.time.Imports._
+import com.lorandszakacs.util.time._
 import com.lorandszakacs.sg._
 import com.lorandszakacs.sg.http.impl.SGClientImpl
 import com.lorandszakacs.util.effects._
