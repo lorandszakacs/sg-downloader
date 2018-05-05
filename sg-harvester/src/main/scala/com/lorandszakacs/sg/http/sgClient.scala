@@ -2,8 +2,9 @@ package com.lorandszakacs.sg.http
 
 import java.net.URL
 
-import akka.http.scaladsl.model.headers._
-import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
+import org.http4s._
+import org.http4s.util.CaseInsensitiveString
+
 import com.lorandszakacs.sg.core
 import com.lorandszakacs.util.html.Html
 import org.joda.time.DateTime
@@ -28,17 +29,19 @@ trait SGClient {
 
   def createAuthentication(session: Session): Task[Authentication]
 
+  def cleanup: Task[Unit]
+
   /**
     * Website now has google reCAPTCHA, so it's hard to logon, but you can manually create
     * an [[Authentication]] from a [[Session]] using [[createAuthentication]] by pasting
     * the tokens from the browser.
     */
-  @scala.deprecated("use createAuthentication", "2018")
-  def brokenAuthenticate(username: String, plainTextPassword: String): Task[Authentication]
+  //@scala.deprecated("use createAuthentication", "2018")
+  //def brokenAuthenticate(username: String, plainTextPassword: String): Task[Authentication]
 }
 
 trait Authentication {
-  def apply(req: HttpRequest): HttpRequest
+  def apply(req: Request[Task]): Request[Task]
 
   def needsRefresh: Boolean
 
@@ -54,16 +57,18 @@ final case class Session(
   csrfToken: String,
   expiresAt: DateTime
 ) {
-  def toCookieHeader: RawHeader = RawHeader("Cookie", s"csrftoken=$csrfToken; sessionid=$sessionID")
+
+  def toCookieHeader: Header =
+    Header.Raw(CaseInsensitiveString("Cookie"), s"csrftoken=$csrfToken; sessionid=$sessionID")
 }
 
 object DefaultSGAuthentication extends Authentication {
-  private val OriginHeader:  Origin  = Origin(HttpOrigin(s"${core.Domain}"))
-  private val RefererHeader: Referer = Referer(s"${core.Domain}/")
+  private val OriginHeader:  Header = Header.Raw(CaseInsensitiveString("Origin"),  s"${core.Domain}")
+  private val RefererHeader: Header = Header.Raw(CaseInsensitiveString("Referer"), s"${core.Domain}/")
 
-  private val defaultSGHeaders: Seq[HttpHeader] = Seq(OriginHeader, RefererHeader)
+  private val defaultSGHeaders: List[Header] = List(OriginHeader, RefererHeader)
 
-  override def apply(req: HttpRequest): HttpRequest = req.withHeaders(req.headers ++ defaultSGHeaders)
+  override def apply(req: Request[Task]): Request[Task] = req.putHeaders(defaultSGHeaders: _*)
 
   override def needsRefresh: Boolean = true
 

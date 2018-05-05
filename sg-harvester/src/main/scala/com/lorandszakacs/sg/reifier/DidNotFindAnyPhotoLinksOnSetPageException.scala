@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.reifier
 
-import akka.http.scaladsl.model.Uri
+import org.http4s.Uri
 
 /**
   *

@@ -2,7 +2,7 @@ package com.lorandszakacs.sg
 
 import java.net.URL
 
-import akka.http.scaladsl.model.Uri
+import org.http4s.Uri
 
 import scala.language.implicitConversions
 
@@ -14,10 +14,12 @@ import scala.language.implicitConversions
   */
 trait URLConversions {
 
-  implicit def akkaURIToJavaURL(uri: Uri): URL = new URL(uri.toString)
+  implicit def http4sURIToJavaURL(uri: Uri): URL = new URL(uri.toString)
 
-  implicit def javaURLtoAkkaUri(url: URL): Uri = Uri(url.toExternalForm)
+  implicit def javaURLtoTttp4sUri(url: URL): Uri = Uri.unsafeFromString(url.toExternalForm)
 
   implicit def stringToURL(str: String): URL = new URL(str)
+
+  implicit def stringToUri(str: String): Uri = Uri.unsafeFromString(str)
 
 }

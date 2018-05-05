@@ -2,7 +2,8 @@ package com.lorandszakacs.sg.http
 
 import java.net.URL
 
-import akka.http.scaladsl.model.Uri
+import org.http4s.Uri
+
 import com.lorandszakacs.sg._
 import com.lorandszakacs.sg.model._
 

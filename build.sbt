@@ -26,9 +26,10 @@ lazy val `sg-harvester` = project
       suppressSbtShellNotification := true,
       fork in run                  := true,
       libraryDependencies ++= Seq(
-        akkaActor,
-        akkaStream,
-        akkaHttp,
+        http4sDSL,
+        http4sServer,
+        http4sClient,
+        parserCombinators,
         scalaTest
       )
     )
@@ -101,12 +102,18 @@ lazy val pprint: ModuleID = "com.lihaoyi" %% "pprint" % "0.4.3" withSources ()
 
 lazy val jsoup: ModuleID = "org.jsoup" % "jsoup" % "1.8.1" withSources ()
 
+lazy val parserCombinators: ModuleID = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0" withSources ()
+
 //============================================================================================
 //================================= http://typelevel.org/scala/ ==============================
 //========================================  typelevel ========================================
 //============================================================================================
+lazy val http4sVersion = "0.18.9"
+lazy val http4sDSL     = "org.http4s" %% "http4s-dsl" % http4sVersion
+lazy val http4sServer  = "org.http4s" %% "http4s-blaze-server" % http4sVersion
+lazy val http4sClient  = "org.http4s" %% "http4s-blaze-client" % http4sVersion
 
-//brough in by bmcEffects
+//cats, cats-effect, monix brough in by bmcEffects
 
 //============================================================================================
 //================================= http://akka.io/docs/ =====================================
@@ -115,11 +122,7 @@ lazy val jsoup: ModuleID = "org.jsoup" % "jsoup" % "1.8.1" withSources ()
 
 lazy val akkaVersion: String = "2.5.11"
 
-lazy val akkaActor:  ModuleID = "com.typesafe.akka" %% "akka-actor"  % akkaVersion withSources ()
-lazy val akkaStream: ModuleID = "com.typesafe.akka" %% "akka-stream" % akkaVersion withSources ()
-
-lazy val akkaHttpVersion: String   = "10.1.1"
-lazy val akkaHttp:        ModuleID = "com.typesafe.akka" %% "akka-http" % akkaHttpVersion withSources ()
+lazy val akkaActor: ModuleID = "com.typesafe.akka" %% "akka-actor" % akkaVersion withSources ()
 
 //============================================================================================
 //=========================================  testing =========================================

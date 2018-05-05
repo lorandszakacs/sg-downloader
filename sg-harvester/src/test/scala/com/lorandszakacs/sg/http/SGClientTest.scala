@@ -1,6 +1,5 @@
 package com.lorandszakacs.sg.http
 
-import akka.actor.ActorSystem
 import com.github.nscala_time.time.Imports._
 import com.lorandszakacs.sg._
 import com.lorandszakacs.sg.http.impl.SGClientImpl
@@ -14,11 +13,9 @@ import org.scalatest.FlatSpec
   *
   */
 class SGClientTest extends FlatSpec with URLConversions {
-
-  implicit lazy val as:  ActorSystem = ActorSystem("test-actor-system")
   implicit lazy val sch: Scheduler   = Scheduler.global
 
-  lazy val client = SGClientImpl()(as, HTTPIOScheduler(sch))
+  lazy val client = SGClientImpl()(HTTPIOScheduler(sch))
 
   behavior of "SG client"
 
@@ -32,7 +29,7 @@ class SGClientTest extends FlatSpec with URLConversions {
 
     implicit val authentication: Authentication = client.createAuthentication(session).unsafeSyncGet()
 
-    val html = client.getPage(s"${core.Domain}/members/odina/album/2745718/do-i-wanna-know/").unsafeSyncGet()
+    val html = client.getPage(s"${core.Domain}/girls/dwam/album/977051/limportance-d-etre-ernest/").unsafeSyncGet()
     println {
       s"""
          |

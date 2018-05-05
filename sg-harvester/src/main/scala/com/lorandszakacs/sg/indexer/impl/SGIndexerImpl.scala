@@ -1,7 +1,6 @@
 package com.lorandszakacs.sg.indexer.impl
 
 import com.lorandszakacs.util.effects._
-import akka.http.scaladsl.model.Uri
 import com.lorandszakacs.sg.contentparser.SGContentParser
 import com.lorandszakacs.sg.core
 import com.lorandszakacs.sg.indexer.{FailedToRepeatedlyLoadPageException, SGIndexer}
@@ -11,6 +10,7 @@ import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html.Html
 import monix.execution.atomic.AtomicBoolean
 import monix.reactive.Observable
+import org.http4s.Uri
 import org.iolog4s.Logger
 
 /**
@@ -238,7 +238,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGInd
   ): Task[List[T]] = {
 
     def offsetUri(uri: Uri, offset: Int): Uri =
-      Uri(s"$uri?partial=true&offset=$offset")
+      Uri.unsafeFromString(s"$uri?partial=true&offset=$offset")
 
     /*
      * We want to express something like:

@@ -180,7 +180,7 @@ object SGContentParser extends SGURLBuilder with URLConversions {
     val ms: List[Try[M]] = elements map { el =>
       val html = Html(el)
       for {
-        setURL   <- getPhotoSetLink(html) map makeFullPathURL
+        setURL   <- getPhotoSetLink(html).map(makeFullPathURL)
         setDate  <- getPhotoSetDate(html)
         setTitle <- getPhotoSetTitle(html)
         name     <- getName(html)
