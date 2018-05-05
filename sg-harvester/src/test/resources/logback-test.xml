@@ -13,9 +13,9 @@
     <logger name="reactivemongo.core.actors.MonitorActor" level="ERROR"/>
     <logger name="akka://mongodb-akka" level="ERROR"/>
 
-    <logger name="com.lorandszakacs.sg.indexer.impl.SGIndexerImpl" level="INFO"/>
+    <logger name="com.lorandszakacs.sg.indexer.impl.SGIndexerImpl" level="DEBUG"/>
 
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>
