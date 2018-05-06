@@ -39,7 +39,7 @@ trait PhotoSetPage {
     Html(source.getLines().mkString("\n"))
   }
 
-  def currentYear: Int = DateTime.now(DateTimeZone.UTC).getYear
+  def currentYear: Int = Year.unsafeNow().getValue
 
   def uri: Uri
 
@@ -57,7 +57,7 @@ object PhotoSetPagePartialDate extends PhotoSetPage {
 
   def title: PhotoSetTitle = "ADIEU TRISTESSE"
 
-  def date: LocalDate = LocalDate.parse("2015-01-18").withYear(currentYear)
+  def date: LocalDate = LocalDate(TimeUtil.localDateFormat.parse("2015-01-18")).withYear(currentYear)
 }
 
 object PhotoSetPageFullDate extends PhotoSetPage {
@@ -67,5 +67,5 @@ object PhotoSetPageFullDate extends PhotoSetPage {
 
   def title: PhotoSetTitle = "LIMPORTANCE D ETRE ERNEST"
 
-  def date: LocalDate = LocalDate.parse("2013-02-07")
+  def date: LocalDate = LocalDate(TimeUtil.localDateFormat.parse("2013-02-07"))
 }

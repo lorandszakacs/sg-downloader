@@ -80,7 +80,7 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
         s"""<li><a href="all/$link" target="_blank">$displayText</a>$favText</li>"""
       }
       s"""
-         |<h3> ${date.toString("YYYY-MM-dd")} </h3>
+         |<h3> ${TimeUtil.localDateFormat.format(date)} </h3>
          |<h3><ol type="1">
          |${elements.mkString("\n")}
          |</ol></h3>

@@ -1,9 +1,9 @@
 package com.lorandszakacs.sg.model.impl
 
 import com.lorandszakacs.sg.model._
+import com.lorandszakacs.util.time._
 import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.mongodb._
-import com.lorandszakacs.util.time.DateTime
 
 /**
   *
@@ -22,11 +22,11 @@ private[impl] class RepoLastProcessedMarker(override protected val db: Database)
   override protected def uniqueDocumentId: String = "last_processed"
 
   override protected def defaultEntity: LastProcessedMarker = LastProcessedMarker(
-    timestamp = DateTime.now(),
+    timestamp = Instant.unsafeNow(),
     photoSet = PhotoSet(
       url   = new java.net.URL("http://example.com/"),
       title = PhotoSetTitle("example"),
-      date  = DateTime.now().toLocalDate
+      date  = LocalDate.unsafeToday()
     )
   )
 }

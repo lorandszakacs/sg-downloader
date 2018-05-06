@@ -3,7 +3,6 @@ package com.lorandszakacs.sg.model
 import java.net.URL
 
 import com.lorandszakacs.util.time._
-import org.joda.time.format.DateTimeFormatter
 import com.lorandszakacs.util.mongodb.Annotations
 
 /**
@@ -219,11 +218,12 @@ final case class HF(
 }
 
 final case class PhotoSet(
-  url:                           URL,
-  title:                         PhotoSetTitle,
-  date:                          LocalDate,
-  photos:                        List[Photo] = Nil,
-  @Annotations.Ignore() isHFSet: Option[Boolean] = None
+  url:    URL,
+  title:  PhotoSetTitle,
+  date:   LocalDate,
+  photos: List[Photo] = Nil,
+  @Annotations.Ignore()
+  isHFSet: Option[Boolean] = None
 ) extends Product with Serializable {
 
   def id: String = url.toExternalForm
@@ -231,7 +231,7 @@ final case class PhotoSet(
   override def toString: String =
     s"""
        |title = ${title.name}
-       |date  = ${date.toString(Util.dateTimeFormat)}
+       |date  = ${Util.dateTimeFormat.format(date)}
        |url   = ${url.toExternalForm}
        |${isHFSet.map(b => s"isHF  = $b").getOrElse("")}
        |${photos.mkString("{\n\t", "\n\t", "\n}")}
@@ -249,5 +249,5 @@ final case class Photo(
 }
 
 private[model] object Util {
-  final val dateTimeFormat: DateTimeFormatter = DateTimeFormat.forPattern("YYYY-MM-dd")
+  final val dateTimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd")
 }

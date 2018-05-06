@@ -7,7 +7,7 @@ import org.http4s.util.CaseInsensitiveString
 
 import com.lorandszakacs.sg.core
 import com.lorandszakacs.util.html.Html
-import org.joda.time.DateTime
+import com.lorandszakacs.util.time._
 import com.lorandszakacs.util.effects._
 
 /**
@@ -55,7 +55,7 @@ final case class Session(
   username:  String,
   sessionID: String,
   csrfToken: String,
-  expiresAt: DateTime
+  expiresAt: Instant
 ) {
 
   def toCookieHeader: Header =

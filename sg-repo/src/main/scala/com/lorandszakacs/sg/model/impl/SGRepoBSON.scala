@@ -1,10 +1,6 @@
 package com.lorandszakacs.sg.model.impl
 
-import java.net.URL
-
-import com.lorandszakacs.util.time._
 import com.lorandszakacs.sg.model._
-import org.joda.time.LocalDate
 import com.lorandszakacs.util.mongodb._
 
 /**
@@ -15,7 +11,7 @@ import com.lorandszakacs.util.mongodb._
   */
 private[impl] object SGRepoBSON extends SGRepoBSON
 
-private[impl] trait SGRepoBSON {
+private[impl] trait SGRepoBSON extends UtilBsonHandlers {
 
   def nameBSON: BSONHandler[BSONString, Name] = new BSONHandler[BSONString, Name] {
     override def read(bson: BSONString): Name = Name(bson.value)
@@ -28,27 +24,6 @@ private[impl] trait SGRepoBSON {
 
     override def write(t: PhotoSetTitle): BSONString = BSONString(t.name)
   }
-
-  implicit val localDateBSON: BSONHandler[BSONString, LocalDate] = new BSONHandler[BSONString, LocalDate] {
-    private final val format = DateTimeFormat.forPattern("YYYY-MM-dd")
-
-    override def write(t: LocalDate): BSONString = BSONString(t.toString(format))
-
-    override def read(bson: BSONString): LocalDate = LocalDate.parse(bson.value, format)
-  }
-
-  implicit val dateTimeBSON: BSONHandler[BSONDateTime, DateTime] = new BSONHandler[BSONDateTime, DateTime] {
-    override def write(t: DateTime): BSONDateTime = BSONDateTime(t.getMillis)
-
-    override def read(bson: BSONDateTime): DateTime = new DateTime(bson.value)
-  }
-
-  implicit val urlBSON: BSONReader[BSONString, URL] with BSONWriter[URL, BSONString] with BSONHandler[BSONString, URL] =
-    new BSONReader[BSONString, URL] with BSONWriter[URL, BSONString] with BSONHandler[BSONString, URL] {
-      override def read(bson: BSONString): URL = new URL(bson.value)
-
-      override def write(t: URL): BSONString = BSONString(t.toExternalForm)
-    }
 
   implicit val photoBSON
     : BSONDocumentReader[Photo] with BSONDocumentWriter[Photo] with BSONHandler[BSONDocument, Photo] =

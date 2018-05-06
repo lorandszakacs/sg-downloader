@@ -13,7 +13,7 @@ import org.scalatest.FlatSpec
   *
   */
 class SGClientTest extends FlatSpec with URLConversions {
-  implicit lazy val sch: Scheduler   = Scheduler.global
+  implicit lazy val sch: Scheduler = Scheduler.global
 
   lazy val client = SGClientImpl()(HTTPIOScheduler(sch))
 
@@ -24,7 +24,7 @@ class SGClientTest extends FlatSpec with URLConversions {
       username  = "",
       sessionID = "",
       csrfToken = "",
-      expiresAt = DateTime.now(DateTimeZone.forID("GMT"))
+      expiresAt = Instant.unsafeNow()
     )
 
     implicit val authentication: Authentication = client.createAuthentication(session).unsafeSyncGet()

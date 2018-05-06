@@ -278,26 +278,26 @@ object SGContentParser extends SGURLBuilder with URLConversions {
   private def parseStringToDateTime(t: String): Try[LocalDate] = {
     val time = t.trim()
     if (t.contains("yesterday")) {
-      Try(LocalDate.yesterday())
+      Try(LocalDate.unsafeYesterday())
     }
     else if (t.contains("hrs")) {
       val nrOfHours = t.replace(" hrs", "")
-      Try(DateTime.now.minusHours(nrOfHours.toInt)) map (_.toLocalDate)
+      Try(LocalDateTime.unsafeNow().minusHours(nrOfHours.toLong)) map (_.toLocalDate)
     }
     else if (t.contains("hr")) {
       val nrOfHours = t.replace(" hr", "")
-      Try(DateTime.now.minusHours(nrOfHours.toInt)) map (_.toLocalDate)
+      Try(LocalDateTime.unsafeNow().minusHours(nrOfHours.toLong)) map (_.toLocalDate)
     }
     else if (t.contains("mins")) {
       val nrOfMinutes = t.replace(" mins", "")
-      Try(DateTime.now.minusMinutes(nrOfMinutes.toInt)) map (_.toLocalDate)
+      Try(LocalDateTime.unsafeNow().minusMinutes(nrOfMinutes.toLong)) map (_.toLocalDate)
     }
     else if (t.contains("min")) {
       val nrOfMinutes = t.replace(" min", "")
-      Try(DateTime.now.minusMinutes(nrOfMinutes.toInt)) map (_.toLocalDate)
+      Try(LocalDateTime.unsafeNow().minusMinutes(nrOfMinutes.toLong)) map (_.toLocalDate)
     }
     else if (t.contains("now")) {
-      Try(DateTime.now) map (_.toLocalDate)
+      Try(LocalDateTime.unsafeNow()) map (_.toLocalDate)
     }
     else {
       Try {
@@ -306,7 +306,7 @@ object SGContentParser extends SGURLBuilder with URLConversions {
 
         val monthAsInt = months(month)
 
-        val dateTime = new LocalDate(year.toInt, monthAsInt, day.toInt)
+        val dateTime = LocalDate(year.toInt, monthAsInt, day.toInt)
         dateTime
       } recoverWith {
         case NonFatal(_) =>
@@ -314,7 +314,7 @@ object SGContentParser extends SGURLBuilder with URLConversions {
             val simplifiedDatePattern = """(\w\w\w) (\d*)""".r
             val simplifiedDatePattern(month, day) = time
             val monthAsInt = months(month)
-            new LocalDate(DateTime.now.getYear, monthAsInt, day.toInt)
+            LocalDate.unsafeNow().withMonth(monthAsInt).withDayOfMonth(day.toInt)
           }
       }
     }

@@ -122,8 +122,8 @@ private[exporter] class SGExporterImpl(
   )(
     implicit ws: ExporterSettings
   ): Task[Unit] = {
-    val today     = LocalDate.today()
-    val inThePast = today.minusDays(nrOfDays)
+    val today     = LocalDate.unsafeToday()
+    val inThePast = today.minusDays(nrOfDays.toLong)
     for {
       ms <- repo.aggregateBetweenDays(inThePast, today, delta)
       sortedLatestToEarliest = ms.sortBy(_._1).reverse
@@ -138,8 +138,8 @@ private[exporter] class SGExporterImpl(
   )(
     implicit ws: ExporterSettings
   ): Task[Unit] = {
-    val today     = LocalDate.today()
-    val inThePast = today.minusDays(nrOfDays)
+    val today     = LocalDate.unsafeToday()
+    val inThePast = today.minusDays(nrOfDays.toLong)
     for {
       ms <- repo.aggregateBetweenDays(inThePast, today)
       sortedLatestToEarliest = ms.sortBy(_._1).reverse

@@ -3,8 +3,8 @@ package com.lorandszakacs.sg.indexer
 import com.lorandszakacs.sg.http.PatienceConfig
 import com.lorandszakacs.sg.model.M.MFactory
 import com.lorandszakacs.sg.model._
-import org.joda.time.DateTime
 
+import com.lorandszakacs.util.time._
 import com.lorandszakacs.util.effects._
 
 /**
@@ -58,7 +58,7 @@ trait SGIndexer {
 
   final def createLastProcessedIndex(lastM: M): LastProcessedMarker = {
     LastProcessedMarker(
-      timestamp = DateTime.now(),
+      timestamp = Instant.unsafeNow(),
       photoSet = lastM.photoSetsNewestFirst.headOption
         .getOrElse(
           throw new AssertionError(

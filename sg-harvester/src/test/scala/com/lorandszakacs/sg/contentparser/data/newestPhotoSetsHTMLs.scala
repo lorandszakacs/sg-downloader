@@ -23,7 +23,7 @@ trait NewestPhotosPage {
     Html(source.getLines().mkString("\n"))
   }
 
-  def currentYear: Int = DateTime.now(DateTimeZone.UTC).getYear
+  def currentYear: Int = Year.unsafeNow().getValue
 
   def numberOfMs: Int
 
@@ -42,7 +42,7 @@ object NewestPhotosPageWithDoubleMSet extends NewestPhotosPage with URLConversio
         PhotoSet(
           url    = s"${core.Domain}/girls/saria/album/2752796/infinite-fire/",
           title  = "INFINITE FIRE",
-          date   = LocalDate.today, //this set has a relative date, not absolute one
+          date   = LocalDate.unsafeToday(), //this set has a relative date, not absolute one
           photos = Nil
         )
       )
@@ -54,7 +54,7 @@ object NewestPhotosPageWithDoubleMSet extends NewestPhotosPage with URLConversio
         PhotoSet(
           url    = s"${core.Domain}/girls/valkyria/album/2750395/pictures-of-home/",
           title  = "PICTURES OF HOME",
-          date   = LocalDate.today, //this set has a relative date, not absolute one
+          date   = LocalDate.unsafeToday(), //this set has a relative date, not absolute one
           photos = Nil
         )
       )
@@ -66,7 +66,7 @@ object NewestPhotosPageWithDoubleMSet extends NewestPhotosPage with URLConversio
         PhotoSet(
           url    = s"${core.Domain}/members/rias/album/2749693/cats-blues/",
           title  = "CAT'S BLUES",
-          date   = LocalDate.today, //this set has a relative date, not absolute one,
+          date   = LocalDate.unsafeToday(), //this set has a relative date, not absolute one,
           photos = Nil
         )
       )
@@ -78,7 +78,7 @@ object NewestPhotosPageWithDoubleMSet extends NewestPhotosPage with URLConversio
         PhotoSet(
           url    = s"${core.Domain}/members/insatiableindica/album/2748045/gamer-girl/",
           title  = "GAMER GIRL",
-          date   = LocalDate.today, //this set has a relative date, not absolute one,
+          date   = LocalDate.unsafeToday(), //this set has a relative date, not absolute one,
           photos = Nil
         )
       )

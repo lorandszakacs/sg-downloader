@@ -1,7 +1,7 @@
 package com.lorandszakacs.sg.model.impl
 
 import com.lorandszakacs.sg.model._
-import org.joda.time.LocalDate
+import com.lorandszakacs.util.time._
 import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.mongodb.Database
 import com.lorandszakacs.util.time._

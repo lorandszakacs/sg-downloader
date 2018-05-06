@@ -76,7 +76,7 @@ final case class CompleteIndex(
 )
 
 case class LastProcessedMarker(
-  timestamp: DateTime,
+  timestamp: Instant,
   photoSet:  PhotoSet
 ) {
   final def lastPhotoSetID: String = photoSet.id

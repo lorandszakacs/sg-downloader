@@ -383,7 +383,7 @@ private[impl] final class SGClientImpl private ()(implicit val httpIOSch: HTTPIO
 //                         username  = username,
 //                         sessionID = sessionId,
 //                         csrfToken = csrfToken,
-//                         expiresAt = org.joda.time.DateTime.now(DateTimeZone.UTC).plusDays(13)
+//                         expiresAt = Instant.unsafeNow().plusDays(13)
 //                       )
 //                     Task fromTry tokens
 //                   }
