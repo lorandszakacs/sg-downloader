@@ -72,8 +72,6 @@ lazy val `util` = project
       libraryDependencies ++= Seq(
         //required for package com.lorandszakacs.util.mongodb
         reactiveMongo,
-        //required for package com.lorandszakacs.util.time
-        nScalaJodaTime,
         logbackClassic,
         iolog4s,
         bmcEffects,
@@ -90,7 +88,6 @@ lazy val `util` = project
 
 lazy val bmcEffects: ModuleID = "com.busymachines" %% "busymachines-commons-effects" % "0.3.0-RC8" withSources ()
 
-lazy val nScalaJodaTime: ModuleID = "com.github.nscala-time" %% "nscala-time"   % "2.18.0" withSources ()
 lazy val reactiveMongo:  ModuleID = "org.reactivemongo"      %% "reactivemongo" % "0.13.0" withSources ()
 lazy val typeSafeConfig: ModuleID = "com.typesafe"           % "config"         % "1.3.3"  withSources ()
 
