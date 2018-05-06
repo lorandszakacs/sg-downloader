@@ -15,7 +15,7 @@ object TimeUtil {
     * inclusively.
     */
   def daysBetween(start: jt.LocalDate, end: jt.LocalDate): List[jt.LocalDate] = {
-    val nrOfDays = jt.Period.between(start, end).getDays
+    val nrOfDays = java.time.temporal.ChronoUnit.DAYS.between(start, end).toInt
     if (start.isAfter(end)) {
       throw new IllegalArgumentException(
         s".... days between cannot be computed for start($start) smaller than end($end)"

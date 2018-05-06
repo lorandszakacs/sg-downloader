@@ -21,4 +21,14 @@ class TimeUtilTest extends FlatSpec with Matchers {
     result should be(List(start, end))
   }
 
+  it should "... properly return the inclusive list of days that spans years" in {
+    val start = LocalDate(2017, 11, 27)
+    val end   = start.plusDays(120)
+
+    val result = TimeUtil.daysBetween(start, end)
+    result should have length 121
+    assert(result.head == start)
+    assert(result.last == end)
+  }
+
 }
