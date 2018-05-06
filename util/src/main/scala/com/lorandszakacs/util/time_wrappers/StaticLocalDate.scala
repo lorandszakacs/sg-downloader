@@ -43,5 +43,6 @@ trait StaticLocalDate {
   @inline def today[F[_]](implicit sf:     Sync[F]): F[jt.LocalDate] = sf.delay(unsafeToday())
 
   @inline def parse(s: String): LocalDate = jt.LocalDate.parse(s)
+  @inline def parse(s: String, formatter: jt.format.DateTimeFormatter): LocalDate = jt.LocalDate.parse(s, formatter)
 
 }

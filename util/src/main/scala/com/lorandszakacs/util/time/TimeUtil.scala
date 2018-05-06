@@ -29,6 +29,6 @@ object TimeUtil {
   /**
     * The default format
     */
-  val localDateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd")
+  val localDateFormat: DateTimeFormatter = jt.format.DateTimeFormatter.ISO_DATE
 
 }

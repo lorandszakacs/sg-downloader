@@ -18,7 +18,7 @@ trait UtilBsonHandlers {
     override def write(t: LocalDate): BSONString = BSONString(TimeUtil.localDateFormat.format(t))
 
     override def read(bson: BSONString): LocalDate =
-      java.time.LocalDate.from(TimeUtil.localDateFormat.parse(bson.value))
+      LocalDate.parse(bson.value, TimeUtil.localDateFormat)
 
   }
 
