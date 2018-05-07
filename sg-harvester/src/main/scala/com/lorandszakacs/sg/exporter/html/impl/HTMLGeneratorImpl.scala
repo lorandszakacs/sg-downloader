@@ -73,10 +73,10 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
   def createNewestPage(ms: List[(LocalDate, List[M])], favorites: Set[Name]): Task[Html] = {
     def newestPageElementForDay(date: LocalDate, ms: List[M]): String = {
       val elements = ms.sortBy(_.name.name).map { m =>
-        val latestSet   = m.photoSets.maxBy(_.date)
-        val link        = photoSetPageRelativePathFromCurrentDirectory(m.name, latestSet)
+        val relevantSet = m.photoSets.find(_.date == date).getOrElse(m.photoSets.maxBy(_.date))
+        val link        = photoSetPageRelativePathFromCurrentDirectory(m.name, relevantSet)
         val favText     = if (favorites.contains(m.name)) " - fav" else ""
-        val displayText = s"${m.name.externalForm} - ${latestSet.title.externalForm}"
+        val displayText = s"${m.name.externalForm} - ${relevantSet.title.externalForm}"
         s"""<li><a href="all/$link" target="_blank">$displayText</a>$favText</li>"""
       }
       s"""
