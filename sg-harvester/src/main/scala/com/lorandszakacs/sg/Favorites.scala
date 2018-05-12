@@ -230,7 +230,7 @@ object Favorites {
       "lait",
       "lalka",
       "lanei",
-      "larabeard",
+      "larabea",
       "lascaux",
       "lass",
       "lavonne",
