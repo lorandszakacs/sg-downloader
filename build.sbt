@@ -129,5 +129,5 @@ def commonSettings: Seq[Setting[_]] =
     test in assembly            := {},
     assemblyJarName in assembly := s"${name.value}.jar",
     scalaVersion                := mainScalaVersion,
-    addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.2.1")
+    addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.2.4")
   ) ++ Settings.scalaCompilerFlags
