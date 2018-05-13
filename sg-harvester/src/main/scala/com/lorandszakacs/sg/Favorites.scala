@@ -120,6 +120,7 @@ object Favorites {
       "damselfly",
       "danette",
       "dawud",
+      "debby",
       "delacour",
       "delora",
       "demonia",
