@@ -137,6 +137,7 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
                      |    ${psi.map(photoSetLink).mkString("\n")}
                      |  </ol>
                      |  </h3>
+                     |  <h2><a href="../${settings.indexFileName}">BACK</a></h2>
                      |</html>
     """.stripMargin
       )
