@@ -173,9 +173,9 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
                      |      <div class="w3-row">
                      |${ps.photos.map(phs => photoDiv(phs)).mkString("\n")}
                      |      </div>
-                     |    <div id="largeImgPanel" onclick="hideMe(this);">
-                     |    <img id="largeImg" style="height: 100%; margin: 0; padding: 0;">
-                     |    <h2><a href="../${settings.indexFileName}">BACK</a></h2>
+                     |      <h2><a href="../${mIndexPageRelativePathFromCurrentDirectory(m.name)}">BACK</a></h2>
+                     |      <div id="largeImgPanel" onclick="hideMe(this);">
+                     |      <img id="largeImg" style="height: 100%; margin: 0; padding: 0;">
                      |   </body>
                      |</html>
     """.stripMargin
