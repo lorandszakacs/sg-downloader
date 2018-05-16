@@ -137,7 +137,6 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
                      |    ${psi.map(photoSetLink).mkString("\n")}
                      |  </ol>
                      |  </h3>
-                     |  <h2><a href="../${settings.indexFileName}">BACK</a></h2>
                      |</html>
     """.stripMargin
       )
@@ -176,6 +175,7 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
                      |      </div>
                      |    <div id="largeImgPanel" onclick="hideMe(this);">
                      |    <img id="largeImg" style="height: 100%; margin: 0; padding: 0;">
+                     |    <h2><a href="../${settings.indexFileName}">BACK</a></h2>
                      |   </body>
                      |</html>
     """.stripMargin
