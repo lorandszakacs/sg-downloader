@@ -52,6 +52,8 @@ trait SGAndHFRepository {
 
   def findAll: Task[List[M]]
 
+  def deleteHF(name: Name): Task[Unit]
+
 }
 
 final case class HFIndex(

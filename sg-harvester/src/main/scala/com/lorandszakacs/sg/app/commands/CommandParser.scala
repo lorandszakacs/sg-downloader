@@ -159,7 +159,18 @@ object CommandParser extends JavaTokenParsers {
       _    <- `space+`
       name <- name
     } yield Commands.Show(name)
+  }
 
+  //===========================================================================
+  //================================= DELETE ==================================
+  //===========================================================================
+
+  private val deleteCommandParser: Parser[Commands.Delete] = {
+    for {
+      _    <- literal(Commands.Delete.id)
+      _    <- `space+`
+      name <- name
+    } yield Commands.Delete(name)
   }
 
   //===========================================================================
@@ -190,6 +201,7 @@ object CommandParser extends JavaTokenParsers {
     deltaHarvestCommandParser |
       downloadSpecificCommandParser |
       exportHTMLCommandParser |
+      deleteCommandParser |
       showCommandParser |
       favoritesCommandParser |
       helpCommandParser |

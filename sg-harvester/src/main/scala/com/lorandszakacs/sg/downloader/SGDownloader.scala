@@ -322,6 +322,11 @@ final class SGDownloader private[downloader] (
     }
   }
 
-  object util {}
+  object util {
+
+    def delete(name: Name): Task[Unit] =
+      logger.info(s"delta.delete --> delegating to repo.deleteHF") *> repo.deleteHF(name)
+
+  }
 
 }

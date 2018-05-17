@@ -180,4 +180,21 @@ private[model] class SGAndHFRepositoryImpl(
     } yield (sgs ++ hfs).sortBy(_.name)
   }
 
+  override def deleteHF(name: Name): Task[Unit] = {
+    for {
+      hf <- hfsRepo.find(name)
+      _ <- if (hf.isEmpty)
+            logger.warn(s"Trying to delete HF that does not exist in database: $name")
+          else
+            for {
+              _        <- hfsRepo.remove(name)
+              _        <- logger.info(s"Removed HF $name from DB")
+              oldIndex <- hfiRepo.get
+              newIndex = oldIndex.names.filterNot(_ == name)
+              _ <- logger.info(s"Removed HF $name from index, 'old#'=${oldIndex.number}, '#new'=${newIndex.length}")
+              _ <- hfiRepo.rewriteIndex(newIndex)
+            } yield ()
+    } yield ()
+  }
+
 }

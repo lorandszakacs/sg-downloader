@@ -54,11 +54,14 @@ class CommandLineInterpreter(assembly: SGDownloaderAssembly) {
           daysToExport  = defaultDays,
           onlyFavorites = onlyFavorites
         )
-
       //=======================================================================
       case Commands.Show(name) =>
         Task(print("\n***************\n")) >>
           downloader.show(name).map(s => println(s))
+      //=======================================================================
+      case Commands.Delete(name) =>
+        Task(print("\n***************\n")) >>
+          downloader.util.delete(name)
       //=======================================================================
       case Commands.Favorites =>
         Task(print("\n***************\n")) >>

@@ -107,6 +107,24 @@ object Commands {
 
   //====================================================================================
 
+  object Delete extends CommandDescription {
+    override val id: String = "delete"
+
+    override val humanlyReadableDescription: String =
+      s"""|Removes a given model from the database. Works only on HFs
+        """.stripMargin.trim()
+
+    override val manDescription: String =
+      """delete $NAME"""
+
+  }
+
+  case class Delete(
+    name: Name
+  ) extends Command
+
+  //====================================================================================
+
   case object Favorites extends Command with CommandDescription {
     override def id: String = "favorites"
 
@@ -149,6 +167,7 @@ object Commands {
 
   lazy val descriptions: List[CommandDescription] = List(
     DownloadSpecific,
+    Delete,
     DeltaDownload,
     Show,
     ExportHTML,

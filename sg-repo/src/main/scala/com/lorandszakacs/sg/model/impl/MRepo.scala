@@ -26,5 +26,4 @@ private[impl] abstract class MRepo[Content <: M](override protected val identifi
     )
     this.findMany(q)
   }
-
 }
