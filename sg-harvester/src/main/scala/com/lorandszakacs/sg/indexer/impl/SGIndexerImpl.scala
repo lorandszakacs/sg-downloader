@@ -144,7 +144,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGInd
       lastProcessedIndex match {
         case None => false
         case Some(lpi) =>
-          ms.exists(_.photoSets.exists(_.id == lpi.lastPhotoSetID))
+          ms.exists(_.photoSets.exists(ps => ps.id == lpi.lastPhotoSetID || ps.date.isBefore(lpi.photoSet.date)))
       }
 
     }
