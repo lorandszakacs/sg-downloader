@@ -17,6 +17,6 @@ trait IndexerAssembly extends SGClientAssembly {
 
   //for testing
   private[indexer] def sgIndexerImpl(sgClient: SGClient): SGIndexerImpl =
-    new SGIndexerImpl(sgClient)(???)
+    new SGIndexerImpl(sgClient)
 
 }

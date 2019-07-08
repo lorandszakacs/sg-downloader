@@ -10,6 +10,7 @@ import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html.Html
 import org.http4s.Uri
 import com.lorandszakacs.util.logger._
+import fs2._
 
 /**
   *
@@ -22,8 +23,7 @@ import com.lorandszakacs.util.logger._
   * @since 03 Jul 2016
   *
   */
-final private[indexer] class SGIndexerImpl(val sGClient: SGClient)(implicit cs: ContextShift[IO])
-    extends SGIndexer with SGURLBuilder {
+final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGIndexer with SGURLBuilder {
   implicit private val logger: Logger[IO] = Logger.getLogger[IO]
 
   implicit private[this] val Authentication: Authentication = DefaultSGAuthentication
@@ -238,59 +238,51 @@ final private[indexer] class SGIndexerImpl(val sGClient: SGClient)(implicit cs: 
       Uri.unsafeFromString(s"$uri?partial=true&offset=$offset")
 
     /*
-     * We want to express something like:
-     * observable.takeWhile(predicate).takeOneMore
-     *
-     * Because the `stopOnInput` function is inclusive.
-     * While the other two metrics of reaching the offset,
-     * and the end of the world are exclusive.
-     *
-     * So if the latter are met, then we can just do
-     * with a simple takeWhile, but if it happens
-     * that we actually have to stop based on the
-     * contents of a page, we have to also keep that page,
-     * therefore we simulate the takeWhile+1 with
-     * this localized mutable state here.
-     *
-     * !!! take care !!!
+     * This filter is exclusive, we do not want to :
+     * - include the final page (usually empty) in the result set
+     * - cutofflimit is already lower then where we're at, so we exclude from result set
      */
-//    val stopOnNextPage: AtomicBoolean = AtomicBoolean(false)
-    //    def keepThisPage(t: (Int, Html, List[T])): Boolean = {
-    //      val (offset, html, list) = t
-    //
-    //      !stopOnNextPage.getAndSet(stopOnPage(list)) &&
-    //      (offset <= cutOffLimit) && !isFinalPage(html)
-    //    }
-    //
-    //    val htmlPages: Observable[(Int, Html)] = Observable
-    //      .range(from = 0L, until = cutOffLimit.toLong, step = offsetStep.toLong)
-    //      .mapEval { offset =>
-    //        monix.eval.Task.from {
-    //          for {
-    //            newURI <- IO.pure(offsetUri(uri, offset.toInt))
-    //            _      <- logger.info(s"load repeatedly: step=$offsetStep [$newURI]")
-    //            html   <- pc.throttleAfter(sGClient.getPage(newURI))
-    //          } yield (offset.toInt, html)
-    //        }
-    //      }
-    //
-    //    val parsedPages: Observable[(Int, Html, List[T])] =
-    //      htmlPages.mapEval { p =>
-    //        val (offset, html) = p
-    //        monix.eval.Task.from {
-    //          IO.fromTry(parsingFunction(html))
-    //            .adaptError {
-    //              case NonFatal(e) => FailedToRepeatedlyLoadPageException(offset, e)
-    //            }
-    //            .map(ts => (offset, html, ts))
-    //        }
-    //      }
-    //
-    //    val relevantPages = parsedPages.takeWhile(keepThisPage)
-    //
-    //    val result = relevantPages.map(_._3)
-    //
-    //    result.toListL.map(_.flatten)
-    ??? : IO[List[T]]
+    def keepThisPageExclusive(t: (Int, Html, List[T])): Boolean = {
+      val (offset, html, _) = t
+
+      (offset <= cutOffLimit) && !isFinalPage(html)
+    }
+
+    /**
+      * This is an inclusive filter, we want to keep the page on which
+      * we ought to stop on (for checking latest page visited) for example
+      */
+    def keepThisPageInclusive(t: (Int, Html, List[T])): Boolean = {
+      val (_, _, list) = t
+
+      !stopOnPage(list)
+    }
+
+    val htmlPages: Stream[IO, (Int, Html)] = Stream
+      .range(start = 0, stopExclusive = cutOffLimit, by = offsetStep)
+      .evalMap { offset =>
+        for {
+          newURI <- IO.pure(offsetUri(uri, offset))
+          _      <- logger.info(s"load repeatedly: step=$offsetStep [$newURI]")
+          html   <- pc.throttleAfter(sGClient.getPage(newURI))
+        } yield (offset, html)
+      }
+
+    val parsedPages: Stream[IO, (Int, Html, List[T])] =
+      htmlPages.evalMap { p =>
+        val (offset, html) = p
+        IO.fromTry(parsingFunction(html))
+          .adaptError {
+            case NonFatal(e) => FailedToRepeatedlyLoadPageException(offset, e)
+          }
+          .map(ts => (offset, html, ts))
+      }
+
+    val relevantPages = parsedPages.takeThrough(keepThisPageInclusive).takeWhile(keepThisPageExclusive)
+
+    val result: Stream[IO, List[T]] = relevantPages.map(_._3)
+
+    result.compile.toList.map(_.flatten)
   }
+
 }
