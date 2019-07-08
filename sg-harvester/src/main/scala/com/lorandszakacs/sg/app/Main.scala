@@ -72,7 +72,7 @@ object Main extends PureharmIOApp {
         _ <- assembly.shutdownIO
         _ <- IO(println("... finished gracefully"))
       } yield ExitCode.Success
-    }
+    } >> IO(System.exit(0)).as(ExitCode.Success)
   }
 
 }
