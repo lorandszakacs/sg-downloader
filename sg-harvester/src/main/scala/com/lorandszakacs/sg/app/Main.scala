@@ -33,29 +33,38 @@ object Main extends App {
   implicit val dbIOScheduler:        DBIOScheduler    = DBIOScheduler(Scheduler.io(name = "sg-app-dbio"))
   implicit val httpIOScheduler:      HTTPIOScheduler  = HTTPIOScheduler(Scheduler.io(name = "sg-app-http"))
 
-  val assembly    = new Assembly()(computationScheduler, dbIOScheduler, futureLift, httpIOScheduler)
-  val interpreter = new CommandLineInterpreter(assembly)
-  val repl        = new REPL(interpreter)
+  val replResource = for {
+    assembly <- Resource.pure[Task, Assembly](
+      new Assembly()(computationScheduler, dbIOScheduler, futureLift, httpIOScheduler),
+    )
+    sgClient <- assembly.sgClient
+    interpreter = new CommandLineInterpreter(sgClient, assembly)
+  } yield (assembly, interpreter, new REPL(interpreter))
 
-  val interpretArgsTask: Task[Unit] =
-    logger.info(s"Received args: ${args.mkString(",")} --> executing command") >>
-      interpreter.interpretArgs(args).onError {
-        case NonFatal(e) =>
-          logger.error(e)("—— something went wrong during interpretation —— exiting") >>
-            assembly.shutdownTask >>
-            Task(System.exit(1))
-      }
+  //TODO: redo all these, and make them resources
+  val program = replResource.use { tuple =>
+    val (assembly, interpreter, repl) = tuple
 
-  val startReplTask = logger.info(s"Did not receive any arguments, going into REPL mode") >>
-    repl.runTask
+    val interpretArgsTask: Task[Unit] =
+      logger.info(s"Received args: ${args.mkString(",")} --> executing command") >>
+        interpreter.interpretArgs(args).onError {
+          case NonFatal(e) =>
+            logger.error(e)("—— something went wrong during interpretation —— exiting") >>
+              assembly.shutdownTask >>
+              Task(System.exit(1))
+        }
 
-  val program = for {
-    _ <- assembly.initTask
-    _ <- if (args.isEmpty) startReplTask else interpretArgsTask
-    _ <- assembly.shutdownTask
-    _ <- Task(println("... finished gracefully"))
-    _ <- Task(System.exit(0))
-  } yield ()
+    val startReplTask = logger.info(s"Did not receive any arguments, going into REPL mode") >>
+      repl.runTask
+
+    for {
+      _ <- assembly.initTask
+      _ <- if (args.isEmpty) startReplTask else interpretArgsTask
+      _ <- assembly.shutdownTask
+      _ <- Task(println("... finished gracefully"))
+      _ <- Task(System.exit(0))
+    } yield ()
+  }
 
   program.runSyncUnsafe(scala.concurrent.duration.Duration.Inf)
 }

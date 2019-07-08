@@ -15,7 +15,7 @@ import org.scalatest.FlatSpec
 class SGClientTest extends FlatSpec with URLConversions {
   implicit lazy val sch: Scheduler = Scheduler.global
 
-  lazy val client = SGClientImpl()(HTTPIOScheduler(sch))
+  private lazy val clientR = SGClientImpl()(HTTPIOScheduler(sch))
 
   behavior of "SG client"
 
@@ -27,18 +27,23 @@ class SGClientTest extends FlatSpec with URLConversions {
       expiresAt = Instant.unsafeNow(),
     )
 
-    implicit val authentication: Authentication = client.createAuthentication(session).unsafeSyncGet()
+    clientR.use { client =>
+      Task {
+        implicit val authentication: Authentication = client.createAuthentication(session).unsafeSyncGet()
 
-    val html = client.getPage(s"${core.Domain}/girls/dwam/album/977051/limportance-d-etre-ernest/").unsafeSyncGet()
-    println {
-      s"""
-         |
-         |
-         |${html.toString}
-         |
-         |
+        val html = client.getPage(s"${core.Domain}/girls/dwam/album/977051/limportance-d-etre-ernest/").unsafeSyncGet()
+        println {
+          s"""
+             |
+             |
+             |${html.toString}
+             |
+             |
       """.stripMargin
+        }
+      }
     }
+
   }
 
 }

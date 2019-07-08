@@ -14,6 +14,6 @@ trait SGClientAssembly {
 
   implicit def httpIOScheduler: HTTPIOScheduler
 
-  lazy val sgClient: SGClient = SGClientImpl()
+  lazy val sgClient: Resource[Task, SGClient] = SGClientImpl()
 
 }

@@ -2,6 +2,7 @@ package com.lorandszakacs.sg.app.repl
 
 import com.lorandszakacs.sg.app.commands.{Command, CommandParser, Commands}
 import com.lorandszakacs.sg.downloader.SGDownloaderAssembly
+import com.lorandszakacs.sg.http.SGClient
 import com.lorandszakacs.util.effects._
 
 /**
@@ -10,7 +11,10 @@ import com.lorandszakacs.util.effects._
   * @since 01 Jul 2017
   *
   */
-class CommandLineInterpreter(assembly: SGDownloaderAssembly) {
+class CommandLineInterpreter(
+  sgClient: SGClient,
+  assembly: SGDownloaderAssembly,
+) {
   private val defaultDays = 160
 
   def interpretArgs(args: Array[String]): Task[Unit] = {
@@ -24,7 +28,7 @@ class CommandLineInterpreter(assembly: SGDownloaderAssembly) {
     eventualInterpretation(args)
   }
 
-  private val downloader = assembly.sgDownloader
+  private val downloader = assembly.sgDownloader(sgClient)
 
   private def eventualInterpretation(args: String): Task[Command] = {
     for {

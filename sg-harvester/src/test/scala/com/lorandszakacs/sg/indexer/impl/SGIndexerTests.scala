@@ -339,7 +339,13 @@ class SGIndexerTests extends IndexerTest {
     val assembly = new IndexerAssembly with SGClientAssembly {
       implicit override def httpIOScheduler: HTTPIOScheduler = SGIndexerTests.this.httpIOSch
     }
+    val resource = assembly.sgClient
+    val testTask = resource.use { client =>
+      Task {
+        test(assembly.sgIndexerImpl(client))
+      }
+    }
 
-    test.apply(assembly._sgIndexerImpl)
+    testTask.runSyncUnsafe()
   }
 }

@@ -29,8 +29,6 @@ trait SGClient {
 
   def createAuthentication(session: Session): Task[Authentication]
 
-  def cleanup: Task[Unit]
-
   /**
     * Website now has google reCAPTCHA, so it's hard to logon, but you can manually create
     * an [[Authentication]] from a [[Session]] using [[createAuthentication]] by pasting

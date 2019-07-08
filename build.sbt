@@ -27,7 +27,6 @@ lazy val `sg-harvester` = project
       fork in run                              := true,
       libraryDependencies ++= Seq(
         http4sDSL,
-        http4sServer,
         http4sClient,
         parserCombinators,
         scalaTest,
@@ -95,7 +94,7 @@ lazy val log4catsV       = "0.4.0-M1"  //https://github.com/ChristopherDavenport
 lazy val logbackV        = "1.2.3"     //https://github.com/qos-ch/logback/releases
 lazy val jsoupV          = "1.8.1"     //https://github.com/jhy/jsoup/releases
 lazy val scalaPCV        = "1.1.2"     //https://github.com/scala/scala-parser-combinators/releases
-lazy val http4sV         = "0.18.9"    //https://github.com/http4s/http4s/releases
+lazy val http4sV         = "0.21.0-M1" //https://github.com/http4s/http4s/releases
 lazy val scalaTestV      = "3.0.5"     //https://github.com/scalatest/scalatest/releases
 lazy val scalaCheckV     = "1.13.5"    //https://github.com/rickynils/scalacheck/releases
 
@@ -116,10 +115,9 @@ lazy val jsoup:             ModuleID = "org.jsoup"              % "jsoup"       
 //============================================================================================
 
 lazy val http4sDSL    = "org.http4s" %% "http4s-dsl"          % http4sV
-lazy val http4sServer = "org.http4s" %% "http4s-blaze-server" % http4sV
 lazy val http4sClient = "org.http4s" %% "http4s-blaze-client" % http4sV
 
-//cats, cats-effect, monix brough in by bmcEffects
+//cats, cats-effect, brought in by pureharm
 
 //============================================================================================
 //=========================================  testing =========================================

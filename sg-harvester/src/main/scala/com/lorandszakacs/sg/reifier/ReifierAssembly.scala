@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.reifier
 
-import com.lorandszakacs.sg.http.SGClientAssembly
+import com.lorandszakacs.sg.http.{SGClient, SGClientAssembly}
 import com.lorandszakacs.sg.reifier.impl.{SGReifierImpl, SessionDaoImpl}
 import com.lorandszakacs.util.mongodb.Database
 import com.lorandszakacs.util.effects._
@@ -18,11 +18,9 @@ trait ReifierAssembly extends SGClientAssembly {
 
   implicit def futureLift: FutureLift[Task]
 
-  def sgReifier: SGReifier = _sgReifierImpl
+  def sgReifier(sgClient: SGClient): SGReifier = new SGReifierImpl(sgClient, _sessionDao)
 
   private[reifier] lazy val _sessionDao = new SessionDaoImpl(db)(dbIOScheduler, futureLift)
-
-  private[reifier] lazy val _sgReifierImpl = new SGReifierImpl(sgClient, _sessionDao)
 
   def initReifierAssembly: Task[Unit] = _sessionDao.init
 }

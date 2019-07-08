@@ -35,7 +35,6 @@ final class Assembly(
   lazy val shutdownTask: Task[Unit] = {
     for {
       _ <- logger.info("attempting to shutdown and close all resources")
-      _ <- sgClient.cleanup
       _ <- logger.info("finished sgClient cleanup")
       _ <- db.shutdown() >> logger.info("terminated -- database.shutdown()")
       _ <- logger.info("terminated -- completed assembly.shutdown()")

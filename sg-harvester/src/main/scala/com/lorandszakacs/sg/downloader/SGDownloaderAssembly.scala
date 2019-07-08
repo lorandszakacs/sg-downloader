@@ -1,6 +1,7 @@
 package com.lorandszakacs.sg.downloader
 
 import com.lorandszakacs.sg.exporter.SGExporterAssembly
+import com.lorandszakacs.sg.http.SGClient
 import com.lorandszakacs.sg.indexer.IndexerAssembly
 import com.lorandszakacs.sg.model.SGRepoAssembly
 import com.lorandszakacs.sg.reifier.ReifierAssembly
@@ -14,12 +15,10 @@ import com.lorandszakacs.sg.reifier.ReifierAssembly
 trait SGDownloaderAssembly {
   this: SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGExporterAssembly =>
 
-  def sgDownloader: SGDownloader = _sgDownloader
-
-  private[downloader] lazy val _sgDownloader = new SGDownloader(
+  def sgDownloader(sgClient: SGClient): SGDownloader = new SGDownloader(
     repo     = sgAndHFRepository,
-    indexer  = sgIndexer,
-    reifier  = sgReifier,
+    indexer  = sgIndexer(sgClient),
+    reifier  = sgReifier(sgClient),
     exporter = sgExporter,
   )
 

@@ -33,14 +33,16 @@ import com.lorandszakacs.util.html._
   *
   */
 private[http] object SGClientImpl {
-  private[http] def apply()(implicit httpIOSch: HTTPIOScheduler) = new SGClientImpl()
+  private[http] def apply()(implicit httpIOSch: HTTPIOScheduler): Resource[Task, SGClient] =
+    for {
+      client <- BlazeClientBuilder.apply[Task](httpIOSch.scheduler).resource
+    } yield new SGClientImpl(client)
+
 }
 
-final private[impl] class SGClientImpl private ()(implicit val httpIOSch: HTTPIOScheduler) extends SGClient {
-
-  private val httpClient: Client[Task] = Http1Client[Task]().unsafeSyncGet()(httpIOSch.scheduler)
-
-  override def cleanup: Task[Unit] = httpClient.shutdown
+final private[impl] class SGClientImpl private (private val httpClient: Client[Task])(
+  implicit val httpIOSch:                                               HTTPIOScheduler,
+) extends SGClient {
 
   override def getPage(url: URL)(implicit authentication: Authentication): Task[Html] = {
     val uri         = Uri.unsafeFromString(url.toExternalForm)

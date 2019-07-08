@@ -1,6 +1,7 @@
 package com.lorandszakacs.sg.indexer
 
-import com.lorandszakacs.sg.http.SGClientAssembly
+import com.lorandszakacs.util.effects._
+import com.lorandszakacs.sg.http.{SGClient, SGClientAssembly}
 import com.lorandszakacs.sg.indexer.impl.SGIndexerImpl
 
 /**
@@ -11,8 +12,11 @@ import com.lorandszakacs.sg.indexer.impl.SGIndexerImpl
   */
 trait IndexerAssembly extends SGClientAssembly {
 
-  def sgIndexer: SGIndexer = _sgIndexerImpl
+  implicit def httpIOScheduler: HTTPIOScheduler
 
-  private[indexer] lazy val _sgIndexerImpl = new SGIndexerImpl(sgClient)
+  def sgIndexer(sgClient: SGClient): SGIndexer = sgIndexerImpl(sgClient)
+
+  //for testing
+  private[indexer] def sgIndexerImpl(sgClient: SGClient): SGIndexerImpl = new SGIndexerImpl(sgClient)
 
 }
