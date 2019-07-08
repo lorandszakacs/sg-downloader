@@ -51,7 +51,7 @@ final class SGDownloader private[downloader] (
     rewriteEverything       = true,
   )
 
-  implicit protected val patienceConfig: PatienceConfig = PatienceConfig(timer, 200 millis)
+  implicit protected val patienceConfig: PatienceConfig = PatienceConfig(timer, 75 millis)
 
   object index {
 

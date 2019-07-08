@@ -13,7 +13,7 @@ import scala.language.postfixOps
   *
   */
 object PatienceConfig {
-  val defaultDuration: FiniteDuration = 200 millis
+  val defaultDuration: FiniteDuration = 100 millis
   val doubleDefault:   FiniteDuration = defaultDuration.mul(2)
 }
 
