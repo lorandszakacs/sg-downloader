@@ -1,7 +1,7 @@
 <configuration>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %cyan([%thread]) %highlight(%-5level) %yellow(%logger{30}) - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} %cyan([%thread]) %highlight(%-5level) %yellow(%logger) - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -12,6 +12,8 @@
     <logger name="reactivemongo.core.actors.MongoDBSystem" level="ERROR"/>
     <logger name="reactivemongo.core.actors.MonitorActor" level="ERROR"/>
     <logger name="akka://mongodb-akka" level="ERROR"/>
+
+    <logger name="org.http4s" level="WARN"/>
 
     <logger name="com.lorandszakacs.sg.indexer.impl.SGIndexerImpl" level="DEBUG"/>
 
