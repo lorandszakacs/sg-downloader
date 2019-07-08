@@ -31,7 +31,7 @@ final case class Database(uri: String, dbName: String, config: Option[Config] = 
     for {
       parsedURI   <- Task.fromTry(MongoConnection.parseURI(uri))
       mongoDriver <- mongoDriverTask
-      connection  <- Task(mongoDriver.connection(parsedURI))
+      connection  <- Task.fromTry(mongoDriver.connection(parsedURI, strictUri = true))
     } yield connection
   }.memoizeOnSuccess
 

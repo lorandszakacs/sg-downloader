@@ -214,11 +214,9 @@ final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGInd
     *   Predicate to decide if loading should stop based on the results
     *   of a successful ``parsingFunction``
     *   If this function returns true, then loading stops and results gathered so far are returned
-    *
     * @param isFinalPage
     *   Determines if the loaded page is the "last page".
     *   If this function returns true, then loading stops and results gathered so far are returned
-    *
     * @param uri
     * Assumed to not have any ``offset`` HTTP parameters
     * when passed to this function. i.e.
@@ -231,7 +229,7 @@ final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGInd
     cutOffLimit:     Int,
     parsingFunction: Html => Try[List[T]],
     isFinalPage:     Html => Boolean,
-    stopOnPage:      List[T] => Boolean = (ls: List[T]) => false,
+    stopOnPage:      List[T] => Boolean = (_: List[T]) => false,
   )(
     implicit
     pc: PatienceConfig,
@@ -267,7 +265,7 @@ final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGInd
 
     val htmlPages: Observable[(Int, Html)] = Observable
       .range(from = 0L, until = cutOffLimit.toLong, step = offsetStep.toLong)
-      .mapTask { offset =>
+      .mapEval { offset =>
         for {
           newURI <- Task.pure(offsetUri(uri, offset.toInt))
           _      <- logger.info(s"load repeatedly: step=$offsetStep [$newURI]")
@@ -276,7 +274,7 @@ final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGInd
       }
 
     val parsedPages: Observable[(Int, Html, List[T])] =
-      htmlPages.mapTask { p =>
+      htmlPages.mapEval { p =>
         val (offset, html) = p
         Task
           .fromTry(parsingFunction(html))

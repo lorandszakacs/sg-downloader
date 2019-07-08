@@ -87,7 +87,7 @@ lazy val `util` = project
 //============================================================================================
 
 lazy val bmcV            = "0.3.0-RC10" //https://github.com/busymachines/busymachines-commons/releases
-lazy val reactiveMongoV  = "0.13.0" //https://github.com/ReactiveMongo/ReactiveMongo/releases
+lazy val reactiveMongoV  = "0.18.1" //https://github.com/ReactiveMongo/ReactiveMongo/releases
 lazy val typesafeConfigV = "1.3.3" //https://github.com/lightbend/config/releases
 lazy val log4catsV       = "0.0.3" //https://github.com/ChristopherDavenport/log4cats
 lazy val logbackV        = "1.2.3" //https://github.com/qos-ch/logback/releases

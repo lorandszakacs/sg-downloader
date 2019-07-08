@@ -82,11 +82,12 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
   def idQueryByEntity(id: Entity): BSONDocument = BSONDocument(_id -> identifier.id(id))
 
   def findOne(query: BSONDocument): Task[Option[Entity]] = {
-    collection.find(query).one[Entity].suspendInTask
+    collection.find[BSONDocument, BSONDocument](selector = query, projection = Option.empty).one[Entity].suspendInTask
   }
 
   def findMany(query: BSONDocument, maxDocs: Int = Int.MaxValue): Task[List[Entity]] = {
-    val cursor: Cursor[Entity] = collection.find(query).cursor[Entity]()
+    val cursor: Cursor[Entity] =
+      collection.find[BSONDocument, BSONDocument](query, projection = Option.empty).cursor[Entity]()
     cursor.collect[List](maxDocs = maxDocs, err = Cursor.FailOnError[List[Entity]]()).suspendInTask
   }
 
@@ -114,7 +115,7 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def create(toCreate: Entity): Task[Unit] = {
     for {
-      _ <- collection.insert(toCreate).suspendInTask.discardContent.recoverWith {
+      _ <- collection.insert(ordered = false).one(toCreate).suspendInTask.discardContent.recoverWith {
         case e: LastError =>
           MongoCollection.interpretWriteResult(e)
 
@@ -126,27 +127,33 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def create(toCreate: List[Entity]): Task[Unit] = {
     for {
-      wr <- collection.insert[Entity](ordered = false).many(toCreate).suspendInTask
+      wr <- collection.insert(ordered = false).many[Entity](toCreate).suspendInTask
       _  <- MongoCollection.interpretWriteResult(wr)
     } yield ()
   }
 
   def createOrUpdate(query: BSONDocument, toCreate: Entity): Task[Unit] = {
     for {
-      _ <- collection.update(query, toCreate, upsert = true).suspendInTask.discardContent.recoverWith {
-        case e: LastError =>
-          MongoCollection.interpretWriteResult(e)
+      _ <- collection
+        .update(ordered = false)
+        .one(query, toCreate, upsert = true)
+        .suspendInTask
+        .discardContent
+        .recoverWith {
+          case e: LastError =>
+            MongoCollection.interpretWriteResult(e)
 
-        case NonFatal(e) =>
-          Task.raiseError(e)
-      }
+          case NonFatal(e) =>
+            Task.raiseError(e)
+        }
     } yield ()
   }
 
   def createOrUpdate(toCreate: Entity): Task[Unit] = {
     for {
       _ <- collection
-        .update(idQueryByEntity(toCreate), toCreate, upsert = true)
+        .update(ordered = false)
+        .one(idQueryByEntity(toCreate), toCreate, upsert = true)
         .suspendInTask
         .discardContent
         .recoverWith {
@@ -167,9 +174,9 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
     } yield ()
   }
 
-  def remove(q: BSONDocument, firstMatchOnly: Boolean = false): Task[Unit] = {
+  def remove(q: BSONDocument): Task[Unit] = {
     for {
-      _ <- collection.remove(q, firstMatchOnly = firstMatchOnly).suspendInTask.discardContent.recoverWith {
+      _ <- collection.delete().element(q).suspendInTask.discardContent.recoverWith {
         case e: LastError =>
           MongoCollection.interpretWriteResult(e)
 
@@ -180,7 +187,7 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
   }
 
   def remove(id: IdType): Task[Unit] = {
-    this.remove(idQuery(id), firstMatchOnly = true)
+    this.remove(idQuery(id))
   }
 
 }
