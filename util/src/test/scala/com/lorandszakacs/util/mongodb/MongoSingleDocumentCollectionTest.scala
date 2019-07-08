@@ -1,7 +1,8 @@
 package com.lorandszakacs.util.mongodb
 
 import com.lorandszakacs.util.effects._
-import org.scalatest.{fixture, Matchers, OneInstancePerTest, Outcome}
+import org.scalatest.flatspec.FixtureAnyFlatSpec
+import org.scalatest.{Matchers, OneInstancePerTest, Outcome}
 
 /**
   *
@@ -17,7 +18,7 @@ import org.scalatest.{fixture, Matchers, OneInstancePerTest, Outcome}
   * @since 15 Jul 2017
   *
   */
-class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstancePerTest with Matchers {
+class MongoSingleDocumentCollectionTest extends FixtureAnyFlatSpec with OneInstancePerTest with Matchers {
   implicit private val dbIOScheduler: DBIOScheduler    = DBIOScheduler(Scheduler.global)
   implicit private val futureLift:    FutureLift[Task] = TaskFutureLift.create
 

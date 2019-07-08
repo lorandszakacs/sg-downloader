@@ -16,16 +16,16 @@
   */
 package com.lorandszakacs.util.html
 
-import org.scalatest.{FunSpec, Matchers}
-
+import org.scalatest.Matchers
 import com.lorandszakacs.util.html.data._
+import org.scalatest.funspec.AnyFunSpec
 
 /**
   * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 16 Mar 2015
   *
   */
-class HtmlProcessorTest extends FunSpec with Matchers {
+class HtmlProcessorTest extends AnyFunSpec with Matchers {
 
   describe("Tag filter") {
     it("should return the only tag") {

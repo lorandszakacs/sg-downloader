@@ -3,6 +3,7 @@ package com.lorandszakacs.util.mongodb
 import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.math.Identifier
 import org.scalatest._
+import org.scalatest.flatspec.FixtureAnyFlatSpec
 
 /**
   *
@@ -18,7 +19,7 @@ import org.scalatest._
   * @since 15 Jul 2017
   *
   */
-class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with Matchers {
+class MongoCollectionTest extends FixtureAnyFlatSpec with OneInstancePerTest with Matchers {
   implicit private val dbIOScheduler: DBIOScheduler    = DBIOScheduler(Scheduler.global)
   implicit private val futureLift:    FutureLift[Task] = TaskFutureLift.create
 

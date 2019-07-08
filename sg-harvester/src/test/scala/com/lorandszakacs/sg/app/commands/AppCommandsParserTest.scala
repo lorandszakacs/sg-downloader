@@ -1,6 +1,6 @@
 package com.lorandszakacs.sg.app.commands
 
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 
 /**
   *
@@ -8,7 +8,7 @@ import org.scalatest.FlatSpec
   * @since 01 Jul 2017
   *
   */
-class AppCommandsParserTest extends FlatSpec {
+class AppCommandsParserTest extends AnyFlatSpec {
 
   //===========================================================================
   //================================ DOWNLOAD =================================

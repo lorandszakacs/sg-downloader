@@ -17,14 +17,15 @@
 package com.lorandszakacs.sg.contentparser
 import com.lorandszakacs.util.effects._
 import com.lorandszakacs.sg.contentparser.data._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.Matchers
 
 /**
   * @author Lorand Szakacs, lsz@lorandszakacs.com
   * @since 16 Mar 2015
   *
   */
-class SGPageContentParserTests extends FlatSpec with Matchers {
+class SGPageContentParserTests extends AnyFlatSpec with Matchers {
 
   behavior of "SGContentParser"
 

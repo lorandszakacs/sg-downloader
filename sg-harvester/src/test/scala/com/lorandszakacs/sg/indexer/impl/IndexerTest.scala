@@ -6,6 +6,7 @@ import org.scalatest.time._
 import org.scalatest._
 import com.lorandszakacs.util.effects._
 import org.scalatest.BeforeAndAfterAll
+import org.scalatest.flatspec.FixtureAnyFlatSpec
 
 /**
   *
@@ -13,7 +14,7 @@ import org.scalatest.BeforeAndAfterAll
   * @since 03 Jul 2016
   *
   */
-trait IndexerTest extends fixture.FlatSpec with ScalaFutures with Matchers with BeforeAndAfterAll {
+trait IndexerTest extends FixtureAnyFlatSpec with ScalaFutures with Matchers with BeforeAndAfterAll {
   implicit val crawlerPatienceConfig: http.PatienceConfig = http.PatienceConfig(http.PatienceConfig.doubleDefault)
 
   implicit val sch:       Scheduler       = Scheduler.global

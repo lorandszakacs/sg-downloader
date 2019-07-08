@@ -86,16 +86,16 @@ lazy val `util` = project
 //========================================== Misc ============================================
 //============================================================================================
 
-lazy val pureharmV       = "0.0.2-M15" //https://github.com/busymachines/pureharm/releases
-lazy val monixV          = "3.0.0-RC3" //https://github.com/monix/monix/releases
-lazy val reactiveMongoV  = "0.18.1"    //https://github.com/ReactiveMongo/ReactiveMongo/releases
-lazy val typesafeConfigV = "1.3.3"     //https://github.com/lightbend/config/releases
-lazy val log4catsV       = "0.4.0-M1"  //https://github.com/ChristopherDavenport/log4cats/releases
-lazy val logbackV        = "1.2.3"     //https://github.com/qos-ch/logback/releases
-lazy val jsoupV          = "1.8.1"     //https://github.com/jhy/jsoup/releases
-lazy val scalaPCV        = "1.1.2"     //https://github.com/scala/scala-parser-combinators/releases
-lazy val http4sV         = "0.21.0-M1" //https://github.com/http4s/http4s/releases
-lazy val scalaTestV      = "3.0.5"     //https://github.com/scalatest/scalatest/releases
+lazy val pureharmV       = "0.0.2-M15"    //https://github.com/busymachines/pureharm/releases
+lazy val monixV          = "3.0.0-RC3"    //https://github.com/monix/monix/releases
+lazy val reactiveMongoV  = "0.18.1"       //https://github.com/ReactiveMongo/ReactiveMongo/releases
+lazy val typesafeConfigV = "1.3.3"        //https://github.com/lightbend/config/releases
+lazy val log4catsV       = "0.4.0-M1"     //https://github.com/ChristopherDavenport/log4cats/releases
+lazy val logbackV        = "1.2.3"        //https://github.com/qos-ch/logback/releases
+lazy val jsoupV          = "1.8.1"        //https://github.com/jhy/jsoup/releases
+lazy val scalaPCV        = "1.1.2"        //https://github.com/scala/scala-parser-combinators/releases
+lazy val http4sV         = "0.21.0-M1"    //https://github.com/http4s/http4s/releases
+lazy val scalaTestV      = "3.1.0-SNAP13" //https://github.com/scalatest/scalatest/releases
 
 lazy val betterMonadicForV = "0.3.0" //https://github.com/oleg-py/better-monadic-for/releases
 

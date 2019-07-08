@@ -4,7 +4,7 @@ import com.lorandszakacs.util.time._
 import com.lorandszakacs.sg._
 import com.lorandszakacs.sg.http.impl.SGClientImpl
 import com.lorandszakacs.util.effects._
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 
 /**
   *
@@ -12,7 +12,7 @@ import org.scalatest.FlatSpec
   * @since 01 Jul 2017
   *
   */
-class SGClientTest extends FlatSpec with URLConversions {
+class SGClientTest extends AnyFlatSpec with URLConversions {
   implicit lazy val sch: Scheduler = Scheduler.global
 
   private lazy val clientR = SGClientImpl()(HTTPIOScheduler(sch))

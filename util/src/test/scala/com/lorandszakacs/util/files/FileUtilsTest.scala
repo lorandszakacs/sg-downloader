@@ -1,6 +1,6 @@
 package com.lorandszakacs.util.files
 
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 
 /**
   *
@@ -8,7 +8,7 @@ import org.scalatest.FlatSpec
   * @since 19 Jul 2016
   *
   */
-class FileUtilsTest extends FlatSpec {
+class FileUtilsTest extends AnyFlatSpec {
 
   behavior of "FileUtils.fileMatchInEverythingButDate"
 

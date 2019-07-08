@@ -1,9 +1,8 @@
 package com.lorandszakacs.util.list
 
 import ListUtilFunctions._
-
-import org.scalatest.FlatSpec
 import com.lorandszakacs.util.math._
+import org.scalatest.flatspec.AnyFlatSpec
 
 /**
   *
@@ -11,7 +10,7 @@ import com.lorandszakacs.util.math._
   * @since 12 Jul 2017
   *
   */
-class TestListUtilFunctions extends FlatSpec {
+class TestListUtilFunctions extends AnyFlatSpec {
 
   implicit private val indentifieable: Identity[I] = Identity[I] { (i1, i2) =>
     i1.id == i2.id
