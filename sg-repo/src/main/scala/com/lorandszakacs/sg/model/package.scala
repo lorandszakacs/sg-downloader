@@ -2,8 +2,6 @@ package com.lorandszakacs.sg
 
 import com.lorandszakacs.util.math.{Identifier, Identity}
 
-import scala.language.implicitConversions
-
 /**
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com

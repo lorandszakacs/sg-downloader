@@ -4,8 +4,6 @@ import java.net.URL
 
 import org.http4s.Uri
 
-import scala.language.implicitConversions
-
 /**
   *
   * @author Lorand Szakacs, lsz@lorandszakacs.com
