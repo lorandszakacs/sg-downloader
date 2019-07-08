@@ -19,13 +19,14 @@ import org.scalatest.{Matchers, OneInstancePerTest, Outcome}
   *
   */
 class MongoSingleDocumentCollectionTest extends FixtureAnyFlatSpec with OneInstancePerTest with Matchers {
-  implicit private val dbIOScheduler: DBIOScheduler    = DBIOScheduler(Scheduler.global)
-  implicit private val futureLift:    FutureLift[Task] = TaskFutureLift.create
+  implicit private val cs:            ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  implicit private val dbIOScheduler: DBIOScheduler    = DBIOScheduler(ExecutionContext.global)
+  implicit private val futureLift:    FutureLift[IO]   = FutureLift.instance[IO]
 
   class SingleEntityRepository(override protected val db: Database)(
     implicit
     implicit override protected val dbIOScheduler: DBIOScheduler,
-    implicit override protected val futureLift:    FutureLift[Task],
+    implicit override protected val futureLift:    FutureLift[IO],
   ) extends SingleDocumentMongoCollection[Entity, String, BSONString] {
     implicit protected def objectHandler: BSONDocumentHandler[Entity] = BSONMacros.handler[Entity]
 

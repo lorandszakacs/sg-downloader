@@ -25,9 +25,9 @@ trait SGClient {
     * on username, password authentication
     *
     */
-  def getPage(uri: URL)(implicit authentication: Authentication): Task[Html]
+  def getPage(uri: URL)(implicit authentication: Authentication): IO[Html]
 
-  def createAuthentication(session: Session): Task[Authentication]
+  def createAuthentication(session: Session): IO[Authentication]
 
   /**
     * Website now has google reCAPTCHA, so it's hard to logon, but you can manually create
@@ -35,11 +35,11 @@ trait SGClient {
     * the tokens from the browser.
     */
   //@scala.deprecated("use createAuthentication", "2018")
-  //def brokenAuthenticate(username: String, plainTextPassword: String): Task[Authentication]
+  //def brokenAuthenticate(username: String, plainTextPassword: String): IO[Authentication]
 }
 
 trait Authentication {
-  def apply(req: Request[Task]): Request[Task]
+  def apply(req: Request[IO]): Request[IO]
 
   def needsRefresh: Boolean
 
@@ -66,7 +66,7 @@ object DefaultSGAuthentication extends Authentication {
 
   private val defaultSGHeaders: List[Header] = List(OriginHeader, RefererHeader)
 
-  override def apply(req: Request[Task]): Request[Task] = req.putHeaders(defaultSGHeaders: _*)
+  override def apply(req: Request[IO]): Request[IO] = req.putHeaders(defaultSGHeaders: _*)
 
   override def needsRefresh: Boolean = true
 

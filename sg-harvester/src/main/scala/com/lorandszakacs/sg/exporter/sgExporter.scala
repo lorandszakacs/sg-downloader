@@ -13,7 +13,7 @@ import com.lorandszakacs.util.effects._
   *
   */
 trait SGExporter {
-  def prettyPrint(name: Name): Task[String]
+  def prettyPrint(name: Name): IO[String]
 
   /**
     * Only exports the given [[Name]]s. with the data
@@ -30,7 +30,7 @@ trait SGExporter {
     *
     * @return
     */
-  def exportHTMLOfOnlyGivenSubsetOfMs(ms: List[Name])(implicit ws: ExporterSettings): Task[Unit]
+  def exportHTMLOfOnlyGivenSubsetOfMs(ms: List[Name])(implicit ws: ExporterSettings): IO[Unit]
 
   /**
     * Only exports the given [[M]]s.
@@ -46,18 +46,18 @@ trait SGExporter {
     *
     * @return
     */
-  def exportDeltaHTMLOfMs(ms: List[M])(implicit ws: ExporterSettings): Task[Unit]
+  def exportDeltaHTMLOfMs(ms: List[M])(implicit ws: ExporterSettings): IO[Unit]
 
   /**
     * Create a navigable HTML webpage at [[ExporterSettings.favoritesRootFolderPath]]
     *
     */
-  def exportHTMLIndexOfFavorites(implicit ws: ExporterSettings): Task[Unit]
+  def exportHTMLIndexOfFavorites(implicit ws: ExporterSettings): IO[Unit]
 
   /**
     * Create a navigable HTML webpage at [[ExporterSettings.allMsRootFolderPath]]
     */
-  def exportHTMLIndexOfAllMs(implicit ws: ExporterSettings): Task[Unit]
+  def exportHTMLIndexOfAllMs(implicit ws: ExporterSettings): IO[Unit]
 
   /**
     * Creates and HTML webpage at [[ExporterSettings.newestRootFolderPath]] containing
@@ -66,7 +66,7 @@ trait SGExporter {
   def exportLatestForDays(
     nrOfDays:    Int,
     favorites:   Set[Name],
-  )(implicit ws: ExporterSettings): Task[Unit]
+  )(implicit ws: ExporterSettings): IO[Unit]
 
   /**
     * Same as [[exportLatestForDays]] but adds in to the already existing Ms
@@ -78,7 +78,7 @@ trait SGExporter {
     favorites: Set[Name],
   )(
     implicit ws: ExporterSettings,
-  ): Task[Unit]
+  ): IO[Unit]
 
 }
 

@@ -11,12 +11,12 @@ import com.lorandszakacs.sg.indexer.impl.SGIndexerImpl
   *
   */
 trait IndexerAssembly extends SGClientAssembly {
-
   implicit def httpIOScheduler: HTTPIOScheduler
 
   def sgIndexer(sgClient: SGClient): SGIndexer = sgIndexerImpl(sgClient)
 
   //for testing
-  private[indexer] def sgIndexerImpl(sgClient: SGClient): SGIndexerImpl = new SGIndexerImpl(sgClient)
+  private[indexer] def sgIndexerImpl(sgClient: SGClient): SGIndexerImpl =
+    new SGIndexerImpl(sgClient)(???)
 
 }

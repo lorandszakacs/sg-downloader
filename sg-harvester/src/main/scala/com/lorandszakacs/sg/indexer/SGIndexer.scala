@@ -22,12 +22,12 @@ trait SGIndexer {
   /**
     * Gathers the names of all available [[SG]]s
     */
-  def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): Task[List[Name]]
+  def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): IO[List[Name]]
 
   /**
     * Gathers the names of all available [[HF]]s
     */
-  def gatherHFNames(limit: Int)(implicit pc: PatienceConfig): Task[List[Name]]
+  def gatherHFNames(limit: Int)(implicit pc: PatienceConfig): IO[List[Name]]
 
   /**
     *
@@ -41,12 +41,12 @@ trait SGIndexer {
     * the [[PhotoSet]]s of the given model.
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]], and [[PhotoSet.url]] will be a full path URL.
     */
-  def gatherPhotoSetInformationForM[T <: M](mf: MFactory[T])(name: Name)(implicit pc: PatienceConfig): Task[T]
+  def gatherPhotoSetInformationForM[T <: M](mf: MFactory[T])(name: Name)(implicit pc: PatienceConfig): IO[T]
 
   /**
     * Similar to [[gatherPhotoSetInformationForName]], but with more potential for failure
     */
-  def gatherPhotoSetInformationForName(name: Name)(implicit pc: PatienceConfig): Task[M]
+  def gatherPhotoSetInformationForName(name: Name)(implicit pc: PatienceConfig): IO[M]
 
   /**
     *
@@ -54,7 +54,7 @@ trait SGIndexer {
     */
   def gatherAllNewMsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(
     implicit pc:                                PatienceConfig,
-  ): Task[List[M]]
+  ): IO[List[M]]
 
   final def createLastProcessedIndex(lastM: M): LastProcessedMarker = {
     LastProcessedMarker(

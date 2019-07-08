@@ -8,8 +8,6 @@ import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.M.{HFFactory, MFactory, SGFactory}
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.html.Html
-import monix.execution.atomic.AtomicBoolean
-import monix.reactive.Observable
 import org.http4s.Uri
 import com.lorandszakacs.util.logger._
 
@@ -24,8 +22,9 @@ import com.lorandszakacs.util.logger._
   * @since 03 Jul 2016
   *
   */
-final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGIndexer with SGURLBuilder {
-  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
+final private[indexer] class SGIndexerImpl(val sGClient: SGClient)(implicit cs: ContextShift[IO])
+    extends SGIndexer with SGURLBuilder {
+  implicit private val logger: Logger[IO] = Logger.getLogger[IO]
 
   implicit private[this] val Authentication: Authentication = DefaultSGAuthentication
 
@@ -36,7 +35,7 @@ final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGInd
   /**
     * Gathers the names of all available [[SG]]s
     */
-  override def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): Task[List[Name]] = {
+  override def gatherSGNames(limit: Int)(implicit pc: PatienceConfig): IO[List[Name]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -54,7 +53,7 @@ final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGInd
   /**
     * Gathers the names of all available [[HF]]s
     */
-  override def gatherHFNames(limit: Int)(implicit pc: PatienceConfig): Task[List[Name]] = {
+  override def gatherHFNames(limit: Int)(implicit pc: PatienceConfig): IO[List[Name]] = {
     def isEndPage(html: Html) = {
       val PartialPageLoadingEndMarker = "Sorry, no users match your criteria."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -88,7 +87,7 @@ final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGInd
     */
   override def gatherPhotoSetInformationForM[T <: M](
     mf:   MFactory[T],
-  )(name: Name)(implicit pc: PatienceConfig): Task[T] = {
+  )(name: Name)(implicit pc: PatienceConfig): IO[T] = {
     val pageURL = photoSetsPageURL(name)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
@@ -102,7 +101,7 @@ final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGInd
     } yield mf(photoSetURL = pageURL, name = name, photoSets = sets)
   }
 
-  override def gatherPhotoSetInformationForName(name: Name)(implicit pc: PatienceConfig): Task[M] = {
+  override def gatherPhotoSetInformationForName(name: Name)(implicit pc: PatienceConfig): IO[M] = {
     val pageURL = photoSetsPageURL(name)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
@@ -134,7 +133,7 @@ final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGInd
   )(
     implicit
     pc: PatienceConfig,
-  ): Task[List[M]] = {
+  ): IO[List[M]] = {
     def isFinalPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
       html.document.body().text().take(PartialPageLoadingEndMarker.length).contains(PartialPageLoadingEndMarker)
@@ -185,7 +184,7 @@ final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGInd
     */
   override def gatherAllNewMsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(
     implicit pc:                                         PatienceConfig,
-  ): Task[List[M]] = {
+  ): IO[List[M]] = {
     for {
       msWithOnlyOneSet <- gatherAllNewMsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
       sgHF = msWithOnlyOneSet.distinctById.group
@@ -233,7 +232,7 @@ final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGInd
   )(
     implicit
     pc: PatienceConfig,
-  ): Task[List[T]] = {
+  ): IO[List[T]] = {
 
     def offsetUri(uri: Uri, offset: Int): Uri =
       Uri.unsafeFromString(s"$uri?partial=true&offset=$offset")
@@ -255,39 +254,43 @@ final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGInd
      *
      * !!! take care !!!
      */
-    val stopOnNextPage: AtomicBoolean = AtomicBoolean(false)
-    def keepThisPage(t: (Int, Html, List[T])): Boolean = {
-      val (offset, html, list) = t
-
-      !stopOnNextPage.getAndSet(stopOnPage(list)) &&
-      (offset <= cutOffLimit) && !isFinalPage(html)
-    }
-
-    val htmlPages: Observable[(Int, Html)] = Observable
-      .range(from = 0L, until = cutOffLimit.toLong, step = offsetStep.toLong)
-      .mapEval { offset =>
-        for {
-          newURI <- Task.pure(offsetUri(uri, offset.toInt))
-          _      <- logger.info(s"load repeatedly: step=$offsetStep [$newURI]")
-          html   <- pc.throttleAfter(sGClient.getPage(newURI))
-        } yield (offset.toInt, html)
-      }
-
-    val parsedPages: Observable[(Int, Html, List[T])] =
-      htmlPages.mapEval { p =>
-        val (offset, html) = p
-        Task
-          .fromTry(parsingFunction(html))
-          .adaptError {
-            case NonFatal(e) => FailedToRepeatedlyLoadPageException(offset, e)
-          }
-          .map(ts => (offset, html, ts))
-      }
-
-    val relevantPages = parsedPages.takeWhile(keepThisPage)
-
-    val result = relevantPages.map(_._3)
-
-    result.toListL.map(_.flatten)
+//    val stopOnNextPage: AtomicBoolean = AtomicBoolean(false)
+    //    def keepThisPage(t: (Int, Html, List[T])): Boolean = {
+    //      val (offset, html, list) = t
+    //
+    //      !stopOnNextPage.getAndSet(stopOnPage(list)) &&
+    //      (offset <= cutOffLimit) && !isFinalPage(html)
+    //    }
+    //
+    //    val htmlPages: Observable[(Int, Html)] = Observable
+    //      .range(from = 0L, until = cutOffLimit.toLong, step = offsetStep.toLong)
+    //      .mapEval { offset =>
+    //        monix.eval.Task.from {
+    //          for {
+    //            newURI <- IO.pure(offsetUri(uri, offset.toInt))
+    //            _      <- logger.info(s"load repeatedly: step=$offsetStep [$newURI]")
+    //            html   <- pc.throttleAfter(sGClient.getPage(newURI))
+    //          } yield (offset.toInt, html)
+    //        }
+    //      }
+    //
+    //    val parsedPages: Observable[(Int, Html, List[T])] =
+    //      htmlPages.mapEval { p =>
+    //        val (offset, html) = p
+    //        monix.eval.Task.from {
+    //          IO.fromTry(parsingFunction(html))
+    //            .adaptError {
+    //              case NonFatal(e) => FailedToRepeatedlyLoadPageException(offset, e)
+    //            }
+    //            .map(ts => (offset, html, ts))
+    //        }
+    //      }
+    //
+    //    val relevantPages = parsedPages.takeWhile(keepThisPage)
+    //
+    //    val result = relevantPages.map(_._3)
+    //
+    //    result.toListL.map(_.flatten)
+    ??? : IO[List[T]]
   }
 }

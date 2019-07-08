@@ -25,46 +25,48 @@ import com.lorandszakacs.util.logger._
   * @since 16 Mar 2015
   *
   */
-object Main extends App {
-  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
+object Main extends PureharmIOApp {
 
-  implicit val computationScheduler: Scheduler        = Scheduler.computation(name = "sg-app-computation")
-  implicit val futureLift:           FutureLift[Task] = TaskFutureLift.create
-  implicit val dbIOScheduler:        DBIOScheduler    = DBIOScheduler(Scheduler.io(name = "sg-app-dbio"))
-  implicit val httpIOScheduler:      HTTPIOScheduler  = HTTPIOScheduler(Scheduler.io(name = "sg-app-http"))
+  override val ioRuntime: Later[(ContextShift[IO], Timer[IO])] = IORuntime.defaultMainRuntime("sg-app-main")
 
-  val replResource = for {
-    assembly <- Resource.pure[Task, Assembly](
-      new Assembly()(computationScheduler, dbIOScheduler, futureLift, httpIOScheduler),
-    )
-    sgClient <- assembly.sgClient
-    interpreter = new CommandLineInterpreter(sgClient, assembly)
-  } yield (assembly, interpreter, new REPL(interpreter))
+  implicit private val dbIOScheduler:   DBIOScheduler   = DBIOScheduler(UnsafePools.cached("sg-app-dbio"))
+  implicit private val httpIOScheduler: HTTPIOScheduler = HTTPIOScheduler(UnsafePools.cached("sg-app-http"))
+  implicit private val futureLift:      FutureLift[IO]  = FutureLift.instance[IO](LiftIO[IO], contextShift)
 
-  //TODO: redo all these, and make them resources
-  val program = replResource.use { tuple =>
-    val (assembly, interpreter, repl) = tuple
+  implicit private val logger: Logger[IO] = Logger.getLogger[IO]
 
-    val interpretArgsTask: Task[Unit] =
-      logger.info(s"Received args: ${args.mkString(",")} --> executing command") >>
-        interpreter.interpretArgs(args).onError {
-          case NonFatal(e) =>
-            logger.error(e)("—— something went wrong during interpretation —— exiting") >>
-              assembly.shutdownTask >>
-              Task(System.exit(1))
-        }
+  override def run(args: List[String]): IO[ExitCode] = {
+    val replResource = for {
+      assembly <- Resource.pure[IO, Assembly](
+        new Assembly()(contextShift, dbIOScheduler, futureLift, httpIOScheduler),
+      )
+      sgClient <- assembly.sgClient
+      interpreter = new CommandLineInterpreter(sgClient, assembly)
+    } yield (assembly, interpreter, new REPL(interpreter))
 
-    val startReplTask = logger.info(s"Did not receive any arguments, going into REPL mode") >>
-      repl.runTask
+    //TODO: redo all these, and make them resources
+    replResource.use { tuple =>
+      val (assembly, interpreter, repl) = tuple
 
-    for {
-      _ <- assembly.initTask
-      _ <- if (args.isEmpty) startReplTask else interpretArgsTask
-      _ <- assembly.shutdownTask
-      _ <- Task(println("... finished gracefully"))
-      _ <- Task(System.exit(0))
-    } yield ()
+      val interpretArgsIO: IO[Unit] =
+        logger.info(s"Received args: ${args.mkString(",")} --> executing command") >>
+          interpreter.interpretArgs(args).onError {
+            case NonFatal(e) =>
+              logger.error(e)("—— something went wrong during interpretation —— exiting") >>
+                assembly.shutdownIO >>
+                IO(System.exit(1))
+          }
+
+      val startReplIO = logger.info(s"Did not receive any arguments, going into REPL mode") >>
+        repl.runIO
+
+      for {
+        _ <- assembly.initIO
+        _ <- if (args.isEmpty) startReplIO else interpretArgsIO
+        _ <- assembly.shutdownIO
+        _ <- IO(println("... finished gracefully"))
+      } yield ExitCode.Success
+    }
   }
 
-  program.runSyncUnsafe(scala.concurrent.duration.Duration.Inf)
 }

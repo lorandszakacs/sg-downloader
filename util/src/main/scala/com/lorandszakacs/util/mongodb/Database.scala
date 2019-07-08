@@ -17,47 +17,47 @@ import scala.language.postfixOps
 final case class Database(uri: String, dbName: String, config: Option[Config] = None)(
   implicit
   private val dbIOScheduler: DBIOScheduler,
-  private val futureLift:    FutureLift[Task],
+  private val futureLift:    FutureLift[IO],
 ) {
 
-  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
+  implicit private val logger: Logger[IO] = Logger.getLogger[IO]
 
-  def collection(colName: String): Task[BSONCollection] = databaseTask.map(_.apply(colName))
+  def collection(colName: String): IO[BSONCollection] = databaseIO.map(_.apply(colName))
 
-  private lazy val mongoDriverTask: Task[MongoDriver] = Task(
+  private lazy val mongoDriverIO: IO[MongoDriver] = IO(
     new MongoDriver(config = config, classLoader = None),
-  ).memoizeOnSuccess
+  )
 
-  private lazy val mongoConnectionTask: Task[MongoConnection] = {
+  private lazy val mongoConnectionIO: IO[MongoConnection] = {
     for {
-      parsedURI   <- Task.fromTry(MongoConnection.parseURI(uri))
-      mongoDriver <- mongoDriverTask
-      connection  <- Task.fromTry(mongoDriver.connection(parsedURI, strictUri = true))
+      parsedURI   <- IO.fromTry(MongoConnection.parseURI(uri))
+      mongoDriver <- mongoDriverIO
+      connection  <- IO.fromTry(mongoDriver.connection(parsedURI, strictUri = true))
     } yield connection
-  }.memoizeOnSuccess
+  }
 
-  private lazy val databaseTask: Task[DefaultDB] = {
+  private lazy val databaseIO: IO[DefaultDB] = {
     for {
-      connection <- mongoConnectionTask
+      connection <- mongoConnectionIO
       db         <- Database.getDatabase(connection)(dbName)
     } yield db
-  }.memoizeOnSuccess
+  }
 
-  def drop(): Task[Unit] = {
+  def drop(): IO[Unit] = {
     for {
-      db <- databaseTask
+      db <- databaseIO
       _  <- logger.info(s"attempting to drop database: ${db.name}")
-      _  <- db.drop().purifyIn[Task]
+      _  <- db.drop().purifyIn[IO]
       _  <- logger.info(s"dropped database: ${db.name}")
     } yield ()
   }
 
-  def shutdown(): Task[Unit] = {
+  def shutdown(): IO[Unit] = {
     for {
       _      <- logger.info("attempting to close _mongoDriver.close(...)")
-      driver <- mongoDriverTask
-      _      <- Task(driver.close(1 minute))
-      _      <- driver.system.terminate().purifyIn[Task]
+      driver <- mongoDriverIO
+      _      <- IO(driver.close(1 minute))
+      _      <- driver.system.terminate().purifyIn[IO]
       _      <- logger.info("terminated -- _mongoDriver.system.terminate()")
     } yield ()
   }
@@ -68,9 +68,9 @@ object Database {
   private[mongodb] def getDatabase(mongoConnection: MongoConnection)(name: String)(
     implicit
     sch:        DBIOScheduler,
-    futureLift: FutureLift[Task],
-  ): Task[DefaultDB] = {
-    mongoConnection.database(name).purifyIn[Task].adaptError {
+    futureLift: FutureLift[IO],
+  ): IO[DefaultDB] = {
+    mongoConnection.database(name).purifyIn[IO].adaptError {
       case NonFatal(e) => new IllegalStateException(s"Failed to initialize Mongo database. Because: ${e.getMessage}", e)
     }
   }

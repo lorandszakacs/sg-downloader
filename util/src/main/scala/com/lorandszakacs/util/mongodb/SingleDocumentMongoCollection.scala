@@ -15,7 +15,7 @@ import com.lorandszakacs.util.math.Identifier
 trait SingleDocumentMongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   implicit protected def dbIOScheduler: DBIOScheduler
-  implicit protected def futureLift:    FutureLift[Task]
+  implicit protected def futureLift:    FutureLift[IO]
 
   protected def objectHandler: BSONDocumentHandler[Entity]
 
@@ -48,18 +48,18 @@ trait SingleDocumentMongoCollection[Entity, IdType, BSONTargetType <: BSONValue]
 
   def idQuery: BSONDocument = repo.idQuery(uniqueDocumentId)
 
-  def create(e: Entity): Task[Unit] =
+  def create(e: Entity): IO[Unit] =
     repo.create(e)
 
-  def createOrUpdate(e: Entity): Task[Unit] =
+  def createOrUpdate(e: Entity): IO[Unit] =
     repo.createOrUpdate(e)
 
-  def remove(): Task[Unit] =
+  def remove(): IO[Unit] =
     repo.remove(idQuery)
 
-  def find: Task[Option[Entity]] =
+  def find: IO[Option[Entity]] =
     repo.findOne(idQuery)
 
-  def get: Task[Entity] = this.find.map(_.getOrElse(defaultEntity))
+  def get: IO[Entity] = this.find.map(_.getOrElse(defaultEntity))
 
 }

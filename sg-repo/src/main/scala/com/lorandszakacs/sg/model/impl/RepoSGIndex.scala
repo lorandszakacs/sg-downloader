@@ -13,7 +13,7 @@ import com.lorandszakacs.util.mongodb._
 private[impl] class RepoSGIndex(override protected val db: Database)(
   implicit
   override val dbIOScheduler: DBIOScheduler,
-  override val futureLift:    FutureLift[Task],
+  override val futureLift:    FutureLift[IO],
 ) extends IndexSingleDocRepo[SGIndex] with SGRepoBSON {
 
   override protected def objectHandler: BSONDocumentHandler[SGIndex] = BSONMacros.handler[SGIndex]
@@ -44,15 +44,15 @@ private[impl] class RepoSGIndex(override protected val db: Database)(
     )
   }
 
-  override def create(sg: SGIndex): Task[Unit] = {
+  override def create(sg: SGIndex): IO[Unit] = {
     super.create(sanitize(sg))
   }
 
-  override def createOrUpdate(sg: SGIndex): Task[Unit] = {
+  override def createOrUpdate(sg: SGIndex): IO[Unit] = {
     super.createOrUpdate(sanitize(sg))
   }
 
-  def rewriteIndex(names: List[Name]): Task[Unit] = {
+  def rewriteIndex(names: List[Name]): IO[Unit] = {
     this.createOrUpdate(sanitize(names))
   }
 

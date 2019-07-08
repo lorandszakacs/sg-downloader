@@ -16,7 +16,7 @@ trait SGRepoAssembly {
 
   implicit def dbIOScheduler: DBIOScheduler
 
-  implicit def futureLift: FutureLift[Task]
+  implicit def futureLift: FutureLift[IO]
 
   def sgAndHFRepository: SGAndHFRepository = _sgAndHFRepository
 

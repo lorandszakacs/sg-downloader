@@ -20,23 +20,23 @@ object PatienceConfig {
 final case class PatienceConfig(
   throttle: FiniteDuration = PatienceConfig.defaultDuration,
 ) {
-  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
+  implicit private val logger: Logger[IO] = Logger.getLogger[IO]
 
-  def throttleThread: Task[Unit] = throttleAmount(throttle)
+  def throttleThread: IO[Unit] = throttleAmount(throttle)
 
-  def halfThrottle: Task[Unit] = throttleAmount(throttle.div(2))
+  def halfThrottle: IO[Unit] = throttleAmount(throttle.div(2))
 
-  def quarterThrottle: Task[Unit] = throttleAmount(throttle.div(4))
+  def quarterThrottle: IO[Unit] = throttleAmount(throttle.div(4))
 
-  private def throttleAmount(duration: FiniteDuration): Task[Unit] = {
+  private def throttleAmount(duration: FiniteDuration): IO[Unit] = {
     logger.info(s"waiting: ${duration.toString}") >>
-      Task(Thread.sleep(throttle.toMillis))
+      IO(Thread.sleep(throttle.toMillis))
   }
 
-  def throttleAfter[T](t: Task[T]): Task[T] = t <* this.throttleThread
+  def throttleAfter[T](t: IO[T]): IO[T] = t <* this.throttleThread
 
-  def throttleHalfAfter[T](t: Task[T]): Task[T] = t <* this.halfThrottle
+  def throttleHalfAfter[T](t: IO[T]): IO[T] = t <* this.halfThrottle
 
-  def throttleQuarterAfter[T](t: Task[T]): Task[T] = t <* this.quarterThrottle
+  def throttleQuarterAfter[T](t: IO[T]): IO[T] = t <* this.quarterThrottle
 
 }

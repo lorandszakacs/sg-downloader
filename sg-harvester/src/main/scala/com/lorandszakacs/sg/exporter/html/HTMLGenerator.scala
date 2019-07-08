@@ -11,11 +11,11 @@ import com.lorandszakacs.util.time._
   *
   */
 private[exporter] trait HTMLGenerator {
-  def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): Task[MRootIndex]
+  def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): IO[MRootIndex]
 
-  def createRootIndex(names: List[Name])(implicit settings: HtmlSettings): Task[Html]
+  def createRootIndex(names: List[Name])(implicit settings: HtmlSettings): IO[Html]
 
-  def createNewestPage(ms: List[(LocalDate, List[M])], favorites: Set[Name]): Task[Html]
+  def createNewestPage(ms: List[(LocalDate, List[M])], favorites: Set[Name]): IO[Html]
 }
 
 case class HtmlSettings(

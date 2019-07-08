@@ -26,7 +26,7 @@ final class SGDownloader private[downloader] (
   private[this] val reifier:  SGReifier,
   private[this] val exporter: SGExporter,
 ) {
-  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
+  implicit private val logger: Logger[IO] = Logger.getLogger[IO]
 
   /**
     * Used for commands that act on the entire repository
@@ -52,7 +52,7 @@ final class SGDownloader private[downloader] (
 
   object index {
 
-    def allSGs(implicit patienceConfig: PatienceConfig = patienceConfig): Task[Unit] = {
+    def allSGs(implicit patienceConfig: PatienceConfig = patienceConfig): IO[Unit] = {
       for {
         _   <- logger.info("... starting index.allSGs")
         all <- indexer.gatherSGNames(Int.MaxValue)
@@ -61,7 +61,7 @@ final class SGDownloader private[downloader] (
       } yield ()
     }
 
-    def allHFs(implicit patienceConfig: PatienceConfig = patienceConfig): Task[Unit] = {
+    def allHFs(implicit patienceConfig: PatienceConfig = patienceConfig): IO[Unit] = {
 
       for {
         _   <- logger.info("... starting index.allHFs")
@@ -71,7 +71,7 @@ final class SGDownloader private[downloader] (
       } yield ()
     }
 
-    def all(implicit patienceConfig: PatienceConfig = patienceConfig): Task[Unit] = {
+    def all(implicit patienceConfig: PatienceConfig = patienceConfig): IO[Unit] = {
       for {
         _ <- logger.info("... starting index.all, composite of index.allSGs && index.allHFs")
         _ <- allSGs
@@ -81,7 +81,7 @@ final class SGDownloader private[downloader] (
 
     def deltaPure(
       lastProcessedOpt:        Option[LastProcessedMarker],
-    )(implicit patienceConfig: PatienceConfig): Task[Ms] = {
+    )(implicit patienceConfig: PatienceConfig): IO[Ms] = {
       for {
         _     <- logger.info(s"index.delta --> starting from ${lastProcessedOpt.map(_.lastPhotoSetID).getOrElse("")}")
         newMs <- indexer.gatherAllNewMsAndAllTheirPhotoSets(Int.MaxValue, lastProcessedOpt)
@@ -92,7 +92,7 @@ final class SGDownloader private[downloader] (
       } yield ms
     }
 
-    def specificPure(names: List[Name])(implicit patienceConfig: PatienceConfig): Task[Ms] = {
+    def specificPure(names: List[Name])(implicit patienceConfig: PatienceConfig): IO[Ms] = {
       for {
         _ <- logger.info(s"index.specific --> ${names.stringify}")
         newMs <- names.traverse { name =>
@@ -110,7 +110,7 @@ final class SGDownloader private[downloader] (
 
   object reify {
 
-    def deltaPure(indexedMs: Ms): Task[Ms] = {
+    def deltaPure(indexedMs: Ms): IO[Ms] = {
       for {
         _ <- logger.info(
           s"reify.delta --> reifying indexed Ms # ${indexedMs.all.size}: ${indexedMs.allNames.stringify}",
@@ -126,14 +126,14 @@ final class SGDownloader private[downloader] (
       } yield (reifiedSGs, reifiedHFs).group
     }
 
-    def specificPure(indexedMs: Ms): Task[Ms] = {
+    def specificPure(indexedMs: Ms): IO[Ms] = {
       logger.info(s"reify.specific --> delegating to reify.delta") >> this.deltaPure(indexedMs)
     }
   }
 
   object export {
 
-    def delta(daysToExport: Int, delta: List[M])(implicit settings: ExporterSettings): Task[Unit] = {
+    def delta(daysToExport: Int, delta: List[M])(implicit settings: ExporterSettings): IO[Unit] = {
 
       for {
         _ <- logger.info(s"export.delta --> export. Days to export: $daysToExport. #Ms: ${delta.length}")
@@ -148,13 +148,13 @@ final class SGDownloader private[downloader] (
       } yield ()
     }
 
-    def specific(daysToExport: Int, specific: List[M])(implicit settings: ExporterSettings): Task[Unit] = {
+    def specific(daysToExport: Int, specific: List[M])(implicit settings: ExporterSettings): IO[Unit] = {
       logger.info(s"export.specific --> delegating to export.delta") >> this.delta(daysToExport, specific)(settings)
     }
 
     def all(daysToExport: Int, onlyFavorites: Boolean)(
       implicit settings:  ExporterSettings = exporterSettings,
-    ): Task[Unit] = {
+    ): IO[Unit] = {
       for {
         _ <- logger.info(s"export.all --> onlyFavorites=$onlyFavorites --> to: ${settings.allMsRootFolderPath}")
         all <- if (onlyFavorites)
@@ -175,7 +175,7 @@ final class SGDownloader private[downloader] (
       * assumes that indexedMs are in the order that they were gathered in initially
       * @return
       */
-    def delta(indexedMs: Ms, reifiedMs: Ms, oldLastProcessedMarker: Option[LastProcessedMarker]): Task[Unit] = {
+    def delta(indexedMs: Ms, reifiedMs: Ms, oldLastProcessedMarker: Option[LastProcessedMarker]): IO[Unit] = {
       for {
         _ <- logger.info(s"write.delta --> writing state to DB. # of fully reified Ms: ${reifiedMs.all.length}")
         _ <- logger.info(s"write.delta --> delegating to write.specific")
@@ -187,7 +187,7 @@ final class SGDownloader private[downloader] (
       } yield ()
     }
 
-    def specific(indexedMs: Ms, reifiedMs: Ms): Task[Unit] = {
+    def specific(indexedMs: Ms, reifiedMs: Ms): IO[Unit] = {
       for {
         _ <- logger.info(s"write.specific --> writing state to DB. # of fully reified Ms: ${reifiedMs.all.length}")
         _ <- repo.markAsIndexed(indexedMs.hfs, indexedMs.sgs)
@@ -205,17 +205,17 @@ final class SGDownloader private[downloader] (
       indexedMs:           Ms,
       reifiedMs:           Ms,
       lastProcessedMarker: Option[LastProcessedMarker],
-    ): Task[Unit] = {
+    ): IO[Unit] = {
 
       logger.info(s"delta.UpdateLatestProcessedIndex: old='${lastProcessedMarker.map(_.lastPhotoSetID).mkString("")}'") >>
-        reifiedMs.all.nonEmpty.ifTrueRun[Task] {
+        reifiedMs.all.nonEmpty.ifTrueRun[IO] {
           val optNewestM: Option[M] = for {
             newestIndexed <- indexedMs.newestM
             newestReified <- reifiedMs.ml(newestIndexed.name)
           } yield newestReified
 
           for {
-            newestM <- optNewestM.liftTo[Task](
+            newestM <- optNewestM.liftTo[IO](
               new IllegalArgumentException("... should have at least one newest gathered"),
             )
             newMarker = indexer.createLastProcessedIndex(newestM)
@@ -243,7 +243,7 @@ final class SGDownloader private[downloader] (
     def delta(
       daysToExport:       Int,
       includeProblematic: Boolean,
-    ): Task[Unit] = {
+    ): IO[Unit] = {
 
       for {
         _ <- logger.info(
@@ -281,7 +281,7 @@ final class SGDownloader private[downloader] (
     def specific(
       names:        List[Name],
       daysToExport: Int,
-    ): Task[Unit] = {
+    ): IO[Unit] = {
       for {
         _ <- logger.info(
           "---------------------------------------------- starting download.specific --------------------------------------------",
@@ -313,18 +313,18 @@ final class SGDownloader private[downloader] (
 
   object show {
 
-    def apply(name: Name): Task[String] = {
+    def apply(name: Name): IO[String] = {
       exporter.prettyPrint(name)
     }
 
-    def favorites: Task[String] = {
-      Task.pure(Favorites.codeFriendlyDisplay)
+    def favorites: IO[String] = {
+      IO.pure(Favorites.codeFriendlyDisplay)
     }
   }
 
   object util {
 
-    def delete(name: Name): Task[Unit] =
+    def delete(name: Name): IO[Unit] =
       logger.info(s"delta.delete --> delegating to repo.deleteHF") *> repo.deleteHF(name)
 
   }

@@ -10,6 +10,6 @@ import com.lorandszakacs.util.effects._
   */
 package object mongodb extends MongoQueries with MongoDBTypes {
 
-  @inline implicit def convertDBIOSchedulerToScheduler(implicit dbIOScheduler: DBIOScheduler): Scheduler =
+  @inline implicit def convertDBIOSchedulerToScheduler(implicit dbIOScheduler: DBIOScheduler): ExecutionContext =
     dbIOScheduler.scheduler
 }

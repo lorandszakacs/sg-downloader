@@ -74,7 +74,7 @@ lazy val `util` = project
         logbackClassic,
         iolog4s,
         pureharmEffects,
-        monix,
+        fs2,
         //required for package com.lorandszakacs.util.html
         jsoup,
         scalaTest,
@@ -87,7 +87,7 @@ lazy val `util` = project
 //============================================================================================
 
 lazy val pureharmV       = "0.0.2-M15"    //https://github.com/busymachines/pureharm/releases
-lazy val monixV          = "3.0.0-RC3"    //https://github.com/monix/monix/releases
+lazy val fs2V            = "1.1.0-M1"     //https://github.com/functional-streams-for-scala/fs2/releases
 lazy val reactiveMongoV  = "0.18.1"       //https://github.com/ReactiveMongo/ReactiveMongo/releases
 lazy val log4catsV       = "0.4.0-M1"     //https://github.com/ChristopherDavenport/log4cats/releases
 lazy val scalaPCV        = "1.1.2"        //https://github.com/scala/scala-parser-combinators/releases
@@ -100,7 +100,7 @@ lazy val jsoupV          = "1.8.1"        //java — https://github.com/jhy/jsou
 lazy val betterMonadicForV = "0.3.0" //https://github.com/oleg-py/better-monadic-for/releases
 
 lazy val pureharmEffects:   ModuleID = "com.busymachines"       %% "pureharm-effects-cats"    % pureharmV       withSources ()
-lazy val monix:             ModuleID = "io.monix"               %% "monix"                    % monixV          withSources ()
+lazy val fs2:               ModuleID = "co.fs2"                 %% "fs2-core"                 % fs2V            withSources ()
 lazy val reactiveMongo:     ModuleID = "org.reactivemongo"      %% "reactivemongo"            % reactiveMongoV  withSources ()
 lazy val iolog4s:           ModuleID = "io.chrisdavenport"      %% "log4cats-slf4j"           % log4catsV       withSources ()
 lazy val parserCombinators: ModuleID = "org.scala-lang.modules" %% "scala-parser-combinators" % scalaPCV        withSources ()

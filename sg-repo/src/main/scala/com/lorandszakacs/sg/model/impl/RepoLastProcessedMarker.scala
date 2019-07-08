@@ -14,7 +14,7 @@ import com.lorandszakacs.util.mongodb._
 private[impl] class RepoLastProcessedMarker(override protected val db: Database)(
   implicit
   override val dbIOScheduler: DBIOScheduler,
-  override val futureLift:    FutureLift[Task],
+  override val futureLift:    FutureLift[IO],
 ) extends IndexSingleDocRepo[LastProcessedMarker] with SGRepoBSON {
 
   override protected def objectHandler: BSONDocumentHandler[LastProcessedMarker] =

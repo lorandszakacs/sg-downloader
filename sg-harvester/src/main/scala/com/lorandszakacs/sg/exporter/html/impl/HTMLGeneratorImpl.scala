@@ -33,22 +33,22 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
   private val RootPath2 = "../.."
   private val RootPath3 = "../../.."
 
-  override def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): Task[MRootIndex] = {
+  override def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): IO[MRootIndex] = {
     val grouped: List[List[M]] = ms.grouped(100).toList
     for {
       mIndexes <- grouped.traverse { batch =>
-        batch.traverse(m => Task(mIndex(m)))
+        batch.traverse(m => IO(mIndex(m)))
       }
       flattened = mIndexes.flatten.toList
-      html <- Task(rootIndexPage(flattened))
+      html <- IO(rootIndexPage(flattened))
     } yield MRootIndex(
       html = html,
       ms   = flattened,
     )
   }
 
-  override def createRootIndex(ms: List[Name])(implicit settings: HtmlSettings): Task[Html] = {
-    Task(rootIndexPageForNames(ms))
+  override def createRootIndex(ms: List[Name])(implicit settings: HtmlSettings): IO[Html] = {
+    IO(rootIndexPageForNames(ms))
   }
 
   /**
@@ -69,7 +69,7 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
     *       └── loading_gif.gif
     * }}}
     */
-  def createNewestPage(ms: List[(LocalDate, List[M])], favorites: Set[Name]): Task[Html] = {
+  def createNewestPage(ms: List[(LocalDate, List[M])], favorites: Set[Name]): IO[Html] = {
     def newestPageElementForDay(date: LocalDate, ms: List[M]): String = {
       val elements = ms.sortBy(_.name.name).map { m =>
         val relevantSet = m.photoSets.find(_.date == date).getOrElse(m.photoSets.maxBy(_.date))
@@ -87,7 +87,7 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
 
     }
 
-    Task {
+    IO {
       val eachDay = ms.map { p =>
         newestPageElementForDay(p._1, p._2)
       }

@@ -17,27 +17,27 @@ class CommandLineInterpreter(
 ) {
   private val defaultDays = 160
 
-  def interpretArgs(args: Array[String]): Task[Unit] = {
+  def interpretArgs(args: List[String]): IO[Unit] = {
     assert(args.nonEmpty, "why did you call the command line evaluator if you have no command line args?")
     val stringArgs = args.mkString(" ")
 
     this.interpret(stringArgs).void
   }
 
-  def interpret(args: String): Task[Command] = {
+  def interpret(args: String): IO[Command] = {
     eventualInterpretation(args)
   }
 
   private val downloader = assembly.sgDownloader(sgClient)
 
-  private def eventualInterpretation(args: String): Task[Command] = {
+  private def eventualInterpretation(args: String): IO[Command] = {
     for {
-      command <- Task.fromTry(CommandParser.parseCommand(args))
+      command <- IO.fromTry(CommandParser.parseCommand(args))
       _       <- interpretCommand(command)
     } yield command
   }
 
-  private def interpretCommand(command: Command): Task[Unit] = {
+  private def interpretCommand(command: Command): IO[Unit] = {
     command match {
 
       //=======================================================================
@@ -60,15 +60,15 @@ class CommandLineInterpreter(
         )
       //=======================================================================
       case Commands.Show(name) =>
-        Task(print("\n***************\n")) >>
+        IO(print("\n***************\n")) >>
           downloader.show(name).map(s => println(s))
       //=======================================================================
       case Commands.Delete(name) =>
-        Task(print("\n***************\n")) >>
+        IO(print("\n***************\n")) >>
           downloader.util.delete(name)
       //=======================================================================
       case Commands.Favorites =>
-        Task(print("\n***************\n")) >>
+        IO(print("\n***************\n")) >>
           downloader.show.favorites.map(s => println(s))
       //=======================================================================
       case Commands.Help =>
@@ -77,10 +77,10 @@ class CommandLineInterpreter(
             c.fullDescription
           }
           .mkString("\n\n----------------\n\n")
-        Task(print(s"----------------\n$string\n"))
+        IO(print(s"----------------\n$string\n"))
       //=======================================================================
       case Commands.Exit =>
-        Task(print("\n-------- exiting --------\n"))
+        IO(print("\n-------- exiting --------\n"))
       //=======================================================================
     }
   }

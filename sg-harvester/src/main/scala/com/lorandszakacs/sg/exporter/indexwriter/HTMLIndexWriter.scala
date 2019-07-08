@@ -12,11 +12,11 @@ import com.lorandszakacs.util.effects._
   *
   */
 private[exporter] trait HTMLIndexWriter {
-  def writeRootMIndex(index: MRootIndex)(implicit ws: WriterSettings): Task[Unit]
+  def writeRootMIndex(index: MRootIndex)(implicit ws: WriterSettings): IO[Unit]
 
-  def rewriteRootIndexFile(indexFile: Html)(implicit ws: WriterSettings): Task[Unit]
+  def rewriteRootIndexFile(indexFile: Html)(implicit ws: WriterSettings): IO[Unit]
 
-  def rewriteNewestMPage(indexFile: Html)(implicit ws: WriterSettings): Task[Unit]
+  def rewriteNewestMPage(indexFile: Html)(implicit ws: WriterSettings): IO[Unit]
 }
 
 case class WriterSettings(

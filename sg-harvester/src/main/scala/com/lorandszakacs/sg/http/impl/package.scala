@@ -10,5 +10,5 @@ import com.lorandszakacs.util.effects._
   *
   */
 package object impl extends URLConversions {
-  implicit def convertHTTPIOSchedulerToScheduler(implicit httpSch: HTTPIOScheduler): Scheduler = httpSch.scheduler
+  implicit def convertHTTPIOSchedulerToScheduler(implicit httpSch: HTTPIOScheduler): ExecutionContext = httpSch.scheduler
 }

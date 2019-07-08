@@ -17,11 +17,11 @@ final private[reifier] class SessionDaoImpl(
 )(
   implicit
   override val dbIOScheduler: DBIOScheduler,
-  override val futureLift:    FutureLift[Task],
+  override val futureLift:    FutureLift[IO],
 ) extends SingleDocumentMongoCollection[Session, String, BSONString] {
   import UtilBsonHandlers._
 
-  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
+  implicit private val logger: Logger[IO] = Logger.getLogger[IO]
 
   override protected val objectHandler: BSONDocumentHandler[Session] = BSONMacros.handler[Session]
 
@@ -38,7 +38,7 @@ final private[reifier] class SessionDaoImpl(
 
   override def collectionName: String = "sg_sessions"
 
-  private[reifier] def init: Task[Unit] = {
+  private[reifier] def init: IO[Unit] = {
     for {
       opt <- this.find
       _ <- opt.ifNoneRun {

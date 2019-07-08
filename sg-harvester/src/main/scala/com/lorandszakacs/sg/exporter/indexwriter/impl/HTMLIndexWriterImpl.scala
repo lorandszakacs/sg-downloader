@@ -17,24 +17,24 @@ import com.lorandszakacs.util.logger._
   *
   */
 private[indexwriter] class HTMLIndexWriterImpl() extends HTMLIndexWriter {
-  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
+  implicit private val logger: Logger[IO] = Logger.getLogger[IO]
 
-  override def writeRootMIndex(index: MRootIndex)(implicit ws: WriterSettings): Task[Unit] = {
+  override def writeRootMIndex(index: MRootIndex)(implicit ws: WriterSettings): IO[Unit] = {
     for {
-      _ <- (if (ws.rewriteEverything) FileUtils.cleanFolderOrCreate(ws.rootFolder) else Task.unit).recoverWith {
-        case NonFatal(e) => logger.error(e)(s"failed to clean root folder: ${e.getMessage}") >> Task.raiseError(e)
+      _ <- (if (ws.rewriteEverything) FileUtils.cleanFolderOrCreate(ws.rootFolder) else IO.unit).recoverWith {
+        case NonFatal(e) => logger.error(e)(s"failed to clean root folder: ${e.getMessage}") >> IO.raiseError(e)
       }
       _ <- writeRootIndexFile(index)
 
     } yield ()
   }
 
-  override def rewriteRootIndexFile(indexFile: Html)(implicit ws: WriterSettings): Task[Unit] = {
+  override def rewriteRootIndexFile(indexFile: Html)(implicit ws: WriterSettings): IO[Unit] = {
     val p = ws.rootFolder.resolve(indexFile.relativePathAndName).toAbsolutePath
     FileUtils.overwriteFile(p, indexFile.content) >> logger.info(s"rewrote root index file @ $p")
   }
 
-  override def rewriteNewestMPage(newestFile: Html)(implicit ws: WriterSettings): Task[Unit] = {
+  override def rewriteNewestMPage(newestFile: Html)(implicit ws: WriterSettings): IO[Unit] = {
     val p = ws.rootFolder.resolve(newestFile.relativePathAndName).toAbsolutePath
     FileUtils.overwriteFile(p, newestFile.content) >> logger.info(s"rewrote newest sets file @ $p")
   }
@@ -42,10 +42,10 @@ private[indexwriter] class HTMLIndexWriterImpl() extends HTMLIndexWriter {
   /**
     * This writes:[[MRootIndex.html]] to ``./index.html`` on the disk
     */
-  private def writeRootIndexFile(rootIndex: MRootIndex)(implicit ws: WriterSettings): Task[Unit] = {
+  private def writeRootIndexFile(rootIndex: MRootIndex)(implicit ws: WriterSettings): IO[Unit] = {
     val path = ws.rootFolder.resolve(rootIndex.html.relativePathAndName)
     for {
-      _ <- Task.traverse(rootIndex.ms)(writeMIndex)
+      _ <- rootIndex.ms.traverse(writeMIndex)
       _ <- logger.info(s"finished writing all #${rootIndex.ms.length} Ms @ ${ws.rootFolder}")
       _ <- FileUtils.writeFile(path, rootIndex.html.content)
     } yield ()
@@ -55,8 +55,8 @@ private[indexwriter] class HTMLIndexWriterImpl() extends HTMLIndexWriter {
     * It will create a folder ./[[MIndex.name]]/, and write everything inside that folder
     * This writes:[[MIndex.html]] to ``./[[MIndex.html.relativePathAndName]]`` on the disk
     */
-  private def writeMIndex(m: MIndex)(implicit ws: WriterSettings): Task[Unit] = {
-    def writeMPhotoSetIndex(ps: PhotoSetIndex)(implicit ws: WriterSettings): Task[Unit] = {
+  private def writeMIndex(m: MIndex)(implicit ws: WriterSettings): IO[Unit] = {
+    def writeMPhotoSetIndex(ps: PhotoSetIndex)(implicit ws: WriterSettings): IO[Unit] = {
       val psPath = ws.rootFolder.resolve(ps.html.relativePathAndName)
       logger.debug(s"attempting to write file: $psPath") >>
         FileUtils.writeFile(psPath, ps.html.content) >>

@@ -13,29 +13,29 @@ import scala.io.StdIn
   *
   */
 class REPL(private val interpreter: CommandLineInterpreter) {
-  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
+  implicit private val logger: Logger[IO] = Logger.getLogger[IO]
 
-  def runTask: Task[Unit] = {
+  def runIO: IO[Unit] = {
     for {
-      _ <- Task(println("type help for instructions"))
+      _ <- IO(println("type help for instructions"))
       _ <- loop(stop = false).recoverWith {
         case NonFatal(e) => logger.error(e)("the loop somehow broke. terminating")
       }
     } yield ()
   }
 
-  private def loop(stop: Boolean): Task[Unit] = {
+  private def loop(stop: Boolean): IO[Unit] = {
     if (stop) {
-      Task.unit
+      IO.unit
     }
     else {
       for {
-        _     <- Task(print("> "))
-        input <- Task(StdIn.readLine().trim())
+        _     <- IO(print("> "))
+        input <- IO(StdIn.readLine().trim())
         _ <- interpreter.interpret(input).attempt.flatMap {
           case Left(thr) =>
             logger.error(withFilteredStackTrace(thr))(s"failed to interpret command: '$input'") >>
-              Task(print("\n")) >>
+              IO(print("\n")) >>
               loop(stop = false)
           case Right(c) =>
             if (c == Commands.Exit) loop(stop = true) else loop(stop = false)

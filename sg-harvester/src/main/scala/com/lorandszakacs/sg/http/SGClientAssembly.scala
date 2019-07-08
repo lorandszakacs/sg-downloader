@@ -11,9 +11,10 @@ import com.lorandszakacs.util.effects._
   *
   */
 trait SGClientAssembly {
+  def concurrentEffect: ConcurrentEffect[IO]
 
   implicit def httpIOScheduler: HTTPIOScheduler
 
-  lazy val sgClient: Resource[Task, SGClient] = SGClientImpl()
+  lazy val sgClient: Resource[IO, SGClient] = SGClientImpl()(httpIOScheduler, concurrentEffect)
 
 }

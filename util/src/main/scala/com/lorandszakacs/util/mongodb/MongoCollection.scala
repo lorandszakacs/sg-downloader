@@ -18,7 +18,7 @@ object MongoCollection {
     idH:  BSONHandler[BSONTargetType, IdType],
     sch:  DBIOScheduler,
     id:   Identifier[Entity, IdType],
-    futL: FutureLift[Task],
+    futL: FutureLift[IO],
   ): MongoCollection[Entity, IdType, BSONTargetType] = {
     new MongoCollection[Entity, IdType, BSONTargetType] {
 
@@ -26,7 +26,7 @@ object MongoCollection {
       implicit override protected val entityHandler: BSONDocumentHandler[Entity]         = enH
       implicit override protected val idHandler:     BSONHandler[BSONTargetType, IdType] = idH
       implicit override protected val identifier:    Identifier[Entity, IdType]          = id
-      implicit override protected val futureLift:    FutureLift[Task]                    = futL
+      implicit override protected val futureLift:    FutureLift[IO]                      = futL
 
       override val collectionName: String = collName
 
@@ -34,8 +34,8 @@ object MongoCollection {
     }
   }
 
-  private def interpretWriteResult(wr: WriteResult): Task[Unit] = {
-    wr.ok.ifFalseRaise[Task](
+  private def interpretWriteResult(wr: WriteResult): IO[Unit] = {
+    wr.ok.ifFalseRaise[IO](
       MongoDBException(
         code = wr.code.map(_.toString),
         msg  = wr.writeErrors.headOption.map(_.toString),
@@ -43,15 +43,15 @@ object MongoCollection {
     )
   }
 
-  private def interpretWriteResult(wr: MultiBulkWriteResult): Task[Unit] = {
+  private def interpretWriteResult(wr: MultiBulkWriteResult): IO[Unit] = {
     for {
-      _ <- wr.ok.ifFalseRaise[Task](
+      _ <- wr.ok.ifFalseRaise[IO](
         MongoDBException(
           code = wr.code.map(_.toString),
           msg  = wr.writeErrors.headOption.map(_.toString),
         ),
       )
-      _ <- wr.writeErrors.nonEmpty.ifTrueRaise[Task](
+      _ <- wr.writeErrors.nonEmpty.ifTrueRaise[IO](
         MongoDBException(
           code = wr.code.map(_.toString),
           msg  = wr.writeErrors.headOption.map(_.toString),
@@ -65,7 +65,7 @@ object MongoCollection {
 trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
   implicit protected def dbIOScheduler: DBIOScheduler
 
-  implicit protected def futureLift: FutureLift[Task]
+  implicit protected def futureLift: FutureLift[IO]
 
   implicit protected def entityHandler: BSONDocumentHandler[Entity]
 
@@ -77,35 +77,35 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def collectionName: String
 
-  private lazy val collectionTask: Task[BSONCollection] = db.collection(collectionName)
+  private lazy val collectionIO: IO[BSONCollection] = db.collection(collectionName)
 
-  private lazy val collection: BSONCollection = collectionTask.unsafeSyncGet()(dbIOScheduler.scheduler)
+  private lazy val collection: BSONCollection = collectionIO.unsafeSyncGet()
 
   def idQuery(id: IdType): BSONDocument = BSONDocument(_id -> id)
 
   def idQueryByEntity(id: Entity): BSONDocument = BSONDocument(_id -> identifier.id(id))
 
-  def findOne(query: BSONDocument): Task[Option[Entity]] = {
-    collection.find[BSONDocument, BSONDocument](selector = query, projection = Option.empty).one[Entity].purifyIn[Task]
+  def findOne(query: BSONDocument): IO[Option[Entity]] = {
+    collection.find[BSONDocument, BSONDocument](selector = query, projection = Option.empty).one[Entity].purifyIn[IO]
   }
 
-  def findMany(query: BSONDocument, maxDocs: Int = Int.MaxValue): Task[List[Entity]] = {
+  def findMany(query: BSONDocument, maxDocs: Int = Int.MaxValue): IO[List[Entity]] = {
     val cursor: Cursor[Entity] =
       collection.find[BSONDocument, BSONDocument](query, projection = Option.empty).cursor[Entity]()
-    cursor.collect[List](maxDocs = maxDocs, err = Cursor.FailOnError[List[Entity]]()).purifyIn[Task]
+    cursor.collect[List](maxDocs = maxDocs, err = Cursor.FailOnError[List[Entity]]()).purifyIn[IO]
   }
 
-  def findAll: Task[List[Entity]] = {
+  def findAll: IO[List[Entity]] = {
     this.findMany(BSONDocument.empty)
   }
 
-  def find(id: IdType): Task[Option[Entity]] = {
+  def find(id: IdType): IO[Option[Entity]] = {
     this.findOne(idQuery(id))
   }
 
-  def findManyById(ids: Seq[IdType]): Task[List[Entity]] = {
+  def findManyById(ids: Seq[IdType]): IO[List[Entity]] = {
     if (ids.isEmpty) {
-      Task.pure(Nil)
+      IO.pure(Nil)
     }
     else {
       val q = BSONDocument(
@@ -117,80 +117,80 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
     }
   }
 
-  def create(toCreate: Entity): Task[Unit] = {
+  def create(toCreate: Entity): IO[Unit] = {
     for {
-      _ <- collection.insert(ordered = false).one(toCreate).purifyIn[Task].void.recoverWith {
+      _ <- collection.insert(ordered = false).one(toCreate).purifyIn[IO].void.recoverWith {
         case e: LastError =>
           MongoCollection.interpretWriteResult(e)
 
         case NonFatal(e) =>
-          Task.raiseError(e)
+          IO.raiseError(e)
       }
     } yield ()
   }
 
-  def create(toCreate: List[Entity]): Task[Unit] = {
+  def create(toCreate: List[Entity]): IO[Unit] = {
     for {
-      wr <- collection.insert(ordered = false).many[Entity](toCreate).purifyIn[Task]
+      wr <- collection.insert(ordered = false).many[Entity](toCreate).purifyIn[IO]
       _  <- MongoCollection.interpretWriteResult(wr)
     } yield ()
   }
 
-  def createOrUpdate(query: BSONDocument, toCreate: Entity): Task[Unit] = {
+  def createOrUpdate(query: BSONDocument, toCreate: Entity): IO[Unit] = {
     for {
       _ <- collection
         .update(ordered = false)
         .one(query, toCreate, upsert = true)
-        .purifyIn[Task]
+        .purifyIn[IO]
         .void
         .recoverWith {
           case e: LastError =>
             MongoCollection.interpretWriteResult(e)
 
           case NonFatal(e) =>
-            Task.raiseError(e)
+            IO.raiseError(e)
         }
     } yield ()
   }
 
-  def createOrUpdate(toCreate: Entity): Task[Unit] = {
+  def createOrUpdate(toCreate: Entity): IO[Unit] = {
     for {
       _ <- collection
         .update(ordered = false)
         .one(idQueryByEntity(toCreate), toCreate, upsert = true)
-        .purifyIn[Task]
+        .purifyIn[IO]
         .void
         .recoverWith {
           case e: LastError =>
             MongoCollection.interpretWriteResult(e)
 
           case NonFatal(e) =>
-            Task.raiseError(e)
+            IO.raiseError(e)
         }
     } yield ()
   }
 
-  def createOrUpdate(toCreateOrUpdate: List[Entity]): Task[Unit] = {
+  def createOrUpdate(toCreateOrUpdate: List[Entity]): IO[Unit] = {
     for {
-      _ <- toCreateOrUpdate.traverse[Task, Unit] { entity: Entity =>
+      _ <- toCreateOrUpdate.traverse[IO, Unit] { entity: Entity =>
         this.createOrUpdate(entity)
       }
     } yield ()
   }
 
-  def remove(q: BSONDocument): Task[Unit] = {
+  def remove(q: BSONDocument): IO[Unit] = {
     for {
-      _ <- collection.delete().element(q).purifyIn[Task].void.recoverWith {
+      _ <- collection.delete().element(q).purifyIn[IO].void.recoverWith {
         case e: LastError =>
           MongoCollection.interpretWriteResult(e)
 
         case NonFatal(e) =>
-          Task.raiseError(e)
+          IO.raiseError(e)
       }
     } yield ()
   }
 
-  def remove(id: IdType): Task[Unit] = {
+  def remove(id: IdType): IO[Unit] = {
     this.remove(idQuery(id))
   }
 

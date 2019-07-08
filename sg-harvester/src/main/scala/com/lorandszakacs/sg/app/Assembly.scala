@@ -19,20 +19,22 @@ import com.lorandszakacs.util.logger._
   */
 final class Assembly(
   implicit
-  val computationScheduler:     Scheduler,
+  val contextShift:             ContextShift[IO],
   override val dbIOScheduler:   DBIOScheduler,
-  override val futureLift:      FutureLift[Task],
+  override val futureLift:      FutureLift[IO],
   override val httpIOScheduler: HTTPIOScheduler,
 ) extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly {
 
-  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
+  implicit private val logger: Logger[IO] = Logger.getLogger[IO]
+
+  override val concurrentEffect: ConcurrentEffect[IO] = IO.ioConcurrentEffect
 
   implicit override lazy val db: Database = new Database(
     uri    = """mongodb://localhost:27016""",
     dbName = "sgs_repo",
   )
 
-  lazy val shutdownTask: Task[Unit] = {
+  lazy val shutdownIO: IO[Unit] = {
     for {
       _ <- logger.info("attempting to shutdown and close all resources")
       _ <- logger.info("finished sgClient cleanup")
@@ -41,6 +43,6 @@ final class Assembly(
     } yield ()
   }
 
-  lazy val initTask: Task[Unit] = initReifierAssembly >> logger.info("initialized assembly")
+  lazy val initIO: IO[Unit] = initReifierAssembly >> logger.info("initialized assembly")
 
 }

@@ -33,18 +33,18 @@ import com.lorandszakacs.util.html._
   *
   */
 private[http] object SGClientImpl {
-  private[http] def apply()(implicit httpIOSch: HTTPIOScheduler): Resource[Task, SGClient] =
+  private[http] def apply()(implicit httpIOSch: HTTPIOScheduler, F: ConcurrentEffect[IO]): Resource[IO, SGClient] =
     for {
-      client <- BlazeClientBuilder.apply[Task](httpIOSch.scheduler).resource
+      client <- BlazeClientBuilder.apply[IO](httpIOSch.scheduler).resource
     } yield new SGClientImpl(client)
 
 }
 
-final private[impl] class SGClientImpl private (private val httpClient: Client[Task])(
+final private[impl] class SGClientImpl private (private val httpClient: Client[IO])(
   implicit val httpIOSch:                                               HTTPIOScheduler,
 ) extends SGClient {
 
-  override def getPage(url: URL)(implicit authentication: Authentication): Task[Html] = {
+  override def getPage(url: URL)(implicit authentication: Authentication): IO[Html] = {
     val uri         = Uri.unsafeFromString(url.toExternalForm)
     val req         = get(uri)
     val reqWithAuth = authentication(req)
@@ -52,17 +52,17 @@ final private[impl] class SGClientImpl private (private val httpClient: Client[T
     for {
       body <- httpClient.fetch(reqWithAuth) { response =>
         if (response.status == Status.Ok || response.status == Status.NotModified) {
-          EntityDecoder.decodeString[Task](response)
+          EntityDecoder.decodeString[IO](response)
         }
         else {
-          Task.raiseError(FailedToGetPageException(uri))
+          IO.raiseError(FailedToGetPageException(uri))
         }
       }
       html = Html(body)
     } yield html
   }
 
-  override def createAuthentication(newSession: Session): Task[Authentication] = {
+  override def createAuthentication(newSession: Session): IO[Authentication] = {
     val newAuthentication = authenticationFromSession(newSession)
     for {
       _ <- verifyAuthentication(newAuthentication)
@@ -73,7 +73,7 @@ final private[impl] class SGClientImpl private (private val httpClient: Client[T
     new Authentication {
       override def needsRefresh: Boolean = false
 
-      override def apply(req: Request[Task]): Request[Task] = {
+      override def apply(req: Request[IO]): Request[IO] = {
         req.putHeaders(newSession.toCookieHeader)
       }
 
@@ -109,18 +109,18 @@ final private[impl] class SGClientImpl private (private val httpClient: Client[T
     *      </div>
     * }}}
     */
-  private def verifyAuthentication(newAuthentication: Authentication): Task[Unit] = {
+  private def verifyAuthentication(newAuthentication: Authentication): IO[Unit] = {
     for {
-      uri  <- Task.delay(Uri.unsafeFromString(s"${core.Domain}/members/${newAuthentication.session.username}/"))
+      uri  <- IO.delay(Uri.unsafeFromString(s"${core.Domain}/members/${newAuthentication.session.username}/"))
       page <- getPage(new URL(uri.renderString))(newAuthentication)
       loginButton = page.filter(Tag("div") && Class("login-form-wrapper")).headOption
-      _ <- loginButton.isDefined.ifTrueRaise[Task](FailedToVerifyNewAuthenticationException(uri))
+      _ <- loginButton.isDefined.ifTrueRaise[IO](FailedToVerifyNewAuthenticationException(uri))
     } yield ()
   }
 
-  private def get(uri: Uri, headers: Headers = Headers.empty): Request[Task] = {
+  private def get(uri: Uri, headers: Headers = Headers.empty): Request[IO] = {
     DefaultSGAuthentication {
-      Request[Task](
+      Request[IO](
         method  = Method.GET,
         uri     = uri,
         headers = headers,
@@ -169,7 +169,7 @@ final private[impl] class SGClientImpl private (private val httpClient: Client[T
     *   Cookie: sessionid=``$FinalSessionID``; csrftoken=``$FinalCSRFToken``
     * }}}
     */
-//  def brokenAuthenticate(username: String, plainTextPassword: String): Task[Authentication] = {
+//  def brokenAuthenticate(username: String, plainTextPassword: String): IO[Authentication] = {
 //    case class StartPageTokens(
 //      csrfToken: String,
 //      sessionID: String
@@ -203,15 +203,15 @@ final private[impl] class SGClientImpl private (private val httpClient: Client[T
 //        }
 //    }
 //
-//    def getTokensFromStartPage: Task[StartPageTokens] = {
-//      val getRequest = Request[Task](
+//    def getTokensFromStartPage: IO[StartPageTokens] = {
+//      val getRequest = Request[IO](
 //        method = Method.GET,
 //        uri    = Uri.unsafeFromString(s"${core.Domain}/")
 //      )
 //      for {
 //        result <- httpClient.fetch(getRequest) { response =>
 //                 if (response.status != Status.Ok) {
-//                   Task.raiseError(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
+//                   IO.raiseError(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
 //                 }
 //                 else {
 //                   val hs = response.headers
@@ -228,7 +228,7 @@ final private[impl] class SGClientImpl private (private val httpClient: Client[T
 //                     .map(h => Cookie(name = h.name.value, content = sanitizeCookiesValue(h.value)))
 //                     .toList
 //                   if (wrongCookies.length != 2) {
-//                     Task.raiseError(ExpectedTwoSetCookieHeadersFromHomepage(getRequest.uri, hs))
+//                     IO.raiseError(ExpectedTwoSetCookieHeadersFromHomepage(getRequest.uri, hs))
 //                   }
 //                   else {
 //
@@ -259,13 +259,13 @@ final private[impl] class SGClientImpl private (private val httpClient: Client[T
 //                         csrfToken = csrfToken,
 //                         sessionID = sessionId
 //                       )
-//                     Task fromTry tokens
+//                     IO fromTry tokens
 //                   }
 //                 }
 //               }
-////        response <- httpClient.singleRequest(getRequest).purifyIn[Task]
+////        response <- httpClient.singleRequest(getRequest).purifyIn[IO]
 ////        result <- if (response.status != StatusCodes.OK) {
-////                   Task.raiseError(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
+////                   IO.raiseError(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
 ////                 }
 ////                 else {
 ////                   val headers = response._2
@@ -281,7 +281,7 @@ final private[impl] class SGClientImpl private (private val httpClient: Client[T
 ////                     .filter(_.is("set-cookie"))
 ////                     .map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
 ////                   if (wrongCookies.length != 2) {
-////                     Task.raiseError(ExpectedTwoSetCookieHeadersFromHomepage(getRequest.uri, headers))
+////                     IO.raiseError(ExpectedTwoSetCookieHeadersFromHomepage(getRequest.uri, headers))
 ////                   }
 ////                   else {
 ////
@@ -311,13 +311,13 @@ final private[impl] class SGClientImpl private (private val httpClient: Client[T
 ////                         csrfToken = csrfToken,
 ////                         sessionID = sessionId
 ////                       )
-////                     Task fromTry tokens
+////                     IO fromTry tokens
 ////                   }
 ////                 }
 //      } yield result
 //    }
 //
-//    def postLoginAndGetTokens(tokens: StartPageTokens): Task[Session] = {
+//    def postLoginAndGetTokens(tokens: StartPageTokens): IO[Session] = {
 //      val headers: Seq[Header] = Seq(
 //        tokens.toCookieHeader,
 //        Header.Raw("X-CSRFToken", tokens.csrfToken)
@@ -337,9 +337,9 @@ final private[impl] class SGClientImpl private (private val httpClient: Client[T
 //      )
 //
 //      for {
-//        response <- http.singleRequest(DefaultSGAuthentication(loginRequest)).purifyIn[Task]
+//        response <- http.singleRequest(DefaultSGAuthentication(loginRequest)).purifyIn[IO]
 //        tokens <- if (response.status != StatusCodes.Created) {
-//                   Task.raiseError(FailedToPostLoginException(loginRequest, response))
+//                   IO.raiseError(FailedToPostLoginException(loginRequest, response))
 //                 }
 //                 else {
 //                   val headers = response._2
@@ -355,7 +355,7 @@ final private[impl] class SGClientImpl private (private val httpClient: Client[T
 //                     .filter(_.is("set-cookie"))
 //                     .map(c => HttpCookiePair(c.name(), sanitizeCookiesValue(c.value())).toCookie())
 //                   if (wrongCookies.length != 2) {
-//                     Task.raiseError(ExpectedTwoSetCookieHeadersFromLoginResponseException(loginRequest.uri, headers))
+//                     IO.raiseError(ExpectedTwoSetCookieHeadersFromLoginResponseException(loginRequest.uri, headers))
 //                   }
 //                   else {
 //
@@ -387,7 +387,7 @@ final private[impl] class SGClientImpl private (private val httpClient: Client[T
 //                         csrfToken = csrfToken,
 //                         expiresAt = Instant.unsafeNow().plusDays(13)
 //                       )
-//                     Task fromTry tokens
+//                     IO fromTry tokens
 //                   }
 //                 }
 //

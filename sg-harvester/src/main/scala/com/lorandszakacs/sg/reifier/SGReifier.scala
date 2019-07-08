@@ -21,13 +21,13 @@ trait SGReifier {
     * will be false
     *
     */
-  def authenticateIfNeeded(): Task[Authentication]
+  def authenticateIfNeeded(): IO[Authentication]
 
-  def reifySG(sg: SG)(implicit pc: PatienceConfig): Task[SG]
+  def reifySG(sg: SG)(implicit pc: PatienceConfig): IO[SG]
 
-  def reifyHF(hf: HF)(implicit pc: PatienceConfig): Task[HF]
+  def reifyHF(hf: HF)(implicit pc: PatienceConfig): IO[HF]
 
-  def reifyM(m: M)(implicit pc: PatienceConfig): Task[M]
+  def reifyM(m: M)(implicit pc: PatienceConfig): IO[M]
 
   def authentication: Authentication
 }

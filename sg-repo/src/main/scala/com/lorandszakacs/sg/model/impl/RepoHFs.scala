@@ -13,7 +13,7 @@ import com.lorandszakacs.util.effects._
 private[impl] class RepoHFs(override protected val db: Database)(
   implicit
   override val dbIOScheduler: DBIOScheduler,
-  override val futureLift: FutureLift[Task],
+  override val futureLift: FutureLift[IO],
 ) extends MRepo[HF](hfIdentifier) with SGRepoBSON {
 
   override val collectionName: String = "hfs"

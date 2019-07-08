@@ -17,7 +17,7 @@ import scala.collection.mutable
   *
   */
 object FileUtils {
-  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
+  implicit private val logger: Logger[IO] = Logger.getLogger[IO]
 
   def normalizeHomePath(path: String): String = {
     path.replaceFirst("^~", System.getProperty("user.home"))
@@ -26,8 +26,8 @@ object FileUtils {
   /**
     * recursively deletes everything in the specified folder
     */
-  def cleanFolderOrCreate(fd: Path): Task[Unit] =
-    Task {
+  def cleanFolderOrCreate(fd: Path): IO[Unit] =
+    IO {
       fd.toAbsolutePath.toFile.mkdirs()
       Files.walkFileTree(
         fd,
@@ -86,7 +86,7 @@ object FileUtils {
     }
   }
 
-  def findPotentialDuplicates(fd: Path): Task[Set[Set[String]]] = Task {
+  def findPotentialDuplicates(fd: Path): IO[Set[Set[String]]] = IO {
     def tailsMatch(s1: String, s2: String): Boolean = {
       fileMatchInEverythingButDate(s1, s2)
     }
@@ -136,11 +136,11 @@ object FileUtils {
     acc.toSet
   }
 
-  def createFolders(fd: Path): Task[Unit] = {
+  def createFolders(fd: Path): IO[Unit] = {
     val f = fd.toAbsolutePath.toFile
     for {
-      result <- Task(f.mkdirs())
-      _      <- result.ifFalseRaise[Task](FailedToCreateFolderException(f.getAbsolutePath))
+      result <- IO(f.mkdirs())
+      _      <- result.ifFalseRaise[IO](FailedToCreateFolderException(f.getAbsolutePath))
     } yield ()
   }
 
@@ -148,7 +148,7 @@ object FileUtils {
     * Does NOT overwrite file!
     *
     */
-  def writeFile(fp: Path, content: String): Task[Unit] = Task {
+  def writeFile(fp: Path, content: String): IO[Unit] = IO {
     val writer = new PrintWriter(fp.toAbsolutePath.toFile)
     Try(writer.write(content)) match {
       case TrySuccess(_) =>
@@ -159,7 +159,7 @@ object FileUtils {
     }
   }
 
-  def overwriteFile(fp: Path, content: String): Task[Unit] = Task {
+  def overwriteFile(fp: Path, content: String): IO[Unit] = IO {
     val file = fp.toAbsolutePath.toFile
     if (file.exists()) {
       file.delete()

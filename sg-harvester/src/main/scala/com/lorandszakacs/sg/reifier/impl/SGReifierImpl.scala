@@ -21,11 +21,11 @@ private[reifier] class SGReifierImpl(
   private val sessionDao: SessionDaoImpl,
 ) extends SGReifier with SGURLBuilder {
 
-  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
+  implicit private val logger: Logger[IO] = Logger.getLogger[IO]
 
   implicit private[this] var _authentication: Authentication = DefaultSGAuthentication
 
-  override def authenticateIfNeeded(): Task[Authentication] = {
+  override def authenticateIfNeeded(): IO[Authentication] = {
     if (authentication.needsRefresh) {
       for {
         _               <- logger.info("need to authenticate")
@@ -52,7 +52,7 @@ private[reifier] class SGReifierImpl(
           //   r
           // }
 
-          case None => Task.raiseError(NoSessionFoundException)
+          case None => IO.raiseError(NoSessionFoundException)
         }
       } yield {
         _authentication = newAuth
@@ -60,19 +60,19 @@ private[reifier] class SGReifierImpl(
       }
     }
     else {
-      Task.pure(authentication)
+      IO.pure(authentication)
     }
   }
 
-  override def reifySG(sg: SG)(implicit pc: PatienceConfig): Task[SG] = {
+  override def reifySG(sg: SG)(implicit pc: PatienceConfig): IO[SG] = {
     reifyM(SGFactory)(sg)
   }
 
-  override def reifyHF(hf: HF)(implicit pc: PatienceConfig): Task[HF] = {
+  override def reifyHF(hf: HF)(implicit pc: PatienceConfig): IO[HF] = {
     reifyM(HFFactory)(hf)
   }
 
-  override def reifyM(m: M)(implicit pc: PatienceConfig): Task[M] = {
+  override def reifyM(m: M)(implicit pc: PatienceConfig): IO[M] = {
     m match {
       case sg: SG => reifyM(SGFactory)(sg)
       case hf: HF => reifyM(HFFactory)(hf)
@@ -80,18 +80,18 @@ private[reifier] class SGReifierImpl(
 
   }
 
-  private def gatherAllPhotosFromSetPage(photoSetPageUri: URL): Task[List[Photo]] = {
+  private def gatherAllPhotosFromSetPage(photoSetPageUri: URL): IO[List[Photo]] = {
     for {
       photoSetPageHTML <- sGClient.getPage(photoSetPageUri)
-      photos <- Task.fromTry(SGContentParser.parsePhotos(photoSetPageHTML)).recoverWith {
-        case NonFatal(_) => Task.raiseError(DidNotFindAnyPhotoLinksOnSetPageException(photoSetPageUri))
+      photos <- IO.fromTry(SGContentParser.parsePhotos(photoSetPageHTML)).recoverWith {
+        case NonFatal(_) => IO.raiseError(DidNotFindAnyPhotoLinksOnSetPageException(photoSetPageUri))
       }
 
     } yield photos
   }
 
-  private def reifyM[T <: M](mf: MFactory[T])(m: T)(implicit pc: PatienceConfig): Task[T] = {
-    def reifyPhotoSets(photoSet: PhotoSet): Task[PhotoSet] = {
+  private def reifyM[T <: M](mf: MFactory[T])(m: T)(implicit pc: PatienceConfig): IO[T] = {
+    def reifyPhotoSets(photoSet: PhotoSet): IO[PhotoSet] = {
       pc.throttleQuarterAfter {
         for {
           photos <- this.gatherAllPhotosFromSetPage(photoSet.url).recoverWith {
@@ -99,11 +99,11 @@ private[reifier] class SGReifierImpl(
               logger.warn(
                 s"SGReifier --> reifying: ${photoSet.url} has no photos. `${mf.name} ${m.name.name}`",
               ) >>
-                Task.pure(Nil)
+                IO.pure(Nil)
             case e: Throwable =>
               logger.error(e)(
                 s"SGReifier --> reifying: ${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${m.name.name}`",
-              ) >> Task.pure(Nil)
+              ) >> IO.pure(Nil)
           }
           _ <- logger.info(s"SGReifier --> reified: ${mf.name} ${m.name.name} photoset: ${photoSet.url}")
         } yield photoSet.copy(photos = photos)

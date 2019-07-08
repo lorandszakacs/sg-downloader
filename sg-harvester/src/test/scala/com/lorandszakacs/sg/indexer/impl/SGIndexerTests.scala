@@ -28,7 +28,7 @@ class SGIndexerTests extends IndexerTest {
   //===============================================================================================
   //===============================================================================================
 
-  implicit private class TestInterop[T](value: Task[T]) {
+  implicit private class TestInterop[T](value: IO[T]) {
     def r: T = value.unsafeSyncGet()
   }
 
@@ -337,15 +337,16 @@ class SGIndexerTests extends IndexerTest {
 
   override protected def withFixture(test: OneArgTest): Outcome = {
     val assembly = new IndexerAssembly with SGClientAssembly {
-      implicit override def httpIOScheduler: HTTPIOScheduler = SGIndexerTests.this.httpIOSch
+      override def concurrentEffect:         ConcurrentEffect[IO] = IO.ioConcurrentEffect
+      implicit override def httpIOScheduler: HTTPIOScheduler      = SGIndexerTests.this.httpIOSch
     }
     val resource = assembly.sgClient
-    val testTask = resource.use { client =>
-      Task {
+    val testIO = resource.use { client =>
+      IO {
         test(assembly.sgIndexerImpl(client))
       }
     }
 
-    testTask.runSyncUnsafe()
+    testIO.unsafeRunSync()
   }
 }
