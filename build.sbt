@@ -96,7 +96,6 @@ lazy val jsoupV          = "1.8.1"     //https://github.com/jhy/jsoup/releases
 lazy val scalaPCV        = "1.1.2"     //https://github.com/scala/scala-parser-combinators/releases
 lazy val http4sV         = "0.21.0-M1" //https://github.com/http4s/http4s/releases
 lazy val scalaTestV      = "3.0.5"     //https://github.com/scalatest/scalatest/releases
-lazy val scalaCheckV     = "1.13.5"    //https://github.com/rickynils/scalacheck/releases
 
 lazy val betterMonadicForV = "0.3.0" //https://github.com/oleg-py/better-monadic-for/releases
 
@@ -123,8 +122,7 @@ lazy val http4sClient = "org.http4s" %% "http4s-blaze-client" % http4sV
 //=========================================  testing =========================================
 //============================================================================================
 
-lazy val scalaTest:  ModuleID = "org.scalatest"  %% "scalatest"  % scalaTestV  % Test withSources ()
-lazy val scalaCheck: ModuleID = "org.scalacheck" %% "scalacheck" % scalaCheckV % Test withSources ()
+lazy val scalaTest: ModuleID = "org.scalatest" %% "scalatest" % scalaTestV % Test withSources ()
 
 //============================================================================================
 //=================================== COMMON-SETTINGS ========================================
