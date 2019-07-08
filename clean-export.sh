@@ -16,7 +16,7 @@ REPO_LOCATION=~/workspace/lsz/sg-downloader
 DOCKER_SCRIPT=$REPO_LOCATION/docker-mongo.sh
 
 #the name of the executable jar that is run to do the harvesting
-JAR_NAME=$REPO_LOCATION/sg-harvester/target/scala-2.12/sg-harvester.jar
+JAR_NAME=$REPO_LOCATION/sg-harvester/target/scala-2.13/sg-harvester.jar
 
 #the folder which is the mirror of what's in AWS
 AWS_ROOT=$ROOT/amazon-aws-s3
