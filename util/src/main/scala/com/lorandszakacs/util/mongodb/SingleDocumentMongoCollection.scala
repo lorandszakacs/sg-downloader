@@ -15,6 +15,7 @@ import com.lorandszakacs.util.math.Identifier
 trait SingleDocumentMongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   implicit protected def dbIOScheduler: DBIOScheduler
+  implicit protected def futureLift:    FutureLift[Task]
 
   protected def objectHandler: BSONDocumentHandler[Entity]
 

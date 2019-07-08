@@ -112,7 +112,7 @@ final private[impl] class SGClientImpl private ()(implicit val httpIOSch: HTTPIO
       uri  <- Task.delay(Uri.unsafeFromString(s"${core.Domain}/members/${newAuthentication.session.username}/"))
       page <- getPage(new URL(uri.renderString))(newAuthentication)
       loginButton = page.filter(Tag("div") && Class("login-form-wrapper")).headOption
-      _ <- loginButton.isDefined.failOnTrueTaskThr(FailedToVerifyNewAuthenticationException(uri))
+      _ <- loginButton.isDefined.ifTrueRaise[Task](FailedToVerifyNewAuthenticationException(uri))
     } yield ()
   }
 
@@ -261,7 +261,7 @@ final private[impl] class SGClientImpl private ()(implicit val httpIOSch: HTTPIO
 //                   }
 //                 }
 //               }
-////        response <- httpClient.singleRequest(getRequest).suspendInTask
+////        response <- httpClient.singleRequest(getRequest).purifyIn[Task]
 ////        result <- if (response.status != StatusCodes.OK) {
 ////                   Task.raiseError(FailedToGetSGHomepageOnLoginException(getRequest.uri, response.status))
 ////                 }
@@ -335,7 +335,7 @@ final private[impl] class SGClientImpl private ()(implicit val httpIOSch: HTTPIO
 //      )
 //
 //      for {
-//        response <- http.singleRequest(DefaultSGAuthentication(loginRequest)).suspendInTask
+//        response <- http.singleRequest(DefaultSGAuthentication(loginRequest)).purifyIn[Task]
 //        tokens <- if (response.status != StatusCodes.Created) {
 //                   Task.raiseError(FailedToPostLoginException(loginRequest, response))
 //                 }

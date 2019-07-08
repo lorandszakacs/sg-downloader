@@ -16,7 +16,8 @@ import scala.language.postfixOps
   */
 final case class Database(uri: String, dbName: String, config: Option[Config] = None)(
   implicit
-  dbIOScheduler: DBIOScheduler,
+  private val dbIOScheduler: DBIOScheduler,
+  private val futureLift:    FutureLift[Task],
 ) {
 
   implicit private val logger: Logger[Task] = Logger.create[Task]
@@ -46,7 +47,7 @@ final case class Database(uri: String, dbName: String, config: Option[Config] = 
     for {
       db <- databaseTask
       _  <- logger.info(s"attempting to drop database: ${db.name}")
-      _  <- db.drop().suspendInTask
+      _  <- db.drop().purifyIn[Task]
       _  <- logger.info(s"dropped database: ${db.name}")
     } yield ()
   }
@@ -56,7 +57,7 @@ final case class Database(uri: String, dbName: String, config: Option[Config] = 
       _      <- logger.info("attempting to close _mongoDriver.close(...)")
       driver <- mongoDriverTask
       _      <- Task(driver.close(1 minute))
-      _      <- driver.system.terminate().suspendInTask
+      _      <- driver.system.terminate().purifyIn[Task]
       _      <- logger.info("terminated -- _mongoDriver.system.terminate()")
     } yield ()
   }
@@ -66,9 +67,10 @@ object Database {
 
   private[mongodb] def getDatabase(mongoConnection: MongoConnection)(name: String)(
     implicit
-    sch: DBIOScheduler,
+    sch:        DBIOScheduler,
+    futureLift: FutureLift[Task],
   ): Task[DefaultDB] = {
-    mongoConnection.database(name).suspendInTask.adaptError {
+    mongoConnection.database(name).purifyIn[Task].adaptError {
       case NonFatal(e) => new IllegalStateException(s"Failed to initialize Mongo database. Because: ${e.getMessage}", e)
     }
   }

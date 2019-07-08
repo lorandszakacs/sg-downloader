@@ -127,7 +127,7 @@ object SGContentParser extends SGURLBuilder with URLConversions {
       val potentialLink = html.filter(RetainFirst(Tag("section") && Class("image-section") && HrefLink()))
       potentialLink.headOption match {
         case Some(name) => Try.pure(name)
-        case None       => Try.failThr(HTMLPageDidNotContainAnyPhotoSetLinksException(html))
+        case None       => Try.raiseError(HTMLPageDidNotContainAnyPhotoSetLinksException(html))
       }
     }
 
@@ -140,7 +140,7 @@ object SGContentParser extends SGURLBuilder with URLConversions {
       val potentialTime = html.filter(Content(RetainFirst(Tag("time") && Class("time-ago"))))
       potentialTime.headOption match {
         case Some(timeRepr) => parseStringToDateTime(timeRepr)
-        case None           => Try.failThr(SetRepresentationDidNotContainTimeTagException(html))
+        case None           => Try.raiseError(SetRepresentationDidNotContainTimeTagException(html))
       }
     }
 
@@ -153,7 +153,7 @@ object SGContentParser extends SGURLBuilder with URLConversions {
       val potentialTitle = html.filter(Tag("a") && Class("facebook-share") && Value(Attribute("data-name")))
       potentialTitle.headOption match {
         case Some(title) => Try.pure(title)
-        case None        => Try.failThr(SetRepresentationDidNotContainTitleException(html))
+        case None        => Try.raiseError(SetRepresentationDidNotContainTitleException(html))
       }
     }
 
@@ -172,7 +172,7 @@ object SGContentParser extends SGURLBuilder with URLConversions {
       val potentialName = html.filter(Tag("article") && Tag("header") && Tag("h2") && Content(RetainFirst(Tag("a"))))
       potentialName.headOption match {
         case Some(name) => Try.pure(Name(name))
-        case None       => Try.failThr(SetRepresentationDidNotContainNameException(html))
+        case None       => Try.raiseError(SetRepresentationDidNotContainNameException(html))
       }
     }
 
@@ -214,14 +214,14 @@ object SGContentParser extends SGURLBuilder with URLConversions {
 
   def gatherSGNames(html: Html): Try[List[Name]] = {
     html.filter(Class("image-section") && RetainFirst(Tag("a")) && HrefLink()) match {
-      case Nil   => Try.failThr(DidNotFindAnySGProfileLinksException())
+      case Nil   => Try.raiseError(DidNotFindAnySGProfileLinksException())
       case links => Try.pure(links.map(s => Name(s.replace("/girls/", "").replace("/", ""))))
     }
   }
 
   def gatherHFNames(html: Html): Try[List[Name]] = {
     html.filter(Class("image-section") && RetainFirst(Tag("a")) && HrefLink()) match {
-      case Nil   => Try.failThr(DidNotFindAnyHFProfileLinksException())
+      case Nil   => Try.raiseError(DidNotFindAnyHFProfileLinksException())
       case links => Try.pure(links.map(s => Name(s.replace("/members/", "").replace("/", ""))))
     }
   }
@@ -249,7 +249,7 @@ object SGContentParser extends SGURLBuilder with URLConversions {
   def parsePhotos(albumPage: Html): Try[List[Photo]] = {
     albumPage.filter(Class("image-section") && Tag("li") && Class("photo-container")) match {
       case Nil =>
-        Try.failThr(new Exception(s"Failed to extract any Photo from this document:${albumPage.document.toString}"))
+        Try.raiseError(new Exception(s"Failed to extract any Photo from this document:${albumPage.document.toString}"))
       case photosContainers =>
         Try {
           val photos: List[Photo] = photosContainers.map { pc =>

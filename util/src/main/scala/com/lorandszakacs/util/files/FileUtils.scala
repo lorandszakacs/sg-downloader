@@ -140,7 +140,7 @@ object FileUtils {
     val f = fd.toAbsolutePath.toFile
     for {
       result <- Task(f.mkdirs())
-      _      <- result.failOnFalseTaskThr(FailedToCreateFolderException(f.getAbsolutePath))
+      _      <- result.ifFalseRaise[Task](FailedToCreateFolderException(f.getAbsolutePath))
     } yield ()
   }
 

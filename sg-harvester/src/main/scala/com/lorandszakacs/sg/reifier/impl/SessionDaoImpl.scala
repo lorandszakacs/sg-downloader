@@ -17,6 +17,7 @@ final private[reifier] class SessionDaoImpl(
 )(
   implicit
   override val dbIOScheduler: DBIOScheduler,
+  override val futureLift:    FutureLift[Task],
 ) extends SingleDocumentMongoCollection[Session, String, BSONString] {
   import UtilBsonHandlers._
 
@@ -40,7 +41,7 @@ final private[reifier] class SessionDaoImpl(
   private[reifier] def init: Task[Unit] = {
     for {
       opt <- this.find
-      _ <- opt.isEmpty.effectOnTrueTask {
+      _ <- opt.ifNoneRun {
         logger.info("creating default session info") >> this.create(this.defaultEntity)
       }
     } yield ()

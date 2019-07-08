@@ -95,7 +95,7 @@ final class SGDownloader private[downloader] (
     def specificPure(names: List[Name])(implicit patienceConfig: PatienceConfig): Task[Ms] = {
       for {
         _ <- logger.info(s"index.specific --> ${names.stringify}")
-        newMs <- Task.serialize(names) { name =>
+        newMs <- names.traverse { name =>
           patienceConfig.throttleAfter {
             indexer.gatherPhotoSetInformationForName(name)
           }
@@ -115,8 +115,8 @@ final class SGDownloader private[downloader] (
         _ <- logger.info(
           s"reify.delta --> reifying indexed Ms # ${indexedMs.all.size}: ${indexedMs.allNames.stringify}",
         )
-        reifiedSGs <- Task.serialize(indexedMs.sgs)(reifier.reifySG)
-        reifiedHFs <- Task.serialize(indexedMs.hfs)(reifier.reifyHF)
+        reifiedSGs <- indexedMs.sgs.traverse(reifier.reifySG)
+        reifiedHFs <- indexedMs.hfs.traverse(reifier.reifyHF)
         reifiedMs = (reifiedSGs, reifiedHFs).group
 
         _ <- logger.info(s"finished reifying new entries. Total: #${reifiedMs.all.length}") >>
@@ -208,14 +208,14 @@ final class SGDownloader private[downloader] (
     ): Task[Unit] = {
 
       logger.info(s"delta.UpdateLatestProcessedIndex: old='${lastProcessedMarker.map(_.lastPhotoSetID).mkString("")}'") >>
-        (reifiedMs.all.nonEmpty).effectOnTrueTask {
+        reifiedMs.all.nonEmpty.ifTrueRun[Task] {
           val optNewestM: Option[M] = for {
             newestIndexed <- indexedMs.newestM
             newestReified <- reifiedMs.ml(newestIndexed.name)
           } yield newestReified
 
           for {
-            newestM <- optNewestM.asTaskThr(
+            newestM <- optNewestM.liftTo[Task](
               new IllegalArgumentException("... should have at least one newest gathered"),
             )
             newMarker = indexer.createLastProcessedIndex(newestM)

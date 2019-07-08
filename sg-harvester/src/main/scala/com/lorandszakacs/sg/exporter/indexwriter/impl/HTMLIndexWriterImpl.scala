@@ -67,7 +67,7 @@ private[indexwriter] class HTMLIndexWriterImpl() extends HTMLIndexWriter {
     val indexPath   = ws.rootFolder.resolve(m.html.relativePathAndName).toAbsolutePath
     for {
       _ <- FileUtils.createFolders(mFolderPath)
-      _ <- Task.serialize(m.photoSets) { ps =>
+      _ <- m.photoSets.traverse { ps =>
         writeMPhotoSetIndex(ps)
       }
       _ <- FileUtils.writeFile(indexPath, m.html.content)

@@ -189,12 +189,12 @@ final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGInd
     for {
       msWithOnlyOneSet <- gatherAllNewMsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
       sgHF = msWithOnlyOneSet.distinctById.group
-      sgs <- Task.serialize(sgHF.sgs) { sg =>
+      sgs <- sgHF.sgs.traverse { sg =>
         pc.throttleAfter {
           this.gatherPhotoSetInformationForM(M.SGFactory)(sg.name)
         }
       }
-      hfs <- Task.serialize(sgHF.hfs) { hf =>
+      hfs <- sgHF.hfs.traverse { hf =>
         pc.throttleAfter {
           this.gatherPhotoSetInformationForM(M.HFFactory)(hf.name)
         }

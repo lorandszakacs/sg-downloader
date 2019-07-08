@@ -13,6 +13,7 @@ import com.lorandszakacs.util.mongodb._
 private[impl] class RepoHFIndex(override protected val db: Database)(
   implicit
   override val dbIOScheduler: DBIOScheduler,
+  override val futureLift: FutureLift[Task],
 ) extends IndexSingleDocRepo[HFIndex] with SGRepoBSON {
 
   override protected def objectHandler: BSONDocumentHandler[HFIndex] = BSONMacros.handler[HFIndex]

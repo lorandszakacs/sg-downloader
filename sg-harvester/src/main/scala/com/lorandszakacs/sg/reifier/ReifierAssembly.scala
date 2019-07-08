@@ -16,9 +16,11 @@ trait ReifierAssembly extends SGClientAssembly {
 
   implicit def dbIOScheduler: DBIOScheduler
 
+  implicit def futureLift: FutureLift[Task]
+
   def sgReifier: SGReifier = _sgReifierImpl
 
-  private[reifier] lazy val _sessionDao = new SessionDaoImpl(db)(dbIOScheduler)
+  private[reifier] lazy val _sessionDao = new SessionDaoImpl(db)(dbIOScheduler, futureLift)
 
   private[reifier] lazy val _sgReifierImpl = new SGReifierImpl(sgClient, _sessionDao)
 

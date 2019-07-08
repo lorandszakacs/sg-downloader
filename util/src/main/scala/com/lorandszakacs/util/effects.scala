@@ -1,7 +1,5 @@
 package com.lorandszakacs.util
 
-import busymachines.effects.async._
-import busymachines.effects.sync._
 import com.lorandszakacs.util.list.ListUtilFunctions
 
 /**
@@ -11,14 +9,15 @@ import com.lorandszakacs.util.list.ListUtilFunctions
   *
   */
 object effects
-    extends AnyRef with OptionSyntax.Implicits with OptionSyntaxAsync.Implcits with TryTypeDefinitons
-    with TrySyntax.Implicits with TrySyntaxAsync.Implcits with EitherSyntax.Implicits with EitherSyntaxAsync.Implcits
-    with ResultTypeDefinitions with ResultCompanionAliases with ResultSyntax.Implicits with ResultSyntaxAsync.Implcits
-    with FutureTypeDefinitions with FutureSyntax.Implicits with IOTypeDefinitions with IOSyntax.Implicits
-    with TaskTypeDefinitions with TaskSyntax.Implicits with cats.instances.AllInstances with cats.syntax.AllSyntax
-    with ListUtilFunctions {
+    extends AnyRef with busymachines.pureharm.effects.PureharmEffectsAllTypes
+    with busymachines.pureharm.effects.PureharmEffectsAllImplicits with ListUtilFunctions with TaskLegacySyntax {
 
-  val NonFatal: scala.util.control.NonFatal.type = scala.util.control.NonFatal
+  final type CancellableFuture[T] = monix.execution.CancelableFuture[T]
+  final type Scheduler            = monix.execution.Scheduler
+  final type Task[T]              = monix.eval.Task[T]
+
+  final val Scheduler: monix.execution.Scheduler.type = monix.execution.Scheduler
+  final val Task:      monix.eval.Task.type           = monix.eval.Task
 
   /**
     *
@@ -31,11 +30,18 @@ object effects
     * @since 11 Mar 2018
     *
     */
-  final case class DBIOScheduler(val scheduler: Scheduler)
+  final case class DBIOScheduler(scheduler: Scheduler)
 
   /**
     * Analogous to the [[DBIOScheduler]], but for HTTP requests
     *
     */
-  final case class HTTPIOScheduler(val scheduler: Scheduler)
+  final case class HTTPIOScheduler(scheduler: Scheduler)
+
+  object TaskFutureLift {
+
+    def create: FutureLift[Task] = new FutureLift[Task] {
+      override def fromFuture[A](fut: => Future[A]): Task[A] = Task.deferFuture(fut)
+    }
+  }
 }

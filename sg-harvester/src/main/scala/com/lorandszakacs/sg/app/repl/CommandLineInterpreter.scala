@@ -17,7 +17,7 @@ class CommandLineInterpreter(assembly: SGDownloaderAssembly) {
     assert(args.nonEmpty, "why did you call the command line evaluator if you have no command line args?")
     val stringArgs = args.mkString(" ")
 
-    this.interpret(stringArgs).discardContent
+    this.interpret(stringArgs).void
   }
 
   def interpret(args: String): Task[Command] = {

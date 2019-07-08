@@ -14,10 +14,11 @@ object MongoCollection {
 
   def apply[Entity, IdType, BSONTargetType <: BSONValue](collName: String, database: Database)(
     implicit
-    enH: BSONDocumentHandler[Entity],
-    idH: BSONHandler[BSONTargetType, IdType],
-    sch: DBIOScheduler,
-    id:  Identifier[Entity, IdType],
+    enH:  BSONDocumentHandler[Entity],
+    idH:  BSONHandler[BSONTargetType, IdType],
+    sch:  DBIOScheduler,
+    id:   Identifier[Entity, IdType],
+    futL: FutureLift[Task],
   ): MongoCollection[Entity, IdType, BSONTargetType] = {
     new MongoCollection[Entity, IdType, BSONTargetType] {
 
@@ -25,6 +26,7 @@ object MongoCollection {
       implicit override protected val entityHandler: BSONDocumentHandler[Entity]         = enH
       implicit override protected val idHandler:     BSONHandler[BSONTargetType, IdType] = idH
       implicit override protected val identifier:    Identifier[Entity, IdType]          = id
+      implicit override protected val futureLift:    FutureLift[Task]                    = futL
 
       override val collectionName: String = collName
 
@@ -33,7 +35,7 @@ object MongoCollection {
   }
 
   private def interpretWriteResult(wr: WriteResult): Task[Unit] = {
-    wr.ok.failOnFalseTaskThr(
+    wr.ok.ifFalseRaise[Task](
       MongoDBException(
         code = wr.code.map(_.toString),
         msg  = wr.writeErrors.headOption.map(_.toString),
@@ -43,13 +45,13 @@ object MongoCollection {
 
   private def interpretWriteResult(wr: MultiBulkWriteResult): Task[Unit] = {
     for {
-      _ <- wr.ok.failOnFalseTaskThr(
+      _ <- wr.ok.ifFalseRaise[Task](
         MongoDBException(
           code = wr.code.map(_.toString),
           msg  = wr.writeErrors.headOption.map(_.toString),
         ),
       )
-      _ <- wr.writeErrors.nonEmpty.failOnTrueTaskThr(
+      _ <- wr.writeErrors.nonEmpty.ifTrueRaise[Task](
         MongoDBException(
           code = wr.code.map(_.toString),
           msg  = wr.writeErrors.headOption.map(_.toString),
@@ -62,6 +64,8 @@ object MongoCollection {
 
 trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
   implicit protected def dbIOScheduler: DBIOScheduler
+
+  implicit protected def futureLift: FutureLift[Task]
 
   implicit protected def entityHandler: BSONDocumentHandler[Entity]
 
@@ -82,13 +86,13 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
   def idQueryByEntity(id: Entity): BSONDocument = BSONDocument(_id -> identifier.id(id))
 
   def findOne(query: BSONDocument): Task[Option[Entity]] = {
-    collection.find[BSONDocument, BSONDocument](selector = query, projection = Option.empty).one[Entity].suspendInTask
+    collection.find[BSONDocument, BSONDocument](selector = query, projection = Option.empty).one[Entity].purifyIn[Task]
   }
 
   def findMany(query: BSONDocument, maxDocs: Int = Int.MaxValue): Task[List[Entity]] = {
     val cursor: Cursor[Entity] =
       collection.find[BSONDocument, BSONDocument](query, projection = Option.empty).cursor[Entity]()
-    cursor.collect[List](maxDocs = maxDocs, err = Cursor.FailOnError[List[Entity]]()).suspendInTask
+    cursor.collect[List](maxDocs = maxDocs, err = Cursor.FailOnError[List[Entity]]()).purifyIn[Task]
   }
 
   def findAll: Task[List[Entity]] = {
@@ -115,7 +119,7 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def create(toCreate: Entity): Task[Unit] = {
     for {
-      _ <- collection.insert(ordered = false).one(toCreate).suspendInTask.discardContent.recoverWith {
+      _ <- collection.insert(ordered = false).one(toCreate).purifyIn[Task].void.recoverWith {
         case e: LastError =>
           MongoCollection.interpretWriteResult(e)
 
@@ -127,7 +131,7 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def create(toCreate: List[Entity]): Task[Unit] = {
     for {
-      wr <- collection.insert(ordered = false).many[Entity](toCreate).suspendInTask
+      wr <- collection.insert(ordered = false).many[Entity](toCreate).purifyIn[Task]
       _  <- MongoCollection.interpretWriteResult(wr)
     } yield ()
   }
@@ -137,8 +141,8 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
       _ <- collection
         .update(ordered = false)
         .one(query, toCreate, upsert = true)
-        .suspendInTask
-        .discardContent
+        .purifyIn[Task]
+        .void
         .recoverWith {
           case e: LastError =>
             MongoCollection.interpretWriteResult(e)
@@ -154,8 +158,8 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
       _ <- collection
         .update(ordered = false)
         .one(idQueryByEntity(toCreate), toCreate, upsert = true)
-        .suspendInTask
-        .discardContent
+        .purifyIn[Task]
+        .void
         .recoverWith {
           case e: LastError =>
             MongoCollection.interpretWriteResult(e)
@@ -176,7 +180,7 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
 
   def remove(q: BSONDocument): Task[Unit] = {
     for {
-      _ <- collection.delete().element(q).suspendInTask.discardContent.recoverWith {
+      _ <- collection.delete().element(q).purifyIn[Task].void.recoverWith {
         case e: LastError =>
           MongoCollection.interpretWriteResult(e)
 

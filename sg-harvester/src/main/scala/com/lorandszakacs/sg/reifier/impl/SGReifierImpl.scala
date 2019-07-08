@@ -84,7 +84,7 @@ private[reifier] class SGReifierImpl(
     for {
       photoSetPageHTML <- sGClient.getPage(photoSetPageUri)
       photos <- Task.fromTry(SGContentParser.parsePhotos(photoSetPageHTML)).recoverWith {
-        case NonFatal(_) => Task.failThr(DidNotFindAnyPhotoLinksOnSetPageException(photoSetPageUri))
+        case NonFatal(_) => Task.raiseError(DidNotFindAnyPhotoLinksOnSetPageException(photoSetPageUri))
       }
 
     } yield photos
@@ -111,7 +111,7 @@ private[reifier] class SGReifierImpl(
     }
     for {
       _      <- logger.info(s"SGReifier --> reifying: ${mf.name} ${m.name.name}. Expecting ${m.photoSets.length} sets")
-      result <- Task.serialize(m.photoSets)(reifyPhotoSets)
+      result <- m.photoSets.traverse(reifyPhotoSets)
       _      <- logger.info(s"reified ${mf.name} ${m.name.name}. Found ${result.length} photo sets.")
     } yield mf.apply(
       photoSetURL = m.photoSetURL,

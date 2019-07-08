@@ -13,6 +13,7 @@ import com.lorandszakacs.util.mongodb._
 private[impl] class RepoSGIndex(override protected val db: Database)(
   implicit
   override val dbIOScheduler: DBIOScheduler,
+  override val futureLift:    FutureLift[Task],
 ) extends IndexSingleDocRepo[SGIndex] with SGRepoBSON {
 
   override protected def objectHandler: BSONDocumentHandler[SGIndex] = BSONMacros.handler[SGIndex]

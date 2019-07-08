@@ -16,7 +16,9 @@ import org.iolog4s.Logger
 private[model] class SGAndHFRepositoryImpl(
   val db: Database,
 )(
-  implicit val sch: DBIOScheduler,
+  implicit
+  val sch:        DBIOScheduler,
+  val futureLift: FutureLift[Task],
 ) extends SGAndHFRepository {
 
   implicit private val logger: Logger[Task] = Logger.create[Task]

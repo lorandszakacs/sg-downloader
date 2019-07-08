@@ -21,6 +21,7 @@ final class Assembly(
   implicit
   val computationScheduler:     Scheduler,
   override val dbIOScheduler:   DBIOScheduler,
+  override val futureLift:      FutureLift[Task],
   override val httpIOScheduler: HTTPIOScheduler,
 ) extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly {
 

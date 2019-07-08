@@ -34,10 +34,10 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
   private val RootPath3 = "../../.."
 
   override def createHTMLPageForMs(ms: List[M])(implicit settings: HtmlSettings): Task[MRootIndex] = {
-    val grouped = ms.grouped(100)
+    val grouped: List[List[M]] = ms.grouped(100).toList
     for {
-      mIndexes <- Task.traverse(grouped) { batch =>
-        Task.traverse(batch)(m => Task(mIndex(m)))
+      mIndexes <- grouped.traverse { batch =>
+        batch.traverse(m => Task(mIndex(m)))
       }
       flattened = mIndexes.flatten.toList
       html <- Task(rootIndexPage(flattened))

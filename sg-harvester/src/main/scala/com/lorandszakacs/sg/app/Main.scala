@@ -28,11 +28,12 @@ import org.iolog4s.Logger
 object Main extends App {
   implicit private val logger: Logger[Task] = Logger.create[Task]
 
-  implicit val computationScheduler: Scheduler       = Scheduler.computation(name = "sg-app-computation")
-  implicit val dbIOScheduler:        DBIOScheduler   = DBIOScheduler(Scheduler.io(name = "sg-app-dbio"))
-  implicit val httpIOScheduler:      HTTPIOScheduler = HTTPIOScheduler(Scheduler.io(name = "sg-app-http"))
+  implicit val computationScheduler: Scheduler        = Scheduler.computation(name = "sg-app-computation")
+  implicit val futureLift:           FutureLift[Task] = TaskFutureLift.create
+  implicit val dbIOScheduler:        DBIOScheduler    = DBIOScheduler(Scheduler.io(name = "sg-app-dbio"))
+  implicit val httpIOScheduler:      HTTPIOScheduler  = HTTPIOScheduler(Scheduler.io(name = "sg-app-http"))
 
-  val assembly    = new Assembly()(computationScheduler, dbIOScheduler, httpIOScheduler)
+  val assembly    = new Assembly()(computationScheduler, dbIOScheduler, futureLift, httpIOScheduler)
   val interpreter = new CommandLineInterpreter(assembly)
   val repl        = new REPL(interpreter)
 
@@ -56,5 +57,5 @@ object Main extends App {
     _ <- Task(System.exit(0))
   } yield ()
 
-  program.asIO(computationScheduler).unsafeRunSync()
+  program.runSyncUnsafe(scala.concurrent.duration.Duration.Inf)
 }

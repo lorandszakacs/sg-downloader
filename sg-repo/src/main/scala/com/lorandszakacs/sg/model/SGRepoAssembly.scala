@@ -16,6 +16,8 @@ trait SGRepoAssembly {
 
   implicit def dbIOScheduler: DBIOScheduler
 
+  implicit def futureLift: FutureLift[Task]
+
   def sgAndHFRepository: SGAndHFRepository = _sgAndHFRepository
 
   private[model] lazy val _sgAndHFRepository = new SGAndHFRepositoryImpl(db)
