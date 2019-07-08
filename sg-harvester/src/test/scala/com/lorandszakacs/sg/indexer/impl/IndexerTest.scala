@@ -15,10 +15,11 @@ import org.scalatest.flatspec.FixtureAnyFlatSpec
   *
   */
 trait IndexerTest extends FixtureAnyFlatSpec with ScalaFutures with Matchers with BeforeAndAfterAll {
-  implicit val crawlerPatienceConfig: http.PatienceConfig = http.PatienceConfig(http.PatienceConfig.doubleDefault)
-
   implicit protected val (ec: ExecutionContextMainFT, cs: ContextShift[IO], timer: Timer[IO]) =
     IORuntime.defaultMainRuntimeWithEC("sg-client-test").value
+
+  implicit val crawlerPatienceConfig: http.PatienceConfig =
+    http.PatienceConfig(timer, http.PatienceConfig.doubleDefault)
 
   implicit val httpIOSch: HTTPIOScheduler = HTTPIOScheduler(ec)
 

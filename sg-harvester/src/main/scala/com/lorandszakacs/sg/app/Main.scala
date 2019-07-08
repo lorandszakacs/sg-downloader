@@ -38,7 +38,13 @@ object Main extends PureharmIOApp {
   override def run(args: List[String]): IO[ExitCode] = {
     val replResource = for {
       assembly <- Resource.pure[IO, Assembly](
-        new Assembly()(contextShift, dbIOScheduler, futureLift, httpIOScheduler),
+        new Assembly()(
+          contextShift    = contextShift,
+          timer           = timer,
+          dbIOScheduler   = dbIOScheduler,
+          httpIOScheduler = httpIOScheduler,
+          futureLift      = futureLift,
+        ),
       )
       sgClient <- assembly.sgClient
       interpreter = new CommandLineInterpreter(sgClient, assembly)

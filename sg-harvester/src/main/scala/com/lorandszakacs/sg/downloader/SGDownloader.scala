@@ -25,7 +25,10 @@ final class SGDownloader private[downloader] (
   private[this] val indexer:  SGIndexer,
   private[this] val reifier:  SGReifier,
   private[this] val exporter: SGExporter,
+)(
+  implicit private[this] val timer: Timer[IO],
 ) {
+
   implicit private val logger: Logger[IO] = Logger.getLogger[IO]
 
   /**
@@ -48,7 +51,7 @@ final class SGDownloader private[downloader] (
     rewriteEverything       = true,
   )
 
-  implicit protected val patienceConfig: PatienceConfig = PatienceConfig(200 millis)
+  implicit protected val patienceConfig: PatienceConfig = PatienceConfig(timer, 200 millis)
 
   object index {
 

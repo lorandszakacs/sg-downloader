@@ -18,6 +18,7 @@ object PatienceConfig {
 }
 
 final case class PatienceConfig(
+  timer:    Timer[IO],
   throttle: FiniteDuration = PatienceConfig.defaultDuration,
 ) {
   implicit private val logger: Logger[IO] = Logger.getLogger[IO]
@@ -29,8 +30,7 @@ final case class PatienceConfig(
   def quarterThrottle: IO[Unit] = throttleAmount(throttle.div(4))
 
   private def throttleAmount(duration: FiniteDuration): IO[Unit] = {
-    logger.info(s"waiting: ${duration.toString}") >>
-      IO(Thread.sleep(throttle.toMillis))
+    logger.info(s"waiting: ${duration.toString}") *> timer.sleep(throttle)
   }
 
   def throttleAfter[T](t: IO[T]): IO[T] = t <* this.throttleThread

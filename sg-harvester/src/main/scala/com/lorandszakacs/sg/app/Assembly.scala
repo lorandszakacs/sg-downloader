@@ -20,9 +20,10 @@ import com.lorandszakacs.util.logger._
 final class Assembly(
   implicit
   val contextShift:             ContextShift[IO],
+  override val timer:           Timer[IO],
   override val dbIOScheduler:   DBIOScheduler,
-  override val futureLift:      FutureLift[IO],
   override val httpIOScheduler: HTTPIOScheduler,
+  override val futureLift:      FutureLift[IO],
 ) extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly {
 
   implicit private val logger: Logger[IO] = Logger.getLogger[IO]
