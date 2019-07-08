@@ -1,18 +1,11 @@
 /**
   * https://github.com/sbt/sbt-assembly
   */
-addSbtPlugin("com.eed3si9n"   % "sbt-assembly" % "0.14.6")
+addSbtPlugin("com.eed3si9n"   % "sbt-assembly" % "0.14.10")
 
 /**
   * https://github.com/scalameta/scalafmt
   */
-addSbtPlugin("com.geirsson"   % "sbt-scalafmt" % "1.5.1")
-
-/**
-  * https://github.com/jrudolph/sbt-dependency-graph
-  *
-  * whatDependsOn org.iolog4s iolog4s 0.0.2
-  */
-addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.0")
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.0.0")
 
 

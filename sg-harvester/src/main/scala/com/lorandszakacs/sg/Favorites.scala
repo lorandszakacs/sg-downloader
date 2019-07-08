@@ -76,7 +76,7 @@ object Favorites {
   // format: on
 
   private val _new = List[String](
-  ).filterNot(_.isEmpty).sorted.distinct
+    ).filterNot(_.isEmpty).sorted.distinct
 
   lazy val names: List[Name] = (if (_new.isEmpty) _names else _new) map Name.apply
 
