@@ -7,7 +7,7 @@ import com.lorandszakacs.sg.exporter.indexwriter.{HTMLIndexWriter, WriterSetting
 import com.lorandszakacs.sg.exporter._
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.util.effects._
-import org.iolog4s.Logger
+import com.lorandszakacs.util.logger._
 
 /**
   *
@@ -21,7 +21,7 @@ private[exporter] class SGExporterImpl(
   val fileWriter: HTMLIndexWriter,
 ) extends SGExporter {
 
-  implicit private val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
 
   private val FavoritesHtmlSettings = HtmlSettings(
     indexFileName  = "index.html",

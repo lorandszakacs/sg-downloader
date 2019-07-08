@@ -2,7 +2,7 @@ package com.lorandszakacs.sg.app.repl
 
 import com.lorandszakacs.util.effects._
 import com.lorandszakacs.sg.app.commands.Commands
-import org.iolog4s.Logger
+import com.lorandszakacs.util.logger._
 
 import scala.io.StdIn
 
@@ -13,7 +13,7 @@ import scala.io.StdIn
   *
   */
 class REPL(private val interpreter: CommandLineInterpreter) {
-  implicit private val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
 
   def runTask: Task[Unit] = {
     for {

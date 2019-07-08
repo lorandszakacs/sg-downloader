@@ -4,7 +4,7 @@ import com.lorandszakacs.sg.http.Session
 import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.mongodb._
 import com.lorandszakacs.util.time._
-import org.iolog4s.Logger
+import com.lorandszakacs.util.logger._
 
 /**
   *
@@ -21,7 +21,7 @@ final private[reifier] class SessionDaoImpl(
 ) extends SingleDocumentMongoCollection[Session, String, BSONString] {
   import UtilBsonHandlers._
 
-  implicit private val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
 
   override protected val objectHandler: BSONDocumentHandler[Session] = BSONMacros.handler[Session]
 

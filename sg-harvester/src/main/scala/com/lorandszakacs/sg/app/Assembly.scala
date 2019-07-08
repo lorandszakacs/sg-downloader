@@ -9,7 +9,7 @@ import com.lorandszakacs.sg.indexer.IndexerAssembly
 import com.lorandszakacs.sg.model.SGRepoAssembly
 import com.lorandszakacs.sg.reifier.ReifierAssembly
 
-import org.iolog4s._
+import com.lorandszakacs.util.logger._
 
 /**
   *
@@ -25,7 +25,7 @@ final class Assembly(
   override val httpIOScheduler: HTTPIOScheduler,
 ) extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly {
 
-  implicit private val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
 
   implicit override lazy val db: Database = new Database(
     uri    = """mongodb://localhost:27016""",

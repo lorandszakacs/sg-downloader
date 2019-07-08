@@ -4,7 +4,7 @@ import com.lorandszakacs.util.effects._
 import com.lorandszakacs.sg.exporter.html._
 import com.lorandszakacs.sg.exporter.indexwriter.{HTMLIndexWriter, WriterSettings}
 import com.lorandszakacs.util.files.FileUtils
-import org.iolog4s.Logger
+import com.lorandszakacs.util.logger._
 
 /**
   *
@@ -17,7 +17,7 @@ import org.iolog4s.Logger
   *
   */
 private[indexwriter] class HTMLIndexWriterImpl() extends HTMLIndexWriter {
-  implicit private val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
 
   override def writeRootMIndex(index: MRootIndex)(implicit ws: WriterSettings): Task[Unit] = {
     for {

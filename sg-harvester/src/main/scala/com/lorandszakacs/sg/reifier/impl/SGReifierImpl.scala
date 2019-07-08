@@ -8,7 +8,7 @@ import com.lorandszakacs.sg.http._
 import com.lorandszakacs.sg.model.M._
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.sg.reifier._
-import org.iolog4s.Logger
+import com.lorandszakacs.util.logger._
 
 /**
   *
@@ -21,7 +21,7 @@ private[reifier] class SGReifierImpl(
   private val sessionDao: SessionDaoImpl,
 ) extends SGReifier with SGURLBuilder {
 
-  implicit private val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
 
   implicit private[this] var _authentication: Authentication = DefaultSGAuthentication
 

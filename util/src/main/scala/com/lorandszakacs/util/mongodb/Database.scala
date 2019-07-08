@@ -2,7 +2,7 @@ package com.lorandszakacs.util.mongodb
 
 import com.lorandszakacs.util.effects._
 import com.typesafe.config.Config
-import org.iolog4s.Logger
+import com.lorandszakacs.util.logger._
 import reactivemongo.api.{DefaultDB, MongoConnection, MongoDriver}
 
 import scala.concurrent.duration._
@@ -20,7 +20,7 @@ final case class Database(uri: String, dbName: String, config: Option[Config] = 
   private val futureLift:    FutureLift[Task],
 ) {
 
-  implicit private val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
 
   def collection(colName: String): Task[BSONCollection] = databaseTask.map(_.apply(colName))
 

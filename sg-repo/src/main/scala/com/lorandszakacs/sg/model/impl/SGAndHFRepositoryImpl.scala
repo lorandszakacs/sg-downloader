@@ -5,7 +5,7 @@ import com.lorandszakacs.util.time._
 import com.lorandszakacs.util.effects._
 import com.lorandszakacs.util.mongodb.Database
 import com.lorandszakacs.util.time._
-import org.iolog4s.Logger
+import com.lorandszakacs.util.logger._
 
 /**
   *
@@ -21,7 +21,7 @@ private[model] class SGAndHFRepositoryImpl(
   val futureLift: FutureLift[Task],
 ) extends SGAndHFRepository {
 
-  implicit private val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
 
   private val sgsRepo = new RepoSGs(db)
   private val sgiRepo = new RepoSGIndex(db)

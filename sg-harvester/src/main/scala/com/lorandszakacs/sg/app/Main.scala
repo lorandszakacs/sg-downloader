@@ -18,7 +18,7 @@ package com.lorandszakacs.sg.app
 
 import com.lorandszakacs.sg.app.repl.{CommandLineInterpreter, REPL}
 import com.lorandszakacs.util.effects._
-import org.iolog4s.Logger
+import com.lorandszakacs.util.logger._
 
 /**
   * @author Lorand Szakacs, lsz@lorandszakacs.com
@@ -26,7 +26,7 @@ import org.iolog4s.Logger
   *
   */
 object Main extends App {
-  implicit private val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
 
   implicit val computationScheduler: Scheduler        = Scheduler.computation(name = "sg-app-computation")
   implicit val futureLift:           FutureLift[Task] = TaskFutureLift.create

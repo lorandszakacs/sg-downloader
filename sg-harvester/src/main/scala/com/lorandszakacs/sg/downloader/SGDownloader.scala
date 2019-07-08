@@ -7,7 +7,7 @@ import com.lorandszakacs.sg.indexer.SGIndexer
 import com.lorandszakacs.sg.model._
 import com.lorandszakacs.sg.reifier.SGReifier
 import com.lorandszakacs.util.effects._
-import org.iolog4s._
+import com.lorandszakacs.util.logger._
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -26,7 +26,7 @@ final class SGDownloader private[downloader] (
   private[this] val reifier:  SGReifier,
   private[this] val exporter: SGExporter,
 ) {
-  implicit private val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
 
   /**
     * Used for commands that act on the entire repository

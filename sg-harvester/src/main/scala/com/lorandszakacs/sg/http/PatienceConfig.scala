@@ -1,7 +1,7 @@
 package com.lorandszakacs.sg.http
 
 import com.lorandszakacs.util.effects._
-import org.iolog4s.Logger
+import com.lorandszakacs.util.logger._
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -20,7 +20,7 @@ object PatienceConfig {
 final case class PatienceConfig(
   throttle: FiniteDuration = PatienceConfig.defaultDuration,
 ) {
-  implicit private val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
 
   def throttleThread: Task[Unit] = throttleAmount(throttle)
 

@@ -11,7 +11,7 @@ import com.lorandszakacs.util.html.Html
 import monix.execution.atomic.AtomicBoolean
 import monix.reactive.Observable
 import org.http4s.Uri
-import org.iolog4s.Logger
+import com.lorandszakacs.util.logger._
 
 /**
   *
@@ -25,7 +25,7 @@ import org.iolog4s.Logger
   *
   */
 final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGIndexer with SGURLBuilder {
-  implicit private val logger: Logger[Task] = Logger.create[Task]
+  implicit private val logger: Logger[Task] = Logger.getLogger[Task]
 
   implicit private[this] val Authentication: Authentication = DefaultSGAuthentication
 
