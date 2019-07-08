@@ -36,7 +36,7 @@ private[http] object SGClientImpl {
   private[http] def apply()(implicit httpIOSch: HTTPIOScheduler) = new SGClientImpl()
 }
 
-private[impl] final class SGClientImpl private ()(implicit val httpIOSch: HTTPIOScheduler) extends SGClient {
+final private[impl] class SGClientImpl private ()(implicit val httpIOSch: HTTPIOScheduler) extends SGClient {
 
   private val httpClient: Client[Task] = Http1Client[Task]().unsafeSyncGet()(httpIOSch.scheduler)
 
@@ -49,13 +49,13 @@ private[impl] final class SGClientImpl private ()(implicit val httpIOSch: HTTPIO
 
     for {
       body <- httpClient.fetch(reqWithAuth) { response =>
-               if (response.status == Status.Ok || response.status == Status.NotModified) {
-                 EntityDecoder.decodeString[Task](response)
-               }
-               else {
-                 Task.raiseError(FailedToGetPageException(uri))
-               }
-             }
+        if (response.status == Status.Ok || response.status == Status.NotModified) {
+          EntityDecoder.decodeString[Task](response)
+        }
+        else {
+          Task.raiseError(FailedToGetPageException(uri))
+        }
+      }
       html = Html(body)
     } yield html
   }
@@ -111,7 +111,7 @@ private[impl] final class SGClientImpl private ()(implicit val httpIOSch: HTTPIO
     for {
       uri  <- Task.delay(Uri.unsafeFromString(s"${core.Domain}/members/${newAuthentication.session.username}/"))
       page <- getPage(new URL(uri.renderString))(newAuthentication)
-      loginButton = (page filter Tag("div") && Class("login-form-wrapper")).headOption
+      loginButton = page.filter(Tag("div") && Class("login-form-wrapper")).headOption
       _ <- loginButton.isDefined.failOnTrueTaskThr(FailedToVerifyNewAuthenticationException(uri))
     } yield ()
   }
@@ -121,7 +121,7 @@ private[impl] final class SGClientImpl private ()(implicit val httpIOSch: HTTPIO
       Request[Task](
         method  = Method.GET,
         uri     = uri,
-        headers = headers
+        headers = headers,
       )
     }
   }

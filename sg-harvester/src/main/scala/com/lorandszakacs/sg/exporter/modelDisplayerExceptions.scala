@@ -10,5 +10,5 @@ import com.lorandszakacs.sg.model.Name
   */
 final case class NameNotFoundException(name: Name)
     extends Exception(
-      s"M: ${name.name} could not be found."
+      s"M: ${name.name} could not be found.",
     )

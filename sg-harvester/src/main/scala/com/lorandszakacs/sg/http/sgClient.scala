@@ -55,7 +55,7 @@ final case class Session(
   username:  String,
   sessionID: String,
   csrfToken: String,
-  expiresAt: Instant
+  expiresAt: Instant,
 ) {
 
   def toCookieHeader: Header =
@@ -63,7 +63,7 @@ final case class Session(
 }
 
 object DefaultSGAuthentication extends Authentication {
-  private val OriginHeader:  Header = Header.Raw(CaseInsensitiveString("Origin"),  s"${core.Domain}")
+  private val OriginHeader:  Header = Header.Raw(CaseInsensitiveString("Origin"), s"${core.Domain}")
   private val RefererHeader: Header = Header.Raw(CaseInsensitiveString("Referer"), s"${core.Domain}/")
 
   private val defaultSGHeaders: List[Header] = List(OriginHeader, RefererHeader)

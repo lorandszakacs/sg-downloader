@@ -23,7 +23,7 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
 
   class EntityRepository(override protected val db: Database)(
     implicit
-    implicit override protected val dbIOScheduler: DBIOScheduler
+    implicit override protected val dbIOScheduler: DBIOScheduler,
   ) extends MongoCollection[Entity, String, BSONString] {
     implicit protected def entityHandler: BSONDocumentHandler[Entity] = BSONMacros.handler[Entity]
 
@@ -40,14 +40,14 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
   case class Entity(
     @Annotations.Key("_id") id: String,
     opt:                        Option[String],
-    actual:                     String
+    actual:                     String,
   )
 
   override protected def withFixture(test: OneArgTest): Outcome = {
     val dbName = Database.testName(this.getClass.getSimpleName, test.text)
     val db = new Database(
       uri    = """mongodb://localhost:27016""",
-      dbName = dbName
+      dbName = dbName,
     )
     val repo = new EntityRepository(db)
     db.drop().unsafeSyncGet()
@@ -75,7 +75,7 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     val original = Entity(
       id     = "1",
       opt    = Some("OPTIONAL"),
-      actual = "VALUE"
+      actual = "VALUE",
     )
 
     withClue("we create") {
@@ -87,7 +87,7 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
         .find(original.id)
         .unsafeSyncGet()
         .getOrElse(
-          fail("... expected entity")
+          fail("... expected entity"),
         )
       assert(read == original)
     }
@@ -103,7 +103,7 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
         .find(updateNoOpt.id)
         .unsafeSyncGet()
         .getOrElse(
-          fail("... expected entity")
+          fail("... expected entity"),
         )
       assert(read == updateNoOpt)
     }
@@ -125,7 +125,7 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     val original = Entity(
       id     = "1",
       opt    = Some("OPTIONAL"),
-      actual = "VALUE"
+      actual = "VALUE",
     )
 
     withClue("we create") {
@@ -146,19 +146,19 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     val e1 = Entity(
       id     = "1",
       opt    = Some("OPTIONAL"),
-      actual = "VALUE"
+      actual = "VALUE",
     )
 
     val e2 = Entity(
       id     = "2",
       opt    = Some("OPTIONAL2"),
-      actual = "VALUE2"
+      actual = "VALUE2",
     )
 
     val e3 = Entity(
       id     = "3",
       opt    = Some("OPTIONAL3"),
-      actual = "VALUE3"
+      actual = "VALUE3",
     )
 
     withClue("we create all") {
@@ -173,8 +173,8 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     withClue("we get only ones with IDS 1, 2 -- query") {
       val q = document(
         _id -> document(
-          $in -> array(e1.id, e2.id)
-        )
+          $in -> array(e1.id, e2.id),
+        ),
       )
       val found = repo.findMany(q).unsafeSyncGet()
       assert(List(e1, e2) == found.sortBy(_.id))
@@ -203,19 +203,19 @@ class MongoCollectionTest extends fixture.FlatSpec with OneInstancePerTest with 
     val e1 = Entity(
       id     = "1",
       opt    = Some("OPTIONAL"),
-      actual = "VALUE"
+      actual = "VALUE",
     )
 
     val e2 = Entity(
       id     = "2",
       opt    = Some("OPTIONAL2"),
-      actual = "VALUE2"
+      actual = "VALUE2",
     )
 
     val e3 = Entity(
       id     = "3",
       opt    = Some("OPTIONAL3"),
-      actual = "VALUE3"
+      actual = "VALUE3",
     )
 
     withClue("we create all") {

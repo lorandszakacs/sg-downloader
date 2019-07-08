@@ -22,7 +22,7 @@ object CommandParser extends JavaTokenParsers {
         }
         else {
           scala.util.Failure[Command](
-            new IllegalArgumentException(s"failed to parse all input of: '$s' still have input left: '$next'")
+            new IllegalArgumentException(s"failed to parse all input of: '$s' still have input left: '$next'"),
           )
         }
       case _: NoSuccess =>
@@ -94,11 +94,10 @@ object CommandParser extends JavaTokenParsers {
     for {
       _     <- literal(Commands.DeltaDownload.id)
       maybe <- maybeDaysMaybeUserAndPass.?
-    } yield
-      Commands.DeltaDownload(
-        days                = maybe.flatMap(_._1),
-        usernameAndPassword = maybe.flatMap(_._2)
-      )
+    } yield Commands.DeltaDownload(
+      days                = maybe.flatMap(_._1),
+      usernameAndPassword = maybe.flatMap(_._2),
+    )
   }
 
   //===========================================================================
@@ -117,11 +116,10 @@ object CommandParser extends JavaTokenParsers {
       names     <- namesParser
       _         <- `space*`
       optUsrPwd <- usernameAndPassword.?
-    } yield
-      Commands.DownloadSpecific(
-        names               = names,
-        usernameAndPassword = optUsrPwd
-      )
+    } yield Commands.DownloadSpecific(
+      names               = names,
+      usernameAndPassword = optUsrPwd,
+    )
   }
 
   //===========================================================================
@@ -132,10 +130,9 @@ object CommandParser extends JavaTokenParsers {
     for {
       _ <- literal(Commands.ExportHTML.id)
       f <- (`space*` ~> literal("-f")).?
-    } yield
-      Commands.ExportHTML(
-        onlyFavorites = f.isDefined
-      )
+    } yield Commands.ExportHTML(
+      onlyFavorites = f.isDefined,
+    )
 
   }
 

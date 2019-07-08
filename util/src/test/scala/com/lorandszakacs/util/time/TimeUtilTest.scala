@@ -17,7 +17,7 @@ class TimeUtilTest extends FlatSpec with Matchers {
     val end   = LocalDate(2017, 3, 11)
 
     val result = TimeUtil.daysBetween(start, end)
-    result should have length 2
+    (result should have).length(2)
     result should be(List(start, end))
   }
 
@@ -26,7 +26,7 @@ class TimeUtilTest extends FlatSpec with Matchers {
     val end   = start.plusDays(120)
 
     val result = TimeUtil.daysBetween(start, end)
-    result should have length 121
+    (result should have).length(121)
     assert(result.head == start)
     assert(result.last == end)
   }

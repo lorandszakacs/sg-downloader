@@ -20,7 +20,7 @@ trait SGDownloaderAssembly {
     repo     = sgAndHFRepository,
     indexer  = sgIndexer,
     reifier  = sgReifier,
-    exporter = sgExporter
+    exporter = sgExporter,
   )
 
 }

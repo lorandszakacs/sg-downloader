@@ -21,14 +21,14 @@ final class Assembly(
   implicit
   val computationScheduler:     Scheduler,
   override val dbIOScheduler:   DBIOScheduler,
-  override val httpIOScheduler: HTTPIOScheduler
+  override val httpIOScheduler: HTTPIOScheduler,
 ) extends SGExporterAssembly with SGRepoAssembly with IndexerAssembly with ReifierAssembly with SGDownloaderAssembly {
 
   implicit private val logger: Logger[Task] = Logger.create[Task]
 
   implicit override lazy val db: Database = new Database(
     uri    = """mongodb://localhost:27016""",
-    dbName = "sgs_repo"
+    dbName = "sgs_repo",
   )
 
   lazy val shutdownTask: Task[Unit] = {

@@ -19,8 +19,8 @@ class REPL(private val interpreter: CommandLineInterpreter) {
     for {
       _ <- Task(println("type help for instructions"))
       _ <- loop(stop = false).recoverWith {
-            case NonFatal(e) => logger.error(e)("the loop somehow broke. terminating")
-          }
+        case NonFatal(e) => logger.error(e)("the loop somehow broke. terminating")
+      }
     } yield ()
   }
 
@@ -33,13 +33,13 @@ class REPL(private val interpreter: CommandLineInterpreter) {
         _     <- Task(print("> "))
         input <- Task(StdIn.readLine().trim())
         _ <- interpreter.interpret(input).attempt.flatMap {
-              case Left(thr) =>
-                logger.error(withFilteredStackTrace(thr))(s"failed to interpret command: '$input'") >>
-                  Task(print("\n")) >>
-                  loop(stop = false)
-              case Right(c) =>
-                if (c == Commands.Exit) loop(stop = true) else loop(stop = false)
-            }
+          case Left(thr) =>
+            logger.error(withFilteredStackTrace(thr))(s"failed to interpret command: '$input'") >>
+              Task(print("\n")) >>
+              loop(stop = false)
+          case Right(c) =>
+            if (c == Commands.Exit) loop(stop = true) else loop(stop = false)
+        }
       } yield ()
     }
   }

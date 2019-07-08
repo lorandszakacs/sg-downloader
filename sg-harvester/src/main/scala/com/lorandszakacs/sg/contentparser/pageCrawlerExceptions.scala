@@ -7,7 +7,7 @@ final case class HTMLPageDidNotContainAnyPhotoSetLinksException(html: Html)
       s"""
          |HTML page did not contain any photo set links:
          |${html.toString}
-  """.stripMargin
+  """.stripMargin,
     )
 
 final case class SetRepresentationDidNotContainTimeTagException(html: Html)
@@ -15,7 +15,7 @@ final case class SetRepresentationDidNotContainTimeTagException(html: Html)
       s"""
          |HTML element contain any information about the date of the set:
          |${html.toString}
-  """.stripMargin
+  """.stripMargin,
     )
 
 final case class SetRepresentationDidNotContainTitleException(html: Html)
@@ -23,7 +23,7 @@ final case class SetRepresentationDidNotContainTitleException(html: Html)
       s"""
          |HTML element contain any information about the title of the set:
          |${html.toString}
-  """.stripMargin
+  """.stripMargin,
     )
 
 final case class SetRepresentationDidNotContainNameException(html: Html)
@@ -31,7 +31,7 @@ final case class SetRepresentationDidNotContainNameException(html: Html)
       s"""
          |HTML element contain any information about the name of the M:
          |${html.toString}
-  """.stripMargin
+  """.stripMargin,
     )
 
 final case class SetRepresentationDidNotContainURLException(html: Html)
@@ -39,15 +39,15 @@ final case class SetRepresentationDidNotContainURLException(html: Html)
       s"""
          |HTML element contain any URL links to set:
          |${html.toString}
-  """.stripMargin
+  """.stripMargin,
     )
 
 final case class DidNotFindAnySGProfileLinksException()
     extends Exception(
-      "Did not find any SG profile links"
+      "Did not find any SG profile links",
     )
 
 final case class DidNotFindAnyHFProfileLinksException()
     extends Exception(
-      "Did not find any HF profile links"
+      "Did not find any HF profile links",
     )

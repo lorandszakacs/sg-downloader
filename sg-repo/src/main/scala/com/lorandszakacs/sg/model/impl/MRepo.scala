@@ -13,7 +13,7 @@ import com.lorandszakacs.util.math.Identifier
   * @since 14 Jul 2017
   *
   */
-private[impl] abstract class MRepo[Content <: M](override protected val identifier: Identifier[Content, Name])
+abstract private[impl] class MRepo[Content <: M](override protected val identifier: Identifier[Content, Name])
     extends MongoCollection[Content, Name, BSONString] {
 
   implicit override protected val idHandler: BSONHandler[BSONString, Name] =
@@ -22,7 +22,7 @@ private[impl] abstract class MRepo[Content <: M](override protected val identifi
   final def findBetweenDays(start: LocalDate, end: LocalDate): Task[List[Content]] = {
     val q = document(
       "photoSets.date" -> document($gte -> start),
-      "photoSets.date" -> document($lte -> end)
+      "photoSets.date" -> document($lte -> end),
     )
     this.findMany(q)
   }

@@ -31,9 +31,9 @@ trait MongoDBBSONTypes {
   type BSONArray = bson.BSONArray
   val BSONArray: bson.BSONArray.type = bson.BSONArray
 
-  type BSONWriter[T,               B <: BSONValue] = bson.BSONWriter[T,  B]
-  type BSONReader[B <: BSONValue,  T]              = bson.BSONReader[B,  T]
-  type BSONHandler[B <: BSONValue, T]              = bson.BSONHandler[B, T]
+  type BSONWriter[T, B <: BSONValue]  = bson.BSONWriter[T, B]
+  type BSONReader[B <: BSONValue, T]  = bson.BSONReader[B, T]
+  type BSONHandler[B <: BSONValue, T] = bson.BSONHandler[B, T]
 
   type BSONDocumentWriter[T]  = bson.BSONDocumentWriter[T]
   type BSONDocumentReader[T]  = bson.BSONDocumentReader[T]

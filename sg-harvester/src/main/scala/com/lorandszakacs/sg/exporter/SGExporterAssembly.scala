@@ -19,7 +19,7 @@ trait SGExporterAssembly extends HTMLIndexWriterAssembly with HTMLGeneratorAssem
   private lazy val _exporter = new SGExporterImpl(
     repo       = sgAndHFRepository,
     html       = htmlGenerator,
-    fileWriter = htmlIndexWriter
+    fileWriter = htmlIndexWriter,
   )
 
 }

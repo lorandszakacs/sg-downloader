@@ -10,5 +10,5 @@ import org.http4s.Uri
   */
 final case class DidNotFindAnyPhotoLinksOnSetPageException(pageURL: Uri)
     extends Exception(
-      s"Did not find any photos on page: $pageURL"
+      s"Did not find any photos on page: $pageURL",
     )

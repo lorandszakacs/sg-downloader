@@ -13,7 +13,7 @@ import com.lorandszakacs.util.mongodb._
   */
 private[impl] class RepoLastProcessedMarker(override protected val db: Database)(
   implicit
-  override val dbIOScheduler: DBIOScheduler
+  override val dbIOScheduler: DBIOScheduler,
 ) extends IndexSingleDocRepo[LastProcessedMarker] with SGRepoBSON {
 
   override protected def objectHandler: BSONDocumentHandler[LastProcessedMarker] =
@@ -26,7 +26,7 @@ private[impl] class RepoLastProcessedMarker(override protected val db: Database)
     photoSet = PhotoSet(
       url   = new java.net.URL("http://example.com/"),
       title = PhotoSetTitle("example"),
-      date  = LocalDate.unsafeToday()
-    )
+      date  = LocalDate.unsafeToday(),
+    ),
   )
 }

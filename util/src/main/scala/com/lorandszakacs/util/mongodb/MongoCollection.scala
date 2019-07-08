@@ -17,14 +17,14 @@ object MongoCollection {
     enH: BSONDocumentHandler[Entity],
     idH: BSONHandler[BSONTargetType, IdType],
     sch: DBIOScheduler,
-    id:  Identifier[Entity, IdType]
+    id:  Identifier[Entity, IdType],
   ): MongoCollection[Entity, IdType, BSONTargetType] = {
     new MongoCollection[Entity, IdType, BSONTargetType] {
 
-      implicit override protected val dbIOScheduler: DBIOScheduler = sch
-      implicit override protected val entityHandler: BSONDocumentHandler[Entity] = enH
+      implicit override protected val dbIOScheduler: DBIOScheduler                       = sch
+      implicit override protected val entityHandler: BSONDocumentHandler[Entity]         = enH
       implicit override protected val idHandler:     BSONHandler[BSONTargetType, IdType] = idH
-      implicit override protected val identifier:    Identifier[Entity, IdType] = id
+      implicit override protected val identifier:    Identifier[Entity, IdType]          = id
 
       override val collectionName: String = collName
 
@@ -36,21 +36,25 @@ object MongoCollection {
     wr.ok.failOnFalseTaskThr(
       MongoDBException(
         code = wr.code.map(_.toString),
-        msg  = wr.writeErrors.headOption.map(_.toString)
-      )
+        msg  = wr.writeErrors.headOption.map(_.toString),
+      ),
     )
   }
 
   private def interpretWriteResult(wr: MultiBulkWriteResult): Task[Unit] = {
     for {
-      _ <- wr.ok failOnFalseTaskThr MongoDBException(
-            code = wr.code.map(_.toString),
-            msg  = wr.writeErrors.headOption.map(_.toString)
-          )
-      _ <- wr.writeErrors.nonEmpty failOnTrueTaskThr MongoDBException(
-            code = wr.code.map(_.toString),
-            msg  = wr.writeErrors.headOption.map(_.toString)
-          )
+      _ <- wr.ok.failOnFalseTaskThr(
+        MongoDBException(
+          code = wr.code.map(_.toString),
+          msg  = wr.writeErrors.headOption.map(_.toString),
+        ),
+      )
+      _ <- wr.writeErrors.nonEmpty.failOnTrueTaskThr(
+        MongoDBException(
+          code = wr.code.map(_.toString),
+          msg  = wr.writeErrors.headOption.map(_.toString),
+        ),
+      )
     } yield ()
 
   }
@@ -101,8 +105,8 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
     else {
       val q = BSONDocument(
         _id -> BSONDocument(
-          `$in` -> ids
-        )
+          `$in` -> ids,
+        ),
       )
       this.findMany(q)
     }
@@ -111,12 +115,12 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
   def create(toCreate: Entity): Task[Unit] = {
     for {
       _ <- collection.insert(toCreate).suspendInTask.discardContent.recoverWith {
-            case e: LastError =>
-              MongoCollection.interpretWriteResult(e)
+        case e: LastError =>
+          MongoCollection.interpretWriteResult(e)
 
-            case NonFatal(e) =>
-              Task.raiseError(e)
-          }
+        case NonFatal(e) =>
+          Task.raiseError(e)
+      }
     } yield ()
   }
 
@@ -130,48 +134,48 @@ trait MongoCollection[Entity, IdType, BSONTargetType <: BSONValue] {
   def createOrUpdate(query: BSONDocument, toCreate: Entity): Task[Unit] = {
     for {
       _ <- collection.update(query, toCreate, upsert = true).suspendInTask.discardContent.recoverWith {
-            case e: LastError =>
-              MongoCollection.interpretWriteResult(e)
+        case e: LastError =>
+          MongoCollection.interpretWriteResult(e)
 
-            case NonFatal(e) =>
-              Task.raiseError(e)
-          }
+        case NonFatal(e) =>
+          Task.raiseError(e)
+      }
     } yield ()
   }
 
   def createOrUpdate(toCreate: Entity): Task[Unit] = {
     for {
       _ <- collection
-            .update(idQueryByEntity(toCreate), toCreate, upsert = true)
-            .suspendInTask
-            .discardContent
-            .recoverWith {
-              case e: LastError =>
-                MongoCollection.interpretWriteResult(e)
+        .update(idQueryByEntity(toCreate), toCreate, upsert = true)
+        .suspendInTask
+        .discardContent
+        .recoverWith {
+          case e: LastError =>
+            MongoCollection.interpretWriteResult(e)
 
-              case NonFatal(e) =>
-                Task.raiseError(e)
-            }
+          case NonFatal(e) =>
+            Task.raiseError(e)
+        }
     } yield ()
   }
 
   def createOrUpdate(toCreateOrUpdate: List[Entity]): Task[Unit] = {
     for {
       _ <- toCreateOrUpdate.traverse[Task, Unit] { entity: Entity =>
-            this.createOrUpdate(entity)
-          }
+        this.createOrUpdate(entity)
+      }
     } yield ()
   }
 
   def remove(q: BSONDocument, firstMatchOnly: Boolean = false): Task[Unit] = {
     for {
       _ <- collection.remove(q, firstMatchOnly = firstMatchOnly).suspendInTask.discardContent.recoverWith {
-            case e: LastError =>
-              MongoCollection.interpretWriteResult(e)
+        case e: LastError =>
+          MongoCollection.interpretWriteResult(e)
 
-            case NonFatal(e) =>
-              Task.raiseError(e)
-          }
+        case NonFatal(e) =>
+          Task.raiseError(e)
+      }
     } yield ()
   }
 

@@ -28,7 +28,7 @@ class CommandLineInterpreter(assembly: SGDownloaderAssembly) {
 
   private def eventualInterpretation(args: String): Task[Command] = {
     for {
-      command <- Task fromTry CommandParser.parseCommand(args)
+      command <- Task.fromTry(CommandParser.parseCommand(args))
       _       <- interpretCommand(command)
     } yield command
   }
@@ -40,19 +40,19 @@ class CommandLineInterpreter(assembly: SGDownloaderAssembly) {
       case Commands.DeltaDownload(days, _) =>
         downloader.download.delta(
           daysToExport       = days.getOrElse(defaultDays),
-          includeProblematic = true
+          includeProblematic = true,
         )
       //=======================================================================
       case Commands.DownloadSpecific(names, _) =>
         downloader.download.specific(
           names        = names,
-          daysToExport = defaultDays
+          daysToExport = defaultDays,
         )
       //=======================================================================
       case Commands.ExportHTML(onlyFavorites) =>
         downloader.export.all(
           daysToExport  = defaultDays,
-          onlyFavorites = onlyFavorites
+          onlyFavorites = onlyFavorites,
         )
       //=======================================================================
       case Commands.Show(name) =>
@@ -68,9 +68,11 @@ class CommandLineInterpreter(assembly: SGDownloaderAssembly) {
           downloader.show.favorites.map(s => println(s))
       //=======================================================================
       case Commands.Help =>
-        val string = Commands.descriptions.map { c =>
-          c.fullDescription
-        } mkString "\n\n----------------\n\n"
+        val string = Commands.descriptions
+          .map { c =>
+            c.fullDescription
+          }
+          .mkString("\n\n----------------\n\n")
         Task(print(s"----------------\n$string\n"))
       //=======================================================================
       case Commands.Exit =>

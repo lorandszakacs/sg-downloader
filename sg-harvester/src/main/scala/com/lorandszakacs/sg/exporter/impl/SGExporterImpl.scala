@@ -18,34 +18,34 @@ import org.iolog4s.Logger
 private[exporter] class SGExporterImpl(
   val repo:       SGAndHFRepository,
   val html:       HTMLGenerator,
-  val fileWriter: HTMLIndexWriter
+  val fileWriter: HTMLIndexWriter,
 ) extends SGExporter {
 
   implicit private val logger: Logger[Task] = Logger.create[Task]
 
   private val FavoritesHtmlSettings = HtmlSettings(
     indexFileName  = "index.html",
-    rootIndexTitle = "Favorite SGs"
+    rootIndexTitle = "Favorite SGs",
   )
 
   private def favoritesWriterSettings(implicit es: ExporterSettings) = WriterSettings(
     rootFolder        = es.favoritesRootFolderPath,
-    rewriteEverything = es.rewriteEverything
+    rewriteEverything = es.rewriteEverything,
   )
 
   private def allWriterSettings(implicit es: ExporterSettings) = WriterSettings(
     rootFolder        = es.allMsRootFolderPath,
-    rewriteEverything = es.rewriteEverything
+    rewriteEverything = es.rewriteEverything,
   )
 
   private def newestWriterSettings(implicit es: ExporterSettings) = WriterSettings(
     rootFolder        = es.newestRootFolderPath,
-    rewriteEverything = es.rewriteEverything
+    rewriteEverything = es.rewriteEverything,
   )
 
   private val AllHtmlSettings = HtmlSettings(
     indexFileName  = "index.html",
-    rootIndexTitle = "All SGs"
+    rootIndexTitle = "All SGs",
   )
 
   private def updateFavoritesHTML(deltaFavorites: List[M])(implicit ws: ExporterSettings): Task[Unit] = {
@@ -56,8 +56,8 @@ private[exporter] class SGExporterImpl(
         completeFavoriteRootIndex <- html.createRootIndex(Favorites.names)(FavoritesHtmlSettings)
         _                         <- fileWriter.rewriteRootIndexFile(completeFavoriteRootIndex)(favoritesWriterSettings)
         _ <- logger.info(
-              s"-- successfully updated DELTA favorites index ${deltaFavorites.length}: @ ${completeFavoriteRootIndex.relativePathAndName}"
-            )
+          s"-- successfully updated DELTA favorites index ${deltaFavorites.length}: @ ${completeFavoriteRootIndex.relativePathAndName}",
+        )
       } yield ()
     }
     else {
@@ -118,9 +118,9 @@ private[exporter] class SGExporterImpl(
   override def exportLatestForDaysWithDelta(
     nrOfDays:  Int,
     delta:     List[M],
-    favorites: Set[Name]
+    favorites: Set[Name],
   )(
-    implicit ws: ExporterSettings
+    implicit ws: ExporterSettings,
   ): Task[Unit] = {
     val today     = LocalDate.unsafeToday()
     val inThePast = today.minusDays(nrOfDays.toLong)
@@ -134,9 +134,9 @@ private[exporter] class SGExporterImpl(
 
   override def exportLatestForDays(
     nrOfDays:  Int,
-    favorites: Set[Name]
+    favorites: Set[Name],
   )(
-    implicit ws: ExporterSettings
+    implicit ws: ExporterSettings,
   ): Task[Unit] = {
     val today     = LocalDate.unsafeToday()
     val inThePast = today.minusDays(nrOfDays.toLong)
@@ -150,7 +150,7 @@ private[exporter] class SGExporterImpl(
 
   override def prettyPrint(name: Name): Task[String] = {
     for {
-      m <- repo.find(name) map (_.getOrElse(throw NameNotFoundException(name)))
+      m <- repo.find(name).map(_.getOrElse(throw NameNotFoundException(name)))
     } yield m.setsByNewestFirst.toString
   }
 

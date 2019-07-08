@@ -22,7 +22,7 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
 
   class SingleEntityRepository(override protected val db: Database)(
     implicit
-    implicit override protected val dbIOScheduler: DBIOScheduler
+    implicit override protected val dbIOScheduler: DBIOScheduler,
   ) extends SingleDocumentMongoCollection[Entity, String, BSONString] {
     implicit protected def objectHandler: BSONDocumentHandler[Entity] = BSONMacros.handler[Entity]
 
@@ -35,20 +35,20 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
 
     override protected def defaultEntity: Entity = Entity(
       None,
-      ""
+      "",
     )
   }
 
   case class Entity(
     opt:    Option[String],
-    actual: String
+    actual: String,
   )
 
   override protected def withFixture(test: OneArgTest): Outcome = {
     val dbName = Database.testName(this.getClass.getSimpleName, test.text)
     val db = new Database(
       uri    = """mongodb://localhost:27016""",
-      dbName = dbName
+      dbName = dbName,
     )
     val repo = new SingleEntityRepository(db)
     db.drop().unsafeSyncGet()
@@ -75,7 +75,7 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
   it should "001 single: write + read + update + remove" in { repo =>
     val e = Entity(
       opt    = Option("MY FIRST VALUE"),
-      actual = "ACTUAL"
+      actual = "ACTUAL",
     )
     withClue("create single doc") {
       repo.create(e).unsafeSyncGet()
@@ -106,7 +106,7 @@ class MongoSingleDocumentCollectionTest extends fixture.FlatSpec with OneInstanc
   it should "002 fail when double creating it" in { repo =>
     val e = Entity(
       opt    = Option("MY FIRST VALUE"),
-      actual = "ACTUAL"
+      actual = "ACTUAL",
     )
     withClue("create single doc") {
       repo.create(e).unsafeSyncGet()

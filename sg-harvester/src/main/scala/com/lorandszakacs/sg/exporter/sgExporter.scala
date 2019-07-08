@@ -65,7 +65,7 @@ trait SGExporter {
     */
   def exportLatestForDays(
     nrOfDays:    Int,
-    favorites:   Set[Name]
+    favorites:   Set[Name],
   )(implicit ws: ExporterSettings): Task[Unit]
 
   /**
@@ -75,9 +75,9 @@ trait SGExporter {
   def exportLatestForDaysWithDelta(
     nrOfDays:  Int,
     delta:     List[M],
-    favorites: Set[Name]
+    favorites: Set[Name],
   )(
-    implicit ws: ExporterSettings
+    implicit ws: ExporterSettings,
   ): Task[Unit]
 
 }
@@ -88,13 +88,13 @@ object ExporterSettings {
     favoritesRootFolderPath: String,
     allMsRootFolderPath:     String,
     newestRootFolderPath:    String,
-    rewriteEverything:       Boolean
+    rewriteEverything:       Boolean,
   ): ExporterSettings = {
     new ExporterSettings(
       favoritesRootFolderPath = Paths.get(FileUtils.normalizeHomePath(favoritesRootFolderPath)).toAbsolutePath,
       allMsRootFolderPath     = Paths.get(FileUtils.normalizeHomePath(allMsRootFolderPath)).toAbsolutePath,
       newestRootFolderPath    = Paths.get(FileUtils.normalizeHomePath(newestRootFolderPath)).toAbsolutePath,
-      rewriteEverything       = rewriteEverything
+      rewriteEverything       = rewriteEverything,
     )
   }
 }
@@ -111,5 +111,5 @@ final class ExporterSettings private (
   val favoritesRootFolderPath: Path,
   val allMsRootFolderPath:     Path,
   val newestRootFolderPath:    Path,
-  val rewriteEverything:       Boolean
+  val rewriteEverything:       Boolean,
 )

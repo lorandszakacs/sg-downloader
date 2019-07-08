@@ -10,7 +10,7 @@ import org.http4s._
   */
 final case class FailedToGetPageException(uri: Uri)
     extends Exception(
-      s"Failed to get page from `${uri.toString}`"
+      s"Failed to get page from `${uri.toString}`",
     )
 
 //final case class FailedToGetSGHomepageOnLoginException(uri: Uri, statusCode: Status)
@@ -35,7 +35,7 @@ final case class FailedToGetPageException(uri: Uri)
 
 final case class FailedToVerifyNewAuthenticationException(uri: Uri)
     extends Exception(
-      s"All login steps were completed successfully, but failed to validate new authentication. GET $uri had a login button when it should not have had one."
+      s"All login steps were completed successfully, but failed to validate new authentication. GET $uri had a login button when it should not have had one.",
     )
 
 case object NoSessionFoundException

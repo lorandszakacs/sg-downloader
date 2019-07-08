@@ -47,9 +47,9 @@ class TestListUtilFunctions extends FlatSpec {
   }
 
   it should "... replace the elements that identify the same, or add unidentified ones" in {
-    val thisList = List(I(1, "one"), I(2, "two"),   I(3, "three"))
+    val thisList = List(I(1, "one"), I(2, "two"), I(3, "three"))
     val toReplac = List(I(2, "TWO"), I(3, "$hrEE"), I(4, "I am new!!!"))
-    val resultRP = List(I(1, "one"), I(2, "TWO"),   I(3, "$hrEE"), I(4, "I am new!!!"))
+    val resultRP = List(I(1, "one"), I(2, "TWO"), I(3, "$hrEE"), I(4, "I am new!!!"))
 
     val result = thisList.addOrReplace(toReplac)
     assert(result == resultRP)
@@ -75,7 +75,7 @@ class TestListUtilFunctions extends FlatSpec {
 
   case class I(
     id:      Int,
-    content: String
+    content: String,
   )
 
 }

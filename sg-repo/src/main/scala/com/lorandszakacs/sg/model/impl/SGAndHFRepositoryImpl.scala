@@ -14,9 +14,9 @@ import org.iolog4s.Logger
   *
   */
 private[model] class SGAndHFRepositoryImpl(
-  val db: Database
+  val db: Database,
 )(
-  implicit val sch: DBIOScheduler
+  implicit val sch: DBIOScheduler,
 ) extends SGAndHFRepository {
 
   implicit private val logger: Logger[Task] = Logger.create[Task]
@@ -38,7 +38,7 @@ private[model] class SGAndHFRepositoryImpl(
   override def markAsIndexed(newHFs: List[HF], newSGs: List[SG]): Task[Unit] = {
     markAsIndexedForNames(
       newHFs = newHFs.map(_.name),
-      newSGs = newSGs.map(_.name)
+      newSGs = newSGs.map(_.name),
     )
   }
 
@@ -63,12 +63,12 @@ private[model] class SGAndHFRepositoryImpl(
           newHFIndex = ikdHFs.copy(
             names = (ikdHFs.names ++ newHFs).filterNot(n => hfsThatBecameSGS.contains(n.stripUnderscore)),
             needsReindexing =
-              ikdHFs.needsReindexing.diff(newHFs).filterNot(n => hfsThatBecameSGS.contains(n.stripUnderscore))
+              ikdHFs.needsReindexing.diff(newHFs).filterNot(n => hfsThatBecameSGS.contains(n.stripUnderscore)),
           )
           _ <- hfiRepo.createOrUpdate(newHFIndex)
           _ <- Task.traverse(hfsThatBecameSGS) { hfName =>
-                hfsRepo.remove(hfName)
-              }
+            hfsRepo.remove(hfName)
+          }
         } yield hfsThatBecameSGS
       }
     }
@@ -82,7 +82,7 @@ private[model] class SGAndHFRepositoryImpl(
           oldSGs <- sgiRepo.get
           newSGIndex = oldSGs.copy(
             names           = oldSGs.names ++ newSGs,
-            needsReindexing = oldSGs.needsReindexing.diff(newSGs)
+            needsReindexing = oldSGs.needsReindexing.diff(newSGs),
           )
           _ <- sgiRepo.createOrUpdate(newSGIndex)
         } yield ()
@@ -94,8 +94,8 @@ private[model] class SGAndHFRepositoryImpl(
       hfsThatBecameSGs <- updateHF(newHFs)
       _                <- updateSGs(newSGs)
       _ <- logger.info(s"new SGs: ${newSGs.stringify}") >>
-            logger.info(s"new HFs: ${newHFs.stringify}") >>
-            logger.info(s"HFs that became SGs: ${hfsThatBecameSGs.stringify}")
+        logger.info(s"new HFs: ${newHFs.stringify}") >>
+        logger.info(s"HFs that became SGs: ${hfsThatBecameSGs.stringify}")
     } yield ()
   }
 
@@ -117,7 +117,7 @@ private[model] class SGAndHFRepositoryImpl(
       CompleteIndex(
         names           = normalizedNames,
         needsReindexing = normalizedReindexing,
-        number          = normalizedNames.length
+        number          = normalizedNames.length,
       )
     }
   }
@@ -147,7 +147,7 @@ private[model] class SGAndHFRepositoryImpl(
   override def aggregateBetweenDays(
     start: LocalDate,
     end:   LocalDate,
-    ms:    List[M]
+    ms:    List[M],
   ): Task[List[(LocalDate, List[M])]] = {
     for {
       sgs <- sgsRepo.findBetweenDays(start, end)
@@ -184,16 +184,16 @@ private[model] class SGAndHFRepositoryImpl(
     for {
       hf <- hfsRepo.find(name)
       _ <- if (hf.isEmpty)
-            logger.warn(s"Trying to delete HF that does not exist in database: $name")
-          else
-            for {
-              _        <- hfsRepo.remove(name)
-              _        <- logger.info(s"Removed HF $name from DB")
-              oldIndex <- hfiRepo.get
-              newIndex = oldIndex.names.filterNot(_ == name)
-              _ <- logger.info(s"Removed HF $name from index, 'old#'=${oldIndex.number}, '#new'=${newIndex.length}")
-              _ <- hfiRepo.rewriteIndex(newIndex)
-            } yield ()
+        logger.warn(s"Trying to delete HF that does not exist in database: $name")
+      else
+        for {
+          _        <- hfsRepo.remove(name)
+          _        <- logger.info(s"Removed HF $name from DB")
+          oldIndex <- hfiRepo.get
+          newIndex = oldIndex.names.filterNot(_ == name)
+          _ <- logger.info(s"Removed HF $name from index, 'old#'=${oldIndex.number}, '#new'=${newIndex.length}")
+          _ <- hfiRepo.rewriteIndex(newIndex)
+        } yield ()
     } yield ()
   }
 

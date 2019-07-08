@@ -12,7 +12,7 @@ import com.lorandszakacs.util.effects._
   */
 private[impl] class RepoSGs(override protected val db: Database)(
   implicit
-  override val dbIOScheduler: DBIOScheduler
+  override val dbIOScheduler: DBIOScheduler,
 ) extends MRepo[SG](sgIdentifier) with SGRepoBSON {
 
   override val collectionName: String = "sgs"

@@ -12,7 +12,7 @@ import com.lorandszakacs.util.mongodb._
   */
 private[impl] class RepoHFIndex(override protected val db: Database)(
   implicit
-  override val dbIOScheduler: DBIOScheduler
+  override val dbIOScheduler: DBIOScheduler,
 ) extends IndexSingleDocRepo[HFIndex] with SGRepoBSON {
 
   override protected def objectHandler: BSONDocumentHandler[HFIndex] = BSONMacros.handler[HFIndex]
@@ -22,7 +22,7 @@ private[impl] class RepoHFIndex(override protected val db: Database)(
   override protected def defaultEntity: HFIndex = HFIndex(
     names           = Nil,
     needsReindexing = Nil,
-    number          = 0
+    number          = 0,
   )
 
   private def sanitize(i: HFIndex): HFIndex = {
@@ -30,7 +30,7 @@ private[impl] class RepoHFIndex(override protected val db: Database)(
     i.copy(
       names           = temp,
       needsReindexing = i.needsReindexing.distinct.sorted,
-      number          = temp.size
+      number          = temp.size,
     )
   }
 
@@ -39,7 +39,7 @@ private[impl] class RepoHFIndex(override protected val db: Database)(
     HFIndex(
       names           = temp,
       needsReindexing = temp,
-      number          = temp.length
+      number          = temp.length,
     )
   }
 

@@ -18,7 +18,7 @@ object PatienceConfig {
 }
 
 final case class PatienceConfig(
-  throttle: FiniteDuration = PatienceConfig.defaultDuration
+  throttle: FiniteDuration = PatienceConfig.defaultDuration,
 ) {
   implicit private val logger: Logger[Task] = Logger.create[Task]
 

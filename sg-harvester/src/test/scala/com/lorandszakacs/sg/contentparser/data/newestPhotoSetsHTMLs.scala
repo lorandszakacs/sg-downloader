@@ -43,9 +43,9 @@ object NewestPhotosPageWithDoubleMSet extends NewestPhotosPage with URLConversio
           url    = s"${core.Domain}/girls/saria/album/2752796/infinite-fire/",
           title  = "INFINITE FIRE",
           date   = LocalDate.unsafeToday(), //this set has a relative date, not absolute one
-          photos = Nil
-        )
-      )
+          photos = Nil,
+        ),
+      ),
     ),
     SG(
       photoSetURL = s"${core.Domain}/girls/valkyria/photos/view/photosets/",
@@ -55,9 +55,9 @@ object NewestPhotosPageWithDoubleMSet extends NewestPhotosPage with URLConversio
           url    = s"${core.Domain}/girls/valkyria/album/2750395/pictures-of-home/",
           title  = "PICTURES OF HOME",
           date   = LocalDate.unsafeToday(), //this set has a relative date, not absolute one
-          photos = Nil
-        )
-      )
+          photos = Nil,
+        ),
+      ),
     ),
     HF(
       photoSetURL = s"${core.Domain}/girls/rias/photos/view/photosets/",
@@ -67,9 +67,9 @@ object NewestPhotosPageWithDoubleMSet extends NewestPhotosPage with URLConversio
           url    = s"${core.Domain}/members/rias/album/2749693/cats-blues/",
           title  = "CAT'S BLUES",
           date   = LocalDate.unsafeToday(), //this set has a relative date, not absolute one,
-          photos = Nil
-        )
-      )
+          photos = Nil,
+        ),
+      ),
     ),
     HF(
       photoSetURL = s"${core.Domain}/girls/insatiableindica/photos/view/photosets/",
@@ -79,10 +79,10 @@ object NewestPhotosPageWithDoubleMSet extends NewestPhotosPage with URLConversio
           url    = s"${core.Domain}/members/insatiableindica/album/2748045/gamer-girl/",
           title  = "GAMER GIRL",
           date   = LocalDate.unsafeToday(), //this set has a relative date, not absolute one,
-          photos = Nil
-        )
-      )
-    )
+          photos = Nil,
+        ),
+      ),
+    ),
   )
 
   override def numberOfMs: Int = 24

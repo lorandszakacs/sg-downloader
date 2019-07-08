@@ -53,7 +53,7 @@ class SGIndexerTests extends IndexerTest {
           url     = s"${core.Domain}/members/dalmasca/album/996562/picker-uppers/",
           title   = "PICKER-UPPERS",
           date    = LocalDate.parse("2013-03-22"),
-          isHFSet = Some(true)
+          isHFSet = Some(true),
         )
       }
     }
@@ -74,7 +74,7 @@ class SGIndexerTests extends IndexerTest {
           url     = s"${core.Domain}/members/dalmasca/album/996562/picker-uppers/",
           title   = "PICKER-UPPERS",
           date    = LocalDate.parse("2013-03-22"),
-          isHFSet = Some(true)
+          isHFSet = Some(true),
         )
       }
 
@@ -103,7 +103,7 @@ class SGIndexerTests extends IndexerTest {
         PhotoSet(
           url   = s"${core.Domain}/girls/zoli/album/996153/lounge-act/",
           title = "lounge act",
-          date  = LocalDate.parse("2012-10-17")
+          date  = LocalDate.parse("2012-10-17"),
         )
       }
 
@@ -111,7 +111,7 @@ class SGIndexerTests extends IndexerTest {
         PhotoSet(
           url   = s"${core.Domain}/girls/zoli/album/969351/the-beat/",
           title = "THE BEAT",
-          date  = LocalDate.parse("2006-05-03")
+          date  = LocalDate.parse("2006-05-03"),
         )
       }
     }
@@ -136,7 +136,7 @@ class SGIndexerTests extends IndexerTest {
         PhotoSet(
           url   = s"${core.Domain}/girls/zoli/album/996153/lounge-act/",
           title = "lounge act",
-          date  = LocalDate.parse("2012-10-17")
+          date  = LocalDate.parse("2012-10-17"),
         )
       }
 
@@ -144,7 +144,7 @@ class SGIndexerTests extends IndexerTest {
         PhotoSet(
           url   = s"${core.Domain}/girls/zoli/album/969351/the-beat/",
           title = "THE BEAT",
-          date  = LocalDate.parse("2006-05-03")
+          date  = LocalDate.parse("2006-05-03"),
         )
       }
     }
@@ -267,8 +267,8 @@ class SGIndexerTests extends IndexerTest {
           }
           withClue("... distribution") {
             assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
-            assert(ms.exists(_.isHF),                 "... there should be at least one HF in the past 48 new sets")
-            assert(ms.exists(_.isSG),                 "... there should be at least one SG in the past 48 new sets")
+            assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+            assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
           }
           ms
         }
@@ -289,8 +289,8 @@ class SGIndexerTests extends IndexerTest {
           }
           withClue("... distribution") {
             assert(!ms.exists(_.name == latest.name), "... the latest M should not be in this list")
-            assert(ms.exists(_.isHF),                 "... there should be at least one HF in the past 48 new sets")
-            assert(ms.exists(_.isSG),                 "... there should be at least one SG in the past 48 new sets")
+            assert(ms.exists(_.isHF), "... there should be at least one HF in the past 48 new sets")
+            assert(ms.exists(_.isSG), "... there should be at least one SG in the past 48 new sets")
           }
           ms
         }

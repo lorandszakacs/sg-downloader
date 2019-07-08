@@ -21,5 +21,5 @@ private[exporter] trait HTMLIndexWriter {
 
 case class WriterSettings(
   rootFolder:        Path,
-  rewriteEverything: Boolean
+  rewriteEverything: Boolean,
 )

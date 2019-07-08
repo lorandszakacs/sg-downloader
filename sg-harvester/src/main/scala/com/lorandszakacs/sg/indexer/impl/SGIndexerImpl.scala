@@ -24,7 +24,7 @@ import org.iolog4s.Logger
   * @since 03 Jul 2016
   *
   */
-private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGIndexer with SGURLBuilder {
+final private[indexer] class SGIndexerImpl(val sGClient: SGClient) extends SGIndexer with SGURLBuilder {
   implicit private val logger: Logger[Task] = Logger.create[Task]
 
   implicit private[this] val Authentication: Authentication = DefaultSGAuthentication
@@ -47,7 +47,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGInd
       offsetStep      = 12,
       cutOffLimit     = limit,
       parsingFunction = SGContentParser.gatherSGNames,
-      isFinalPage     = isEndPage
+      isFinalPage     = isEndPage,
     )
   }
 
@@ -65,7 +65,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGInd
       offsetStep      = 12,
       cutOffLimit     = limit,
       parsingFunction = SGContentParser.gatherHFNames,
-      isFinalPage     = isEndPage
+      isFinalPage     = isEndPage,
     )
   }
 
@@ -87,17 +87,17 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGInd
     * All elements of the list will have: [[PhotoSet.photos.isEmpty]], and [[PhotoSet.url]] will be a full path URL.
     */
   override def gatherPhotoSetInformationForM[T <: M](
-    mf:   MFactory[T]
+    mf:   MFactory[T],
   )(name: Name)(implicit pc: PatienceConfig): Task[T] = {
     val pageURL = photoSetsPageURL(name)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
-               uri             = pageURL,
-               offsetStep      = 9,
-               cutOffLimit     = Int.MaxValue,
-               parsingFunction = SGContentParser.gatherPhotoSetsForM,
-               isFinalPage     = isEndPageForMIndexing
-             )
+        uri             = pageURL,
+        offsetStep      = 9,
+        cutOffLimit     = Int.MaxValue,
+        parsingFunction = SGContentParser.gatherPhotoSetsForM,
+        isFinalPage     = isEndPageForMIndexing,
+      )
       _ <- logger.info(s"gathered all sets for ${mf.name} ${name.name}. #sets: ${sets.length}")
     } yield mf(photoSetURL = pageURL, name = name, photoSets = sets)
   }
@@ -106,12 +106,12 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGInd
     val pageURL = photoSetsPageURL(name)
     for {
       sets <- loadPageRepeatedly[PhotoSet](
-               uri             = pageURL,
-               offsetStep      = 9,
-               cutOffLimit     = Int.MaxValue,
-               parsingFunction = SGContentParser.gatherPhotoSetsForM,
-               isFinalPage     = isEndPageForMIndexing
-             )
+        uri             = pageURL,
+        offsetStep      = 9,
+        cutOffLimit     = Int.MaxValue,
+        parsingFunction = SGContentParser.gatherPhotoSetsForM,
+        isFinalPage     = isEndPageForMIndexing,
+      )
       isHF = sets.exists(_.isHFSet.contains(true))
       mf   = if (isHF) HFFactory else SGFactory
       _ <- logger.info(s"gathered all sets for ${mf.name} ${name.name}. #sets: ${sets.length}")
@@ -130,10 +130,10 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGInd
     */
   private[impl] def gatherAllNewMsAndOnlyTheirLatestSet(
     limit:              Int,
-    lastProcessedIndex: Option[LastProcessedMarker]
+    lastProcessedIndex: Option[LastProcessedMarker],
   )(
     implicit
-    pc: PatienceConfig
+    pc: PatienceConfig,
   ): Task[List[M]] = {
     def isFinalPage(html: Html) = {
       val PartialPageLoadingEndMarker = "No photos available."
@@ -155,14 +155,14 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGInd
       cutOffLimit     = limit,
       parsingFunction = SGContentParser.gatherNewestPhotoSets,
       isFinalPage     = isFinalPage,
-      stopOnPage      = isLastPageVisted
-    ) map { ms =>
+      stopOnPage      = isLastPageVisted,
+    ).map { ms =>
       if (lastProcessedIndex.isEmpty)
         ms
       else
         ms.takeWhile { m =>
           val photoset = m.photoSets.headOption.getOrElse(
-            throw new AssertionError("... tried to get lastPhotoSet, of a NewestMPhotoSet, but it did not exist")
+            throw new AssertionError("... tried to get lastPhotoSet, of a NewestMPhotoSet, but it did not exist"),
           )
           lastProcessedIndex.isEmpty || (photoset.id != lastProcessedIndex.get.lastPhotoSetID)
         }
@@ -184,21 +184,21 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGInd
     * All Ms that have been gathered with fully indexed information, i.e. all their photosets, but no photo information
     */
   override def gatherAllNewMsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(
-    implicit pc:                                         PatienceConfig
+    implicit pc:                                         PatienceConfig,
   ): Task[List[M]] = {
     for {
       msWithOnlyOneSet <- gatherAllNewMsAndOnlyTheirLatestSet(limit, lastProcessedIndex)
       sgHF = msWithOnlyOneSet.distinctById.group
       sgs <- Task.serialize(sgHF.sgs) { sg =>
-              pc.throttleAfter {
-                this.gatherPhotoSetInformationForM(M.SGFactory)(sg.name)
-              }
-            }
+        pc.throttleAfter {
+          this.gatherPhotoSetInformationForM(M.SGFactory)(sg.name)
+        }
+      }
       hfs <- Task.serialize(sgHF.hfs) { hf =>
-              pc.throttleAfter {
-                this.gatherPhotoSetInformationForM(M.HFFactory)(hf.name)
-              }
-            }
+        pc.throttleAfter {
+          this.gatherPhotoSetInformationForM(M.HFFactory)(hf.name)
+        }
+      }
     } yield sgs ++ hfs
   }
 
@@ -234,7 +234,7 @@ private[indexer] final class SGIndexerImpl(val sGClient: SGClient) extends SGInd
     stopOnPage:      List[T] => Boolean = (ls: List[T]) => false,
   )(
     implicit
-    pc: PatienceConfig
+    pc: PatienceConfig,
   ): Task[List[T]] = {
 
     def offsetUri(uri: Uri, offset: Int): Uri =

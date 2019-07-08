@@ -59,13 +59,13 @@ trait SGAndHFRepository {
 final case class HFIndex(
   names:           List[Name],
   needsReindexing: List[Name],
-  number:          Int
+  number:          Int,
 )
 
 final case class SGIndex(
   names:           List[Name],
   needsReindexing: List[Name],
-  number:          Int
+  number:          Int,
 )
 
 /**
@@ -74,12 +74,12 @@ final case class SGIndex(
 final case class CompleteIndex(
   names:           List[Name],
   needsReindexing: List[Name],
-  number:          Int
+  number:          Int,
 )
 
 case class LastProcessedMarker(
   timestamp: Instant,
-  photoSet:  PhotoSet
+  photoSet:  PhotoSet,
 ) {
   final def lastPhotoSetID: String = photoSet.id
 }

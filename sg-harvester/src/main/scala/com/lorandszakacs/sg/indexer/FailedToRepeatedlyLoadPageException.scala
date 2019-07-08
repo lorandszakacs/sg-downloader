@@ -9,5 +9,5 @@ package com.lorandszakacs.sg.indexer
 final case class FailedToRepeatedlyLoadPageException(offset: Int, cause: Throwable)
     extends Exception(
       s"Failed while repeatedly opening a page. At offset: $offset. Cause: ${cause.getMessage}",
-      cause
+      cause,
     )

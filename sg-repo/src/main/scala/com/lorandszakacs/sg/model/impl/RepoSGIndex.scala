@@ -12,7 +12,7 @@ import com.lorandszakacs.util.mongodb._
   */
 private[impl] class RepoSGIndex(override protected val db: Database)(
   implicit
-  override val dbIOScheduler: DBIOScheduler
+  override val dbIOScheduler: DBIOScheduler,
 ) extends IndexSingleDocRepo[SGIndex] with SGRepoBSON {
 
   override protected def objectHandler: BSONDocumentHandler[SGIndex] = BSONMacros.handler[SGIndex]
@@ -22,7 +22,7 @@ private[impl] class RepoSGIndex(override protected val db: Database)(
   override protected def defaultEntity: SGIndex = SGIndex(
     names           = Nil,
     needsReindexing = Nil,
-    number          = 0
+    number          = 0,
   )
 
   private def sanitize(i: SGIndex): SGIndex = {
@@ -30,7 +30,7 @@ private[impl] class RepoSGIndex(override protected val db: Database)(
     i.copy(
       names           = temp,
       needsReindexing = i.needsReindexing.distinct.sorted,
-      number          = temp.size
+      number          = temp.size,
     )
   }
 
@@ -39,7 +39,7 @@ private[impl] class RepoSGIndex(override protected val db: Database)(
     SGIndex(
       names           = temp,
       needsReindexing = temp,
-      number          = temp.length
+      number          = temp.length,
     )
   }
 

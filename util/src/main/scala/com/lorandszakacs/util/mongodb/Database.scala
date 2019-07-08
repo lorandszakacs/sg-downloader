@@ -16,7 +16,7 @@ import scala.language.postfixOps
   */
 final case class Database(uri: String, dbName: String, config: Option[Config] = None)(
   implicit
-  dbIOScheduler: DBIOScheduler
+  dbIOScheduler: DBIOScheduler,
 ) {
 
   implicit private val logger: Logger[Task] = Logger.create[Task]
@@ -24,7 +24,7 @@ final case class Database(uri: String, dbName: String, config: Option[Config] = 
   def collection(colName: String): Task[BSONCollection] = databaseTask.map(_.apply(colName))
 
   private lazy val mongoDriverTask: Task[MongoDriver] = Task(
-    new MongoDriver(config = config, classLoader = None)
+    new MongoDriver(config = config, classLoader = None),
   ).memoizeOnSuccess
 
   private lazy val mongoConnectionTask: Task[MongoConnection] = {
@@ -66,7 +66,7 @@ object Database {
 
   private[mongodb] def getDatabase(mongoConnection: MongoConnection)(name: String)(
     implicit
-    sch: DBIOScheduler
+    sch: DBIOScheduler,
   ): Task[DefaultDB] = {
     mongoConnection.database(name).suspendInTask.adaptError {
       case NonFatal(e) => new IllegalStateException(s"Failed to initialize Mongo database. Because: ${e.getMessage}", e)

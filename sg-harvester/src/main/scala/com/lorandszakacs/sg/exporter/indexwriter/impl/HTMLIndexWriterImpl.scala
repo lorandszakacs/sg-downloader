@@ -21,9 +21,9 @@ private[indexwriter] class HTMLIndexWriterImpl() extends HTMLIndexWriter {
 
   override def writeRootMIndex(index: MRootIndex)(implicit ws: WriterSettings): Task[Unit] = {
     for {
-      _ <- (if (ws.rewriteEverything) FileUtils.cleanFolderOrCreate(ws.rootFolder) else Task.unit) recoverWith {
-            case NonFatal(e) => logger.error(e)(s"failed to clean root folder: ${e.getMessage}") >> Task.raiseError(e)
-          }
+      _ <- (if (ws.rewriteEverything) FileUtils.cleanFolderOrCreate(ws.rootFolder) else Task.unit).recoverWith {
+        case NonFatal(e) => logger.error(e)(s"failed to clean root folder: ${e.getMessage}") >> Task.raiseError(e)
+      }
       _ <- writeRootIndexFile(index)
 
     } yield ()
@@ -68,8 +68,8 @@ private[indexwriter] class HTMLIndexWriterImpl() extends HTMLIndexWriter {
     for {
       _ <- FileUtils.createFolders(mFolderPath)
       _ <- Task.serialize(m.photoSets) { ps =>
-            writeMPhotoSetIndex(ps)
-          }
+        writeMPhotoSetIndex(ps)
+      }
       _ <- FileUtils.writeFile(indexPath, m.html.content)
       _ <- logger.info(s"wrote entire M entry @ $indexPath")
     } yield ()

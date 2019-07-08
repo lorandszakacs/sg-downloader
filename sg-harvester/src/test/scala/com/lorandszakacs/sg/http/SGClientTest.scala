@@ -24,7 +24,7 @@ class SGClientTest extends FlatSpec with URLConversions {
       username  = "",
       sessionID = "",
       csrfToken = "",
-      expiresAt = Instant.unsafeNow()
+      expiresAt = Instant.unsafeNow(),
     )
 
     implicit val authentication: Authentication = client.createAuthentication(session).unsafeSyncGet()

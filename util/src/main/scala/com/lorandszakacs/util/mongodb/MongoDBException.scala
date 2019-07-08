@@ -8,5 +8,5 @@ package com.lorandszakacs.util.mongodb
   */
 case class MongoDBException(code: Option[String] = None, msg: Option[String] = None)
     extends RuntimeException(
-      s"MongoDB error: code: $code, msg: $msg"
+      s"MongoDB error: code: $code, msg: $msg",
     )

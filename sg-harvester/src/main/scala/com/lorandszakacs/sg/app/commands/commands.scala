@@ -39,7 +39,7 @@ object Commands {
 
   case class DownloadSpecific(
     names:               List[Name],
-    usernameAndPassword: Option[(String, String)]
+    usernameAndPassword: Option[(String, String)],
   ) extends Command {
     require(names.nonEmpty, "DownloadSpecific names cannot be empty")
   }
@@ -61,7 +61,7 @@ object Commands {
 
   case class DeltaDownload(
     days:                Option[Int],
-    usernameAndPassword: Option[(String, String)]
+    usernameAndPassword: Option[(String, String)],
   ) extends Command {
     def username: Option[String] = usernameAndPassword.map(_._1)
 
@@ -84,7 +84,7 @@ object Commands {
   }
 
   case class ExportHTML(
-    onlyFavorites: Boolean = false
+    onlyFavorites: Boolean = false,
   ) extends Command {}
 
   //====================================================================================
@@ -102,7 +102,7 @@ object Commands {
   }
 
   case class Show(
-    name: Name
+    name: Name,
   ) extends Command
 
   //====================================================================================
@@ -120,7 +120,7 @@ object Commands {
   }
 
   case class Delete(
-    name: Name
+    name: Name,
   ) extends Command
 
   //====================================================================================

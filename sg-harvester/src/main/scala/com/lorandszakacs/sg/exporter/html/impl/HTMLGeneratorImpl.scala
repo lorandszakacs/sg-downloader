@@ -37,15 +37,14 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
     val grouped = ms.grouped(100)
     for {
       mIndexes <- Task.traverse(grouped) { batch =>
-                   Task.traverse(batch)(m => Task(mIndex(m)))
-                 }
+        Task.traverse(batch)(m => Task(mIndex(m)))
+      }
       flattened = mIndexes.flatten.toList
       html <- Task(rootIndexPage(flattened))
-    } yield
-      MRootIndex(
-        html = html,
-        ms   = flattened
-      )
+    } yield MRootIndex(
+      html = html,
+      ms   = flattened,
+    )
   }
 
   override def createRootIndex(ms: List[Name])(implicit settings: HtmlSettings): Task[Html] = {
@@ -138,7 +137,7 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
                      |  </ol>
                      |  </h3>
                      |</html>
-    """.stripMargin
+    """.stripMargin,
       )
     }
 
@@ -178,21 +177,21 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
                      |      <img id="largeImg" style="height: 100%; margin: 0; padding: 0;">
                      |   </body>
                      |</html>
-    """.stripMargin
+    """.stripMargin,
       )
 
       PhotoSetIndex(
         html        = html,
-        displayName = s"${ps.date}: ${ps.title.name}"
+        displayName = s"${ps.date}: ${ps.title.name}",
       )
     }
 
-    val photoSets: List[PhotoSetIndex] = m.photoSetsNewestFirst map photoSetIndexPage(m)
+    val photoSets: List[PhotoSetIndex] = m.photoSetsNewestFirst.map(photoSetIndexPage(m))
     val mIndexHtml = mIndexHtmlPage(m)(photoSets)
     MIndex(
       name      = m.name,
       html      = mIndexHtml,
-      photoSets = photoSets
+      photoSets = photoSets,
     )
   }
 
@@ -201,7 +200,7 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
       title = settings.rootIndexTitle,
       linkAndItemNameGenerator = { m: MIndex =>
         (m.html.relativePathAndName, m.name.name)
-      }
+      },
     )
   }
 
@@ -210,12 +209,12 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
       title = settings.rootIndexTitle,
       linkAndItemNameGenerator = { m: Name =>
         (mIndexPageRelativePathFromCurrentDirectory(m), m.name)
-      }
+      },
     )
   }
 
   private def generateRootIndexPage[T](
-    els:   List[T]
+    els:   List[T],
   )(title: String, linkAndItemNameGenerator: T => (String, String))(implicit settings: HtmlSettings): Html = {
     def item(el: T) = {
       val (link, name) = linkAndItemNameGenerator(el)
@@ -234,7 +233,7 @@ private[html] class HTMLGeneratorImpl() extends HTMLGenerator {
                    |${els.map(item).mkString("\t\t", "\n\t\t", "\n")}
                    |  </ol></h3>
                    |</html>
-      """.stripMargin
+      """.stripMargin,
     )
   }
 

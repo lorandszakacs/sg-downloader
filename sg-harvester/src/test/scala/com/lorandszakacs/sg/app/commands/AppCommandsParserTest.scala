@@ -25,7 +25,7 @@ class AppCommandsParserTest extends FlatSpec {
     val input  = """download names=nameOne,nameTwo,nameThree"""
     val result = parse(input)
     assert(
-      result == Commands.DownloadSpecific(names = List("nameOne", "nameTwo", "nameThree"), usernameAndPassword = None)
+      result == Commands.DownloadSpecific(names = List("nameOne", "nameTwo", "nameThree"), usernameAndPassword = None),
     )
   }
 
@@ -35,8 +35,8 @@ class AppCommandsParserTest extends FlatSpec {
     assert(
       result == Commands.DownloadSpecific(
         names               = List("nameOne"),
-        usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|"""))
-      )
+        usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|""")),
+      ),
     )
   }
 
@@ -51,8 +51,8 @@ class AppCommandsParserTest extends FlatSpec {
     assert(
       result == Commands.DownloadSpecific(
         names               = List("nameOne", "nameTwo", "nameThree"),
-        usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|"""))
-      )
+        usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|""")),
+      ),
     )
   }
 
@@ -84,7 +84,7 @@ class AppCommandsParserTest extends FlatSpec {
     val result = parse(input)
     assert(
       result == Commands
-        .DeltaDownload(days = None, usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|""")))
+        .DeltaDownload(days = None, usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|"""))),
     )
   }
 
@@ -93,7 +93,7 @@ class AppCommandsParserTest extends FlatSpec {
     val result = parse(input)
     assert(
       result == Commands
-        .DeltaDownload(days = Option(42), usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|""")))
+        .DeltaDownload(days = Option(42), usernameAndPassword = Option(("someUser", """!@#$sf123AC%^&*()\"/|"""))),
     )
   }
 

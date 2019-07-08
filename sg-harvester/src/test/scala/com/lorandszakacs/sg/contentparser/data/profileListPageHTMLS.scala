@@ -40,7 +40,7 @@ object SGProfileListPage {
     "Phecda",
     "Annalee",
     "Bully",
-    "Rambo"
+    "Rambo",
   )
 
   val numberOfSGs: Int = names.length
@@ -67,7 +67,7 @@ object HFProfileListPage {
     "Lenka87",
     "Davieduke",
     "Vikat",
-    "Foxynova"
+    "Foxynova",
   )
 
   val numberOfSGs: Int = names.length

@@ -43,7 +43,7 @@ object M {
 case class Ms(
   sgs: List[SG],
   hfs: List[HF],
-  all: List[M]
+  all: List[M],
 ) extends Product with Serializable {
   def newestM: Option[M] = all.headOption
 
@@ -114,7 +114,7 @@ object Name {
 }
 
 final class Name private (
-  val name: String
+  val name: String,
 ) {
   override def toString: String = s"Name($name)"
 
@@ -128,7 +128,7 @@ final class Name private (
     * @return
     */
   def stripUnderscore: Name = Name(
-    name.stripPrefix("_").stripPrefix("__").stripPrefix("___").stripSuffix("_").stripSuffix("__").stripSuffix("___")
+    name.stripPrefix("_").stripPrefix("__").stripPrefix("___").stripSuffix("_").stripSuffix("__").stripSuffix("___"),
   )
 
   override def equals(other: Any): Boolean = other match {
@@ -150,7 +150,7 @@ object PhotoSetTitle {
 }
 
 final class PhotoSetTitle private (
-  val name: String
+  val name: String,
 ) {
   override def toString: String = s"PhotoSetTitle($name)"
 
@@ -170,7 +170,7 @@ final class PhotoSetTitle private (
 final case class SG(
   photoSetURL:                  URL,
   @Annotations.Key("_id") name: Name,
-  photoSets:                    List[PhotoSet]
+  photoSets:                    List[PhotoSet],
 ) extends M with Product with Serializable {
   override type MType = SG
 
@@ -194,7 +194,7 @@ final case class SG(
 final case class HF(
   photoSetURL:                  URL,
   @Annotations.Key("_id") name: Name,
-  photoSets:                    List[PhotoSet]
+  photoSets:                    List[PhotoSet],
 ) extends M with Product with Serializable {
 
   override type MType = HF
@@ -223,7 +223,7 @@ final case class PhotoSet(
   date:   LocalDate,
   photos: List[Photo] = Nil,
   @Annotations.Ignore()
-  isHFSet: Option[Boolean] = None
+  isHFSet: Option[Boolean] = None,
 ) extends Product with Serializable {
 
   def id: String = url.toExternalForm
@@ -242,7 +242,7 @@ final case class PhotoSet(
 final case class Photo(
   url:          URL,
   thumbnailURL: URL,
-  index:        Int
+  index:        Int,
 ) extends Product with Serializable {
 
   override def toString: String = s"$url :: $thumbnailURL"

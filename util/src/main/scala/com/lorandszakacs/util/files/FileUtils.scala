@@ -70,7 +70,7 @@ object FileUtils {
               FileVisitResult.CONTINUE
             }
           }
-        }
+        },
       )
     } >> logger.info(s"successfully cleaned: ${fd.toAbsolutePath}")
 
@@ -131,7 +131,7 @@ object FileUtils {
         override def postVisitDirectory(dir: Path, exc: IOException): FileVisitResult = {
           FileVisitResult.CONTINUE
         }
-      }
+      },
     )
     acc.toSet
   }

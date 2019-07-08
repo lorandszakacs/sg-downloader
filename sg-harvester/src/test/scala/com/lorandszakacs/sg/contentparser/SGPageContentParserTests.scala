@@ -34,16 +34,16 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
     val expected = PhotoSetPageFullDate
     SGContentParser.parsePhotos(expected.html) match {
       case TrySuccess(result) =>
-        result should have length expected.numberOfPhotos.toLong
+        (result should have).length(expected.numberOfPhotos.toLong)
         val last = result.last
         assert(last.index == expected.numberOfPhotos - 1, "... index")
         assert(
           last.url.toExternalForm == "https://example.com/sample_image_aaaaaa.jpg",
-          "... url"
+          "... url",
         )
         assert(
           last.thumbnailURL.toExternalForm == "https://example.com/sample_image_bbbbbb.jpg",
-          "... thumbnail url"
+          "... thumbnail url",
         )
       case TryFailure(e) => fail("did not return any photos", e)
     }
@@ -55,7 +55,7 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
     val expected = SGSetPageAllInPast
     SGContentParser.gatherPhotoSetsForM(expected.html) match {
       case TrySuccess(result) =>
-        result should have length expected.numberOfPhotoSets.toLong
+        (result should have).length(expected.numberOfPhotoSets.toLong)
         result.diff(expected.photoSets) should be(Nil)
       case TryFailure(e) =>
         fail("did not return any PhotoSetLinks", e)
@@ -68,7 +68,7 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
     val expected = SGSetPageSomeInPast
     SGContentParser.gatherPhotoSetsForM(expected.html) match {
       case TrySuccess(result) =>
-        result should have length expected.numberOfPhotoSets.toLong
+        (result should have).length(expected.numberOfPhotoSets.toLong)
         result.head should equal(expected.photoSets.head)
         result.diff(expected.photoSets) should equal(Nil)
       case TryFailure(e) =>
@@ -82,7 +82,7 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
     val expected = SGProfileListPage
     SGContentParser.gatherSGNames(expected.html) match {
       case TrySuccess(result) =>
-        result should have length expected.numberOfSGs.toLong
+        (result should have).length(expected.numberOfSGs.toLong)
         result should equal(expected.names)
       case TryFailure(e) => fail("did not return any SG Names", e)
     }
@@ -94,7 +94,7 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
     val expected = HFProfileListPage
     SGContentParser.gatherHFNames(expected.html) match {
       case TrySuccess(result) =>
-        result should have length expected.numberOfSGs.toLong
+        (result should have).length(expected.numberOfSGs.toLong)
         result should equal(expected.names)
       case TryFailure(e) => fail("did not return any SG Names", e)
     }
@@ -106,7 +106,7 @@ class SGPageContentParserTests extends FlatSpec with Matchers {
     val expected = NewestPhotosPageWithDoubleMSet
     SGContentParser.gatherNewestPhotoSets(expected.html) match {
       case TrySuccess(result) =>
-        result should have length expected.numberOfMs.toLong
+        (result should have).length(expected.numberOfMs.toLong)
         result.head.photoSetURL should equal(expected.ms.head.photoSetURL)
         result.head.name should equal(expected.ms.head.name)
         result.head.photoSets should equal(expected.ms.head.photoSets)

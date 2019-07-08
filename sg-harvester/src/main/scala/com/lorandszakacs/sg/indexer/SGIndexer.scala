@@ -53,7 +53,7 @@ trait SGIndexer {
     *
     */
   def gatherAllNewMsAndAllTheirPhotoSets(limit: Int, lastProcessedIndex: Option[LastProcessedMarker])(
-    implicit pc:                                PatienceConfig
+    implicit pc:                                PatienceConfig,
   ): Task[List[M]]
 
   final def createLastProcessedIndex(lastM: M): LastProcessedMarker = {
@@ -62,10 +62,10 @@ trait SGIndexer {
       photoSet = lastM.photoSetsNewestFirst.headOption
         .getOrElse(
           throw new AssertionError(
-            s"... tried to create last processed index from model ${lastM.name.name}, but they had no sets"
-          )
+            s"... tried to create last processed index from model ${lastM.name.name}, but they had no sets",
+          ),
         )
-        .copy(photos = Nil)
+        .copy(photos = Nil),
     )
   }
 

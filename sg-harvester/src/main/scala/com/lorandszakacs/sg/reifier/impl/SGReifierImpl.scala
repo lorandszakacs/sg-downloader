@@ -18,7 +18,7 @@ import org.iolog4s.Logger
   */
 private[reifier] class SGReifierImpl(
   private val sGClient:   SGClient,
-  private val sessionDao: SessionDaoImpl
+  private val sessionDao: SessionDaoImpl,
 ) extends SGReifier with SGURLBuilder {
 
   implicit private val logger: Logger[Task] = Logger.create[Task]
@@ -31,29 +31,29 @@ private[reifier] class SGReifierImpl(
         _               <- logger.info("need to authenticate")
         possibleSession <- sessionDao.find
         newAuth <- possibleSession match {
-                    case Some(session) =>
-                      val recreate = for {
-                        _    <- logger.info("attempting to recreate authentication from stored session")
-                        auth <- sGClient.createAuthentication(session)
-                      } yield auth
-                      recreate
+          case Some(session) =>
+            val recreate = for {
+              _    <- logger.info("attempting to recreate authentication from stored session")
+              auth <- sGClient.createAuthentication(session)
+            } yield auth
+            recreate
 
-                    // val result = recreate recoverWith {
-                    //   case e: FailedToVerifyNewAuthenticationException =>
-                    //     logger.error(
-                    //       "failed to verify stored session, defaulting to using username and password",
-                    //       e
-                    //     )
-                    //     authenticateWithUsernameAndPassword(passwordProvider)
-                    // }
-                    //
-                    // result map { r: Authentication =>
-                    //   logger.info("successfully restored authentication")
-                    //   r
-                    // }
+          // val result = recreate recoverWith {
+          //   case e: FailedToVerifyNewAuthenticationException =>
+          //     logger.error(
+          //       "failed to verify stored session, defaulting to using username and password",
+          //       e
+          //     )
+          //     authenticateWithUsernameAndPassword(passwordProvider)
+          // }
+          //
+          // result map { r: Authentication =>
+          //   logger.info("successfully restored authentication")
+          //   r
+          // }
 
-                    case None => Task.raiseError(NoSessionFoundException)
-                  }
+          case None => Task.raiseError(NoSessionFoundException)
+        }
       } yield {
         _authentication = newAuth
         newAuth
@@ -84,8 +84,8 @@ private[reifier] class SGReifierImpl(
     for {
       photoSetPageHTML <- sGClient.getPage(photoSetPageUri)
       photos <- Task.fromTry(SGContentParser.parsePhotos(photoSetPageHTML)).recoverWith {
-                 case NonFatal(_) => Task.failThr(DidNotFindAnyPhotoLinksOnSetPageException(photoSetPageUri))
-               }
+        case NonFatal(_) => Task.failThr(DidNotFindAnyPhotoLinksOnSetPageException(photoSetPageUri))
+      }
 
     } yield photos
   }
@@ -94,17 +94,17 @@ private[reifier] class SGReifierImpl(
     def reifyPhotoSets(photoSet: PhotoSet): Task[PhotoSet] = {
       pc.throttleQuarterAfter {
         for {
-          photos <- this.gatherAllPhotosFromSetPage(photoSet.url) recoverWith {
-                     case _: DidNotFindAnyPhotoLinksOnSetPageException =>
-                       logger.warn(
-                         s"SGReifier --> reifying: ${photoSet.url} has no photos. `${mf.name} ${m.name.name}`"
-                       ) >>
-                         Task.pure(Nil)
-                     case e: Throwable =>
-                       logger.error(e)(
-                         s"SGReifier --> reifying: ${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${m.name.name}`"
-                       ) >> Task.pure(Nil)
-                   }
+          photos <- this.gatherAllPhotosFromSetPage(photoSet.url).recoverWith {
+            case _: DidNotFindAnyPhotoLinksOnSetPageException =>
+              logger.warn(
+                s"SGReifier --> reifying: ${photoSet.url} has no photos. `${mf.name} ${m.name.name}`",
+              ) >>
+                Task.pure(Nil)
+            case e: Throwable =>
+              logger.error(e)(
+                s"SGReifier --> reifying: ${photoSet.url} failed to get parsed somehow. WTF?. `${mf.name} ${m.name.name}`",
+              ) >> Task.pure(Nil)
+          }
           _ <- logger.info(s"SGReifier --> reified: ${mf.name} ${m.name.name} photoset: ${photoSet.url}")
         } yield photoSet.copy(photos = photos)
       }
@@ -113,12 +113,11 @@ private[reifier] class SGReifierImpl(
       _      <- logger.info(s"SGReifier --> reifying: ${mf.name} ${m.name.name}. Expecting ${m.photoSets.length} sets")
       result <- Task.serialize(m.photoSets)(reifyPhotoSets)
       _      <- logger.info(s"reified ${mf.name} ${m.name.name}. Found ${result.length} photo sets.")
-    } yield
-      mf.apply(
-        photoSetURL = m.photoSetURL,
-        name        = m.name,
-        photoSets   = result
-      )
+    } yield mf.apply(
+      photoSetURL = m.photoSetURL,
+      name        = m.name,
+      photoSets   = result,
+    )
 
   }
 

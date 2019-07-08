@@ -32,11 +32,11 @@ package object model {
   implicit class BuffedMs(ms: List[M]) {
 
     def group: Ms = {
-      val (sgs, hf) = ms partition (_.isSG)
+      val (sgs, hf) = ms.partition(_.isSG)
       Ms(
-        sgs = sgs map (_.asSG) map (_.get),
-        hfs = hf map (_.asHF) map (_.get),
-        all = ms
+        sgs = sgs.map(_.asSG).map(_.get),
+        hfs = hf.map(_.asHF).map(_.get),
+        all = ms,
       )
     }
   }
@@ -47,7 +47,7 @@ package object model {
       Ms(
         sgs = ms._1,
         hfs = ms._2,
-        all = ms._1 ++ ms._2
+        all = ms._1 ++ ms._2,
       )
     }
   }

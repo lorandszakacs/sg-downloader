@@ -18,12 +18,12 @@ object TimeUtil {
     val nrOfDays = java.time.temporal.ChronoUnit.DAYS.between(start, end).toInt
     if (start.isAfter(end)) {
       throw new IllegalArgumentException(
-        s".... days between cannot be computed for start($start) smaller than end($end)"
+        s".... days between cannot be computed for start($start) smaller than end($end)",
       )
     }
-    (0 to nrOfDays map { d =>
+    (0 to nrOfDays).map { d =>
       start.plusDays(d.toLong)
-    }).toList
+    }.toList
   }
 
   /**

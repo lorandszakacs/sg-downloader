@@ -41,56 +41,56 @@ object SGSetPageAllInPast extends URLConversions with TestDataUtil {
       title = "ADIEU TRISTESSE",
       //because this set has a simplified date, it is important that in the test set this is always the current year
       date   = LocalDate.parse(s"${unsafeCurrentYear()}-01-18"),
-      photos = List.empty
+      photos = List.empty,
     ),
     PhotoSet(
       url    = s"${core.Domain}/girls/dwam/album/977051/limportance-d-etre-ernest/",
       title  = "LIMPORTANCE D ETRE ERNEST",
       date   = LocalDate.parse("2013-02-07"),
-      photos = List.empty
+      photos = List.empty,
     ),
     PhotoSet(
       url    = s"${core.Domain}/girls/dwam/album/976671/midsummer-crown/",
       title  = "MIDSUMMER CROWN",
       date   = LocalDate.parse("2012-08-01"),
-      photos = List.empty
+      photos = List.empty,
     ),
     PhotoSet(
       url    = s"${core.Domain}/girls/dwam/album/976285/woad/",
       title  = "WOAD",
       date   = LocalDate.parse("2012-02-09"),
-      photos = List.empty
+      photos = List.empty,
     ),
     PhotoSet(
       url    = s"${core.Domain}/girls/charlie/album/976065/self-timer/",
       title  = "SELF TIMER",
       date   = LocalDate.parse("2011-10-27"),
-      photos = List.empty
+      photos = List.empty,
     ),
     PhotoSet(
       url    = s"${core.Domain}/girls/dwam/album/975723/parallelism/",
       title  = "PARALLELISM",
       date   = LocalDate.parse("2011-05-19"),
-      photos = List.empty
+      photos = List.empty,
     ),
     PhotoSet(
       url    = s"${core.Domain}/girls/nemesis/album/975237/zilf/",
       title  = "ZILF",
       date   = LocalDate.parse("2010-10-30"),
-      photos = List.empty
+      photos = List.empty,
     ),
     PhotoSet(
       url    = s"${core.Domain}/girls/dwam/album/975049/sun-with-a-moustache/",
       title  = "SUN WITH A MOUSTACHE",
       date   = LocalDate.parse("2010-07-01"),
-      photos = List.empty
+      photos = List.empty,
     ),
     PhotoSet(
       url    = s"${core.Domain}/girls/dwam/album/994298/boxe-francaise/",
       title  = "BOXE FRANCAISE",
       date   = LocalDate.parse("2010-05-22"),
-      photos = List.empty
-    )
+      photos = List.empty,
+    ),
   )
 
   val numberOfPhotoSets: Int = photoSets.length
@@ -119,48 +119,48 @@ object SGSetPageSomeInPast extends URLConversions with TestDataUtil {
     PhotoSet(
       url   = s"${core.Domain}/girls/moon/album/2696495/two-moons/",
       title = "TWO MOONS",
-      date  = LocalDate.parse(s"${unsafeCurrentYear()}-05-26")
+      date  = LocalDate.parse(s"${unsafeCurrentYear()}-05-26"),
     ),
     PhotoSet(
       url   = s"${core.Domain}/girls/moon/album/2480614/moonlight/",
       title = "MOONLIGHT",
-      date  = LocalDate.parse(s"${unsafeCurrentYear()}-02-05")
+      date  = LocalDate.parse(s"${unsafeCurrentYear()}-02-05"),
     ),
     PhotoSet(
       url   = s"${core.Domain}/girls/moon/album/2264858/ramble-on/",
       title = "RAMBLE ON",
-      date  = LocalDate.parse("2015-09-29")
+      date  = LocalDate.parse("2015-09-29"),
     ),
     PhotoSet(
       url   = s"${core.Domain}/girls/moon/album/1835908/seduction/",
       title = "SEDUCTION",
-      date  = LocalDate.parse("2015-03-03")
+      date  = LocalDate.parse("2015-03-03"),
     ),
     PhotoSet(
       url   = s"${core.Domain}/girls/moon/album/1585654/little-lies/",
       title = "LITTLE LIES",
-      date  = LocalDate.parse("2014-11-18")
+      date  = LocalDate.parse("2014-11-18"),
     ),
     PhotoSet(
       url   = s"${core.Domain}/girls/moon/album/1437765/spring-cleaning/",
       title = "SPRING CLEANING",
-      date  = LocalDate.parse("2014-08-26")
+      date  = LocalDate.parse("2014-08-26"),
     ),
     PhotoSet(
       url   = s"${core.Domain}/girls/moon/album/1395396/moon-spells/",
       title = "MOON SPELLS",
-      date  = LocalDate.parse("2014-08-05")
+      date  = LocalDate.parse("2014-08-05"),
     ),
     PhotoSet(
       url   = s"${core.Domain}/girls/moon/album/1289210/wake-up-slow/",
       title = "WAKE UP SLOW",
-      date  = LocalDate.parse("2014-03-21")
+      date  = LocalDate.parse("2014-03-21"),
     ),
     PhotoSet(
       url   = s"${core.Domain}/girls/moon/album/997826/mirage/",
       title = "MIRAGE",
-      date  = LocalDate.parse("2013-12-29")
-    )
+      date  = LocalDate.parse("2013-12-29"),
+    ),
   )
 
   val numberOfPhotoSets: Int = photoSets.length

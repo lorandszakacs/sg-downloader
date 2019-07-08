@@ -71,14 +71,14 @@ object Favorites {
       "vice", "viking", "vikki", "viky", "vivid", "voidna", "vyne", "waikiki", "walerya", "wednesdaya",
       "whiskey", "wichitak", "wilhelmine", "wingsweak", "wolf", "xuxa", "yegola", "yesenia", "your_mjsty", "yugen",
       "yuke", "yuno", "yupa", "yusuracircus", "yuxi", "zad", "zeezee", "zell", "zenit", "zephi",
-      "zilvia", "zippo", "zoli"
+      "zilvia", "zippo", "zoli",
     ).sorted.distinct
   // format: on
 
   private val _new = List[String](
     ).filterNot(_.isEmpty).sorted.distinct
 
-  lazy val names: List[Name] = (if (_new.isEmpty) _names else _new) map Name.apply
+  lazy val names: List[Name] = (if (_new.isEmpty) _names else _new).map(Name.apply)
 
   lazy val namesSet: Set[Name] = _names.toSet.map(Name.apply)
 
